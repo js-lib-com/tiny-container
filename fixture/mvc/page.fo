@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<fo:root xmlns:fo="http://www.w3.org/1999/XSL/Format">
+	<fo:layout-master-set>
+		<fo:simple-page-master margin-right="0.5cm" margin-left="0.5cm" margin-bottom="0.5cm" margin-top="0.5cm" page-width="21cm" page-height="29.7cm" master-name="simple" writing-mode="rl">
+			<fo:region-body margin-top="0cm" />
+			<fo:region-before extent="0cm" />
+			<fo:region-after extent="0cm" />
+		</fo:simple-page-master>
+	</fo:layout-master-set>
+	<fo:page-sequence master-reference="simple" font-family="Arial" font-weight="bold" font-style="normal">
+		<fo:flow text-align="justify" space-after.optimum="3pt" line-height="15pt" font-size="12pt" flow-name="xsl-region-body" writing-mode="rl-tb">
+
+			<fo:block font-size="14px" border-bottom="solid 1px" margin-bottom="10px">
+				<fo:inline data-text="name"></fo:inline>
+				<fo:inline data-text="surname"></fo:inline>
+				,
+			</fo:block>
+
+			<fo:table>
+				<fo:table-body>
+					<fo:table-row>
+						<fo:table-cell>
+							<fo:block>זה תפוח</fo:block>
+						</fo:table-cell>
+						<fo:table-cell>
+							<fo:block data-text="landline"></fo:block>
+						</fo:table-cell>
+					</fo:table-row>
+					<fo:table-row>
+						<fo:table-cell>
+							<fo:block>Mobile</fo:block>
+						</fo:table-cell>
+						<fo:table-cell>
+							<fo:block data-text="mobile"></fo:block>
+						</fo:table-cell>
+					</fo:table-row>
+					<fo:table-row>
+						<fo:table-cell>
+							<fo:block>Birthday</fo:block>
+						</fo:table-cell>
+						<fo:table-cell>
+							<fo:block data-text="birthday"></fo:block>
+						</fo:table-cell>
+					</fo:table-row>
+				</fo:table-body>
+			</fo:table>
+
+		</fo:flow>
+	</fo:page-sequence>
+</fo:root>

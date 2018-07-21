@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta content="text/html; charset=UTF-8" http-equiv="Content-Type" />
+<meta content="IE=9; IE=8; IE=7; IE=EDGE" http-equiv="X-UA-Compatible" />
+<title>j(s)-app / Compo</title>
+<link href="reset.css" rel="stylesheet" type="text/css" />
+<script src="lib/js-lib-1.0.0.js" type="text/javascript"></script>
+<script src="js/js/hood/Compo.js" type="text/javascript"></script>
+</head>
+<body>
+  <header></header>
+  <nav>
+    <a href="#">Home</a><a href="#">About</a>
+  </nav>
+  <section data-class="js.hood.Compo" data-editable="main">
+    <h1>Current Value in €</h1>
+    <p title="current value in €.">
+      This is <strong>component</strong> <em>description</em>.
+    </p>
+    <section data-ref="child">
+      <h1 class="caption">Child Caption</h1>
+      <p title="child tooltip">
+        This is <strong>child</strong> <em>description</em>.
+      </p>
+      <section data-ref="lib/nephew">
+        <h1 class="caption">Nephew Caption</h1>
+        <p title="nephew tooltip">
+          This is <strong>nephew</strong> <em>description</em>.
+        </p>
+      </section>
+      <button>Submit</button>
+    </section>
+    <button>Submit</button>
+  </section>
+  <footer>copyright © j(s)-lib tools ® 2013</footer>
+</body>
+</html>

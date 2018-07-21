@@ -1,0 +1,224 @@
+<body>
+  <h1 class="title">Tiny Container</h1>
+  <p>Tiny Container is a service oriented Servlet extension that allows for reflexive Java methods invocation via HTTP. A remote accessible method is named Net Method. Tiny Container is service based and departs from both JSP technology and MVC architecture: Servlet Container provides only access to static resources whereas Net Methods implement services. Browser based client gets user interface templates, stored as static resources, and inject JSON objects provided by services. Mobile device client uses the very same services but user interface is generated entirely on client.</p>
+  <p>Tiny Container is the server part of the Web Tiny Framework but can be used independently. Web Tiny Framework acknowledges that today clients are smart enough to render their own user interface. This is indeed true for browser based clients that loads from server only templates not fully described user interfaces. This design is effective in using HTTP network cache, decreasing overall bandwidth consumption: static resources need to be loaded only once, after that client requests reach the server only for services.</p>
+  <p>Tiny Container is a simple to use and small footprint web applications and web services container. It is modular, based on a set of utility libraries, simplified APIs and reference implementations loaded using standard Java service loader. Tiny Container build can be tailored for embedded system or full web server with small to medium complexity. It is not for enterprise solutions.</p>
+  <p>Tiny Container is heavily based on Servlet Container - does not try to hide this, and cannot be deployed outside it. For example, HTTP networking and request routing logic is provided by Servlet Container; also declarative container provided security and error pages configuration. This means one should be familiar with Servlet technology in order to use Tiny Container.</p>
+  <pre>
+                                 +---------------------------------------+
+                                 | Servlet Container                     | 
+       Web Tiny Framework        |                                       |
+                                 |           +------------------------+  | 
+                                 |           | Tiny Container         |  |          
+  +--------------+    Request    |           |        +------------+  |  |         
+  | Smart Client +---------------o-----+-----o--------> Net Method ................... Services
+  +--------------+    Response   |     |     |        +------------+  |  |      .   
+                                 |     |     +------------------------+  |      .
+                                 |     |                                 |    Dynamic Resources   
+                                 |  +--v---------------+                 |    
+                                 |  | Static Resources |                 |    
+                                 |  +------------------+                 |
+                                 +---------------------------------------+
+  
+  </pre>
+  <p>Tiny Container uses inversion of control and dependency injection and provides declarative services for managed methods. It is implemented as a package that at its core has three classes: {@link js.container.Container}, {@link js.container.ManagedClass} and {@link js.container.ManagedMethod}. Managed classes are in charge with managed instances creation, container takes care of managed instances life span, aka scope, whereas managed methods deal with actual method execution. Container also implements application context interface, {@link js.core.AppContext}, used by application code to access Tiny Container services.</p>
+  <pre>
+    +-------------------------------------------------------------------+
+    | Tiny Container                                                    |
+    |                                                                   |   
+    |    +------------+                              +---------------+  | 
+    |    | AppContext |                          +---> ManagedMethod |  |
+    |    +-----^------+       +--------------+   |   +---------------+  |
+    |          |          +---> ManagedClass +---+                      |
+    |          |          |   +--------------+   |   +---------------+  |
+    |    +-----+------+   |                      +---> ManagedMethod |  |
+ ---o----> Container  +---+                          +---------------+  |
+    |    +------------+   |                                             |
+    |                     ~                      +---...                |
+    |                     |   +--------------+   |                      |
+    |                     +---> ManagedClass +---+                      |
+    |                         +--------------+   |                      |
+    |                                            ~                      |
+    +-------------------------------------------------------------------+
+  </pre>
+  <p>Here is a quick list of services provided by Tiny Container:</p>
+  <dl>
+    <dt>Declarative implementation binding for managed classes.</dt>
+    <dd>Managed class has interface used by caller to invoke methods on managed instance. Managed instance is create by factory instead of new operator. The actual implementation is declared into application descriptor and bound at application start. Implementation bind cannot be hot changed.</dd>
+    <dt>Life span management for managed instances, e.g. application, thread or local scope.</dt>
+    <dd>A new managed instance can be created at every request or can be reused from a cache, depending on managed class scope. Scope is declared on managed class declaration. New managed instance are created by {@link js.container.ManagedClass} but life span is controlled by {@link js.container.Container} class.</dd>
+    <dt>External configuration of managed instances from application descriptor.</dt>
+    <dd>If a managed instance implements {@link js.lang.Configurable} interface container takes care to configure it from application descriptor section. Every managed class has an alias into application descriptor that identify configurable section.</dd>
+    <dt>Managed life cycle for managed instances with application scopes.</dt>
+    <dd>For managed instances implementing {@link js.lang.ManagedLifeCycle} interface container invokes post-create and pre-destroy methods after managed instance creation, respective before destroying. Managed life cycle is supported only by managed classes with application scope.</dd>
+    <dt>Declarative transactions, both mutable and immutable.</dt>
+    <dd>A managed class can be marked as transactional, see {@link js.container.annotation.Transactional} annotation. Container creates a Java Proxy handler and execute managed method inside transaction boundaries.</dd>
+    <dt>Dependency injection for fields and constructor parameters.</dt>
+    <dd>Current container supports two types of dependency injection: field injection using {@link js.container.annotation.Inject} annotation and constructor injection. Injected instance should be managed instance on its turn; is not possible to inject POJO instances.</dd>
+    <dt>Managed classes static fields initialization from application descriptor.</dt>
+    <dd>Inject value objects declared in application descriptor into static fields from managed class implementation. Container uses {@link js.converter.Converter} to convert string to value type. Of course static field should not be final.</dd>
+    <dt>Authenticated remote access to managed methods; authentication occurs at method invocation.</dt>
+    <dd>A method annotated with, or owned by a class annotated with {@link js.container.annotation.Remote} is named net method and is accessible from remote. Remote access is controller by {@link js.container.annotation.Public} and {@link js.container.annotation.Private} annotations. A private net method can be accessed only after authentication.</dd>
+    <dt>Declarative asynchronous execution mode for long running logic, executed in separated thread.</dt>
+    <dd>If a managed method is annotated with {@link js.container.annotation.Asynchronous} container creates a separated thread and execute method asynchronously. Asynchronous method should return void.</dd>
+    <dt>Method invocation listeners. There are interceptors for before, after and around method invocation.</dt>
+    <dd>Invocation listeners provide a naive, but still useful AOP. There is {@link js.container.annotation.Intercepted} annotation for tagging methods - declaring join points, and related interface to be implemented by interceptors, aka AOP advice. See {@link js.container.Interceptor} interface for sample usage.</dd>
+    <dt>Method instrumentation. Uses {@link js.container.InvocationMeter} to monitor method invocations.</dt>
+    <dd>Every managed method has a meter that updates internal counters about execution time, invocation and exceptions count. Invocation meter interface is used to collect counter values. Instrumentation manager, {@link js.container.Observer}, collects periodically all managed methods counters and create report on system logger.</dd>
+  </dl>
+  <p>
+    Here are instance scopes supported by current implementation. Although
+    <code>SESSION</code>
+    is listed, it is actually implemented by subclass.
+  <table border="1" style="border-collapse: collapse;" summary="Managed Scopes">
+    <tr>
+      <td>APPLICATION
+      <td>Application level singleton; one instance per application. Once created, instances with APPLICATION scope last for entire application life span and are destroyed just before application exit.
+    <tr>
+      <td>THREAD
+      <td>Thread local storage. When declaring thread is destroyed local storage is freed and THREAD managed instance is garbage collected.
+    <tr>
+      <td>LOCAL
+      <td>Local scope creates always a new instance that last till declaring code block exit.
+    <tr>
+      <td>SESSION
+      <td>Stateful across a single HTTP session. Managed instance is stored on HTTP session attribute; when HTTP session expires, attribute is removed and SESSION managed instance becomes candidate for GC.
+  </table>
+  <h2>Managed Instance Retrieval</h2>
+  <p>Instance retrieval is the process of obtaining a managed instance, be it from container caches or fresh created.</p>
+  <ol>
+    <li>obtain a managed class key based on interface class and optional instance name,
+    <li>if managed class key does not exist exit with bug error,
+    <li>use key to retrieve managed class from container classes pool,
+    <li>if managed class not found exit with bug error,
+    <li>get scope and instance factories for managed class instance scope and type; if managed class instance scope is local there is no scope factory,
+    <li>if scope factory is null execute instance factory that creates a new instance,
+    <li>if there is scope factory do next steps into synchronized block,
+    <li>try to retrieve instance from scope factory cache,
+    <li>if no cached instance pre-process arguments, create a new instance using instance factory and persist instance on scope factory,
+    <li>end synchronized block,
+    <li>arguments pre-processing takes care to inject constructor arguments,
+    <li>if new instance is created execute instance post-processors into registration order.
+  </ol>
+  <h2 id="request-routing">Request Routing</h2>
+  <p>Tiny Container is federalized. It does not have a central HTTP requests dispatcher but instead uses standard deployment descriptor to map servlets of different kinds.</p>
+  <h2>Transactions</h2>
+  <p>Container declared transactions are implemented by this class, see ASCII diagram. For this uses service provided by external implementation via {@link TransactionManager} interface.
+  <ol>
+    <li>ContainerProxyHandler invokes createTransaction on TransactionManager
+    <li>TransactionManager creates transaction and transactional resource session
+    <li>TransactionManager returns transaction that contains session instance
+    <li>ContainerProxyHandler stores session on TransactionContext
+    <li>ContainerProxyHandler uses transaction instance to control transaction life cycle
+    <li>ContainerProxyHandler invokes business method
+    <li>business method uses TransactionalContext to retrieve session instance
+    <li>ContainerProxyHandler close transaction and release session from TransactionContext
+  </ol>
+  <pre>
+                     +--------------------+  new  +-------------+  new  +---------+
+                     | TransactionManager +-------&gt; Transaction +-------&gt; Session |
+                     +---------+----------+       +-------------+       +---------+
+                               |
+                        +------v------+        
+                        | Transaction |
+                        +-------------+
+                        | session     |
+                        +------v------+
+                               |
+                container      |                          TransactionContext  
+                +--------------v--------------+  store    +----------------------+
+  invoke -------&gt; tx = tm.createTransaction   +-----------> TLS&lt;Session&gt;         |
+         &lt;---+  |                             |           +------+------^--------+    
+             |  |    instance                 |                  |      |         
+             |  |    +----------------------+ |  uses            |      | 
+             |  |    | context              &lt;-+------------------+      | 
+             |  |    +----------|-----------+ |                         |
+             |  |    | method               | |                         |
+             |  |    | context.getSession() | |                         |
+             |  |    +----------------------+ |                         |
+             |  |    | ...                  | |                         | 
+             |  |    +----------------------+ |                         |
+             |  |                             |                         |
+             |  | tx.commit / tx.rollback     |  release                |
+             +--+ tx.close                    +-------------------------+
+                +-----------------------------+
+                ContainerProxyHandler
+  </pre>
+  <h2>Arguments and Value</h2>
+  <pre>
+   HTTP Request                    HTTP Response
+  +----------------------+        +---------------+
+  | PathArgs ? QueryArgs |        | StatusCode    |
+  +----------------------+        +---------------+
+  | HeaderArgs           |        | HeaderValue   |
+  | Accept               |        |               |
+  +----------------------+        +---------------+
+  | ContentType          |        | ContentType   |
+  | BodyArgs             |        | BodyValue     |
+  +----------------------+        +---------------+
+  </pre>
+  <h2>Separation of Concerns</h2>
+  <p>Extreme separation of concerns: no business logic allowed on client and no view-control logic allowed on server.</p>
+  <h2>Locale</h2>
+  <p>Locale sensitive applications should handle locale detection and content localization. For locale detection there are next options:</p>
+  <ul>
+    <li><code>HeaderLocale</code> - request header <code>Accept-Language</code></li>
+    <li><code>PathLocale</code> - locale code embedded into request path after servlet context: <code>http://host/site/en/index.htm</code></li>
+    <li><code>CookieLocale</code> - locale code kept on cookies: experimental</li>
+    <li><code>UserLocale</code> - locale code is part of user profile managed by application code: experimental</li>
+  </ul>
+  <p>
+    <code>HeaderLocale</code>
+    should be used only if
+    <code>PathLocale</code>
+    is not present.
+  </p>
+  <p>A locale sensitive application should declare {@link js.web.LocaleFilter} into deployment descriptor. If application does not use locale settings, locale filter should not be declared. Locale filter is used by framework to detect if application is locale sensitive.</p>
+  <pre>
+	&lt;filter&gt;
+		&lt;filter-name&gt;locale-filter&lt;/filter-name&gt;
+		&lt;filter-class&gt;js.web.LocaleFilter&lt;/filter-class&gt;
+	&lt;/filter&gt;
+	&lt;filter-mapping&gt;
+		&lt;filter-name&gt;locale-filter&lt;/filter-name&gt;
+		&lt;url-pattern&gt;/en/*&lt;/url-pattern&gt;
+		&lt;url-pattern&gt;/iw/*&lt;/url-pattern&gt;
+	&lt;/filter-mapping&gt;
+  </pre>
+  <p>Locale filter mapping should declare all supported languages.</p>
+  <h2>Application Boostrap</h2>
+  <p>Here are overall steps performed by bootstrap logic. It is executed for every application deployed on web server.</p>
+  <ul>
+    <li>initialize server if not already initialized, see {@link Server#init(ServletContext)},
+    <li>create {@link AppConfigBuilder} and parse application configuration object,
+    <li>create web container and load it from created configuration object, see {@link ContainerSPI#load(Config)},
+    <li>create {@link App} instance and save it to servlet context attribute,
+    <li>finalize web container creation by calling {@link ContainerSPI#start()}.
+  </ul>
+  <p>For completeness here are application deployment steps, excerpt from spec:</p>
+  <ul>
+    <li>Instantiate an instance of each event listener identified by a <code>listener</code> element in the deployment descriptor.
+    </li>
+    <li>For instantiated listener instances that implement ServletContextListener, call the contextInitialized() method.</li>
+    <li>Instantiate an instance of each filter identified by a <code>filter</code> element in the deployment descriptor and call each filter instance’s init() method.
+    </li>
+    <li>Instantiate an instance of each servlet identified by a <code>servlet</code> element that includes a <code>load-on-startup</code> element in the order defined by the load-onstartup element values, and call each servlet instance’s init() method.
+    </li>
+  </ul>
+  <h2 id="deployment-descriptor">Deployment Descriptor</h2>
+  <h2>Glossary</h2>
+  <dl>
+    <dt>Container</dt>
+    <dd>A package supplying services for managed classes.</dd>
+    <dt>Managed Class</dt>
+    <dd>Class managed by container.</dd>
+    <dt>Net Class</dt>
+    <dd>Managed class annotated as @Remote</dd>
+    <dt>Managed Method</dt>
+    <dd>Method belonging to a managed class</dd>
+    <dt>Net Method</dt>
+    <dd>Managed method annotated as @Remote or belonging to a net class</dd>
+    <dt>Managed Instance</dt>
+    <dd>Instance of a managed class, created by container as opposite by new operator</dd>
+  </dl>
+</body>

@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<test-config>
+	<managed-classes>
+		<context class="js.test.web.fixture.MockRequestContext" interface="js.servlet.RequestContext" />
+	</managed-classes>
+	<app>
+		<property name="login-realm" value="Test App" />
+		<property name="login-page" value="login.xsp" />
+	</app>
+</test-config>

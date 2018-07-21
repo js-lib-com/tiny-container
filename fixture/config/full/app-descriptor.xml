@@ -1,0 +1,23 @@
+<?xml version="1.0" ?>
+<app>
+	<converter>
+		<typex class="js.email.MessageID" converter="js.email.MessageIDConverter" />
+	</converter>
+
+	<managed-classes>
+		<app class="js.servlet.App" />
+		<observer class="js.core.Observer" />
+		<converter-manager interface="js.converter.ConverterManager" class="js.converter.ConverterManagerImpl" />
+		<transaction-manager interface="js.core.TransactionManager" type="SERVICE" />
+		<data-source class="js.core.TransactionalResource">
+			<interface name="js.core.TransactionalResource" />
+			<interface name="js.core.TransactionContext" />
+		</data-source>
+	</managed-classes>
+
+	<converter>
+		<type class="js.email.MessageID" converter="js.email.MessageIDConverter" />
+	</converter>
+
+	<include file="app.xml" />
+</app>

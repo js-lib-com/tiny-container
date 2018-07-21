@@ -1,0 +1,7 @@
+<?xml version="1.0" ?>
+<app>
+	<captcha>
+		<property name="IMAGES_REPOSITORY" value="D:\jvm\tomcat\webapps\fax2mail\captcha" />
+		<property name="SET_SIZE" value="8" />
+	</captcha>
+</app>

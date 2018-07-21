@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE definition [
+<!ENTITY reg "&#174;">
+<!ENTITY copy "&#169;">
+]>
+<string>
+	<home>Home</home>
+	<about>About</about>
+	<copyright>copyright &copy; j(s)-lib tools &reg; 2013</copyright>
+</string>

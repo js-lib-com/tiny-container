@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<config>
+	<managed-classes>
+		<app interface="js.servlet.App" implementation="js.test.web.MockApp" type="POJO" scope="APPLICATION" />
+		<controller interface="js.test.web.RmiController" implementation="js.test.web.RmiControllerImpl" type="PROXY" scope="APPLICATION" />
+	</managed-classes>
+	<web-socket>
+		<echo sub-protocol="echo" class="js.test.web.EchoWebSocket" />
+		<chat sub-protocol="chat" class="js.test.web.ChatWebSocket" />
+	</web-socket>
+</config>

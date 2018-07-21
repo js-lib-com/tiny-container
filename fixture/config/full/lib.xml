@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<config>
+	<managed-classes>
+		<app class="js.servlet.App" />
+		<observer class="js.core.Observer" />
+		<converter-manager interface="js.converter.ConverterManager" class="js.converter.ConverterManagerImpl" />
+		<transaction-manager interface="js.core.TransactionManager" type="SERVICE" />
+		<data-source class="js.core.TransactionalResource">
+			<interface name="js.core.TransactionalResource" />
+			<interface name="js.core.TransactionContext" />
+		</data-source>
+		<web-session interface="js.servlet.WebSession" class="js.servlet.WebSessionImpl" scope="SESSION" />
+		<request-context interface="js.servlet.RequestContext" class="js.servlet.RequestContextImpl" scope="THREAD" />
+		<resource-methods interface="js.core.ResourceMethods" class="js.core.ResourceMethodsImpl" />
+		<rest-methods interface="js.core.RestMethods" class="js.core.RestMethodsImpl" />
+		<views interface="js.servlet.view.ViewManager" class="js.servlet.view.ViewManagerImpl" />
+		<captcha interface="js.servlet.form.Captcha" class="js.servlet.form.CaptchaImpl" />
+		<web-sockets class="js.servlet.WebSocketManager" />
+		<event-stream-manager interface="js.net.EventStreamManager" class="js.net.EventStreamManagerImpl" />
+		<event-stream class="js.net.EventStream" scope="LOCAL" />
+		<emails class="js.email.EmailManager" />
+	</managed-classes>
+
+	<converter>
+		<type class="js.email.MessageID" converter="js.email.MessageIDConverter" />
+	</converter>
+</config>

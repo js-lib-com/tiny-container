@@ -1,0 +1,249 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"><!-- InstanceBegin template="/Templates/layout.dwt" codeOutsideHTMLIsLocked="false" -->
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<!-- InstanceBeginEditable name="meta" -->
+<!-- InstanceEndEditable -->
+<title>House Community</title>
+<link href="css/reset.css" rel="stylesheet" type="text/css" />
+<link href="css/default.css" rel="stylesheet" type="text/css" />
+<link href="css/layout.css" rel="stylesheet" type="text/css" />
+<!-- InstanceBeginEditable name="head" -->
+<link href="css/hc-dialog.css" rel="stylesheet" type="text/css" />
+<link href="css/form.css" rel="stylesheet" type="text/css" />
+<link href="css/videos.css" rel="stylesheet" type="text/css" />
+<script type="text/javascript" src="js/js-lib.js"></script>
+<script type="text/javascript" src="js/swfobject.js"></script>
+<script type="text/javascript" src="js/formatters.js"></script>
+<script type="text/javascript" src="js/formatters.js"></script>
+<script type="text/javascript" src="js/release.js"></script>
+<script type="text/javascript" src="js/video-player.js"></script>
+<script type="text/javascript" src="js/search-panel.js"></script>
+<script type="text/javascript" src="js/discography.js"></script>
+<script type="text/javascript" src="js/related-artists.js"></script>
+<script type="text/javascript" src="js/comments.js"></script>
+<script type="text/javascript" src="js/youtube-dialog.js"></script>
+<script type="text/javascript" src="js/videos-page.js"></script>
+<!-- InstanceEndEditable -->
+</head>
+<body>
+<div class="layout-page">
+  <ul class="layout-top-menu">
+    <li class="logout"><a href="logout.xsp">Logout</a></li>
+    <li class="login"><a href="login-form.xsp">Login</a></li>
+    <li class="register"><a href="registration-form.xsp">Register</a></li>
+  </ul>
+  <div class="layout-header"></div>
+  <ul class="layout-menu">
+    <li><a href="home.xsp">home</a></li>
+    <li><a href="videos.xsp">videos</a></li>
+    <li><a href="mixes.xsp">mixes</a></li>
+    <li><a href="pick-of-the-day.xsp">pick of the day</a></li>
+    <li><a href="news.xsp">news</a></li>
+    <li class="auth"><a href="profile.xsp">profile</a></li>
+  </ul>
+  <div class="layout-body"> <!-- InstanceBeginEditable name="body-content" -->
+    <div class="main-panel">
+      <div id="video-player" class="video-player">
+        <div class="screen">
+          <div class="canvas"></div>
+          <div class="logo hidden"><img src="img/logo.jpg" /></div>
+        </div>
+        <div class="controls hidden">
+          <div class="progress">
+            <div class="cursor"></div>
+          </div>
+          <div class="operations"> <img class="^toggle-comments" src="img/comments-icon.png" title="show / hide this video comments" /><img class="^facebook" src="img/facebook-icon.png" title="share this video with your friends" /><img class="^replay" src="img/replay-icon.png" title="replay this video" /><img class="^upload" src="img/upload-icon.png" title="upload a new video" /></div>
+        </div>
+      </div>
+      <div id="search-panel" class="search-panel">
+        <form action="" class="criteria">
+          <fieldset class="search" title="write down your preferred video then enter...">
+            <label>Search video</label>
+            <input type="text" />
+            <img src="img/clean-search-icon.png" class="clean" title="cleanup video search" />
+          </fieldset>
+          <fieldset class="operations">
+            <button id="most-viewed" type="button">most viewed</button>
+            <button id="most-recent" type="button">most recent</button>
+            <button id="most-commented" type="button">most commented</button>
+          </fieldset>
+        </form>
+        <div class="videos">
+          <ul class="results" data-list="results">
+            <li><img src="img/videos/00.jpg" width="120" height="90" data-src="picture" />
+              <div class="info">
+                <h3 data-value="artist">Abba featuring Ani-Frid</h3>
+                <h4 data-value="title">Like An Angel Passing Through My Room</h4>
+                <dl>
+                  <dt>Duration</dt>
+                  <dd data-value="duration">05:30</dd>
+                  <dt>Views</dt>
+                  <dd data-value="viewsCount">123</dd>
+                </dl>
+                <br />
+              </div>
+              <img class="mask" src="img/video-search-mask.png" /> </li>
+          </ul>
+          <br />
+          <div class="paging hidden">
+            <ul class="list">
+              <li><img src="img/prev-page.png" /></li>
+              <li>1</li>
+              <li>2</li>
+              <li>3</li>
+              <li class="active">4</li>
+              <li>5</li>
+              <li>4</li>
+              <li>5</li>
+              <li><img src="img/next-page.png"/></li>
+            </ul>
+          </div>
+        </div>
+        <br class="clear" />
+      </div>
+      <div id="comments" class="comments hidden">
+        <p class="guest-text">Your opinion matters! <a href="login-form.xsp">Log-in</a> and commnent out this video.</p>
+        <p class="user-text">Your opinion matters! <a id="write-comment" href="">Commnent out</a> this video.</p>
+        <div class="editor hidden">
+          <textarea></textarea>
+          <p><a id="submit-comment" href="">Send now</a> or you maybe <a id="cancel-comment" href="">another time</a> ...</p>
+        </div>
+        <div class="list" data-list="comments">
+          <div class="item"><img src="img/default-user.png" data-value="picture" />
+            <h4><span class="first-name" data-value="firstName">Libe</span> <span class="last-name" data-value="lastName"></span> - <span class="date-time" data-value="date">10-06-2009 13:45:70</span></h4>
+            <p class="text" data-value="text">Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
+          </div>
+          <div class="item"><img src="img/users/01.jpg" />
+            <h4><span class="user">deli</span> - <span class="date-time">10-06-2009 13:45:70</span></h4>
+            <p class="text">Lorem ipsum dolor sit amet, consectetur <br />
+              adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="right-sidebar">
+      <div id="release" class="release" data-object="release"><a href="artist-biography.xsp?id=1" data-href="artist.link">
+        <img src="img/default-artist.png" title="artist" data-src="artist.picture" data-title="artist.name" />
+        </a>
+        <h2 data-value="artist.name">Eurythmics</h2>
+        <h3 data-value="title">It's Alright (Baby's Coming Back)</h3>
+        <dl>
+          <dt>Label</dt>
+          <dd>:<span data-value="label">RCA</span></dd>
+          <dt>Catalog</dt>
+          <dd>:<span data-value="catalog">PT 40376</span></dd>
+          <dt>Country</dt>
+          <dd>:<span data-value="country">UK</span></dd>
+          <dt>Released</dt>
+          <dd>:<span data-value="released">1986</span></dd>
+        </dl>
+        <ul data-list="tracklist">
+          <li><img src="img/default-picture.png" data-src="picture" />
+            <h3 data-value="title">Like An Angel Passing Through My Room</h3>
+          </li>
+          <li><img src="img/videos/01.jpg" width="120" height="90" />
+            <h3>Greazy feturing Stapleton MC</h3>
+          </li>
+          <li><img src="img/videos/02.jpg" width="120" height="90" />
+            <h3>Faithless</h3>
+          </li>
+          <li><img src="img/videos/03.jpg" width="120" height="90" />
+            <h3>Netsky</h3>
+          </li>
+          <li class="selected"><img src="img/videos/00.jpg" width="120" height="90"/>
+            <h3>Lynx featuring Kemo</h3>
+          </li>
+          <li><img src="img/videos/01.jpg" width="120" height="90" />
+            <h3>Greazy feturing Stapleton MC</h3>
+          </li>
+        </ul>
+      </div>
+      <div id="discography" class="discography">
+        <h1 class="caption">discography</h1>
+        <div class="box">
+          <ul class="releases-list" data-list="discography">
+            <li><span data-value="title">Silver Cities</span><span data-value="released"></span></li>
+            <li><span>Why Can't We Be Like Us</span><span>2007</span></li>
+            <li><span>Read Me / Silver City</span><span>2003</span></li>
+            <li><span>Bruno Pronsato &amp; Franco Cinelli - Picaro EP</span><span>2005</span></li>
+            <li><span>The Lime Works Vol. 2</span><span>2005</span></li>
+            <li><span>Open Your Eyes / E As In Ella</span><span>2005</span></li>
+            <li><span>The Lime Works Vol. 1</span><span>2005</span></li>
+            <li><span>Wuorinen / Live In Cascadia</span><span>1986</span></li>
+          </ul>
+          <br />
+          <div class="paging hidden">
+            <ul>
+              <li><img src="img/prev-page.png" /></li>
+              <li>1</li>
+              <li>2</li>
+              <li>3</li>
+              <li class="active">4</li>
+              <li>5</li>
+              <li>4</li>
+              <li>5</li>
+              <li><img src="img/next-page.png"/></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+      <div id="related-artists" class="related-artists">
+        <h1 class="caption">related artists</h1>
+        <div class="list">
+          <h2 class="preview">Bruno Pronsato</h2>
+          <ul data-list="relatedArtists">
+            <li>
+              <div><img src="img/artists/dj-libe.png" data-value="picture" /></div>
+            </li>
+            <li>
+              <div><img src="img/artists/melchior.png" /></div>
+            </li>
+            <li>
+              <div><img src="img/artists/bruno-pronsato.png" /></div>
+            </li>
+            <li>
+              <div><img src="img/artists/nao-tokui.png" /></div>
+            </li>
+            <li>
+              <div><img src="img/artists/picasso.png" /></div>
+            </li>
+            <li>
+              <div><img src="img/artists/octave.png" /></div>
+            </li>
+          </ul>
+          <br />
+        </div>
+        <div class="clear"></div>
+      </div>
+    </div>
+    <!-- InstanceEndEditable -->
+    <div class="clear"></div>
+  </div>
+  <div class="layout-footer"></div>
+</div>
+<!-- InstanceBeginEditable name="widgets" -->
+<div id="youtube-dialog" class="dialog youtube-dialog hidden">
+  <h2 class="caption">&nbsp;</h2>
+  <div class="cancel"></div>
+  <form action="upload-picture.xsp" method="post" enctype="multipart/form-data" class="picture-form">
+    <div class="preview"><img class="$picture" src="img/fake-picture.jpg" alt="" /></div>
+    <h3 class="artist-name">ABBA</h3>
+    <h4 class="track-title">Like An Angel Passing Through My Room</h4>
+    <input type="text" class="youtube-link" title="copy / paste here the youtube video link" />
+    <p>Just copy / paste YouTube link. House Community server loads the video and display its picture. If satisfied submit.</p>
+    <input type="hidden" data-value="trackId" />
+    <input type="hidden" data-value="youtubeId" />
+  </form>
+  <br />
+  <button type="submit">Submit</button>
+  <button type="reset">Reset</button>
+</div>
+<!-- InstanceEndEditable -->
+<script language="javascript">
+if(document.cookie.indexOf('js.AUTH') !== -1) {
+  document.getElementsByTagName('body')[0].className = 'loged-in';
+}
+</script>
+</body>
+<!-- InstanceEnd --></html>

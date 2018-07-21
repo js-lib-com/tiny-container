@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<doc xmlns:ns1="js-lib.com/ns1" xmlns:ns2="js-lib.com/ns2">
+	<el attr="value">element</el>
+	<ns1:el attr="value" ns1:attr="ns1.value" ns2:attr="ns2.value">ns1.element</ns1:el>
+	<ns2:el attr="value" ns1:attr="ns1.value" ns2:attr="ns2.value">ns2.element</ns2:el>
+</doc>

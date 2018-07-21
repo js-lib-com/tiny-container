@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<app>
+	<views repository="fixture/tomcat/webapps/app-i18n/${language}" files-pattern="*.htm" class="js.servlet.view.SsiView" />
+	<views repository="fixture/tomcat/webapps/app-i18n/${language}/fo/" files-pattern="*.fo" class="js.servlet.view.PdfView">
+		<property name="producer" value="SixQs" />
+		<property name="creator" value="SixQs" />
+	</views>
+</app>
