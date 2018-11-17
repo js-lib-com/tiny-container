@@ -71,11 +71,17 @@ import js.util.Files;
 import js.util.Strings;
 
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.xml.sax.InputSource;
 
-@SuppressWarnings({ "unchecked", "unused", "rawtypes" })
+@SuppressWarnings({ "unused", "rawtypes" })
 public class HttpRmiServletIntegrationTest {
+	@BeforeClass
+	public static void beforeClass() {
+		System.setProperty("catalina.base", "fixture/server/tomcat");
+	}
+
 	private ContainerSPI container;
 	private MockApp app;
 	private MockHttpServletRequest request;

@@ -14,18 +14,17 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import js.annotation.Asynchronous;
+import js.annotation.ContextParam;
 import js.annotation.Controller;
-import js.annotation.Immutable;
+import js.annotation.Cron;
 import js.annotation.Inject;
 import js.annotation.Intercepted;
 import js.annotation.Local;
-import js.annotation.RequestPath;
-import js.annotation.Mutable;
 import js.annotation.Private;
 import js.annotation.Public;
 import js.annotation.Remote;
+import js.annotation.RequestPath;
 import js.annotation.Service;
-import js.annotation.Transactional;
 import js.converter.Converter;
 import js.converter.ConverterException;
 import js.core.AppFactory;
@@ -36,6 +35,9 @@ import js.lang.Configurable;
 import js.lang.ManagedLifeCycle;
 import js.log.Log;
 import js.log.LogFactory;
+import js.transaction.Immutable;
+import js.transaction.Mutable;
+import js.transaction.Transactional;
 import js.util.Classes;
 import js.util.Types;
 
@@ -73,11 +75,10 @@ import js.util.Types;
  * interface but can be abstract class or even standard Java class. Implementation class is optional depending on
  * {@link #instanceType}. Anyway, if implementation exists it must be an instantiable class, package private accepted.
  * 
- * <h3>Class Descriptor</h3>
- * Managed classes use class descriptors to declare managed class interface(s), implementation, type and scope. In application
- * descriptor there is a predefined <code>managed-classes</code> section and inside it all managed classes are declared, an
- * element per class - this configuration element is the class descriptor. Every managed class descriptor has a name, i.e. the
- * element tag; this name is used to declare managed class configuration section.
+ * <h3>Class Descriptor</h3> Managed classes use class descriptors to declare managed class interface(s), implementation, type
+ * and scope. In application descriptor there is a predefined <code>managed-classes</code> section and inside it all managed
+ * classes are declared, an element per class - this configuration element is the class descriptor. Every managed class
+ * descriptor has a name, i.e. the element tag; this name is used to declare managed class configuration section.
  * <p>
  * Lets consider a UserManagerImpl class that implements UserManager interface. Into application descriptor there is
  * <code>managed-classes</code> section used to declare all managed classes. Below <code>user-manager</code> section is managed
@@ -316,6 +317,10 @@ final class ManagedClass implements ManagedClassSPI {
 	/** Pool of net methods, that is, methods remotely accessible. */
 	private final Map<String, ManagedMethodSPI> netMethodsPool = new HashMap<>();
 
+	private final Map<String, Field> contextParamFields = new HashMap<>();
+
+	private final List<ManagedMethodSPI> cronMethodsPool = new ArrayList<>();
+
 	/** Cached value of managed class string representation, merely for logging. */
 	private final String string;
 
@@ -328,8 +333,12 @@ final class ManagedClass implements ManagedClassSPI {
 	/** A managed class is transactional if is annotated with {@link Transactional} or has at least one transactional method. */
 	private boolean transactional;
 
-	/** Request URI path for this managed class configured by {@link Remote}, {@link Controller} or {@link Service} annotations. */
+	/**
+	 * Request URI path for this managed class configured by {@link Remote}, {@link Controller} or {@link Service} annotations.
+	 */
 	private String requestPath;
+
+	private boolean autoInstanceCreation;
 
 	/**
 	 * Loads this managed class state from class descriptor then delegates {@link #scanAnnotations()}. Annotations scanning is
@@ -554,12 +563,43 @@ final class ManagedClass implements ManagedClassSPI {
 				managedMethod.setAsynchronous(asynchronousMethod);
 			}
 
+			Cron cronMethod = getAnnotation(method, Cron.class);
+			if (cronMethod != null) {
+				// if (!instanceType.isPROXY()) {
+				// throw new BugError("Not supported instance type |%s| for cron method |%s|.", instanceType, method);
+				// }
+				if (remotelyAccessible) {
+					throw new BugError("Remote accessible method |%s| cannot be executed by cron.", method);
+				}
+				if (transactional) {
+					throw new BugError("Transactional method |%s| cannot be executed by cron.", method);
+				}
+				if (!Types.isVoid(method.getReturnType())) {
+					throw new BugError("Cron method |%s| must be void.", method);
+				}
+
+				if (managedMethod == null) {
+					managedMethod = new ManagedMethod(this, interfaceMethod);
+				}
+				managedMethod.setCronExpression(cronMethod.value());
+				cronMethodsPool.add(managedMethod);
+				autoInstanceCreation = true;
+			}
+
 			// store managed method, if created, to managed methods pool
 			if (managedMethod != null) {
 				methodsPool.put(interfaceMethod, managedMethod);
 				if (managedMethod.isRemotelyAccessible() && netMethodsPool.put(method.getName(), managedMethod) != null) {
 					throw new BugError("Overloading is not supported for net method |%s|.", managedMethod);
 				}
+			}
+		}
+
+		for (Field field : implementationClass.getDeclaredFields()) {
+			ContextParam contextParam = field.getAnnotation(ContextParam.class);
+			if (contextParam != null) {
+				field.setAccessible(true);
+				contextParamFields.put(contextParam.value(), field);
 			}
 		}
 	}
@@ -613,6 +653,11 @@ final class ManagedClass implements ManagedClassSPI {
 	@Override
 	public Iterable<ManagedMethodSPI> getManagedMethods() {
 		return methodsPool.values();
+	}
+
+	@Override
+	public Iterable<ManagedMethodSPI> getCronManagedMethods() {
+		return cronMethodsPool;
 	}
 
 	@Override
@@ -670,8 +715,18 @@ final class ManagedClass implements ManagedClassSPI {
 		return implementationURL;
 	}
 
+	@Override
+	public Map<String, Field> getContextParamFields() {
+		return contextParamFields;
+	}
+
 	// --------------------------------------------------------------------------------------------
 	// CLASS DESCRIPTOR UTILITY METHODS
+
+	@Override
+	public boolean isAutoInstanceCreation() {
+		return autoInstanceCreation;
+	}
 
 	/**
 	 * Load optional implementation class from class descriptor and applies insanity checks. Load implementation class from
@@ -769,6 +824,9 @@ final class ManagedClass implements ManagedClassSPI {
 
 			if (interfaceClass == null) {
 				throw new ConfigException("Managed class interface |%s| not found.", interfaceName);
+			}
+			if (Types.isKindOf(interfaceClass, ManagedLifeCycle.class)) {
+				autoInstanceCreation = true;
 			}
 			if (instanceType.requiresInterface() && !interfaceClass.isInterface()) {
 				throw new ConfigException("Managed type |%s| requires interface to make Java Proxy happy but got |%s|.", instanceType, interfaceClass);

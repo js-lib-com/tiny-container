@@ -7,9 +7,8 @@ import static org.junit.Assert.assertTrue;
 import java.util.ArrayList;
 import java.util.List;
 
-import js.annotation.Immutable;
-import js.annotation.Mutable;
-import js.annotation.Transactional;
+import org.junit.Test;
+
 import js.container.ContainerSPI;
 import js.container.InstanceType;
 import js.container.ManagedClassSPI;
@@ -18,10 +17,11 @@ import js.lang.BugError;
 import js.lang.ConfigBuilder;
 import js.lang.InvocationException;
 import js.test.stub.ContainerStub;
+import js.transaction.Immutable;
+import js.transaction.Mutable;
+import js.transaction.Transactional;
 import js.util.Classes;
 import js.util.Strings;
-
-import org.junit.Test;
 
 @SuppressWarnings("unused")
 public class TransactionalUnitTest {

@@ -11,6 +11,9 @@ import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
+import org.junit.BeforeClass;
+import org.junit.Test;
+
 import js.container.Container;
 import js.container.ContainerSPI;
 import js.container.InstanceKey;
@@ -26,10 +29,13 @@ import js.unit.HttpServletRequestStub;
 import js.unit.HttpSessionStub;
 import js.util.Classes;
 
-import org.junit.Test;
-
 @SuppressWarnings({ "unused", "unchecked" })
 public class SessionScopeFactoryUnitTest {
+	@BeforeClass
+	public static void beforeClass() {
+		System.setProperty("catalina.base", "fixture/server/tomcat");
+	}
+
 	@Test
 	public void containerRegistration() throws Exception {
 		TinyContainer container = new TinyContainer();

@@ -3,12 +3,13 @@ package js.container;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.util.Map;
 
 import js.annotation.Inject;
 import js.annotation.Remote;
-import js.annotation.Transactional;
 import js.lang.BugError;
 import js.lang.Config;
+import js.transaction.Transactional;
 
 /**
  * Service provider interface for managed class. Although public, this interface is designed for library internal usage.
@@ -109,6 +110,8 @@ public interface ManagedClassSPI {
 	 */
 	Iterable<ManagedMethodSPI> getManagedMethods();
 
+	Iterable<ManagedMethodSPI> getCronManagedMethods();
+
 	/**
 	 * Get managed method wrapping requested Java method. This getter is designed to be used with managed classes of
 	 * {@link InstanceType#PROXY} type. Attempting to use with other types is considered a bug.
@@ -187,4 +190,8 @@ public interface ManagedClassSPI {
 	 * @return remote class implementation URL.
 	 */
 	String getImplementationURL();
+	
+	boolean isAutoInstanceCreation();
+	
+	Map<String, Field> getContextParamFields();
 }

@@ -197,9 +197,8 @@ import js.util.Types;
  * application unload, see {@link #destroy()}.
  * </ol>
  * 
- * <h3 id="instance-retrieval">Instance Retrieval Algorithm</h3>
- * Instance retrieval is the process of obtaining a managed instance, be it from scope factories caches or fresh created by
- * specialized instance factories.
+ * <h3 id="instance-retrieval">Instance Retrieval Algorithm</h3> Instance retrieval is the process of obtaining a managed
+ * instance, be it from scope factories caches or fresh created by specialized instance factories.
  * <ol>
  * <li>obtain an instance key based on {@link ManagedClassSPI#getKey()} or instance name,
  * <li>use interface class to retrieve managed class from container classes pool,
@@ -272,6 +271,8 @@ public abstract class Container implements ContainerSPI, Configurable {
 	 */
 	private final Map<Class<?>, ManagedClassSPI> classesPool = new HashMap<>();
 
+	private final CronManager cronManager;
+
 	// --------------------------------------------------------------------------------------------
 	// CONTAINER LIFE CYCLE
 
@@ -281,6 +282,8 @@ public abstract class Container implements ContainerSPI, Configurable {
 	 */
 	public Container() {
 		log.trace("Container()");
+
+		cronManager = new CronManager();
 
 		// first register plug-in scope factories in order to avoid overriding built-in factories
 		for (ScopeFactory scopeFactory : ServiceLoader.load(ScopeFactory.class)) {
@@ -303,10 +306,15 @@ public abstract class Container implements ContainerSPI, Configurable {
 		registerInstanceFactory(InstanceType.SERVICE, new ServiceInstanceFactory());
 		registerInstanceFactory(InstanceType.REMOTE, new RemoteInstanceFactory());
 
+		registerInstanceProcessor();
+	}
+
+	protected void registerInstanceProcessor() {
 		registerInstanceProcessor(new InstanceFieldsInjectionProcessor());
 		registerInstanceProcessor(new InstanceFieldsInitializationProcessor());
 		registerInstanceProcessor(new ConfigurableInstanceProcessor());
 		registerInstanceProcessor(new PostConstructInstanceProcessor());
+		registerInstanceProcessor(new CronMethodsProcessor(cronManager));
 		registerInstanceProcessor(new LoggerInstanceProcessor());
 	}
 
@@ -361,8 +369,8 @@ public abstract class Container implements ContainerSPI, Configurable {
 	}
 
 	/**
-	 * Create all managed instances registered to this container via external application descriptor. See <a
-	 * href="#descriptors">Descriptors</a> for details about application and class descriptors.
+	 * Create all managed instances registered to this container via external application descriptor. See
+	 * <a href="#descriptors">Descriptors</a> for details about application and class descriptors.
 	 * 
 	 * @param config container configuration object.
 	 * @throws ConfigException if container configuration fails.
@@ -458,16 +466,19 @@ public abstract class Container implements ContainerSPI, Configurable {
 		});
 
 		for (ManagedClassSPI managedClass : classesPool.values()) {
-			// process only implementations of managed life cycle interface
-			if (Types.isKindOf(managedClass.getImplementationClass(), ManagedLifeCycle.class)) {
+			if (managedClass.isAutoInstanceCreation()) {
 				sortedClasses.add(managedClass);
 			}
+			// process only implementations of managed life cycle interface
+			// if (Types.isKindOf(managedClass.getImplementationClass(), ManagedLifeCycle.class)) {
+			// sortedClasses.add(managedClass);
+			// }
 		}
 
 		for (ManagedClassSPI managedClass : sortedClasses) {
 			// call getInstance to ensure managed instance with managed life cycle is started
 			// if there are more than one single interface peek one, no matter which; the simple way is to peek the first
-			// getInstance() will create instance only if not already exist and returned value is ignored
+			// getInstance() will create instance only if not already exist; returned value is ignored
 
 			log.debug("Create managed instance with managed life cycle |%s|.", managedClass.getInterfaceClass());
 			getInstance((Class<? super Object>) managedClass.getInterfaceClass());
@@ -486,6 +497,9 @@ public abstract class Container implements ContainerSPI, Configurable {
 	 */
 	public void destroy() {
 		log.trace("destroy()");
+
+		// cron manager should be destroyed first to avoid invoking cron methods on cleaned managed instance
+		cronManager.destroy();
 
 		// classes pool is not sorted; it is a hash map for performance reasons
 		// also, a managed class may appear multiple times if have multiple interfaces

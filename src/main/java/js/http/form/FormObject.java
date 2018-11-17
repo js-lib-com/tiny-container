@@ -27,7 +27,7 @@ import js.util.Types;
 /**
  * Map form fields to plain Java object of not restricted graph complexity. In order to locate related object fields uses a
  * proprietary syntax for field names. It is named <code>Object Property Path</code> and allows to locate any field from object
- * graph. It is an hierarchical path like name using dots for path component separators. For example <code>contact.name</code>
+ * graph. It is an hierarchical path like name, using dots for path component separators. For example <code>contact.name</code>
  * refers to name field of contact object from this form object. When used with arrays and lists, field name is the index, e.g.
  * <code>contacts.1.name</code> is the name of the second contact item.
  * <p>

@@ -5,11 +5,12 @@ import static org.junit.Assert.assertEquals;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.junit.Test;
+
 import js.annotation.Asynchronous;
 import js.annotation.Controller;
 import js.annotation.Remote;
 import js.annotation.Service;
-import js.annotation.Transactional;
 import js.container.ContainerSPI;
 import js.container.InstanceType;
 import js.container.ManagedClassSPI;
@@ -18,10 +19,9 @@ import js.lang.BugError;
 import js.lang.ConfigBuilder;
 import js.lang.InvocationException;
 import js.test.stub.ContainerStub;
+import js.transaction.Transactional;
 import js.util.Classes;
 import js.util.Strings;
-
-import org.junit.Test;
 
 @SuppressWarnings("unused")
 public class AsynchronousUnitTest {

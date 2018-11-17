@@ -12,10 +12,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.junit.Test;
+
 import js.annotation.Inject;
 import js.annotation.Local;
 import js.annotation.Service;
-import js.annotation.Transactional;
 import js.container.Container;
 import js.container.InstanceScope;
 import js.container.InstanceType;
@@ -29,10 +30,9 @@ import js.lang.InvocationException;
 import js.lang.ManagedLifeCycle;
 import js.servlet.TinyConfigBuilder;
 import js.test.stub.ContainerStub;
+import js.transaction.Transactional;
 import js.unit.TestConfigBuilder;
 import js.util.Classes;
-
-import org.junit.Test;
 
 public class ManagedClassSpiConformanceTest {
 	@Test

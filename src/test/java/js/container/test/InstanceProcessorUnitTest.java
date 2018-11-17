@@ -40,10 +40,16 @@ import js.unit.TestContext;
 import js.util.Classes;
 import js.util.Types;
 
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 @SuppressWarnings("unused")
 public class InstanceProcessorUnitTest {
+	@BeforeClass
+	public static void beforeClass() {
+		System.setProperty("catalina.base", "fixture/server/tomcat");
+	}
+
 	/** Ensure built-in instance processors are registered into the proper order. */
 	@Test
 	public void containerRegistration() throws Exception {
@@ -51,12 +57,14 @@ public class InstanceProcessorUnitTest {
 		List<InstanceProcessor> processors = Classes.getFieldValue(container, Container.class, "instanceProcessors");
 
 		assertNotNull(processors);
-		assertEquals(5, processors.size());
-		assertEquals("InstanceFieldsInjectionProcessor", processors.get(0).getClass().getSimpleName());
-		assertEquals("InstanceFieldsInitializationProcessor", processors.get(1).getClass().getSimpleName());
-		assertEquals("ConfigurableInstanceProcessor", processors.get(2).getClass().getSimpleName());
-		assertEquals("PostConstructInstanceProcessor", processors.get(3).getClass().getSimpleName());
-		assertEquals("LoggerInstanceProcessor", processors.get(4).getClass().getSimpleName());
+		assertEquals(7, processors.size());
+		assertEquals("ContextParamInstanceProcessor", processors.get(0).getClass().getSimpleName());
+		assertEquals("InstanceFieldsInjectionProcessor", processors.get(1).getClass().getSimpleName());
+		assertEquals("InstanceFieldsInitializationProcessor", processors.get(2).getClass().getSimpleName());
+		assertEquals("ConfigurableInstanceProcessor", processors.get(3).getClass().getSimpleName());
+		assertEquals("PostConstructInstanceProcessor", processors.get(4).getClass().getSimpleName());
+		assertEquals("CronMethodsProcessor", processors.get(5).getClass().getSimpleName());
+		assertEquals("LoggerInstanceProcessor", processors.get(6).getClass().getSimpleName());
 	}
 
 	// --------------------------------------------------------------------------------------------

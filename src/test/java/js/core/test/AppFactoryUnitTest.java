@@ -19,9 +19,15 @@ import js.lang.InvocationException;
 import js.lang.NoProviderException;
 import js.unit.TestContext;
 
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 public class AppFactoryUnitTest {
+	@BeforeClass
+	public static void beforeClass() {
+		System.setProperty("catalina.base", "fixture/server/tomcat");
+	}
+
 	// --------------------------------------------------------------------------------------------
 	// GET INSTANCE
 

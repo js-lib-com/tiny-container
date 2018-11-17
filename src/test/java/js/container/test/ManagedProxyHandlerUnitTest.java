@@ -29,6 +29,7 @@ import js.unit.TestContext;
 import js.util.Classes;
 
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 /**
@@ -39,6 +40,11 @@ import org.junit.Test;
  */
 @SuppressWarnings("unused")
 public class ManagedProxyHandlerUnitTest {
+	@BeforeClass
+	public static void beforeClass() {
+		System.setProperty("catalina.base", "fixture/server/tomcat");
+	}
+
 	private AppFactory factory;
 	private MockManagedClassSPI managedClass;
 

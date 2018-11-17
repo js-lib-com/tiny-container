@@ -25,9 +25,15 @@ import js.test.stub.ManagedClassSpiStub;
 import js.unit.TestContext;
 import js.util.Classes;
 
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 public class ScopeFactoryUnitTest {
+	@BeforeClass
+	public static void beforeClass() {
+		System.setProperty("catalina.base", "fixture/server/tomcat");
+	}
+
 	@Test
 	public void containerRegistration() throws Exception {
 		Object container = TestContext.start();

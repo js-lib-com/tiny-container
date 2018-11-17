@@ -4,6 +4,8 @@ import js.lang.BugError;
 import js.lang.Config;
 import js.lang.ConfigException;
 import js.lang.Configurable;
+import js.log.Log;
+import js.log.LogFactory;
 
 /**
  * Configure instance with configuration object provided by instance managed class. The actual instance configuration is
@@ -17,6 +19,8 @@ import js.lang.Configurable;
  * @version final
  */
 final class ConfigurableInstanceProcessor implements InstanceProcessor {
+	private static final Log log = LogFactory.getLog(ConfigurableInstanceProcessor.class);
+
 	/**
 	 * Configure instance with configuration object provided by instance managed class. In order to perform instance
 	 * configuration, instance should implement {@link Configurable} and managed class should have configuration object, see
@@ -35,7 +39,10 @@ final class ConfigurableInstanceProcessor implements InstanceProcessor {
 		}
 		Config config = managedClass.getConfig();
 		if (config == null) {
-			return;
+			if(!(instance instanceof OptionalConfigurable)) {
+				return;
+			}
+			log.info("Default configuration for managed class |%s|.", managedClass);
 		}
 
 		try {

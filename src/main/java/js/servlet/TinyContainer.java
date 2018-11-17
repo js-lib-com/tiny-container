@@ -54,8 +54,8 @@ import js.util.Strings;
  * unloaded tiny container is destroyed by {@link #contextDestroyed(ServletContextEvent)}. On first tiny container creation
  * takes care to initialize server global state. This class also track HTTP sessions creation and destroy for debugging.
  * 
- * <h3>Application Boostrap</h3>
- * Here are overall steps performed by bootstrap logic. It is executed for every web application deployed on server.
+ * <h3>Application Boostrap</h3> Here are overall steps performed by bootstrap logic. It is executed for every web application
+ * deployed on server.
  * <ul>
  * <li>servlet container creates tiny container instance because is declared as listener on deployment descriptor,
  * <li>super-container and tiny container constructors are executed,
@@ -77,8 +77,8 @@ import js.util.Strings;
  * <b>Implementation note:</b> It is assumed that {@link #contextInitialized(ServletContextEvent)} is invoked before any servlet
  * initialization via {@link AppServlet#init(javax.servlet.ServletConfig)}. Servlet specification does provide explicit evidence
  * for this prerequisite. Anyway there is something that can lead to this conclusion on section 10.12, see below; also found
- * support on API-DOC. Here is the relevant excerpt: <em>All ServletContextListeners are notified of context
- * initialization before any filter or servlet in the web application is initialized.</em>
+ * support on API-DOC. Here is the relevant excerpt: <em>All ServletContextListeners are notified of context initialization
+ * before any filter or servlet in the web application is initialized.</em>
  * 
  * <p>
  * For completeness here are web application deployment steps, excerpt from servlet specification 3.0, section 10.12:
@@ -180,6 +180,12 @@ public class TinyContainer extends Container implements ServletContextListener, 
 	}
 
 	@Override
+	protected void registerInstanceProcessor() {
+		registerInstanceProcessor(new ContextParamInstanceProcessor(this));
+		super.registerInstanceProcessor();
+	}
+
+	@Override
 	public void config(Config config) throws ConfigException {
 		super.config(config);
 
@@ -214,8 +220,9 @@ public class TinyContainer extends Container implements ServletContextListener, 
 	 * null and, if so, permanently mark servlet unavailable.
 	 * <p>
 	 * <b>Implementation note:</b> bootstrap process logic is based on assumption that this <code>contextInitialized</code>
-	 * handler is called before servlets initialization. Here is the relevant excerpt from API-DOC:
-	 * <em>All ServletContextListeners are notified of context initialization before any filter or servlet in the web application is initialized.</em>
+	 * handler is called before servlets initialization. Here is the relevant excerpt from API-DOC: <em>All
+	 * ServletContextListeners are notified of context initialization before any filter or servlet in the web application is
+	 * initialized.</em>
 	 * 
 	 * @param contextEvent context event provided by servlet container.
 	 */
@@ -256,8 +263,8 @@ public class TinyContainer extends Container implements ServletContextListener, 
 	 * <p>
 	 * <b>Implementation note:</b> tiny container destruction logic is based on assumption that this
 	 * <code>contextDestroyed</code> handler is called after all web application's servlets destruction. Here is the relevant
-	 * excerpt from API-DOC:
-	 * <em>All servlets and filters have been destroy()ed before any ServletContextListeners are notified of context destruction.</em>
+	 * excerpt from API-DOC: <em>All servlets and filters have been destroy()ed before any ServletContextListeners are notified
+	 * of context destruction.</em>
 	 * 
 	 * @param contextEvent context event provided by servlet container.
 	 */

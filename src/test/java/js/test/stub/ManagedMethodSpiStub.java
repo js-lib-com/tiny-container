@@ -68,4 +68,9 @@ public class ManagedMethodSpiStub implements ManagedMethodSPI {
 	public ManagedClassSPI getDeclaringClass() {
 		throw new UnsupportedOperationException("getDeclaringClass()");
 	}
+
+	@Override
+	public String getCronExpression() {
+		throw new UnsupportedOperationException("getCronExpression()");
+	}
 }

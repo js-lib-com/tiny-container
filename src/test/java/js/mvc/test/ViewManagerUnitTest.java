@@ -29,7 +29,8 @@ import org.junit.Test;
 @SuppressWarnings({ "rawtypes", "unchecked" })
 public class ViewManagerUnitTest {
 	@BeforeClass
-	public static void beforeClass() throws Exception {
+	public static void beforeClass() {
+		System.setProperty("catalina.base", "fixture/server/tomcat");
 	}
 
 	@Test

@@ -2,22 +2,24 @@ package js.container.test;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
-import js.annotation.Immutable;
+
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
+
 import js.annotation.Inject;
-import js.annotation.Transactional;
 import js.core.AppFactory;
 import js.lang.Config;
 import js.log.Log;
 import js.log.LogFactory;
 import js.test.stub.TransactionManagerStub;
+import js.transaction.Immutable;
 import js.transaction.Transaction;
 import js.transaction.TransactionContext;
 import js.transaction.TransactionManager;
+import js.transaction.Transactional;
 import js.unit.TestContext;
-
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
 
 /**
  * Access transactional implementation through Java Proxy. This test is similar to
@@ -32,6 +34,11 @@ public class TransactionProxyUnitTest {
 			"		<dao interface='js.container.test.TransactionProxyUnitTest$Dao' class='js.container.test.TransactionProxyUnitTest$DaoImpl' type='PROXY' />" + //
 			"	</managed-classes>" + //
 			"</test-config>";
+
+	@BeforeClass
+	public static void beforeClass() {
+		System.setProperty("catalina.base", "fixture/server/tomcat");
+	}
 
 	private MockTransactionManager manager;
 	private Dao dao;
@@ -177,7 +184,9 @@ public class TransactionProxyUnitTest {
 
 		@Override
 		public void config(Config config) {
-			config.dump();
+			if (config != null) {
+				config.dump();
+			}
 		}
 
 		@Override

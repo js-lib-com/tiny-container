@@ -3,6 +3,7 @@ package js.test.stub;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.util.Map;
 
 import js.container.ContainerSPI;
 import js.container.InstanceScope;
@@ -40,6 +41,11 @@ public class ManagedClassSpiStub implements ManagedClassSPI {
 	@Override
 	public Iterable<ManagedMethodSPI> getManagedMethods() {
 		throw new UnsupportedOperationException("getManagedMethods()");
+	}
+
+	@Override
+	public Iterable<ManagedMethodSPI> getCronManagedMethods() {
+		throw new UnsupportedOperationException("getCronManagedMethods()");
 	}
 
 	@Override
@@ -95,5 +101,15 @@ public class ManagedClassSpiStub implements ManagedClassSPI {
 	@Override
 	public Config getConfig() {
 		throw new UnsupportedOperationException("getConfig()");
+	}
+
+	@Override
+	public boolean isAutoInstanceCreation() {
+		throw new UnsupportedOperationException("isAutoInstanceCreation()");
+	}
+
+	@Override
+	public Map<String, Field> getContextParamFields() {
+		throw new UnsupportedOperationException("getContextParamFields()");
 	}
 }

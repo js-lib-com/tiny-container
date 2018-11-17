@@ -102,6 +102,8 @@ final class ManagedMethod implements ManagedMethodSPI {
 	 */
 	private Meter meter;
 
+	private String cronExpression;
+
 	/**
 	 * Construct a managed method. This is a convenient constructor that just delegates
 	 * {@link #ManagedMethod(ManagedClassSPI, Class, Method)} with null interceptor class.
@@ -201,6 +203,10 @@ final class ManagedMethod implements ManagedMethodSPI {
 		if (asynchronous) {
 			invoker = new AsyncInvoker(invoker);
 		}
+	}
+
+	void setCronExpression(String cronExpression) {
+		this.cronExpression = cronExpression;
 	}
 
 	/**
@@ -349,6 +355,11 @@ final class ManagedMethod implements ManagedMethodSPI {
 	@Override
 	public boolean isAsynchronous() {
 		return asynchronous;
+	}
+
+	@Override
+	public String getCronExpression() {
+		return cronExpression;
 	}
 
 	/**

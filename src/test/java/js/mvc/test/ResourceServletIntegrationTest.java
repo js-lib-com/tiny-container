@@ -60,9 +60,10 @@ import js.util.Files;
 import js.util.Strings;
 
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
-@SuppressWarnings({ "unused", "unchecked" })
+@SuppressWarnings({ "unused" })
 public class ResourceServletIntegrationTest {
 	private static final String DESCRIPTOR = "" + //
 			"<?xml version='1.0' encoding='UTF-8'?>" + //
@@ -73,6 +74,11 @@ public class ResourceServletIntegrationTest {
 			"		<controller interface='js.mvc.test.ResourceServletIntegrationTest$ControllerInterface' class='js.mvc.test.ResourceServletIntegrationTest$ControllerImpl' type='PROXY' />" + //
 			"	</managed-classes>" + //
 			"</test-config>";
+
+	@BeforeClass
+	public static void beforeClass() {
+		System.setProperty("catalina.base", "fixture/server/tomcat");
+	}
 
 	private ContainerSPI container;
 	private MockApp app;

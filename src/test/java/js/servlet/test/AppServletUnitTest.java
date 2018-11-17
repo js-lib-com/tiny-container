@@ -44,9 +44,10 @@ import js.util.Files;
 import junit.framework.TestCase;
 
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
-@SuppressWarnings({ "unchecked", "unused", "serial" })
+@SuppressWarnings({ "unused", "serial" })
 public class AppServletUnitTest {
 	private static final String DESCRIPTOR = "" + //
 			"<?xml version='1.0' encoding='UTF-8'?>" + //
@@ -59,6 +60,11 @@ public class AppServletUnitTest {
 			"		<property name='page' value='login.xsp' />" + //
 			"	</login>" + //
 			"</test>";
+
+	@BeforeClass
+	public static void beforeClass() {
+		System.setProperty("catalina.base", "fixture/server/tomcat");
+	}
 
 	private ContainerSPI container;
 	private MockHttpServletRequest httpRequest;

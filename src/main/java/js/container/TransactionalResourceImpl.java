@@ -4,7 +4,6 @@ import js.core.AppFactory;
 import js.lang.BugError;
 import js.lang.Config;
 import js.lang.ConfigException;
-import js.lang.Configurable;
 import js.lang.ManagedPreDestroy;
 import js.log.Log;
 import js.log.LogFactory;
@@ -30,7 +29,7 @@ import js.transaction.TransactionManager;
  * @author Iulian Rotaru
  * @version final
  */
-final class TransactionalResourceImpl implements TransactionalResource, Configurable, ManagedPreDestroy {
+final class TransactionalResourceImpl implements TransactionalResource, OptionalConfigurable, ManagedPreDestroy {
 	/** Class logger. */
 	private static final Log log = LogFactory.getLog(TransactionalResource.class);
 
@@ -56,7 +55,7 @@ final class TransactionalResourceImpl implements TransactionalResource, Configur
 		// uses AppFactory instead of Classes.loadService to acquire transaction manager since need scope management
 		this.transactionManager = appFactory.getOptionalInstance(TransactionManager.class);
 		if (this.transactionManager == null) {
-			throw new BugError("Transaction manager service not found. Ensure <data-source> is configured on application descriptor and there is a service provider on run-time.");
+			throw new BugError("Transaction manager service not found. Ensure there is |%s| service provider on run-time.", TransactionManager.class);
 		}
 	}
 

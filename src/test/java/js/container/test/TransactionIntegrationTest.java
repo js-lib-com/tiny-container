@@ -1,20 +1,22 @@
 package js.container.test;
 
 import static org.junit.Assert.fail;
-import js.annotation.Immutable;
-import js.annotation.Inject;
-import js.annotation.Transactional;
-import js.core.AppFactory;
-import js.log.Log;
-import js.log.LogFactory;
-import js.transaction.TransactionContext;
-import js.unit.TestContext;
 
 import org.hibernate.SQLQuery;
 import org.hibernate.Session;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
+
+import js.annotation.Inject;
+import js.core.AppFactory;
+import js.log.Log;
+import js.log.LogFactory;
+import js.transaction.Immutable;
+import js.transaction.TransactionContext;
+import js.transaction.Transactional;
+import js.unit.TestContext;
 
 public class TransactionIntegrationTest {
 	private static final String DESCRIPTOR = "<?xml version='1.0' encoding='UTF-8'?>" + //
@@ -25,8 +27,7 @@ public class TransactionIntegrationTest {
 			"	</managed-classes>" + //
 			"	<data-source>" + //
 			"		<property name='hibernate.connection.driver_class' value='com.mysql.jdbc.Driver' />" + //
-			"		<property name='hibernate.connection.url' value='jdbc:mysql://localhost:3306/test?useEncoding=true&amp;characterEncoding=UTF-8&amp;autoReconnect=true' />" + //
-			"		<property name='hibernate.default_schema' value='test' />" + //
+			"		<property name='hibernate.connection.url' value='jdbc:mysql://localhost:3306/test' />" + //
 			"		<property name='hibernate.connection.password' value='test' />" + //
 			"		<property name='hibernate.connection.username' value='test' />" + //
 			"		<property name='hibernate.dialect' value='org.hibernate.dialect.MySQLDialect' />" + //
@@ -39,6 +40,11 @@ public class TransactionIntegrationTest {
 			// "		<mappings package='js.container.test.fixture.' />" + //
 			"	</data-source>" + //
 			"</test-config>";
+
+	@BeforeClass
+	public static void beforeClass() {
+		System.setProperty("catalina.base", "fixture/server/tomcat");
+	}
 
 	private Dao dao;
 

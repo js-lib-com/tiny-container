@@ -34,10 +34,15 @@ import js.unit.TestContext;
 import js.util.Classes;
 
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
-@SuppressWarnings("unchecked")
 public class RequestPreprocessorUnitTest {
+	@BeforeClass
+	public static void beforeClass() {
+		System.setProperty("catalina.base", "fixture/server/tomcat");
+	}
+
 	private ContainerSPI container;
 
 	@Before

@@ -44,11 +44,17 @@ import js.util.Files;
 import js.util.Strings;
 
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.xml.sax.InputSource;
 
 @SuppressWarnings("unused")
 public class ViewUnitTest {
+	@BeforeClass
+	public static void beforeClass() {
+		System.setProperty("catalina.base", "fixture/server/tomcat");
+	}
+
 	private MockHttpServletResponse httpResponse;
 
 	@Before

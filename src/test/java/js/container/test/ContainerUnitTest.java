@@ -52,10 +52,16 @@ import js.transaction.TransactionManager;
 import js.unit.TestContext;
 import js.util.Classes;
 
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 @SuppressWarnings({ "unchecked", "rawtypes", "unused", "hiding" })
 public class ContainerUnitTest {
+	@BeforeClass
+	public static void beforeClass() {
+		System.setProperty("catalina.base", "fixture/server/tomcat");
+	}
+
 	// --------------------------------------------------------------------------------------------
 	// CONTAINER LIFE CYCLE
 
@@ -82,12 +88,13 @@ public class ContainerUnitTest {
 
 		List<InstanceProcessor> instanceProcessors = Classes.getFieldValue(container, Container.class, "instanceProcessors");
 		assertNotNull(instanceProcessors);
-		assertEquals(5, instanceProcessors.size());
+		assertEquals(6, instanceProcessors.size());
 		assertClass("InstanceFieldsInjectionProcessor", instanceProcessors.get(0));
 		assertClass("InstanceFieldsInitializationProcessor", instanceProcessors.get(1));
 		assertClass("ConfigurableInstanceProcessor", instanceProcessors.get(2));
 		assertClass("PostConstructInstanceProcessor", instanceProcessors.get(3));
-		assertClass("LoggerInstanceProcessor", instanceProcessors.get(4));
+		assertClass("CronMethodsProcessor", instanceProcessors.get(4));
+		assertClass("LoggerInstanceProcessor", instanceProcessors.get(5));
 
 		assertNotNull(Classes.getFieldValue(container, Container.class, "argumentsProcessor"));
 		assertClass("ArgumentsProcessor", Classes.getFieldValue(container, Container.class, "argumentsProcessor"));
@@ -465,7 +472,7 @@ public class ContainerUnitTest {
 
 		MockContainer container = new MockContainer();
 		List<InstanceProcessor> instanceProcessors = Classes.getFieldValue(container, Container.class, "instanceProcessors");
-		assertEquals(5, instanceProcessors.size());
+		assertEquals(6, instanceProcessors.size());
 		container.registerInstanceProcessor(new MockInstanceProcessor());
 
 		try {
@@ -474,8 +481,8 @@ public class ContainerUnitTest {
 		} catch (BugError unused) {
 		}
 
-		assertNotNull(instanceProcessors.get(5));
-		assertTrue(instanceProcessors.get(5) instanceof MockInstanceProcessor);
+		assertNotNull(instanceProcessors.get(6));
+		assertTrue(instanceProcessors.get(6) instanceof MockInstanceProcessor);
 	}
 
 	// --------------------------------------------------------------------------------------------

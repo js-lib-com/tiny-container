@@ -13,6 +13,7 @@ import java.util.Collections;
 import js.container.ContainerSPI;
 import js.container.InstanceScope;
 import js.container.InstanceType;
+import js.container.ManagedMethodSPI;
 import js.lang.Config;
 import js.test.stub.ContainerStub;
 import js.test.stub.ManagedClassSpiStub;
@@ -172,6 +173,11 @@ public class InstanceAlgorithmUnitTest {
 
 		@Override
 		public Iterable<Field> getDependencies() {
+			return Collections.emptyList();
+		}
+
+		@Override
+		public Iterable<ManagedMethodSPI> getCronManagedMethods() {
 			return Collections.emptyList();
 		}
 

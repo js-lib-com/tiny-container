@@ -8,15 +8,17 @@ import static org.junit.Assert.assertTrue;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
-import java.net.URL;
 import java.util.Collection;
 import java.util.Map;
+
+import org.hibernate.Session;
+import org.junit.BeforeClass;
+import org.junit.Test;
 
 import js.annotation.Asynchronous;
 import js.annotation.Inject;
 import js.annotation.Public;
 import js.annotation.Remote;
-import js.annotation.Transactional;
 import js.container.Access;
 import js.container.Container;
 import js.container.InstanceScope;
@@ -34,15 +36,18 @@ import js.lang.VarArgs;
 import js.servlet.TinyConfigBuilder;
 import js.test.stub.ContainerStub;
 import js.transaction.TransactionContext;
+import js.transaction.Transactional;
 import js.unit.TestConfigBuilder;
 import js.unit.TestContext;
 import js.util.Classes;
 
-import org.hibernate.Session;
-import org.junit.Test;
-
 @SuppressWarnings("unused")
 public class ManagedClassUnitTest {
+	@BeforeClass
+	public static void beforeClass() {
+		System.setProperty("catalina.base", "fixture/server/tomcat");
+	}
+
 	// --------------------------------------------------------------------------------------------
 	// CONSTRUCTOR
 

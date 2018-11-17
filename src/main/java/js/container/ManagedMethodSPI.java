@@ -4,16 +4,16 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 
 import js.annotation.Asynchronous;
-import js.annotation.Immutable;
-import js.annotation.RequestPath;
-import js.annotation.Mutable;
 import js.annotation.Private;
 import js.annotation.Public;
 import js.annotation.Remote;
-import js.annotation.Transactional;
+import js.annotation.RequestPath;
 import js.core.SecurityContext;
 import js.lang.BugError;
 import js.lang.InvocationException;
+import js.transaction.Immutable;
+import js.transaction.Mutable;
+import js.transaction.Transactional;
 import js.util.Strings;
 
 /**
@@ -139,4 +139,6 @@ public interface ManagedMethodSPI {
 	 * @return true if this managed method is asynchronous.
 	 */
 	boolean isAsynchronous();
+
+	String getCronExpression();
 }

@@ -44,11 +44,11 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-@SuppressWarnings({ "unused", "unchecked", "rawtypes" })
+@SuppressWarnings({ "unused", "rawtypes" })
 public class TinyContainerUnitTest {
 	@BeforeClass
 	public static void beforeClass() {
-		System.setProperty("catalina.base", "fixture/tomcat");
+		System.setProperty("catalina.base", "fixture/server/tomcat");
 	}
 
 	@AfterClass

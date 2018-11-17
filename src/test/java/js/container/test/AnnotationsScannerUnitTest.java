@@ -8,15 +8,15 @@ import static org.junit.Assert.assertTrue;
 
 import java.lang.reflect.Method;
 
+import org.junit.Test;
+
 import js.annotation.Asynchronous;
 import js.annotation.Intercepted;
 import js.annotation.Remote;
-import js.annotation.Transactional;
 import js.container.ManagedMethodSPI;
 import js.container.PreInvokeInterceptor;
+import js.transaction.Transactional;
 import js.util.Classes;
-
-import org.junit.Test;
 
 /**
  * Test private utility methods used by {@link ManagedClass} to scan annotations.
