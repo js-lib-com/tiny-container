@@ -170,7 +170,7 @@
 		<dependency>
 			<groupId>com.js-lib</groupId>
 			<artifactId>js-hibernate</artifactId>
-			<version>1.2.1</version>
+			<version>1.1.2</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
