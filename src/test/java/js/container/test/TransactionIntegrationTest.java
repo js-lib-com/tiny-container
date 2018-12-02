@@ -123,7 +123,7 @@ public class TransactionIntegrationTest {
 			SQLQuery query = session.createSQLQuery("SELECT name FROM person WHERE id=1");
 			// query.setEntity("name", StandardBasicTypes.STRING);
 			String name = (String) query.uniqueResult();
-			Assert.assertEquals("John", name);
+			Assert.assertEquals("Iulian", name);
 		}
 
 		@Override

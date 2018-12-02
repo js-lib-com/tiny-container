@@ -106,7 +106,7 @@
 		<dependency>
 			<groupId>com.js-lib</groupId>
 			<artifactId>js-commons</artifactId>
-			<version>1.1.4</version>
+			<version>1.2.0</version>
 		</dependency>
 		<dependency>
 			<groupId>com.js-lib</groupId>
