@@ -15,7 +15,7 @@ import js.util.Classes;
 
 import org.junit.Test;
 
-public class ContentTypeUnitTest {
+public class ContentTypeTest {
 	@Test
 	public void constructor() {
 		ContentType contentType = new ContentType("text/html; charset=UTF-8");

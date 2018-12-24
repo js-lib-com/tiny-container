@@ -10,7 +10,7 @@ import js.lang.GType;
 
 import org.junit.Test;
 
-public class EncoderKeyUnitTest {
+public class EncoderKeyTest {
 	@Test
 	public void constructor() {
 		EncoderKey key = new EncoderKey(ContentType.valueOf("text/html"), Object.class);

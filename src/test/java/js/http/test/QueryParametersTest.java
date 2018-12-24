@@ -27,7 +27,7 @@ import js.util.Classes;
 import org.junit.Test;
 
 @SuppressWarnings({ "unchecked", "rawtypes" })
-public class QueryParametersUnitTest {
+public class QueryParametersTest {
 	private static final String QUERY_PARAMETERS = "fexp=907921&itag=43&ip=0.0.0.0&sver=3&ratebypass=yes&expire=1311728400&key=yt1&ipbits=0&view=b%26w";
 
 	@Test
