@@ -23,7 +23,7 @@ import js.util.Strings;
  * @author Iulian Rotaru
  * @version final
  */
-final class Challenge implements Serializable {
+public final class Challenge implements Serializable {
 	/** Java serialization version. */
 	private static final long serialVersionUID = -6867379696435211853L;
 

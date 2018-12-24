@@ -5,10 +5,11 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
-import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
@@ -20,18 +21,19 @@ import java.util.List;
 import java.util.Map;
 import java.util.TimeZone;
 
-import javax.servlet.ReadListener;
 import javax.servlet.ServletInputStream;
+import javax.servlet.http.HttpServletRequest;
+
+import org.junit.Test;
+import org.mockito.Mockito;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
 
 import js.http.form.FormObject;
 import js.http.form.UploadedFile;
-import js.unit.HttpServletRequestStub;
 import js.util.Classes;
 
-import org.junit.Test;
-
-@SuppressWarnings("unchecked")
-public class FormObjectUnitTest {
+public class FormObjectTest {
 	@Test
 	public void namedNodes() throws Exception {
 		Map<String, String> fields = new HashMap<>();
@@ -317,8 +319,40 @@ public class FormObjectUnitTest {
 
 	@Test
 	public void multipartForm() throws Exception {
-		Object formObject = new FormObject(new MockHttpServletRequest(), Project.class);
+		final String FORM = "" + //
+				"--AaB03x\r\n" + //
+				"Content-Disposition: form-data; name=\"name\"\r\n" + //
+				"\r\n" + //
+				"Project Name\r\n" + //
+				"--AaB03x\r\n" + //
+				"Content-Disposition: form-data; name=\"upload\"; filename=\"upload.txt\"\r\n" + //
+				"Content-Type: text/plain\r\n" + //
+				"\r\n" + //
+				"contents of upload.txt\r\n" + //
+				"--AaB03x\r\n" + //
+				"Content-Disposition: form-data; name=\"file\"; filename=\"file.txt\"\r\n" + //
+				"Content-Type: text/plain\r\n" + //
+				"\r\n" + //
+				"contents of file.txt\r\n" + //
+				"--AaB03x--\r\n";
+
+		ServletInputStream stream = mock(ServletInputStream.class, Mockito.CALLS_REAL_METHODS);
+		when(stream.read()).thenAnswer(new Answer<Integer>() {
+			private final InputStream stream = new ByteArrayInputStream(FORM.getBytes());
+
+			@Override
+			public Integer answer(InvocationOnMock invocation) throws Throwable {
+				return stream.read();
+			}
+		});
+
+		HttpServletRequest request = mock(HttpServletRequest.class);
+		when(request.getContentType()).thenReturn("multipart/form-data; boundary=AaB03x");
+		when(request.getInputStream()).thenReturn(stream);
+
+		Object formObject = new FormObject(request, Project.class);
 		Project p = Classes.getFieldValue(formObject, "object");
+
 		assertNotNull(p);
 		assertEquals(p.name, "Project Name");
 		assertNotNull(p.upload);
@@ -464,65 +498,5 @@ public class FormObjectUnitTest {
 	private static class PrimitiveArray {
 		private String[] strings = new String[2];
 		private int[] integers = new int[2];
-	}
-
-	private static class MockHttpServletRequest extends HttpServletRequestStub {
-		private static final String FORM = "" + //
-				"--AaB03x\r\n" + //
-				"Content-Disposition: form-data; name=\"name\"\r\n" + //
-				"\r\n" + //
-				"Project Name\r\n" + //
-				"--AaB03x\r\n" + //
-				"Content-Disposition: form-data; name=\"upload\"; filename=\"upload.txt\"\r\n" + //
-				"Content-Type: text/plain\r\n" + //
-				"\r\n" + //
-				"contents of upload.txt\r\n" + //
-				"--AaB03x\r\n" + //
-				"Content-Disposition: form-data; name=\"file\"; filename=\"file.txt\"\r\n" + //
-				"Content-Type: text/plain\r\n" + //
-				"\r\n" + //
-				"contents of file.txt\r\n" + //
-				"--AaB03x--\r\n";
-
-		@Override
-		public String getContentType() {
-			return "multipart/form-data; boundary=AaB03x";
-		}
-
-		@Override
-		public int getContentLength() {
-			return 0;
-		}
-
-		@Override
-		public ServletInputStream getInputStream() throws IOException {
-			return new ServletInputStream() {
-				private InputStream stream = new ByteArrayInputStream(FORM.getBytes());
-
-				@Override
-				public int read() throws IOException {
-					return stream.read();
-				}
-
-				@Override
-				public boolean isFinished() {
-					return false;
-				}
-
-				@Override
-				public boolean isReady() {
-					return true;
-				}
-
-				@Override
-				public void setReadListener(ReadListener readListener) {
-				}
-			};
-		}
-
-		@Override
-		public String getCharacterEncoding() {
-			return "UTF-8";
-		}
 	}
 }

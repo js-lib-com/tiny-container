@@ -3,6 +3,8 @@ package js.http.test;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -13,7 +15,12 @@ import java.util.HashMap;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.Mock;
+import org.mockito.junit.MockitoJUnitRunner;
 
 import js.dom.Document;
 import js.dom.DocumentBuilder;
@@ -25,14 +32,14 @@ import js.http.encoder.ServerEncoders;
 import js.http.encoder.ValueWriter;
 import js.io.StreamHandler;
 import js.lang.BugError;
-import js.unit.HttpServletRequestStub;
 import js.util.Classes;
 
-import org.junit.Before;
-import org.junit.Test;
-
-public class ServerEncodersUnitTest {
+@RunWith(MockitoJUnitRunner.class)
+public class ServerEncodersTest {
 	private ServerEncoders encoders;
+
+	@Mock
+	private HttpServletRequest request;
 
 	@Before
 	public void beforeTest() {
@@ -65,21 +72,19 @@ public class ServerEncodersUnitTest {
 
 		assertNotNull(encoders);
 
-		MockHttpServletRequest request = new MockHttpServletRequest();
-		request.contentType = "text/html";
+		when(request.getContentType()).thenReturn("text/html");
 		ArgumentsReader reader = encoders.getArgumentsReader(request, new Type[] { Object.class });
 		assertNotNull(reader);
-		assertTrue(reader instanceof MockArgumentsReader);
+		assertTrue(reader instanceof ArgumentsReader);
 
 		ValueWriter writer = encoders.getValueWriter(ContentType.TEXT_HTML);
 		assertNotNull(writer);
-		assertTrue(writer instanceof MockValueWriter);
+		assertTrue(writer instanceof ValueWriter);
 	}
 
 	@Test
 	public void getArgumentsReader() {
-		MockHttpServletRequest request = new MockHttpServletRequest();
-		request.contentType = "text/xml";
+		when(request.getContentType()).thenReturn("text/xml");
 		ArgumentsReader reader = encoders.getArgumentsReader(request, new Type[] { Object.class });
 
 		assertNotNull(reader);
@@ -88,8 +93,7 @@ public class ServerEncodersUnitTest {
 
 	@Test
 	public void getArgumentsReader_MultipleArguments() {
-		MockHttpServletRequest request = new MockHttpServletRequest();
-		request.contentType = "text/xml";
+		when(request.getContentType()).thenReturn("text/xml");
 		ArgumentsReader reader = encoders.getArgumentsReader(request, new Type[] { Object.class, Object.class });
 
 		assertNotNull(reader);
@@ -98,8 +102,6 @@ public class ServerEncodersUnitTest {
 
 	@Test
 	public void getArgumentsReader_EmptyArguments() {
-		MockHttpServletRequest request = new MockHttpServletRequest();
-		request.contentType = "text/xml";
 		ArgumentsReader reader = encoders.getArgumentsReader(request, new Type[] {});
 
 		assertNotNull(reader);
@@ -108,8 +110,7 @@ public class ServerEncodersUnitTest {
 
 	@Test
 	public void getArgumentsReader_QueryString() {
-		MockHttpServletRequest request = new MockHttpServletRequest();
-		request.queryString = "?name=value";
+		when(request.getQueryString()).thenReturn("?name=value");
 		ArgumentsReader reader = encoders.getArgumentsReader(request, new Type[] { Object.class });
 
 		assertNotNull(reader);
@@ -118,7 +119,6 @@ public class ServerEncodersUnitTest {
 
 	@Test
 	public void getArgumentsReader_NullContentType() {
-		MockHttpServletRequest request = new MockHttpServletRequest();
 		ArgumentsReader reader = encoders.getArgumentsReader(request, new Type[] { Object.class });
 
 		assertNotNull(reader);
@@ -128,8 +128,7 @@ public class ServerEncodersUnitTest {
 	/** If attempt to retrieve arguments reader for not registered Java type uses content type base and ignore Java type. */
 	@Test
 	public void getArgumentsReader_NotRegisteredType() {
-		MockHttpServletRequest request = new MockHttpServletRequest();
-		request.contentType = "text/xml";
+		when(request.getContentType()).thenReturn("text/xml");
 		ArgumentsReader reader = encoders.getArgumentsReader(request, new Type[] { Object.class });
 
 		assertNotNull(reader);
@@ -182,60 +181,34 @@ public class ServerEncodersUnitTest {
 
 	@Test(expected = IllegalArgumentException.class)
 	public void getArgumentsReader_BadContentType() {
-		MockHttpServletRequest request = new MockHttpServletRequest();
-		request.contentType = "text/html";
+		when(request.getContentType()).thenReturn("text/html");
 		encoders.getArgumentsReader(request, new Type[] { Object.class });
 	}
 
 	// --------------------------------------------------------------------------------------------
 	// FIXTURE
 
-	@SuppressWarnings("unchecked")
-	private static class MockHttpServletRequest extends HttpServletRequestStub {
-		private String contentType;
-		private String queryString;
-
-		@Override
-		public String getContentType() {
-			return contentType;
-		}
-
-		@Override
-		public String getQueryString() {
-			return queryString;
-		}
-	}
-
+	/**
+	 * Mock for encoder provider configured on service provider file. This mock cannot be managed by Mockito because is
+	 * configured into external resource file. For the same reason it should be public.
+	 * 
+	 * @author Iulian Rotaru
+	 */
 	public static class MockHttpEncoderProvider implements HttpEncoderProvider {
 		@Override
 		public Map<EncoderKey, ArgumentsReader> getArgumentsReaders() {
+			ArgumentsReader reader = mock(ArgumentsReader.class);
 			Map<EncoderKey, ArgumentsReader> readers = new HashMap<>();
-			readers.put(new EncoderKey(ContentType.TEXT_HTML, Object.class), new MockArgumentsReader());
+			readers.put(new EncoderKey(ContentType.TEXT_HTML, Object.class), reader);
 			return readers;
 		}
 
 		@Override
 		public Map<ContentType, ValueWriter> getValueWriters() {
+			ValueWriter writer = mock(ValueWriter.class);
 			Map<ContentType, ValueWriter> writers = new HashMap<>();
-			writers.put(ContentType.TEXT_HTML, new MockValueWriter());
+			writers.put(ContentType.TEXT_HTML, writer);
 			return writers;
-		}
-	}
-
-	private static class MockArgumentsReader implements ArgumentsReader {
-		@Override
-		public Object[] read(HttpServletRequest httpRequest, Type[] formalParameters) throws IOException, IllegalArgumentException {
-			return null;
-		}
-
-		@Override
-		public void clean() {
-		}
-	}
-
-	private static class MockValueWriter implements ValueWriter {
-		@Override
-		public void write(HttpServletResponse httpResponse, Object value) throws IOException {
 		}
 	}
 }

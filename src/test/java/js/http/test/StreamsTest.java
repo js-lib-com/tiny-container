@@ -2,10 +2,13 @@ package js.http.test;
 
 import static org.junit.Assert.assertTrue;
 
+import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.anyInt;
+
 import java.io.BufferedReader;
 import java.io.Closeable;
 import java.io.FileInputStream;
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.LineNumberReader;
@@ -18,15 +21,26 @@ import java.util.List;
 import java.util.jar.JarInputStream;
 import java.util.zip.ZipInputStream;
 
+import javax.servlet.http.HttpServletRequest;
+
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.Mock;
+import org.mockito.junit.MockitoJUnitRunner;
+
 import js.http.encoder.ArgumentsReader;
 import js.io.FilesInputStream;
 import js.lang.GType;
-import js.unit.HttpServletRequestStub;
 import js.util.Classes;
 
-import org.junit.Test;
+@RunWith(MockitoJUnitRunner.class)
+public class StreamsTest {
+	@Mock
+	private InputStream stream;
 
-public class StreamsUnitTest {
+	@Mock
+	private HttpServletRequest request;
+
 	@Test
 	public void streamFactory_Constructor() throws Exception {
 		Class<?> clazz = Classes.forName("js.http.encoder.StreamFactory");
@@ -38,15 +52,16 @@ public class StreamsUnitTest {
 
 	@Test
 	public void streamFactory_GetInstance() throws Exception {
-		InputStream inputStream = new MockInputStream();
-		assertTrue(getInstance(inputStream, InputStream.class) instanceof InputStream);
-		assertTrue(getInstance(inputStream, ZipInputStream.class) instanceof ZipInputStream);
-		assertTrue(getInstance(inputStream, JarInputStream.class) instanceof JarInputStream);
-		assertTrue(getInstance(inputStream, Reader.class) instanceof InputStreamReader);
-		assertTrue(getInstance(inputStream, InputStreamReader.class) instanceof InputStreamReader);
-		assertTrue(getInstance(inputStream, BufferedReader.class) instanceof BufferedReader);
-		assertTrue(getInstance(inputStream, LineNumberReader.class) instanceof LineNumberReader);
-		assertTrue(getInstance(inputStream, PushbackReader.class) instanceof PushbackReader);
+		when(stream.read(any(byte[].class), anyInt(), anyInt())).thenReturn(-1);
+		
+		assertTrue(getInstance(stream, InputStream.class) instanceof InputStream);
+		assertTrue(getInstance(stream, ZipInputStream.class) instanceof ZipInputStream);
+		assertTrue(getInstance(stream, JarInputStream.class) instanceof JarInputStream);
+		assertTrue(getInstance(stream, Reader.class) instanceof InputStreamReader);
+		assertTrue(getInstance(stream, InputStreamReader.class) instanceof InputStreamReader);
+		assertTrue(getInstance(stream, BufferedReader.class) instanceof BufferedReader);
+		assertTrue(getInstance(stream, LineNumberReader.class) instanceof LineNumberReader);
+		assertTrue(getInstance(stream, PushbackReader.class) instanceof PushbackReader);
 	}
 
 	@Test
@@ -57,7 +72,7 @@ public class StreamsUnitTest {
 
 	@Test(expected = IllegalArgumentException.class)
 	public void streamFactory_Unsupported() throws Exception {
-		getInstance(new MockInputStream(), Object.class);
+		getInstance(stream, Object.class);
 	}
 
 	@Test(expected = IllegalArgumentException.class)
@@ -67,19 +82,19 @@ public class StreamsUnitTest {
 
 	@Test(expected = IllegalArgumentException.class)
 	public void streamFactory_NullType() throws Exception {
-		getInstance(new MockInputStream(), null);
+		getInstance(stream, null);
 	}
 
 	@Test(expected = IllegalArgumentException.class)
 	public void argumentsReader_read_EmptyTypes() throws Exception {
 		ArgumentsReader reader = Classes.newInstance("js.http.encoder.StreamArgumentsReader");
-		Classes.invoke(reader, "read", new MockHttpServletRequest(), new Type[0]);
+		Classes.invoke(reader, "read", request, new Type[0]);
 	}
 
 	@Test(expected = IllegalArgumentException.class)
 	public void argumentsReader_read_ParameterizedType() throws Exception {
 		ArgumentsReader reader = Classes.newInstance("js.http.encoder.StreamArgumentsReader");
-		Classes.invoke(reader, "read", new MockHttpServletRequest(), new Type[] { new GType(List.class, String.class) });
+		Classes.invoke(reader, "read", request, new Type[] { new GType(List.class, String.class) });
 	}
 
 	// --------------------------------------------------------------------------------------------
@@ -88,20 +103,5 @@ public class StreamsUnitTest {
 	public static Closeable getInstance(InputStream inputStream, Type type) throws Exception {
 		Class<?> clazz = Classes.forName("js.http.encoder.StreamFactory");
 		return Classes.invoke(clazz, "getInstance", inputStream, type);
-	}
-
-	// --------------------------------------------------------------------------------------------
-	// FIXTURE
-
-	private static class MockInputStream extends InputStream {
-		@Override
-		public int read() throws IOException {
-			return 0;
-		}
-	}
-
-	@SuppressWarnings("unchecked")
-	private static class MockHttpServletRequest extends HttpServletRequestStub {
-
 	}
 }

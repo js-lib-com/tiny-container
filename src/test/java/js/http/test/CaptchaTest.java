@@ -5,6 +5,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.when;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -14,36 +15,42 @@ import java.util.Map;
 
 import javax.servlet.http.HttpSession;
 
-import js.container.ContainerSPI;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.Mock;
+import org.mockito.junit.MockitoJUnitRunner;
+
+import js.core.AppContext;
 import js.http.NoSuchResourceException;
+import js.http.captcha.Challenge;
 import js.lang.BugError;
 import js.lang.ConfigBuilder;
 import js.lang.ConfigException;
 import js.lang.Configurable;
 import js.servlet.RequestContext;
-import js.test.stub.AppContextStub;
-import js.unit.HttpSessionStub;
 import js.util.Classes;
 import js.util.Files;
 import js.util.Strings;
 
-import org.junit.Test;
-
-// TODO: asserts
-public class CaptchaUnitTest {
+@RunWith(MockitoJUnitRunner.class)
+public class CaptchaTest {
 	private static final String CAPTCHA = "js.http.captcha.Captcha";
 	private static final String CHALLENGE = "js.http.captcha.Challenge";
+
+	@Mock
+	private AppContext context;
+
+	@Mock
+	private RequestContext request;
+
+	@Mock
+	private HttpSession session;
 
 	/** Config method should initialize captcha manager state from configuration object. */
 	@Test
 	public void captcha_config() throws Exception {
 		String REPOSITORY_DIR = new File("fixture/captcha").getAbsolutePath();
-		String config = "" + //
-				"<captcha>" + //
-				"	<property name='captcha.repository.path' value='%s' />" + //
-				"	<property name='captcha.set.size' value='5' />" + //
-				"</captcha>";
-		Object captcha = captcha(String.format(config, REPOSITORY_DIR));
+		Object captcha = config(REPOSITORY_DIR, 5);
 		assertNotNull(captcha);
 		assertEquals(REPOSITORY_DIR, ((File) Classes.getFieldValue(captcha, "imagesRepositoryDir")).getPath());
 		assertEquals(5, Classes.getFieldValue(captcha, "challengeSetSize"));
@@ -55,64 +62,42 @@ public class CaptchaUnitTest {
 				"<captcha>" + //
 				"	<property name='captcha.repository.dir' value='fixture/captcha' />" + //
 				"</captcha>";
-		captcha(config);
+		captcha(config, null);
 	}
 
 	@Test(expected = ConfigException.class)
 	public void captcha_config_MissingRepository() throws Exception {
-		String config = "" + //
-				"<captcha>" + //
-				"	<property name='captcha.repository.path' value='fake-captcha' />" + //
-				"</captcha>";
-		captcha(config);
+		config("fake-captcha");
 	}
 
 	@Test(expected = ConfigException.class)
 	public void captcha_config_RepositoryNotDriectory() throws Exception {
-		String config = "" + //
-				"<captcha>" + //
-				"	<property name='captcha.repository.path' value='fixture/captcha/apple.png' />" + //
-				"</captcha>";
-		captcha(config);
+		config("fixture/captcha/apple.png");
 	}
 
 	@Test(expected = ConfigException.class)
 	public void captcha_config_RepositoryNotAbsolute() throws Exception {
-		String config = "" + //
-				"<captcha>" + //
-				"	<property name='captcha.repository.path' value='fixture/captcha' />" + //
-				"</captcha>";
-		captcha(config);
+		config("fixture/captcha");
 	}
 
 	@Test(expected = ConfigException.class)
 	public void captcha_config_EmptyRepository() throws Exception {
-		String config = "" + //
-				"<captcha>" + //
-				"	<property name='captcha.repository.path' value='%s' />" + //
-				"</captcha>";
-		captcha(String.format(config, new File("fixture/captcha/empty").getAbsolutePath()));
+		config(new File("fixture/captcha/empty"));
 	}
 
 	@Test(expected = ConfigException.class)
 	public void captcha_config_SetSizeTooLarge() throws Exception {
-		String config = "" + //
-				"<captcha>" + //
-				"	<property name='captcha.repository.path' value='%s' />" + //
-				"	<property name='captcha.set.size' value='10' />" + //
-				"</captcha>";
-		captcha(String.format(config, new File("fixture/captcha").getAbsolutePath()));
+		config(new File("fixture/captcha"), 10);
 	}
 
 	/** CAPTCHA challenge getter should create a new challenge and store on HTTP session challenges store. */
 	@Test
 	public void captcha_getChallenge() throws Exception {
-		String config = "" + //
-				"<captcha>" + //
-				"	<property name='captcha.repository.path' value='%s' />" + //
-				"	<property name='captcha.set.size' value='5' />" + //
-				"</captcha>";
-		Object captcha = captcha(String.format(config, new File("fixture/captcha").getAbsolutePath()), new MockAppContext());
+		when(context.getInstance(RequestContext.class)).thenReturn(request);
+		when(request.getSession(true)).thenReturn(session);
+		when(session.getAttribute("challenges-key")).thenReturn(new HashMap<Integer, Challenge>());
+
+		Object captcha = config(new File("fixture/captcha"), 5, context);
 		Object challenge = Classes.invoke(captcha, "getChallenge", 0);
 		assertNotNull(challenge);
 
@@ -133,12 +118,11 @@ public class CaptchaUnitTest {
 	 */
 	@Test
 	public void captcha_getImage() throws Exception {
-		String config = "" + //
-				"<captcha>" + //
-				"	<property name='captcha.repository.path' value='%s' />" + //
-				"	<property name='captcha.set.size' value='5' />" + //
-				"</captcha>";
-		Object captcha = captcha(String.format(config, new File("fixture/captcha").getAbsolutePath()), new MockAppContext());
+		when(context.getInstance(RequestContext.class)).thenReturn(request);
+		when(request.getSession(true)).thenReturn(session);
+		when(session.getAttribute("challenges-key")).thenReturn(new HashMap<Integer, Challenge>());
+
+		Object captcha = config(new File("fixture/captcha"), 5, context);
 		Object challenge = Classes.invoke(captcha, "getChallenge", 0);
 		assertNotNull(challenge);
 
@@ -152,12 +136,11 @@ public class CaptchaUnitTest {
 	/** Get challenge image test with a large number of CAPTCHA instances. */
 	@Test
 	public void captcha_getImage_MultipleCaptchaInstances() throws Exception {
-		String config = "" + //
-				"<captcha>" + //
-				"	<property name='captcha.repository.path' value='%s' />" + //
-				"	<property name='captcha.set.size' value='5' />" + //
-				"</captcha>";
-		Object captcha = captcha(String.format(config, new File("fixture/captcha").getAbsolutePath()), new MockAppContext());
+		when(context.getInstance(RequestContext.class)).thenReturn(request);
+		when(request.getSession(true)).thenReturn(session);
+		when(session.getAttribute("challenges-key")).thenReturn(new HashMap<Integer, Challenge>());
+
+		Object captcha = config(new File("fixture/captcha"), 5, context);
 
 		List<String> tokens = new ArrayList<>();
 		for (int i = 0; i < 100; ++i) {
@@ -179,23 +162,19 @@ public class CaptchaUnitTest {
 	/** Missing challenge from session is considered resource not found. */
 	@Test(expected = NoSuchResourceException.class)
 	public void captcha_getImage_NoChallenge() throws Exception {
-		String config = "" + //
-				"<captcha>" + //
-				"	<property name='captcha.repository.path' value='%s' />" + //
-				"	<property name='captcha.set.size' value='5' />" + //
-				"</captcha>";
-		Object captcha = captcha(String.format(config, new File("fixture/captcha").getAbsolutePath()), new MockAppContext());
+		when(context.getInstance(RequestContext.class)).thenReturn(request);
+		when(request.getSession(true)).thenReturn(session);
+
+		Object captcha = config(new File("fixture/captcha"), 5, context);
 		Classes.invoke(captcha, "getImage", Strings.UUID());
 	}
 
 	@Test(expected = NoSuchResourceException.class)
 	public void captcha_getImage_BadToken() throws Exception {
-		String config = "" + //
-				"<captcha>" + //
-				"	<property name='captcha.repository.path' value='%s' />" + //
-				"	<property name='captcha.set.size' value='1' />" + //
-				"</captcha>";
-		Object captcha = captcha(String.format(config, new File("fixture/captcha").getAbsolutePath()), new MockAppContext());
+		when(context.getInstance(RequestContext.class)).thenReturn(request);
+		when(request.getSession(true)).thenReturn(session);
+
+		Object captcha = config(new File("fixture/captcha"), 1, context);
 		// getChallenge(int) should be called in order to generate challenge internal images set
 		Classes.invoke(captcha, "getChallenge", 0);
 		Classes.invoke(captcha, "getImage", Strings.UUID());
@@ -203,15 +182,13 @@ public class CaptchaUnitTest {
 
 	@Test
 	public void captcha_verifyResponse() throws Exception {
-		MockAppContext context = new MockAppContext();
 		int instanceIndex = 0;
 
-		String config = "" + //
-				"<captcha>" + //
-				"	<property name='captcha.repository.path' value='%s' />" + //
-				"	<property name='captcha.set.size' value='5' />" + //
-				"</captcha>";
-		Object captcha = captcha(String.format(config, new File("fixture/captcha").getAbsolutePath()), context);
+		when(context.getInstance(RequestContext.class)).thenReturn(request);
+		when(request.getSession(true)).thenReturn(session);
+		when(session.getAttribute("challenges-key")).thenReturn(new HashMap<Integer, Challenge>());
+
+		Object captcha = config(new File("fixture/captcha"), 5, context);
 		Object challenge = Classes.invoke(captcha, "getChallenge", instanceIndex);
 		assertNotNull(challenge);
 
@@ -231,12 +208,11 @@ public class CaptchaUnitTest {
 
 	@Test
 	public void captcha_verifyResponse_MultipleCaptchaInstances() throws Exception {
-		String config = "" + //
-				"<captcha>" + //
-				"	<property name='captcha.repository.path' value='%s' />" + //
-				"	<property name='captcha.set.size' value='5' />" + //
-				"</captcha>";
-		Object captcha = captcha(String.format(config, new File("fixture/captcha").getAbsolutePath()), new MockAppContext());
+		when(context.getInstance(RequestContext.class)).thenReturn(request);
+		when(request.getSession(true)).thenReturn(session);
+		when(session.getAttribute("challenges-key")).thenReturn(new HashMap<Integer, Challenge>());
+
+		Object captcha = config(new File("fixture/captcha"), 5, context);
 
 		for (int i = 0; i < 100; ++i) {
 			Object challenge = Classes.invoke(captcha, "getChallenge", i);
@@ -260,12 +236,10 @@ public class CaptchaUnitTest {
 	/** Invoking challenge response verify with no challenge on session should rise illegal state. */
 	@Test(expected = IllegalStateException.class)
 	public void captcha_verifyResponse_NoChallenge() throws Exception {
-		String config = "" + //
-				"<captcha>" + //
-				"	<property name='captcha.repository.path' value='%s' />" + //
-				"	<property name='captcha.set.size' value='5' />" + //
-				"</captcha>";
-		Object captcha = captcha(String.format(config, new File("fixture/captcha").getAbsolutePath()), new MockAppContext());
+		when(context.getInstance(RequestContext.class)).thenReturn(request);
+		when(request.getSession(true)).thenReturn(session);
+
+		Object captcha = config(new File("fixture/captcha"), 5, context);
 		Classes.invoke(captcha, "verifyResponse", 0, Strings.UUID());
 	}
 
@@ -356,54 +330,32 @@ public class CaptchaUnitTest {
 	// --------------------------------------------------------------------------------------------
 	// UTILITY METHODS
 
-	private static Object captcha(String config, Object... args) throws Exception {
+	private static Object config(Object... args) throws Exception {
 		if (args.length == 0) {
 			args = new Object[] { null };
 		}
+
+		String config = "" + //
+				"<captcha>" + //
+				"	<property name='captcha.repository.path' value='%s' />" + //
+				"	<property name='captcha.set.size' value='%d' />" + //
+				"</captcha>";
+
+		String path = args[0] instanceof File ? ((File) args[0]).getAbsolutePath() : (String) args[0];
+		int size = 6;
+		if (args.length > 1) {
+			size = (Integer) args[1];
+		}
+		if (args.length < 3) {
+			return captcha(String.format(config, path, size), null);
+		}
+		return captcha(String.format(config, path, size), (AppContext) args[2]);
+	}
+
+	private static Object captcha(String config, AppContext context) throws Exception {
 		ConfigBuilder builder = new ConfigBuilder(config);
-		Configurable captcha = Classes.newInstance(CAPTCHA, args);
+		Configurable captcha = Classes.newInstance(CAPTCHA, context);
 		captcha.config(builder.build());
 		return captcha;
-	}
-
-	// --------------------------------------------------------------------------------------------
-	// FIXTURE
-
-	@SuppressWarnings("unchecked")
-	private static class MockHttpSession extends HttpSessionStub {
-		private Map<String, Object> attributes = new HashMap<>();
-
-		@Override
-		public void setAttribute(String name, Object value) {
-			attributes.put(name, value);
-		}
-
-		@Override
-		public Object getAttribute(String name) {
-			return attributes.get(name);
-		}
-	}
-
-	private static class MockRequestContext extends RequestContext {
-		private MockHttpSession session = new MockHttpSession();
-
-		public MockRequestContext(ContainerSPI container) {
-			super(container);
-		}
-
-		@Override
-		public HttpSession getSession(boolean... create) {
-			return session;
-		}
-	}
-
-	private static class MockAppContext extends AppContextStub {
-		private MockRequestContext requestContext = new MockRequestContext(null);
-
-		@SuppressWarnings("unchecked")
-		@Override
-		public <T> T getInstance(Class<? super T> interfaceClass, Object... args) {
-			return (T) requestContext;
-		}
 	}
 }
