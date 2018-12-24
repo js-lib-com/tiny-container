@@ -251,6 +251,15 @@ public abstract class Container implements ContainerSPI, Configurable {
 	private final Map<InstanceType, InstanceFactory> instanceFactories = new HashMap<>();
 
 	/**
+	 * Class post-processors are executed after {@link ManagedClass} creation and generally deals with managed implementation
+	 * static fields initialization, but is not limited to.
+	 * <p>
+	 * These processors are registered by {@link #registerClassProcessor(ClassProcessor)}. Note that these processors are global
+	 * and executed for ALL managed classes.
+	 */
+	private final List<ClassProcessor> classProcessors = new ArrayList<>();
+
+	/**
 	 * Instance post-processors are executed only on newly created managed instances. If instance is reused from scope cache
 	 * this processors are not executed. They add instance specific services. This list contains processors in execution order.
 	 * <p>
@@ -307,8 +316,12 @@ public abstract class Container implements ContainerSPI, Configurable {
 		registerInstanceFactory(InstanceType.REMOTE, new RemoteInstanceFactory());
 
 		registerInstanceProcessor();
+		registerClassProcessor();
 	}
 
+	/**
+	 * Register all instance post-processors.
+	 */
 	protected void registerInstanceProcessor() {
 		registerInstanceProcessor(new InstanceFieldsInjectionProcessor());
 		registerInstanceProcessor(new InstanceFieldsInitializationProcessor());
@@ -316,6 +329,12 @@ public abstract class Container implements ContainerSPI, Configurable {
 		registerInstanceProcessor(new PostConstructInstanceProcessor());
 		registerInstanceProcessor(new CronMethodsProcessor(cronManager));
 		registerInstanceProcessor(new LoggerInstanceProcessor());
+	}
+
+	/**
+	 * Register all managed class post-processors.
+	 */
+	protected void registerClassProcessor() {
 	}
 
 	/**
@@ -357,6 +376,7 @@ public abstract class Container implements ContainerSPI, Configurable {
 	 * 
 	 * @param instanceProcessor instance processor.
 	 * @throws BugError if instance processor class is already registered.
+	 * @see #instanceProcessors
 	 */
 	protected void registerInstanceProcessor(InstanceProcessor instanceProcessor) {
 		for (InstanceProcessor existingInstanceProcessoor : instanceProcessors) {
@@ -366,6 +386,24 @@ public abstract class Container implements ContainerSPI, Configurable {
 		}
 		log.debug("Register instance processor |%s|.", instanceProcessor.getClass());
 		instanceProcessors.add(instanceProcessor);
+	}
+
+	/**
+	 * Register global processors for managed classes. Post-processors are singletons and only one post-processor instance of a
+	 * type is allowed.
+	 * 
+	 * @param classProcessor managed class post-processor.
+	 * @throws BugError if class processor class is already registered.
+	 * @see #classProcessors
+	 */
+	protected void registerClassProcessor(ClassProcessor classProcessor) {
+		for (ClassProcessor existingClassProcessoor : classProcessors) {
+			if (existingClassProcessoor.getClass().equals(classProcessor.getClass())) {
+				throw new BugError("Attempt to override class processor |%s|.", classProcessor.getClass());
+			}
+		}
+		log.debug("Register class processor |%s|.", classProcessor.getClass());
+		classProcessors.add(classProcessor);
 	}
 
 	/**
@@ -420,6 +458,10 @@ public abstract class Container implements ContainerSPI, Configurable {
 			log.debug("Register managed class |%s|.", managedClass);
 			for (Class<?> interfaceClass : managedClass.getInterfaceClasses()) {
 				classesPool.put(interfaceClass, managedClass);
+			}
+
+			for (ClassProcessor classProcessor : classProcessors) {
+				classProcessor.postProcessClass(managedClass);
 			}
 		}
 

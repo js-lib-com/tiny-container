@@ -26,6 +26,7 @@ import js.lang.Config;
 import js.lang.ConfigBuilder;
 import js.lang.ConfigException;
 import js.log.Log;
+import js.log.LogContext;
 import js.log.LogFactory;
 import js.util.Strings;
 
@@ -112,6 +113,13 @@ public class TinyContainer extends Container implements ServletContextListener, 
 	/** Context name for testing. */
 	private static final String TEST_CONTEXT_NAME = "test-app";
 
+	/** Diagnostic context name for context path, aka application. */
+	private static final String LOG_CONTEXT_APP = "app";
+	/** Diagnostic context name for remote host, aka IP address. */
+	private static final String LOG_CONTEXT_IP = "ip";
+	/** Diagnostic context name for current request ID. */
+	private static final String LOG_CONTEXT_ID = "id";
+
 	/**
 	 * Server and container properties loaded from context parameters defined on external descriptors. Context parameters are
 	 * optional and this properties instance can be empty. If present, context parameters are used by {@link TinyConfigBuilder}
@@ -181,8 +189,14 @@ public class TinyContainer extends Container implements ServletContextListener, 
 
 	@Override
 	protected void registerInstanceProcessor() {
-		registerInstanceProcessor(new ContextParamInstanceProcessor(this));
+		registerInstanceProcessor(new ContextParamProcessor(this));
 		super.registerInstanceProcessor();
+	}
+
+	@Override
+	protected void registerClassProcessor() {
+		registerClassProcessor(new ContextParamProcessor(this));
+		super.registerClassProcessor();
 	}
 
 	@Override
@@ -228,8 +242,13 @@ public class TinyContainer extends Container implements ServletContextListener, 
 	 */
 	@Override
 	public void contextInitialized(ServletContextEvent contextEvent) {
-		final long start = System.currentTimeMillis();
 		final ServletContext servletContext = contextEvent.getServletContext();
+
+		/** Logger diagnostic context stores contextual information regarding current request. */
+		LogContext logContext = LogFactory.getLogContext();
+		logContext.put(LOG_CONTEXT_APP, servletContext.getContextPath().substring(1));
+
+		final long start = System.currentTimeMillis();
 		log.debug("Starting application |%s| container...", servletContext.getContextPath());
 
 		Enumeration<String> parameterNames = servletContext.getInitParameterNames();

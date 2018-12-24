@@ -58,7 +58,7 @@ public class InstanceProcessorUnitTest {
 
 		assertNotNull(processors);
 		assertEquals(7, processors.size());
-		assertEquals("ContextParamInstanceProcessor", processors.get(0).getClass().getSimpleName());
+		assertEquals("ContextParamProcessor", processors.get(0).getClass().getSimpleName());
 		assertEquals("InstanceFieldsInjectionProcessor", processors.get(1).getClass().getSimpleName());
 		assertEquals("InstanceFieldsInitializationProcessor", processors.get(2).getClass().getSimpleName());
 		assertEquals("ConfigurableInstanceProcessor", processors.get(3).getClass().getSimpleName());
