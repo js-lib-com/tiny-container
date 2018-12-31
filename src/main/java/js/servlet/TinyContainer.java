@@ -110,15 +110,11 @@ public class TinyContainer extends Container implements ServletContextListener, 
 	/** Session attribute name for principal storage when authentication is provided by application. */
 	public static final String ATTR_PRINCIPAL = "js.servlet.WebContainer.principal";
 
-	/** Context name for testing. */
-	private static final String TEST_CONTEXT_NAME = "test-app";
+	/** Name used for root context path. */
+	public static final String ROOT_CONTEXT = "root";
 
 	/** Diagnostic context name for context path, aka application. */
 	private static final String LOG_CONTEXT_APP = "app";
-	/** Diagnostic context name for remote host, aka IP address. */
-	private static final String LOG_CONTEXT_IP = "ip";
-	/** Diagnostic context name for current request ID. */
-	private static final String LOG_CONTEXT_ID = "id";
 
 	/**
 	 * Server and container properties loaded from context parameters defined on external descriptors. Context parameters are
@@ -131,8 +127,8 @@ public class TinyContainer extends Container implements ServletContextListener, 
 	 */
 	private final Properties contextParameters = new Properties();
 
-	/** The name of web application that own this tiny container. Default value to {@link #TEST_CONTEXT_NAME}. */
-	private String appName = TEST_CONTEXT_NAME;
+	/** The name of web application that own this tiny container. Default value to <code>test-app</code>. */
+	private String appName = "test-app";
 
 	/**
 	 * Application private storage. Privateness is merely a good practice rather than enforced by some system level rights
@@ -246,7 +242,7 @@ public class TinyContainer extends Container implements ServletContextListener, 
 
 		/** Logger diagnostic context stores contextual information regarding current request. */
 		LogContext logContext = LogFactory.getLogContext();
-		logContext.put(LOG_CONTEXT_APP, servletContext.getContextPath().substring(1));
+		logContext.put(LOG_CONTEXT_APP, servletContext.getContextPath().isEmpty() ? TinyContainer.ROOT_CONTEXT : servletContext.getContextPath().substring(1));
 
 		final long start = System.currentTimeMillis();
 		log.debug("Starting application |%s| container...", servletContext.getContextPath());

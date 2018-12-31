@@ -142,7 +142,7 @@ public abstract class AppServlet extends HttpServlet {
 	@Override
 	protected void service(HttpServletRequest httpRequest, HttpServletResponse httpResponse) throws IOException, ServletException {
 		// push context path and remote address of the requested processed by this thread to logger diagnostic context
-		logContext.put(LOG_CONTEXT_APP, httpRequest.getContextPath().substring(1));
+		logContext.put(LOG_CONTEXT_APP, httpRequest.getContextPath().isEmpty() ? TinyContainer.ROOT_CONTEXT : httpRequest.getContextPath().substring(1));
 		logContext.put(LOG_CONTEXT_IP, httpRequest.getRemoteHost());
 		logContext.put(LOG_CONTEXT_ID, Integer.toString(requestID.getAndIncrement(), Character.MAX_RADIX));
 		if (isEmptyUriRequest(httpRequest)) {
