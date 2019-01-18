@@ -807,6 +807,16 @@ final class ManagedClass implements ManagedClassSPI {
 				return new Class<?>[] { implementationClass };
 			}
 			interfaceNames.add(descriptor.getAttribute("interface"));
+
+			if ("REMOTE".equals(descriptor.getAttribute("type"))) {
+				String url = descriptor.getAttribute("url");
+				if (url == null || url.isEmpty()) {
+					throw new ConfigException("Managed type REMOTE requires <url> attribute. See class descriptor |%s|.", descriptor);
+				}
+				if(url.startsWith("${")) {
+					throw new ConfigException("Remote implementation <url> property not resolved. See class descriptor |%s|.", descriptor);
+				}
+			}
 		} else {
 			for (int i = 0; i < descriptor.getChildrenCount(); ++i) {
 				String interfaceName = descriptor.getChild(i).getAttribute("name");

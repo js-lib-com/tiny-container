@@ -1,11 +1,11 @@
 package js.container;
 
+import java.net.MalformedURLException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.ServiceLoader;
 
 import js.core.AppFactory;
-import js.lang.BugError;
 import js.net.client.HttpRmiFactory;
 import js.rmi.RemoteFactory;
 import js.rmi.RemoteFactoryProvider;
@@ -62,8 +62,6 @@ public class RemoteInstanceFactory implements InstanceFactory, RemoteFactory {
 	 * @param managedClass managed class,
 	 * @param args remote instance factory does not support constructor arguments.
 	 * @param <T> managed instance type.
-	 * @throws IllegalArgumentException if <code>args</code> arguments is not empty.
-	 * @throws BugError if there is no remote factory registered for implementation URL protocol.
 	 */
 	@SuppressWarnings("unchecked")
 	@Override
@@ -86,11 +84,19 @@ public class RemoteInstanceFactory implements InstanceFactory, RemoteFactory {
 	 * @param interfaceClass interface implemented by remote class.
 	 * @param <T> managed class implementation.
 	 * @return remote class proxy instance.
-	 * @throws UnsupportedProtocolException if there is no remote factory registered for implementation URL protocol.
+	 * @throws UnsupportedProtocolException if URL protocol is not supported or arguments are otherwise not valid or null - in
+	 *             which case root cause has details about erroneous argument.
 	 */
 	@Override
-	public <T> T getRemoteInstance(String implementationURL, Class<? super T> interfaceClass) {
+	public <T> T getRemoteInstance(String implementationURL, Class<? super T> interfaceClass) throws UnsupportedProtocolException {
+		if (implementationURL == null) {
+			throw new UnsupportedProtocolException(new NullPointerException("Null remote implementation URL."));
+		}
 		String protocol = Strings.getProtocol(implementationURL);
+		if (protocol == null) {
+			throw new UnsupportedProtocolException(new MalformedURLException("Protocol not found on " + implementationURL));
+		}
+
 		RemoteFactory remoteFactory = remoteFactories.get(protocol);
 		if (remoteFactory == null) {
 			throw new UnsupportedProtocolException("No remote factory registered for protocol |%s|.", protocol);
