@@ -24,7 +24,6 @@ import js.lang.BugError;
 import js.lang.Event;
 import js.log.Log;
 import js.log.LogFactory;
-import js.net.client.KeepAliveEvent;
 import js.util.Base64;
 import js.util.Classes;
 import js.util.Strings;
@@ -73,10 +72,9 @@ import js.util.Strings;
  * First usage pattern is using internal events queue and rely on implemented loop method to send keep alive events but is using
  * a separated thread. The second uses HTTP request thread but user code should take care of keep alive sending.
  * 
- * <h3>Keep Alive</h3>
- * This events stream is basically a long connection using chunked transfer. Client sends HTTP request then block on HTTP
- * response waiting for events. If server side or network goes down client logic has no means to realize this; it simply
- * continue waiting. For this reason event stream takes care to periodically send {@link KeepAliveEvent}.
+ * <h3>Keep Alive</h3> This events stream is basically a long connection using chunked transfer. Client sends HTTP request then
+ * block on HTTP response waiting for events. If server side or network goes down client logic has no means to realize this; it
+ * simply continue waiting. For this reason event stream takes care to periodically send <code>KeepAliveEvent</code>.
  * <p>
  * The second reason for keep alive events is routers idle connection timeout. Although TCP/IP does not require keep alive or
  * dead connection detect packets there is usual practice for routers to disconnect idle connections in order to free resources.
@@ -424,8 +422,8 @@ public class EventStream implements Closeable {
 
 	/**
 	 * Send keep alive to this event stream counterpart. Create a W3C Server-Sent event with <code>event</code> field containing
-	 * canonical class name for {@link KeepAliveEvent}. On the wire things looks like bellow, so minimal of overhead. Note that
-	 * specification mandates <code>data</code> field, for which reason envoy it with an empty JSON object.
+	 * canonical class name for <code>KeepAliveEvent</code>. On the wire things looks like bellow, so minimal of overhead. Note
+	 * that specification mandates <code>data</code> field, for which reason envoy it with an empty JSON object.
 	 * 
 	 * <pre>
 	 * event:js.net.KeepAliveEventCRLF

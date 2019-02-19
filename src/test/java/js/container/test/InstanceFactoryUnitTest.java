@@ -9,11 +9,16 @@ import static org.junit.Assert.assertTrue;
 import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.net.URL;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.Enumeration;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
+import org.junit.BeforeClass;
+import org.junit.Test;
 
 import js.container.Container;
 import js.container.InstanceFactory;
@@ -30,9 +35,6 @@ import js.rmi.UnsupportedProtocolException;
 import js.test.stub.ManagedClassSpiStub;
 import js.unit.TestContext;
 import js.util.Classes;
-
-import org.junit.BeforeClass;
-import org.junit.Test;
 
 /**
  * Unit tests for built-in instance factories. Built-in instance factories are those hard coded by container:
@@ -439,8 +441,8 @@ public class InstanceFactoryUnitTest {
 		private RemoteFactory factory = new MockRemoteFactory();
 
 		@Override
-		public String getProtocol() {
-			return "mock";
+		public String[] getProtocols() {
+			return new String[] { "mock" };
 		}
 
 		@Override

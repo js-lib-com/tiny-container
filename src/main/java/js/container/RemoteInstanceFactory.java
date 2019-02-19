@@ -6,7 +6,7 @@ import java.util.Map;
 import java.util.ServiceLoader;
 
 import js.core.AppFactory;
-import js.net.client.HttpRmiFactory;
+import js.lang.BugError;
 import js.rmi.RemoteFactory;
 import js.rmi.RemoteFactoryProvider;
 import js.rmi.UnsupportedProtocolException;
@@ -16,10 +16,9 @@ import js.util.Strings;
  * Managed instances factory for classes deployed remotely. Beside being an instance factory this class also implements
  * {@link RemoteFactory}, providing support for {@link AppFactory#getRemoteInstance(String, Class)}.
  * <p>
- * <code>RemoteInstanceFactory</code> keeps a collection of {@link RemoteFactory} mapped by URL protocols. Current
- * implementation supports <code>HTTP-RMI</code> via {@link HttpRmiFactory}, mapped to both <code>http</code> and
- * <code>https</code>. This class also scans for remote factory extensions deployed on run-time context as standard Java
- * services, see {@link RemoteFactoryProvider}.
+ * <code>RemoteInstanceFactory</code> keeps a collection of {@link RemoteFactory} mapped by URL protocols. This class scans for
+ * remote factory extensions deployed on run-time context as standard Java services, see {@link RemoteFactoryProvider}. It is
+ * not legal to override an already registered protocol.
  * 
  * @author Iulian Rotaru
  * @version final
@@ -29,15 +28,19 @@ public class RemoteInstanceFactory implements InstanceFactory, RemoteFactory {
 	private Map<String, RemoteFactory> remoteFactories = new HashMap<>();
 
 	/**
-	 * Register built-in {@link RemoteFactory} for <code>HTTP-RMI</code> and scan for {@link RemoteFactoryProvider} extensions.
+	 * Scan for {@link RemoteFactoryProvider} extensions and register {@link RemoteFactory} for provided protocols. Protocol
+	 * syntax is implementation detail but is part of <code>implementationURL</code> supplied - as declared by provider, to
+	 * {@link #getRemoteInstance(String, Class)}.
+	 * 
+	 * @throws BugError if attempt to override already registered protocol.
 	 */
 	public RemoteInstanceFactory() {
-		RemoteFactory httpRemoteFactory = new HttpRmiFactory();
-		remoteFactories.put("http", httpRemoteFactory);
-		remoteFactories.put("https", httpRemoteFactory);
-
 		for (RemoteFactoryProvider provider : ServiceLoader.load(RemoteFactoryProvider.class)) {
-			remoteFactories.put(provider.getProtocol(), provider.getRemoteFactory());
+			for (String protocol : provider.getProtocols()) {
+				if (remoteFactories.put(protocol, provider.getRemoteFactory()) != null) {
+					throw new BugError("Invalid runtime environment. Remote factory protocol override |%s|. See remote factory provider |%s|.", protocol, provider);
+				}
+			}
 		}
 	}
 
