@@ -25,6 +25,7 @@ import js.annotation.Public;
 import js.annotation.Remote;
 import js.annotation.RequestPath;
 import js.annotation.Service;
+import js.annotation.Test;
 import js.converter.Converter;
 import js.converter.ConverterException;
 import js.core.AppFactory;
@@ -813,7 +814,7 @@ final class ManagedClass implements ManagedClassSPI {
 				if (url == null || url.isEmpty()) {
 					throw new ConfigException("Managed type REMOTE requires <url> attribute. See class descriptor |%s|.", descriptor);
 				}
-				if(url.startsWith("${")) {
+				if (url.startsWith("${")) {
 					throw new ConfigException("Remote implementation <url> property not resolved. See class descriptor |%s|.", descriptor);
 				}
 			}
@@ -926,6 +927,9 @@ final class ManagedClass implements ManagedClassSPI {
 				continue;
 			}
 			if (declaredConstructor.getParameterTypes().length == 0) {
+				continue;
+			}
+			if (declaredConstructor.getAnnotation(Test.class) != null) {
 				continue;
 			}
 			if (constructor != null) {
