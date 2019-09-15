@@ -7,6 +7,9 @@ import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
+import org.junit.Before;
+import org.junit.Test;
+
 import js.container.AuthorizationException;
 import js.container.ManagedMethodSPI;
 import js.container.TransactionalResource;
@@ -17,9 +20,6 @@ import js.transaction.Transaction;
 import js.transaction.TransactionException;
 import js.transaction.TransactionManager;
 import js.util.Classes;
-
-import org.junit.Before;
-import org.junit.Test;
 
 /**
  * Complement unit test for {@link ManagedProxyHandlerUnitTest} but specialized for transaction life cycle.
@@ -260,6 +260,11 @@ public class ManagedProxyHandlerTransactionUnitTest {
 		public boolean isTransactional() {
 			return transactional;
 		}
+
+		@Override
+		public String getTransactionalSchema() {
+			return null;
+		}
 	}
 
 	private static class MockManagedMethodSPI extends ManagedMethodSpiStub {
@@ -322,12 +327,12 @@ public class ManagedProxyHandlerTransactionUnitTest {
 		}
 
 		@Override
-		public Transaction createTransaction() {
+		public Transaction createTransaction(String resourceUnit) {
 			return (transaction = new MockTransaction());
 		}
 
 		@Override
-		public Transaction createReadOnlyTransaction() {
+		public Transaction createReadOnlyTransaction(String resourceUnit) {
 			return (transaction = new MockTransaction());
 		}
 	}

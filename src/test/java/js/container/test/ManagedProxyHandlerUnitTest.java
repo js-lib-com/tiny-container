@@ -10,6 +10,10 @@ import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
+
 import js.container.AuthorizationException;
 import js.container.ManagedClassSPI;
 import js.container.ManagedMethodSPI;
@@ -27,10 +31,6 @@ import js.transaction.Transaction;
 import js.transaction.TransactionManager;
 import js.unit.TestContext;
 import js.util.Classes;
-
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
 
 /**
  * Managed proxy handler unit test. This class focuses on general behavior and leave transactions life cycle for
@@ -257,7 +257,7 @@ public class ManagedProxyHandlerUnitTest {
 	@Test
 	public void throwableFormat_InvocationException_NullCause() throws Exception {
 		Class<?> handlerClass = Class.forName("js.container.ManagedProxyHandler");
-		InvocationException exception = new InvocationException((Throwable)null);
+		InvocationException exception = new InvocationException((Throwable) null);
 		Throwable throwable = Classes.invoke(handlerClass, "throwable", new Object[] { exception, "message", new VarArgs<Object>() });
 
 		assertNotNull(throwable);
@@ -324,6 +324,11 @@ public class ManagedProxyHandlerUnitTest {
 		public boolean isTransactional() {
 			return transactional;
 		}
+
+		@Override
+		public String getTransactionalSchema() {
+			return null;
+		}
 	}
 
 	private static class MockManagedMethodSPI extends ManagedMethodSpiStub {
@@ -370,12 +375,12 @@ public class ManagedProxyHandlerUnitTest {
 		}
 
 		@Override
-		public Transaction createTransaction() {
+		public Transaction createTransaction(String schema) {
 			return (transaction = new MockTransaction(closeTransaction, unusedTransaction));
 		}
 
 		@Override
-		public Transaction createReadOnlyTransaction() {
+		public Transaction createReadOnlyTransaction(String schema) {
 			return (transaction = new MockTransaction(closeTransaction, unusedTransaction));
 		}
 	}

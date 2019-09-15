@@ -480,8 +480,9 @@ public abstract class Container implements ContainerSPI, Configurable {
 	}
 
 	/**
-	 * Ensure all managed classes with managed life cycle are instantiated. Invoked at a final stage of container initialization
-	 * this method checks every managed class that implements {@link ManagedLifeCycle} interface and ensure is instantiated.
+	 * Ensure all managed classes marked with 'auto-creation' are instantiated. Invoked at a final stage of container
+	 * initialization, this method checks every managed class that has {@link ManagedClassSPI#isAutoInstanceCreation()} flag set
+	 * and ensure is instantiated.
 	 * <p>
 	 * Takes care to instantiate, configure if the case, and execute post-construct in the order from application descriptor.
 	 * This is critical for assuring that {@link App} is created first; {@link App} class descriptor is declared first into
@@ -494,9 +495,10 @@ public abstract class Container implements ContainerSPI, Configurable {
 	public void start() {
 		log.trace("start()");
 
-		// classes pool is not sorted; it is a hash map for performance reasons
+		// classes pool is not sorted; it is a hash map that does not guarantee order
 		// also, a managed class may appear multiple times if have multiple interfaces
 		// bellow sorted set is used to ensure ascending order on managed classes instantiation
+
 		// comparison is based on managed class key that is created incrementally
 
 		Set<ManagedClassSPI> sortedClasses = new TreeSet<>(new Comparator<ManagedClassSPI>() {
@@ -508,13 +510,10 @@ public abstract class Container implements ContainerSPI, Configurable {
 		});
 
 		for (ManagedClassSPI managedClass : classesPool.values()) {
+			// process only implementations of managed life cycle interface
 			if (managedClass.isAutoInstanceCreation()) {
 				sortedClasses.add(managedClass);
 			}
-			// process only implementations of managed life cycle interface
-			// if (Types.isKindOf(managedClass.getImplementationClass(), ManagedLifeCycle.class)) {
-			// sortedClasses.add(managedClass);
-			// }
 		}
 
 		for (ManagedClassSPI managedClass : sortedClasses) {

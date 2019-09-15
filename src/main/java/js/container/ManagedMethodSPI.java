@@ -120,7 +120,7 @@ public interface ManagedMethodSPI {
 	 * @return true if this managed method is transactional.
 	 */
 	boolean isTransactional();
-
+	
 	/**
 	 * Test if this transactional managed method is immutable. This predicate has meaning only if {@link #isTransactional()} is
 	 * true. A managed method is immutable it is tagged so using {@link Immutable} annotation. Also is immutable if its

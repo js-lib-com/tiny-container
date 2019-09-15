@@ -13,18 +13,23 @@ public class TransactionManagerStub implements TransactionManager {
 	}
 
 	@Override
-	public Transaction createReadOnlyTransaction() {
-		throw new UnsupportedOperationException("createReadOnlyTransaction()");
+	public Transaction createReadOnlyTransaction(String schema) {
+		throw new UnsupportedOperationException("createReadOnlyTransaction(String schema)");
 	}
 
 	@Override
-	public Transaction createTransaction() {
-		throw new UnsupportedOperationException("createTransaction()");
+	public Transaction createTransaction(String schema) {
+		throw new UnsupportedOperationException("createTransaction(String schema)");
 	}
 
 	@Override
 	public void destroy() {
 		throw new UnsupportedOperationException("destroy()");
+	}
+
+	@Override
+	public <S, T> T exec(String schema, WorkingUnit<S, T> workingUnit, Object... args) {
+		throw new UnsupportedOperationException("exec(String, WorkingUnit<S, T>, Object...)");
 	}
 
 	@Override

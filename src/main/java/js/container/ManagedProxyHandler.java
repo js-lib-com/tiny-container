@@ -83,6 +83,15 @@ final class ManagedProxyHandler implements InstanceInvocationHandler<Object> {
 	/** External resource that provides a transactional API. */
 	private final TransactionalResource transactionalResource;
 
+	/**
+	 * Transactional resource may support schema. This allows to limit the scope of resource objects accessible from transaction
+	 * boundaries. This field store the name of the schema as set by {@link js.transaction.Transactional#schema()} managed class
+	 * annotation.
+	 * <p>
+	 * Transactional schema is optional with default to null.
+	 */
+	private final String transactionalSchema;
+
 	/** Wrapped managed class. */
 	private final ManagedClassSPI managedClass;
 
@@ -117,6 +126,7 @@ final class ManagedProxyHandler implements InstanceInvocationHandler<Object> {
 		Params.notNull(managedInstance, "Managed instance");
 
 		this.transactionalResource = transactionalResource;
+		this.transactionalSchema = managedClass.getTransactionalSchema();
 		this.managedClass = managedClass;
 		this.managedInstance = managedInstance;
 	}
@@ -177,7 +187,7 @@ final class ManagedProxyHandler implements InstanceInvocationHandler<Object> {
 		// and there is no harm if storeSession is invoked multiple times
 		// also performance penalty is comparable with the effort to prevent this multiple write
 
-		Transaction transaction = transactionalResource.createTransaction();
+		Transaction transaction = transactionalResource.createTransaction(transactionalSchema);
 		transactionalResource.storeSession(transaction.getSession());
 
 		try {
@@ -209,7 +219,7 @@ final class ManagedProxyHandler implements InstanceInvocationHandler<Object> {
 	 * @throws Throwable forward any error rose by method execution.
 	 */
 	private Object executeImmutableTransaction(ManagedMethodSPI managedMethod, Object[] args) throws Throwable {
-		Transaction transaction = transactionalResource.createReadOnlyTransaction();
+		Transaction transaction = transactionalResource.createReadOnlyTransaction(transactionalSchema);
 		// see mutable transaction comment
 		transactionalResource.storeSession(transaction.getSession());
 
@@ -244,7 +254,7 @@ final class ManagedProxyHandler implements InstanceInvocationHandler<Object> {
 		if (t instanceof InvocationException && t.getCause() != null) {
 			t = t.getCause();
 		}
-		if (t instanceof InvocationTargetException && ((InvocationTargetException)t).getTargetException() != null) {
+		if (t instanceof InvocationTargetException && ((InvocationTargetException) t).getTargetException() != null) {
 			t = ((InvocationTargetException) t).getTargetException();
 		}
 		message = String.format(message, args);

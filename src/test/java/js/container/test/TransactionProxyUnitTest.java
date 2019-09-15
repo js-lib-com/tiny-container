@@ -190,12 +190,12 @@ public class TransactionProxyUnitTest {
 		}
 
 		@Override
-		public Transaction createTransaction() {
+		public Transaction createTransaction(String schema) {
 			return (transaction = new MockTransaction());
 		}
 
 		@Override
-		public Transaction createReadOnlyTransaction() {
+		public Transaction createReadOnlyTransaction(String schema) {
 			return (transaction = new MockTransaction());
 		}
 	}

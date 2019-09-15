@@ -36,6 +36,7 @@ import js.lang.Configurable;
 import js.lang.ManagedLifeCycle;
 import js.log.Log;
 import js.log.LogFactory;
+import js.servlet.ContextParamProcessor;
 import js.transaction.Immutable;
 import js.transaction.Mutable;
 import js.transaction.Transactional;
@@ -318,8 +319,14 @@ final class ManagedClass implements ManagedClassSPI {
 	/** Pool of net methods, that is, methods remotely accessible. */
 	private final Map<String, ManagedMethodSPI> netMethodsPool = new HashMap<>();
 
+	/**
+	 * Map of fields annotated with {@link ContextParam} annotation. Map key is the context parameter name. This fields will be
+	 * initialized from container runtime context by {@link ContextParamProcessor}. Note that both static and instance fields
+	 * are acceptable.
+	 */
 	private final Map<String, Field> contextParamFields = new HashMap<>();
 
+	/** Collection of managed methods annotated with {@link Cron} annotation. */
 	private final List<ManagedMethodSPI> cronMethodsPool = new ArrayList<>();
 
 	/** Cached value of managed class string representation, merely for logging. */
@@ -335,10 +342,29 @@ final class ManagedClass implements ManagedClassSPI {
 	private boolean transactional;
 
 	/**
+	 * Transactional resource may support multiple schemas. This allows to limit the scope of resource objects accessible within
+	 * transaction boundaries. This field store the name of the schema as set by {@link js.transaction.Transactional#schema()}
+	 * annotation. Note that annotation should be applied to class; on managed methods schema value is ignored.
+	 * <p>
+	 * Transactional schema is optional with default to null.
+	 */
+	private String transactionalSchema;
+
+	/**
 	 * Request URI path for this managed class configured by {@link Remote}, {@link Controller} or {@link Service} annotations.
 	 */
 	private String requestPath;
 
+	/**
+	 * Flag indicating that this managed class should be instantiated automatically by container, see {@link Container#start()}.
+	 * Note that created instance is a singleton and managed instance scope should be {@link InstanceScope#APPLICATION}.
+	 * <p>
+	 * This flag is true for following conditions:
+	 * <ul>
+	 * <li>this managed class has {@link Cron} methods,
+	 * <li>this managed class implements {@link ManagedLifeCycle} interface.
+	 * </ul>
+	 */
 	private boolean autoInstanceCreation;
 
 	/**
@@ -424,13 +450,20 @@ final class ManagedClass implements ManagedClassSPI {
 			remotelyAccessible = true;
 		}
 
-		// set transactional and immutable type
-		boolean transactionalType = hasAnnotation(implementationClass, Transactional.class);
+		// set transactional annotation, optional schema and immutable type
+		Transactional transactionalType = getAnnotation(implementationClass, Transactional.class);
+		if (transactionalType != null) {
+			transactionalSchema = transactionalType.schema();
+			// transactional annotation schema() returns empty string if schema not set; it should be null
+			if (transactionalSchema.isEmpty()) {
+				transactionalSchema = null;
+			}
+		}
 		boolean immutableType = hasAnnotation(implementationClass, Immutable.class);
-		if (!transactionalType && immutableType) {
+		if (transactionalType == null && immutableType) {
 			throw new BugError("@Immutable annotation without @Transactional on class |%s|.", implementationClass.getName());
 		}
-		if (transactionalType && !instanceType.isPROXY()) {
+		if (transactionalType != null && !instanceType.isPROXY()) {
 			throw new BugError("@Transactional requires |%s| type but found |%s| on |%s|.", InstanceType.PROXY, instanceType, implementationClass);
 		}
 
@@ -509,10 +542,10 @@ final class ManagedClass implements ManagedClassSPI {
 			// 3. do not allow mutable on method if not transactional
 			// 4. if PROXY create managed method if not already created from above remote method logic
 
-			if (!transactionalType) {
-				transactionalType = hasAnnotation(method, Transactional.class);
+			if (transactionalType == null) {
+				transactionalType = getAnnotation(method, Transactional.class);
 			}
-			if (transactionalType) {
+			if (transactionalType != null) {
 				transactional = true;
 				if (!instanceType.isPROXY()) {
 					throw new BugError("@Transactional requires |%s| type but found |%s|.", InstanceType.PROXY, instanceType);
@@ -566,9 +599,6 @@ final class ManagedClass implements ManagedClassSPI {
 
 			Cron cronMethod = getAnnotation(method, Cron.class);
 			if (cronMethod != null) {
-				// if (!instanceType.isPROXY()) {
-				// throw new BugError("Not supported instance type |%s| for cron method |%s|.", instanceType, method);
-				// }
 				if (remotelyAccessible) {
 					throw new BugError("Remote accessible method |%s| cannot be executed by cron.", method);
 				}
@@ -696,6 +726,11 @@ final class ManagedClass implements ManagedClassSPI {
 	@Override
 	public boolean isTransactional() {
 		return transactional;
+	}
+
+	@Override
+	public String getTransactionalSchema() {
+		return transactionalSchema;
 	}
 
 	@Override
@@ -902,7 +937,9 @@ final class ManagedClass implements ManagedClassSPI {
 	/**
 	 * Get implementation class constructor. Managed class mandates a single constructor with parameters, no matter if private
 	 * or formal parameters count. If both default constructor and constructor with parameters are defined this method returns
-	 * constructor with parameters. Returns null if implementation class is missing.
+	 * constructor with parameters. Constructors annotated with {@link Test} are ignored. It is not allowed to have more than a
+	 * single constructor with parameters, of course less those marked for test. Returns null if implementation class is
+	 * missing.
 	 * 
 	 * @param implementationClass implementation class, possible null.
 	 * @return implementation class constructor or null if given implementation class is null.
@@ -913,10 +950,11 @@ final class ManagedClass implements ManagedClassSPI {
 		if (implementationClass == null) {
 			return null;
 		}
-		Constructor<?>[] declaredConstructors = (Constructor<?>[]) implementationClass.getDeclaredConstructors();
+		Constructor<?>[] declaredConstructors = implementationClass.getDeclaredConstructors();
 		if (declaredConstructors.length == 0) {
 			throw new BugError("Invalid implementation class |%s|. Missing constructor.", implementationClass);
 		}
+		Constructor<?> defaultConstructor = null;
 		Constructor<?> constructor = null;
 
 		for (Constructor<?> declaredConstructor : declaredConstructors) {
@@ -926,10 +964,11 @@ final class ManagedClass implements ManagedClassSPI {
 			if (declaredConstructor.isSynthetic()) {
 				continue;
 			}
-			if (declaredConstructor.getParameterTypes().length == 0) {
+			if (declaredConstructor.getAnnotation(Test.class) != null) {
 				continue;
 			}
-			if (declaredConstructor.getAnnotation(Test.class) != null) {
+			if (declaredConstructor.getParameterTypes().length == 0) {
+				defaultConstructor = declaredConstructor;
 				continue;
 			}
 			if (constructor != null) {
@@ -939,7 +978,10 @@ final class ManagedClass implements ManagedClassSPI {
 		}
 
 		if (constructor == null) {
-			constructor = declaredConstructors[0];
+			if (defaultConstructor == null) {
+				throw new BugError("Invalid implementation class |%s|. Missing default constructor.", implementationClass);
+			}
+			constructor = defaultConstructor;
 		}
 		constructor.setAccessible(true);
 		return constructor;

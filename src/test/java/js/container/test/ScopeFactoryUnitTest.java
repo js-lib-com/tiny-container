@@ -37,7 +37,7 @@ public class ScopeFactoryUnitTest {
 	@Test
 	public void containerRegistration() throws Exception {
 		Object container = TestContext.start();
-		Map<String, ScopeFactory> scopeFactories = Classes.getFieldValue(container, Container.class, "scopeFactories");
+		Map<InstanceScope, ScopeFactory> scopeFactories = Classes.getFieldValue(container, Container.class, "scopeFactories");
 
 		assertNotNull(scopeFactories);
 		assertNotNull(scopeFactories.get(InstanceScope.APPLICATION));

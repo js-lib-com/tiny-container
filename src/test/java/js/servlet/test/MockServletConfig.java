@@ -4,7 +4,6 @@ import javax.servlet.ServletContext;
 
 import js.unit.ServletConfigStub;
 
-@SuppressWarnings("unchecked")
 public class MockServletConfig extends ServletConfigStub {
 	public String servletName;
 	public ServletContext servletContext;

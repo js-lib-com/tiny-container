@@ -93,18 +93,28 @@ public interface TransactionalResource extends TransactionContext {
 	/**
 	 * Create mutable, that is, read-write transaction. Implementation may delegate transaction manager, see
 	 * {@link TransactionManager#createTransaction()}.
+	 * <p>
+	 * When create a transaction is possible to request a specific transactional schema. This limits the scope of transactional
+	 * resource objects that can be accessed from transaction. If not provided created transaction used implicit / global
+	 * schema.
 	 * 
+	 * @param schema optional transactional schema, null if not used.
 	 * @return created transaction.
 	 */
-	Transaction createTransaction();
+	Transaction createTransaction(String schema);
 
 	/**
 	 * Create immutable, that is, read-only transaction. Implementation may delegate transaction manager, see
 	 * {@link TransactionManager#createReadOnlyTransaction()}.
+	 * <p>
+	 * When create a transaction is possible to request a specific transactional schema. This limits the scope of transactional
+	 * resource objects that can be accessed from transaction. If not provided created transaction used implicit / global
+	 * schema.
 	 * 
+	 * @param schema optional transactional schema, null if not used.
 	 * @return created read-only transaction.
 	 */
-	Transaction createReadOnlyTransaction();
+	Transaction createReadOnlyTransaction(String schema);
 
 	/**
 	 * Store currently executing session object on thread local. Session object deals with transactional resource services.

@@ -3,7 +3,6 @@ package js.test.stub;
 import java.security.Principal;
 
 import js.container.ContainerSPI;
-import js.container.CronManager;
 import js.container.ManagedClassSPI;
 import js.container.ManagedMethodSPI;
 

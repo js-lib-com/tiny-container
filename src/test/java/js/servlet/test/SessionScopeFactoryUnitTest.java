@@ -39,7 +39,7 @@ public class SessionScopeFactoryUnitTest {
 	@Test
 	public void containerRegistration() throws Exception {
 		TinyContainer container = new TinyContainer();
-		Map<String, ScopeFactory> scopeFactories = Classes.getFieldValue(container, Container.class, "scopeFactories");
+		Map<InstanceScope, ScopeFactory> scopeFactories = Classes.getFieldValue(container, Container.class, "scopeFactories");
 
 		assertNotNull(scopeFactories);
 		assertEquals(4, scopeFactories.size());

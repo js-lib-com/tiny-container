@@ -25,7 +25,7 @@ import js.util.Classes;
 import org.junit.Before;
 import org.junit.Test;
 
-@SuppressWarnings({ "unchecked", "rawtypes" })
+@SuppressWarnings({ "rawtypes" })
 public class RequestContextUnitTest {
 	private MockContainer container;
 	private MockHttpServletRequest httpRequest;

@@ -170,7 +170,6 @@ public class CookiesUnitTest {
 	// --------------------------------------------------------------------------------------------
 	// FIXTURE
 
-	@SuppressWarnings("unchecked")
 	private static class MockHttpServletRequest extends HttpServletRequestStub {
 		private Cookie[] cookies;
 

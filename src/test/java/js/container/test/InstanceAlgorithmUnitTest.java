@@ -10,6 +10,9 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Proxy;
 import java.util.Collections;
 
+import org.junit.Before;
+import org.junit.Test;
+
 import js.container.ContainerSPI;
 import js.container.InstanceScope;
 import js.container.InstanceType;
@@ -17,9 +20,6 @@ import js.container.ManagedMethodSPI;
 import js.lang.Config;
 import js.test.stub.ContainerStub;
 import js.test.stub.ManagedClassSpiStub;
-
-import org.junit.Before;
-import org.junit.Test;
 
 public class InstanceAlgorithmUnitTest {
 	private MockManagedClassSPI managedClass;
@@ -194,6 +194,11 @@ public class InstanceAlgorithmUnitTest {
 		@Override
 		public boolean isTransactional() {
 			return transactional;
+		}
+
+		@Override
+		public String getTransactionalSchema() {
+			return null;
 		}
 
 		@Override

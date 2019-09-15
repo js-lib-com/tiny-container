@@ -26,7 +26,6 @@ import js.util.Classes;
 
 import org.junit.Test;
 
-@SuppressWarnings("unchecked")
 public class ResourceServletUnitTest {
 	@Test
 	public void constructor() {

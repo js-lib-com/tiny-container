@@ -52,12 +52,12 @@ public class ManagedClassSpiStub implements ManagedClassSPI {
 	public String getRequestPath() {
 		throw new UnsupportedOperationException("getRequestPath()");
 	}
-	
+
 	@Override
 	public ManagedMethodSPI getNetMethod(String methodName) {
 		throw new UnsupportedOperationException("getNetMethod(String methodName)");
 	}
-	
+
 	@Override
 	public ManagedMethodSPI getManagedMethod(Method method) throws NoSuchMethodException {
 		throw new UnsupportedOperationException("getManagedMethod(Method method)");
@@ -96,6 +96,11 @@ public class ManagedClassSpiStub implements ManagedClassSPI {
 	@Override
 	public boolean isTransactional() {
 		throw new UnsupportedOperationException("isTransactional()");
+	}
+
+	@Override
+	public String getTransactionalSchema() {
+		throw new UnsupportedOperationException("getTransactionalSchema()");
 	}
 
 	@Override

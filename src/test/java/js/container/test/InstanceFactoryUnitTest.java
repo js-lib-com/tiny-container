@@ -52,7 +52,7 @@ public class InstanceFactoryUnitTest {
 	@Test
 	public void containerRegistration() throws Exception {
 		Object container = TestContext.start();
-		Map<String, InstanceFactory> instanceFactories = Classes.getFieldValue(container, Container.class, "instanceFactories");
+		Map<InstanceType, InstanceFactory> instanceFactories = Classes.getFieldValue(container, Container.class, "instanceFactories");
 
 		assertNotNull(instanceFactories);
 		assertNotNull(instanceFactories.get(InstanceType.POJO));

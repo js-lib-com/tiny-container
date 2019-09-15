@@ -163,7 +163,7 @@ public class TransactionalResourceUnitTest {
 			Transaction transaction = new TransactionStub();
 
 			@Override
-			public Transaction createTransaction() {
+			public Transaction createTransaction(String schema) {
 				return transaction;
 			}
 		}
@@ -171,7 +171,7 @@ public class TransactionalResourceUnitTest {
 
 		factory.transactionManager = transactionManager;
 		Object transactionalResource = createTransactionalResource(factory);
-		Object transaction = invokeMethod(transactionalResource, "createTransaction");
+		Object transaction = invokeMethod(transactionalResource, "createTransaction", (String)null);
 
 		assertEquals(transaction, transactionManager.transaction);
 	}
@@ -183,7 +183,7 @@ public class TransactionalResourceUnitTest {
 			Transaction transaction = new TransactionStub();
 
 			@Override
-			public Transaction createReadOnlyTransaction() {
+			public Transaction createReadOnlyTransaction(String schema) {
 				return transaction;
 			}
 		}
@@ -191,7 +191,7 @@ public class TransactionalResourceUnitTest {
 
 		factory.transactionManager = transactionManager;
 		Object transactionalResource = createTransactionalResource(factory);
-		Object transaction = invokeMethod(transactionalResource, "createReadOnlyTransaction");
+		Object transaction = invokeMethod(transactionalResource, "createReadOnlyTransaction", (String)null);
 
 		assertEquals(transaction, transactionManager.transaction);
 	}

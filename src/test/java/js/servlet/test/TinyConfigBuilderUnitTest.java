@@ -23,7 +23,6 @@ import org.junit.Test;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 
-@SuppressWarnings("unchecked")
 public class TinyConfigBuilderUnitTest {
 	private Properties properties;
 

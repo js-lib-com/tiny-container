@@ -120,24 +120,28 @@ final class TransactionalResourceImpl implements TransactionalResource, Optional
 	// TRANSACTION CREATION
 
 	/**
-	 * Delegates {@link TransactionManager#createTransaction()}. This class constructor ensure transactional service provider
-	 * exists on run-time.
+	 * Delegates {@link TransactionManager#createTransaction()}. When create a transaction is possible to request a specific
+	 * transactional schema. This limits the scope of transactional resource objects that can be accessed from transaction. If
+	 * not provided created transaction used implicit / global schema.
 	 * 
+	 * @param schema optional transactional schema, null if not used.
 	 * @return created transaction.
 	 */
 	@Override
-	public Transaction createTransaction() {
-		return transactionManager.createTransaction();
+	public Transaction createTransaction(String schema) {
+		return transactionManager.createTransaction(schema);
 	}
 
 	/**
-	 * Delegates {@link TransactionManager#createReadOnlyTransaction()}. This class constructor ensure transactional service
-	 * provider exists on run-time.
+	 * Delegates {@link TransactionManager#createReadOnlyTransaction()}. When create a transaction is possible to request a
+	 * specific transactional schema. This limits the scope of transactional resource objects that can be accessed from
+	 * transaction. If not provided created transaction used implicit / global schema.
 	 * 
+	 * @param schema optional transactional schema, null if not used.
 	 * @return created read-only transaction.
 	 */
 	@Override
-	public Transaction createReadOnlyTransaction() {
-		return transactionManager.createReadOnlyTransaction();
+	public Transaction createReadOnlyTransaction(String schema) {
+		return transactionManager.createReadOnlyTransaction(schema);
 	}
 }

@@ -5,10 +5,14 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.Map;
 
+import js.annotation.ContextParam;
+import js.annotation.Cron;
 import js.annotation.Inject;
 import js.annotation.Remote;
 import js.lang.BugError;
 import js.lang.Config;
+import js.lang.ManagedLifeCycle;
+import js.servlet.ContextParamProcessor;
 import js.transaction.Transactional;
 
 /**
@@ -110,6 +114,11 @@ public interface ManagedClassSPI {
 	 */
 	Iterable<ManagedMethodSPI> getManagedMethods();
 
+	/**
+	 * Return this managed class methods annotated with {@link Cron} annotation.
+	 * 
+	 * @return this managed class cron methods.
+	 */
 	Iterable<ManagedMethodSPI> getCronManagedMethods();
 
 	/**
@@ -158,6 +167,17 @@ public interface ManagedClassSPI {
 	boolean isTransactional();
 
 	/**
+	 * If a managed class is transactional it can support optional transactional schema. This schema allows to limit the scope
+	 * of resource objects accessible from transaction boundaries. It is optional with default to null.
+	 * <p>
+	 * Schema value is set by {@link js.transaction.Transactional#schema()} annotation but only when applied to class. On
+	 * methods schema value is ignored.
+	 * 
+	 * @return transactional schema annotated to this managed class, possible null.
+	 */
+	String getTransactionalSchema();
+
+	/**
 	 * Test if this managed class is remotely accessible, that is, is a net class. A managed class is remotely accessible if it
 	 * is tagged so with {@link Remote} annotation or has at least one method accessible remote, see
 	 * {@link ManagedMethodSPI#isRemotelyAccessible()}.
@@ -190,8 +210,27 @@ public interface ManagedClassSPI {
 	 * @return remote class implementation URL.
 	 */
 	String getImplementationURL();
-	
+
+	/**
+	 * Flag indicating that this managed class should be instantiated automatically by container, see {@link Container#start()}.
+	 * Note that created instance is a singleton and managed instance scope should be {@link InstanceScope#APPLICATION}.
+	 * <p>
+	 * This flag is true for following conditions:
+	 * <ul>
+	 * <li>this managed class has {@link Cron} methods,
+	 * <li>this managed class implements {@link ManagedLifeCycle} interface.
+	 * </ul>
+	 * 
+	 * @return true if managed instance should be created automatically by container.
+	 */
 	boolean isAutoInstanceCreation();
-	
+
+	/**
+	 * Get managed class fields annotated with {@link ContextParam} annotation. Map key is the context parameter name. This
+	 * fields will be initialized from container runtime context by {@link ContextParamProcessor}. Note that both static and
+	 * instance fields are acceptable.
+	 * 
+	 * @return managed class fields that should be initialized from container runtime context.
+	 */
 	Map<String, Field> getContextParamFields();
 }
