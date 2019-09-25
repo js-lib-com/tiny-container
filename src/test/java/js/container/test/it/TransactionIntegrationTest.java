@@ -23,7 +23,7 @@ public class TransactionIntegrationTest {
 			"<test-config>" + //
 			"	<managed-classes>" + //
 			"		<transaction-manager interface='js.transaction.TransactionManager' class='js.transaction.hibernate.TransactionManagerImpl' />" + //
-			"		<dao interface='js.container.test.TransactionIntegrationTest$Dao' class='js.container.test.TransactionIntegrationTest$DaoImpl' type='PROXY' />" + //
+			"		<dao interface='js.container.test.it.TransactionIntegrationTest$Dao' class='js.container.test.it.TransactionIntegrationTest$DaoImpl' type='PROXY' />" + //
 			"	</managed-classes>" + //
 			"	<data-source>" + //
 			"		<property name='hibernate.connection.driver_class' value='com.mysql.jdbc.Driver' />" + //

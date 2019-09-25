@@ -1,4 +1,4 @@
-package js.servlet.test;
+package js.servlet.test.it;
 
 import static org.junit.Assert.assertEquals;
 
