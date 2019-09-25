@@ -39,6 +39,7 @@ import js.unit.HttpSessionStub;
 import js.unit.ServletContextStub;
 import js.unit.TestConfigBuilder;
 import js.util.Classes;
+import js.util.Files;
 
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -312,7 +313,7 @@ public class TinyContainerUnitTest {
 	@Test
 	public void getAppFile() throws ConfigException {
 		TinyContainer container = getContainer();
-		assertTrue(container.getAppFile("file").getPath().endsWith("test-app\\file"));
+		assertTrue(Files.path2unix(container.getAppFile("file").getPath()).endsWith("test-app/file"));
 	}
 
 	@Test
