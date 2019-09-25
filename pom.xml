@@ -51,6 +51,9 @@
 					<inputEncoding>UTF-8</inputEncoding>
 					<outputEncoding>UTF-8</outputEncoding>
 					<argLine>-ea -Dfile.encoding=UTF-8</argLine>
+					<excludes>
+						<exclude>**/it/*</exclude>
+					</excludes>
 				</configuration>
 			</plugin>
 			<plugin>

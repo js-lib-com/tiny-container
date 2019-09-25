@@ -1,4 +1,4 @@
-package js.container.test;
+package js.container.test.it;
 
 import static org.junit.Assert.fail;
 
