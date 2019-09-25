@@ -104,7 +104,7 @@ public class HttpRmiServletIntegrationTest {
 	@Test
 	public void queryParameters() throws Exception {
 		execise("/js/net/test/HttpRmiServletIntegrationTest/Controller/saveData.rmi?number=1.23&flag=true&string=this is a string&date=1964-03-15T13:40:00Z&file=/var/log/message");
-		assertEquals("1.23:true:this is a string:Sun Mar 15 15:40:00 EET 1964:\\var\\log\\message", app.content);
+		assertEquals("1.23:true:this is a string:Sun Mar 15 15:40:00 EET 1964:/var/log/message", Files.path2unix((String)app.content));
 	}
 
 	/** Decode form encoded application/x-www-form-urlencoded. */
@@ -113,7 +113,7 @@ public class HttpRmiServletIntegrationTest {
 		request.headers.put("Content-Type", "application/x-www-form-urlencoded");
 		request.setContent("number=1.23&flag=true&string=this is a string&date=1964-03-15T13:40:00Z&file=/var/log/message");
 		execise("/js/net/test/HttpRmiServletIntegrationTest/Controller/saveData.rmi");
-		assertEquals("1.23:true:this is a string:Sun Mar 15 15:40:00 EET 1964:\\var\\log\\message", app.content);
+		assertEquals("1.23:true:this is a string:Sun Mar 15 15:40:00 EET 1964:/var/log/message", Files.path2unix((String)app.content));
 	}
 
 	/** Decode object parameter encode JSON. */
@@ -545,7 +545,7 @@ public class HttpRmiServletIntegrationTest {
 				"--XXX--");
 		execise("/js/net/test/HttpRmiServletIntegrationTest/Controller/saveMixedData.rmi");
 		assertEquals(204, response.status);
-		assertEquals("\\var\\log\\message:<?xml version=\"1.0\" encoding=\"UTF-8\"?>\r\n<root></root>:stream", app.content);
+		assertEquals("/var/log/message:<?xml version=\"1.0\" encoding=\"UTF-8\"?>\r\n<root></root>:stream", Files.path2unix((String)app.content));
 	}
 
 	@Test
@@ -566,7 +566,7 @@ public class HttpRmiServletIntegrationTest {
 				"--XXX--");
 		execise("/js/net/test/HttpRmiServletIntegrationTest/Controller/saveNoStream.rmi");
 		assertEquals(204, response.status);
-		assertEquals("\\var\\log\\message:<?xml version=\"1.0\" encoding=\"UTF-8\"?>\r\n<root></root>", app.content);
+		assertEquals("/var/log/message:<?xml version=\"1.0\" encoding=\"UTF-8\"?>\r\n<root></root>", Files.path2unix((String)app.content));
 	}
 
 	@Test
