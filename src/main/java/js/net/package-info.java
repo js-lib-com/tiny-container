@@ -449,7 +449,7 @@
  * In order to listen for a event of a particular class just user that class qualified name as first argument for <code>addEventListener</code>. 
  * <pre>
  *  var eventSource = new EventSource("http://hub.bbnet.ro/test.event");
- *  eventSource.addEventListener("bbnet.hub.Alert", function(ev) {
+ *  eventSource.addEventListener("Alert", function(ev) {
  *      message.innerHTML = "hub alert: " + ev.data;
  *  });
  * </pre>

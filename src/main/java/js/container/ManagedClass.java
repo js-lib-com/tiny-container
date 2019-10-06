@@ -25,7 +25,7 @@ import js.annotation.Public;
 import js.annotation.Remote;
 import js.annotation.RequestPath;
 import js.annotation.Service;
-import js.annotation.Test;
+import js.annotation.TestConstructor;
 import js.converter.Converter;
 import js.converter.ConverterException;
 import js.core.AppFactory;
@@ -937,7 +937,7 @@ final class ManagedClass implements ManagedClassSPI {
 	/**
 	 * Get implementation class constructor. Managed class mandates a single constructor with parameters, no matter if private
 	 * or formal parameters count. If both default constructor and constructor with parameters are defined this method returns
-	 * constructor with parameters. Constructors annotated with {@link Test} are ignored. It is not allowed to have more than a
+	 * constructor with parameters. Constructors annotated with {@link TestConstructor} are ignored. It is not allowed to have more than a
 	 * single constructor with parameters, of course less those marked for test. Returns null if implementation class is
 	 * missing.
 	 * 
@@ -964,7 +964,7 @@ final class ManagedClass implements ManagedClassSPI {
 			if (declaredConstructor.isSynthetic()) {
 				continue;
 			}
-			if (declaredConstructor.getAnnotation(Test.class) != null) {
+			if (declaredConstructor.getAnnotation(TestConstructor.class) != null) {
 				continue;
 			}
 			if (declaredConstructor.getParameterTypes().length == 0) {

@@ -678,8 +678,13 @@ public class ContainerUnitTest {
 			++methodsCount;
 			System.out.println(managedMethod);
 		}
-		// this hard coded value depends on lib-descriptor.xml
-		assertEquals(5, methodsCount);
+		// this hard coded value depends on library classes declared as managed
+		// it counts only methods from classes of PROXY type
+		// curent methods are:
+		// js.http.captcha.Captcha#verifyResponse(int,String)
+		// js.http.captcha.Captcha#getChallenge(int)
+		// js.http.captcha.Captcha#getImage(String)
+		assertEquals(3, methodsCount);
 	}
 
 	@Test(expected = BugError.class)

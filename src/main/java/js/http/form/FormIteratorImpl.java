@@ -175,7 +175,7 @@ public final class FormIteratorImpl implements FormIterator {
 
 		public PartImpl(FileItemStream fileItemStream) {
 			this.fileItemStream = fileItemStream;
-			this.name = Strings.toMemberName(this.fileItemStream.getFieldName());
+			this.name = Strings.dashedToMemberName(this.fileItemStream.getFieldName());
 		}
 
 		@Override
@@ -186,7 +186,7 @@ public final class FormIteratorImpl implements FormIterator {
 		@Override
 		public boolean is(String name) {
 			Params.notNull(name, "Name");
-			return name.equals(Strings.toMemberName(name));
+			return name.equals(Strings.dashedToMemberName(name));
 		}
 
 		@Override

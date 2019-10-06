@@ -245,7 +245,7 @@ public final class FormObject {
 		public Node getChild(String childName) throws IllegalAccessException {
 			Field field = null;
 			try {
-				field = Classes.getFieldEx(object.getClass(), Strings.toMemberName(childName));
+				field = Classes.getFieldEx(object.getClass(), Strings.dashedToMemberName(childName));
 			} catch (NoSuchFieldException e) {
 				// best effort approach: form to object mapping is not so strictly but still log missing fields
 				log.debug("Missing field |%s| from object |%s|.", childName, object.getClass());
@@ -274,7 +274,7 @@ public final class FormObject {
 		public void setValue(String childName, Object value) throws ConverterException, IllegalAccessException {
 			Field field = null;
 			try {
-				field = Classes.getFieldEx(object.getClass(), Strings.toMemberName(childName));
+				field = Classes.getFieldEx(object.getClass(), Strings.dashedToMemberName(childName));
 			} catch (NoSuchFieldException e) {
 				// best effort approach: form to object mapping is not so strictly - i.e. ignores missing fields
 				log.debug("Missing field |%s| from object |%s|.", childName, object.getClass());

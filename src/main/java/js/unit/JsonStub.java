@@ -25,11 +25,6 @@ public class JsonStub implements Json {
 	}
 
 	@Override
-	public <T> T parseObject(Reader reader) throws IOException, JsonException, ClassCastException {
-		throw new UnsupportedOperationException("parseObject(Reader reader)");
-	}
-
-	@Override
 	public String stringify(Object value) {
 		throw new UnsupportedOperationException("stringify(Object value)");
 	}
@@ -37,10 +32,5 @@ public class JsonStub implements Json {
 	@Override
 	public void stringify(Writer writer, Object value) throws IOException {
 		throw new UnsupportedOperationException("stringify(Writer writer, Object value)");
-	}
-
-	@Override
-	public void stringifyObject(Writer writer, Object value) throws IOException {
-		throw new UnsupportedOperationException("stringifyObject(Writer writer, Object value)");
 	}
 }

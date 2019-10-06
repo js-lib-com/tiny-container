@@ -53,7 +53,7 @@ final class UploadedFileImpl implements UploadedFile {
 	@Override
 	public boolean is(String name) {
 		Params.notNull(name, "Name");
-		return name.equals(Strings.toMemberName(name));
+		return name.equals(Strings.dashedToMemberName(name));
 	}
 
 	@Override

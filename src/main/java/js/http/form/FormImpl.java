@@ -75,7 +75,7 @@ public final class FormImpl implements Form {
 	public UploadedFile getUploadedFile(String partName) {
 		Params.notNullOrEmpty(partName, "Form part name");
 		// key of the uploaded files map is normalized to Java member name
-		return uploadedFiles.get(Strings.toMemberName(partName));
+		return uploadedFiles.get(Strings.dashedToMemberName(partName));
 	}
 
 	@Override
@@ -105,6 +105,6 @@ public final class FormImpl implements Form {
 	 */
 	private FormField getFormField(String name) {
 		// key of the form fields map is normalized to Java member name
-		return fields.get(Strings.toMemberName(name));
+		return fields.get(Strings.dashedToMemberName(name));
 	}
 }
