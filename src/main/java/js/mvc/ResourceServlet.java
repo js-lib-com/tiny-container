@@ -12,6 +12,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import js.annotation.Controller;
+import js.annotation.TestConstructor;
 import js.container.AuthorizationException;
 import js.container.ContainerSPI;
 import js.container.ManagedClassSPI;
@@ -108,6 +109,7 @@ public class ResourceServlet extends AppServlet {
 	 * 
 	 * @param argumentsReaderFactory mock arguments reader factory.
 	 */
+	@TestConstructor
 	public ResourceServlet(ArgumentsReaderFactory argumentsReaderFactory) {
 		log.trace("ResourceServlet(ArgumentsReaderFactory)");
 		this.argumentsReaderFactory = argumentsReaderFactory;

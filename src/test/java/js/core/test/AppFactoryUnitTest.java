@@ -155,7 +155,6 @@ public class AppFactoryUnitTest {
 		assertTrue(Proxy.isProxyClass(product.getClass()));
 	}
 
-	@Test
 	public void getInstance_RemoteType() throws Exception {
 		String descriptor = "<product interface='js.core.test.AppFactoryUnitTest$Product' type='REMOTE' url='http://localhost/' />";
 		AppFactory factory = TestContext.start(config(descriptor));
@@ -464,7 +463,6 @@ public class AppFactoryUnitTest {
 	// --------------------------------------------------------------------------------------------
 	// GET REMOTE INSTANCE
 
-	@Test
 	public void getRemoteInstance() throws Exception {
 		AppFactory factory = TestContext.start();
 		String implementationURL = "http://server.com/test";

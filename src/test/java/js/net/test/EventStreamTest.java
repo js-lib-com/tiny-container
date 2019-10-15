@@ -8,12 +8,15 @@ import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.isNull;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.io.Writer;
 import java.lang.reflect.Constructor;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.TimeUnit;
@@ -25,9 +28,13 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
+import org.mockito.invocation.InvocationOnMock;
 import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.stubbing.Answer;
+import org.mockito.stubbing.Stubber;
 
 import js.annotation.TestConstructor;
+import js.json.Json;
 import js.lang.BugError;
 import js.lang.Event;
 import js.net.EventStream;
@@ -36,6 +43,8 @@ import js.util.Classes;
 
 @RunWith(MockitoJUnitRunner.class)
 public class EventStreamTest {
+	@Mock
+	private Json json;
 	@Mock
 	private BlockingQueue<Event> eventsQueue;
 	@Mock
@@ -49,13 +58,13 @@ public class EventStreamTest {
 
 	@Before
 	public void beforeTest() {
-		eventStream = new EventStream(eventsQueue, true);
+		eventStream = new EventStream(json, eventsQueue, true);
 	}
 
 	/** Assert test constructor is marked with {@link TestConstructor} annotation. */
 	@Test
 	public void testConstructor() throws NoSuchMethodException, SecurityException {
-		Constructor<EventStream> testConstructor = EventStream.class.getConstructor(BlockingQueue.class, boolean.class);
+		Constructor<EventStream> testConstructor = EventStream.class.getConstructor(Json.class, BlockingQueue.class, boolean.class);
 		assertNotNull("Missing annotation from test constructor.", testConstructor.getAnnotation(TestConstructor.class));
 	}
 
@@ -103,7 +112,7 @@ public class EventStreamTest {
 	/** It is considered a bug attempting to push on a closed event stream. */
 	@Test(expected = BugError.class)
 	public void push_NotActive() throws InterruptedException {
-		eventStream = new EventStream(eventsQueue, false);
+		eventStream = new EventStream(json, eventsQueue, false);
 		eventStream.push(null);
 	}
 
@@ -111,6 +120,7 @@ public class EventStreamTest {
 	@Test
 	public void loop_sendEvent() throws Throwable {
 		Event event = new TestEvent("Send event.");
+		doWrite("{\"text\":\"Send event.\"}").when(json).stringify(any(Writer.class), eq(event));
 		// 40000 is the default keep alive period
 		// uses fixed values in order to check that #keepAlivePeriod is indeed used
 		when(eventsQueue.poll(40000, TimeUnit.MILLISECONDS)).thenReturn(event);
@@ -144,7 +154,7 @@ public class EventStreamTest {
 	/** On events queue poll interruption breaks the loop, if event stream is not active anymore. */
 	@Test
 	public void loop_Interrupted_NotActive() throws InterruptedException {
-		eventStream = new EventStream(eventsQueue, false);
+		eventStream = new EventStream(json, eventsQueue, false);
 		when(eventsQueue.poll(anyLong(), any(TimeUnit.class))).thenThrow(new InterruptedException());
 		assertFalse(eventStream.loop());
 	}
@@ -175,9 +185,11 @@ public class EventStreamTest {
 
 	@Test
 	public void sendEvent() throws Exception {
+		Event event = new TestEvent("Send event.");
+		doWrite("{\"text\":\"Send event.\"}").when(json).stringify(any(Writer.class), eq(event));
 		StringWriter buffer = new StringWriter();
 		eventStream.setWriter(new PrintWriter(buffer));
-		Classes.invoke(eventStream, "sendEvent", new TestEvent("Send event."));
+		Classes.invoke(eventStream, "sendEvent", event);
 		assertThat(buffer.toString(), equalTo("event:TestEvent\r\ndata:{\"text\":\"Send event.\"}\r\n\r\n"));
 	}
 
@@ -195,6 +207,17 @@ public class EventStreamTest {
 
 	private int keepAlivePeriod() {
 		return Classes.getFieldValue(eventStream, EventStream.class, "keepAlivePeriod");
+	}
+
+	private static Stubber doWrite(final String json) {
+		return doAnswer(new Answer<Void>() {
+			@Override
+			public Void answer(InvocationOnMock invocation) throws Throwable {
+				Writer writer = invocation.getArgument(0);
+				writer.write(json);
+				return null;
+			}
+		});
 	}
 
 	private static class TestEvent implements Event {

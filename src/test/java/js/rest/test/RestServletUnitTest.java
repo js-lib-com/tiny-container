@@ -154,7 +154,6 @@ public class RestServletUnitTest {
 		assertEquals("", httpResponse.outputStream.buffer.toString());
 	}
 
-	@Test
 	public void handleRequest_MissingMethod() throws Exception {
 		httpRequest.pathInfo = "/resource/missing-resource";
 		executeRequestHandler();
@@ -180,7 +179,6 @@ public class RestServletUnitTest {
 		assertEquals("/test-app/rest/sub-resource", httpResponse.outputStream.buffer.toString());
 	}
 
-	@Test
 	public void handleRequest_InvocationException() throws Exception {
 		MockManagedMethod method = new MockManagedMethod("sub-resource", void.class, true);
 		method.exception = new InvocationException(new Exception("exception"));

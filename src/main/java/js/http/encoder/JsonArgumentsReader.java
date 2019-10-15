@@ -11,6 +11,7 @@ import java.nio.charset.Charset;
 
 import javax.servlet.http.HttpServletRequest;
 
+import js.annotation.TestConstructor;
 import js.json.Json;
 import js.json.JsonException;
 import js.lang.IllegalArgumentException;
@@ -25,15 +26,20 @@ import js.util.Types;
  * @author Iulian Rotaru
  * @version final
  */
-final class JsonArgumentsReader implements ArgumentsReader, ArgumentPartReader {
+public final class JsonArgumentsReader implements ArgumentsReader, ArgumentPartReader {
 	/** JSON deserializer delegated for arguments parsing. */
 	private final Json json;
 
 	/** Create JSON arguments reader. */
 	public JsonArgumentsReader() {
-		json = Classes.loadService(Json.class);
+		this.json = Classes.loadService(Json.class);
 	}
 
+	@TestConstructor
+	public JsonArgumentsReader(Json json) {
+		this.json = json;
+	}
+	
 	/**
 	 * Uses JSON deserializer to parse method invocation arguments accordingly formal parameters list.
 	 * 

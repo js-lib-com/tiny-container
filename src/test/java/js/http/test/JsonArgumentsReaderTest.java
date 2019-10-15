@@ -25,21 +25,23 @@ import org.mockito.invocation.InvocationOnMock;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.mockito.stubbing.Answer;
 
-import js.http.encoder.ArgumentsReader;
-import js.http.encoder.ArgumentsReaderFactory;
-import js.http.encoder.ServerEncoders;
+import js.http.encoder.JsonArgumentsReader;
+import js.json.Json;
 import js.lang.GType;
 
 @SuppressWarnings("unchecked")
 @RunWith(MockitoJUnitRunner.class)
-public class ArgumentsReaderTest {
+public class JsonArgumentsReaderTest {
 	private String content;
 	private ServletInputStream stream;
 
 	@Mock
 	private HttpServletRequest request;
 
-	private ArgumentsReaderFactory argumentsReaderFactory;
+	@Mock
+	private Json json;
+	
+	private JsonArgumentsReader argumentsReader;
 
 	@Before
 	public void beforeTest() throws IOException {
@@ -58,14 +60,13 @@ public class ArgumentsReaderTest {
 			}
 		});
 
-		when(request.getContentType()).thenReturn("application/json");
 		when(request.getInputStream()).thenReturn(stream);
-
-		argumentsReaderFactory = ServerEncoders.getInstance();
+		
+		argumentsReader = new JsonArgumentsReader();
 	}
 
 	@Test
-	public void readJsonArguments_Object() throws Exception {
+	public void read_Object() throws Exception {
 		content = "[{\"name\":\"John Doe\"}]";
 
 		Object[] arguments = exercise(new Type[] { Person.class });
@@ -78,7 +79,7 @@ public class ArgumentsReaderTest {
 	}
 
 	@Test
-	public void readJsonArguments_Object_NoArgumentsArray() throws Exception {
+	public void read_Object_NoArgumentsArray() throws Exception {
 		content = "{\"name\":\"John Doe\"}";
 
 		Object[] arguments = exercise(new Type[] { Person.class });
@@ -90,7 +91,7 @@ public class ArgumentsReaderTest {
 	}
 
 	@Test
-	public void readJsonArguments_TwoObjects() throws Exception {
+	public void read_TwoObjects() throws Exception {
 		content = "[{\"name\":\"John Doe\"},{\"name\":\"Jane Doe\"}]";
 
 		Object[] arguments = exercise(new Type[] { Person.class, Person.class });
@@ -104,7 +105,7 @@ public class ArgumentsReaderTest {
 	}
 
 	@Test
-	public void readJsonArguments_TwoObjects_NoArgumentsArray() throws Exception {
+	public void read_TwoObjects_NoArgumentsArray() throws Exception {
 		content = "{\"name\":\"John Doe\"},{\"name\":\"Jane Doe\"}";
 
 		Object[] arguments = exercise(new Type[] { Person.class, Person.class });
@@ -118,7 +119,7 @@ public class ArgumentsReaderTest {
 	}
 
 	@Test
-	public void readJsonArguments_ObjectWithObject() throws Exception {
+	public void read_ObjectWithObject() throws Exception {
 		content = "[{\"godFather\":{\"name\":\"John Doe\"}}]";
 
 		Object[] arguments = exercise(new Type[] { CosaNostra.class });
@@ -130,7 +131,7 @@ public class ArgumentsReaderTest {
 	}
 
 	@Test
-	public void readJsonArguments_ObjectWithObject_NoArgumentsArray() throws Exception {
+	public void read_ObjectWithObject_NoArgumentsArray() throws Exception {
 		content = "{\"godFather\":{\"name\":\"John Doe\"}}";
 
 		Object[] arguments = exercise(new Type[] { CosaNostra.class });
@@ -142,7 +143,7 @@ public class ArgumentsReaderTest {
 	}
 
 	@Test
-	public void readJsonArguments_ObjectWithArray() throws Exception {
+	public void read_ObjectWithArray() throws Exception {
 		content = "[{\"members\":[{\"name\":\"John Doe\"}]}]";
 
 		Object[] arguments = exercise(new Type[] { Family.class });
@@ -154,7 +155,7 @@ public class ArgumentsReaderTest {
 	}
 
 	@Test
-	public void readJsonArguments_ObjectWithArray_NoArgumentsArray() throws Exception {
+	public void read_ObjectWithArray_NoArgumentsArray() throws Exception {
 		content = "{\"members\":[{\"name\":\"John Doe\"}]}";
 
 		Object[] arguments = exercise(new Type[] { Family.class });
@@ -167,7 +168,7 @@ public class ArgumentsReaderTest {
 	}
 
 	@Test
-	public void readJsonArguments_List() throws Exception {
+	public void read_List() throws Exception {
 		content = "[[{\"name\":\"John Doe\"}]]";
 
 		Object[] arguments = exercise(new Type[] { new GType(List.class, Person.class) });
@@ -182,7 +183,7 @@ public class ArgumentsReaderTest {
 	}
 
 	@Test
-	public void readJsonArguments_List_NoArgumentsArray() throws IOException {
+	public void read_List_NoArgumentsArray() throws IOException {
 		content = "[{\"name\":\"John Doe\"}]";
 
 		Object[] arguments = exercise(new Type[] { new GType(List.class, Person.class) });
@@ -197,7 +198,7 @@ public class ArgumentsReaderTest {
 	}
 
 	@Test
-	public void readJsonArguments_ListOfArray() throws Exception {
+	public void read_ListOfArray() throws Exception {
 		content = "[[[{\"name\":\"John Doe\"}]]]";
 
 		Object[] arguments = exercise(new Type[] { new GType(List.class, Person[].class) });
@@ -212,7 +213,7 @@ public class ArgumentsReaderTest {
 	}
 
 	@Test
-	public void readJsonArguments_ListOfArray_NoArgumentsArray() throws Exception {
+	public void read_ListOfArray_NoArgumentsArray() throws Exception {
 		content = "[[{\"name\":\"John Doe\"}]]";
 
 		Object[] arguments = exercise(new Type[] { new GType(List.class, Person[].class) });
@@ -227,7 +228,7 @@ public class ArgumentsReaderTest {
 	}
 
 	@Test
-	public void readJsonArguments_ListOfStrings() throws Exception {
+	public void read_ListOfStrings() throws Exception {
 		content = "[[\"John Doe\",\"Jane Doe\"]]";
 
 		Object[] arguments = exercise(new Type[] { new GType(List.class, String.class) });
@@ -243,7 +244,7 @@ public class ArgumentsReaderTest {
 	}
 
 	@Test
-	public void readJsonArguments_ListOfStrings_NoArgumentsArray() throws Exception {
+	public void read_ListOfStrings_NoArgumentsArray() throws Exception {
 		content = "[\"John Doe\",\"Jane Doe\"]";
 
 		Object[] arguments = exercise(new Type[] { new GType(List.class, String.class) });
@@ -259,7 +260,7 @@ public class ArgumentsReaderTest {
 	}
 
 	@Test
-	public void readJsonArguments_MapOfObjects() throws Exception {
+	public void read_MapOfObjects() throws Exception {
 		content = "[{\"first\":{\"name\":\"John Doe\"},\"second\":{\"name\":\"Jane Doe\"}}]";
 
 		Object[] arguments = exercise(new Type[] { new GType(Map.class, String.class, Person.class) });
@@ -275,7 +276,7 @@ public class ArgumentsReaderTest {
 	}
 
 	@Test
-	public void readJsonArguments_MapOfObjects_NoArgumentsArray() throws Exception {
+	public void read_MapOfObjects_NoArgumentsArray() throws Exception {
 		content = "{\"first\":{\"name\":\"John Doe\"},\"second\":{\"name\":\"Jane Doe\"}}";
 
 		Object[] arguments = exercise(new Type[] { new GType(Map.class, String.class, Person.class) });
@@ -291,7 +292,6 @@ public class ArgumentsReaderTest {
 	}
 
 	private Object[] exercise(Type[] formalParameters) throws IOException {
-		ArgumentsReader argumentsReader = argumentsReaderFactory.getArgumentsReader(request, formalParameters);
 		return argumentsReader.read(request, formalParameters);
 	}
 

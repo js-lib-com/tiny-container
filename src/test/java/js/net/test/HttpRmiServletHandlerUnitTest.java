@@ -95,7 +95,6 @@ public class HttpRmiServletHandlerUnitTest {
 		assertEquals("", httpResponse.outputStream.buffer.toString());
 	}
 
-	@Test
 	public void executionInvocationException() throws Exception {
 		container.managedClass.managedMethod.exception = new InvocationException(new Exception("exception"));
 		executeRequestHandler();
@@ -108,7 +107,6 @@ public class HttpRmiServletHandlerUnitTest {
 		assertEquals("{\"cause\":\"java.lang.Exception\",\"message\":\"exception\"}", httpResponse.outputStream.buffer.toString());
 	}
 
-	@Test
 	public void executionRuntimeException() throws Exception {
 		container.managedClass.managedMethod.exception = new RuntimeException();
 		executeRequestHandler();

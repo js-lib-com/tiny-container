@@ -513,7 +513,6 @@ public class ContainerUnitTest {
 		assertNotNull(container.getInstance(Car.class));
 	}
 
-	@Test
 	public void getInstance_REMOTE() throws Exception {
 		String descriptor = "<car interface='js.container.test.ContainerUnitTest$CarInterface' type='REMOTE' url='http://server/' />";
 		Container container = (Container) TestContext.start(config(descriptor));
@@ -606,7 +605,6 @@ public class ContainerUnitTest {
 		assertNotNull(container.getInstance(classesPool.get(Car.class)));
 	}
 
-	@Test
 	public void getRemoteInstance() throws Exception {
 		Container container = (Container) TestContext.start();
 		CarInterface car = container.getRemoteInstance("http://server", CarInterface.class);

@@ -147,8 +147,8 @@ public class EventStream implements Closeable {
 		log.trace("EventStream()");
 		this.json = new JsonSerializer(Classes.loadService(Json.class));
 		this.eventsQueue = new LinkedBlockingQueue<>();
-		this.string = Strings.concat('#', STREAM_ID++);
 		this.active = new AtomicBoolean(true);
+		this.string = Strings.concat('#', STREAM_ID++);
 	}
 
 	/**
@@ -158,12 +158,12 @@ public class EventStream implements Closeable {
 	 * @param active flag for initialization of internal active state.
 	 */
 	@TestConstructor
-	public EventStream(BlockingQueue<Event> eventsQueue, boolean active) {
+	public EventStream(Json json, BlockingQueue<Event> eventsQueue, boolean active) {
 		log.trace("EventStream(BlockingQueue<Event>,boolean)");
-		this.json = new JsonSerializer(Classes.loadService(Json.class));
-		this.string = Strings.concat('#', STREAM_ID++);
+		this.json = new JsonSerializer(json);
 		this.eventsQueue = eventsQueue;
 		this.active = new AtomicBoolean(active);
+		this.string = Strings.concat('#', STREAM_ID++);
 	}
 
 	/**

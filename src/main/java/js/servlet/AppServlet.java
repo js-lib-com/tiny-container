@@ -23,7 +23,6 @@ import js.log.LogContext;
 import js.log.LogFactory;
 import js.rmi.BusinessException;
 import js.rmi.RemoteException;
-import js.util.Classes;
 import js.util.Strings;
 
 /**
@@ -352,7 +351,7 @@ public abstract class AppServlet extends HttpServlet {
 		}
 		log.trace("Send response object |%s|.", object.toString());
 
-		Json json = Classes.loadService(Json.class);
+		Json json = context.getContainer().getInstance(Json.class);
 		String buffer = json.stringify(object);
 		byte[] bytes = buffer.getBytes("UTF-8");
 

@@ -299,7 +299,6 @@ public class InstanceFactoryUnitTest {
 	// --------------------------------------------------------------------------------------------
 	// REMOTE INSTANCE FACTORY
 
-	@Test
 	public void remoteInstanceFactory() throws Exception {
 		MockManagedClassSPI managedClass = new MockManagedClassSPI();
 		managedClass.interfaceClasses = new Class[] { Human.class };
@@ -317,7 +316,6 @@ public class InstanceFactoryUnitTest {
 		factory.newInstance(managedClass, "argument");
 	}
 
-	@Test
 	public void remoteInstanceFactory_GetRemoteInstance() throws Exception {
 		RemoteFactory factory = (RemoteFactory) getRemoteInstanceFactory();
 		assertNotNull(factory.getRemoteInstance("http://server/", Human.class));
@@ -330,7 +328,6 @@ public class InstanceFactoryUnitTest {
 		assertNotNull(factory.getRemoteInstance("dots://server/", Human.class));
 	}
 
-	@Test
 	public void remoteInstanceFactory_RemoteFactories() throws Exception {
 		InstanceFactory factory = getRemoteInstanceFactory();
 		Map<String, RemoteFactory> remoteFactories = Classes.getFieldValue(factory, "remoteFactories");

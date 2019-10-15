@@ -31,7 +31,6 @@ public class FactoryUnitTest {
 	}
 
 	/** Application factory bound on main thread should be accessible on child thread. */
-	@Test
 	public void storageInheritance() throws InterruptedException {
 		final MockAppFactory appFactory = new MockAppFactory();
 		Factory.bind(appFactory);

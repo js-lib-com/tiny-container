@@ -11,7 +11,6 @@ import java.lang.reflect.Method;
 import java.util.Collection;
 import java.util.Map;
 
-import org.hibernate.Session;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -464,8 +463,6 @@ public class ManagedClassUnitTest {
 
 		String getEngine();
 
-		Driver getDriver(int driverId);
-
 		CarImpl getImpl();
 	}
 
@@ -517,12 +514,6 @@ public class ManagedClassUnitTest {
 		@Override
 		public String getEngine() {
 			return this.engine;
-		}
-
-		@Override
-		public Driver getDriver(int driverId) {
-			Session session = this.database.getSession();
-			return (Driver) session.get(Driver.class, driverId);
 		}
 
 		@Override
@@ -581,7 +572,7 @@ public class ManagedClassUnitTest {
 	private static class Driver {
 		private int id;
 		private String name;
-
+		
 		public String getName() {
 			return this.name;
 		}

@@ -86,7 +86,6 @@ public class InstanceAlgorithmUnitTest {
 		assertTrue(car2 instanceof Proxy);
 	}
 
-	@Test
 	public void getApplicationRemote() {
 		managedClass.implementationClass = Car.class;
 		managedClass.scope = InstanceScope.APPLICATION;
