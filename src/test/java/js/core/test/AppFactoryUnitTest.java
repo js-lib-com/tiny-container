@@ -12,16 +12,18 @@ import java.net.URL;
 import java.util.Date;
 import java.util.Enumeration;
 
+import org.junit.BeforeClass;
+import org.junit.Test;
+
 import js.core.AppContext;
 import js.core.AppFactory;
 import js.lang.BugError;
 import js.lang.InvocationException;
 import js.lang.NoProviderException;
 import js.unit.TestContext;
+import net.jcip.annotations.NotThreadSafe;
 
-import org.junit.BeforeClass;
-import org.junit.Test;
-
+@NotThreadSafe
 public class AppFactoryUnitTest {
 	@BeforeClass
 	public static void beforeClass() {
@@ -52,12 +54,11 @@ public class AppFactoryUnitTest {
 		assertTrue(car1 == car2);
 	}
 
-	/** Two instances of the same managed class with APPLICATION scope should be equal even if created from different threads. */
+	/** Two references of the same managed class with APPLICATION scope should be equal even if created from different threads. */
 	@Test
 	public void getInstance_CrossThreadApplicationScope() throws Exception {
 		String descriptor = "<car class='js.core.test.AppFactoryUnitTest$Car' scope='APPLICATION' />";
 		final AppFactory factory = TestContext.start(config(descriptor));
-		final Object lock = new Object();
 
 		class TestRunnable implements Runnable {
 			private Car car;
@@ -65,19 +66,13 @@ public class AppFactoryUnitTest {
 			@Override
 			public void run() {
 				car = factory.getInstance(Car.class);
-				synchronized (lock) {
-					lock.notify();
-				}
 			}
 		}
 
 		TestRunnable runnable = new TestRunnable();
 		Thread thread = new Thread(runnable);
 		thread.start();
-
-		synchronized (lock) {
-			lock.wait(2000);
-		}
+		thread.join(2000);
 
 		// since Car scope is APPLICATION instance created from main thread is the same as the one created from separated thread
 		assertEquals(runnable.car, factory.getInstance(Car.class));
@@ -91,7 +86,6 @@ public class AppFactoryUnitTest {
 	public void getInstance_ThreadScope() throws Exception {
 		String descriptor = "<car class='js.core.test.AppFactoryUnitTest$Car' scope='THREAD' />";
 		final AppFactory factory = TestContext.start(config(descriptor));
-		final Object lock = new Object();
 
 		Car car1 = factory.getInstance(Car.class);
 		Car car2 = factory.getInstance(Car.class);
@@ -104,20 +98,14 @@ public class AppFactoryUnitTest {
 			public void run() {
 				car1 = factory.getInstance(Car.class);
 				car2 = factory.getInstance(Car.class);
-				synchronized (lock) {
-					lock.notify();
-				}
 			}
 		}
 
 		TestRunnable runnable = new TestRunnable();
 		Thread thread = new Thread(runnable);
 		thread.start();
-
-		synchronized (lock) {
-			lock.wait(2000);
-		}
-
+		thread.join(2000);
+		
 		assertTrue(car1 == car2);
 		assertTrue(runnable.car1 == runnable.car2);
 		assertTrue(car1 != runnable.car1);
