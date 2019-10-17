@@ -9,6 +9,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.TimeZone;
 
 import javax.servlet.ServletOutputStream;
 import javax.servlet.WriteListener;
@@ -70,7 +71,7 @@ public class FileResourceUnitTest {
 
 		assertEquals("no-cache;no-store", httpResponse.headers.get("Cache-Control"));
 		assertEquals("no-cache", httpResponse.headers.get("Pragma"));
-		assertEquals("Thu, 01 Jan 1970 02:00:00 GMT", httpResponse.headers.get("Expires"));
+		assertEquals("Thu, 01 Jan 1970 00:00:00", httpResponse.headers.get("Expires"));
 		assertEquals("text/html;charset=UTF-8", httpResponse.headers.get("Content-Type"));
 		assertEquals("497", httpResponse.headers.get("Content-Length"));
 		assertEquals(497, httpResponse.stream.writeProbe);
@@ -105,7 +106,8 @@ public class FileResourceUnitTest {
 
 		@Override
 		public void setDateHeader(String name, long value) {
-			DateFormat dateFormat = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss 'GMT'");
+			DateFormat dateFormat = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss");
+			dateFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
 			headers.put(name, dateFormat.format(new Date(value)));
 		}
 

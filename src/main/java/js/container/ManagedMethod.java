@@ -153,7 +153,7 @@ final class ManagedMethod implements ManagedMethodSPI {
 	 * @param requestPath request URI path for this method, possible null.
 	 */
 	void setRequestPath(String requestPath) {
-		this.requestPath = requestPath != null ? requestPath : Strings.toDashCase(method.getName());
+		this.requestPath = requestPath != null ? requestPath : Strings.memberToDashCase(method.getName());
 	}
 
 	/**
