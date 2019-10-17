@@ -18,6 +18,10 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
+
 import js.annotation.Public;
 import js.annotation.Remote;
 import js.container.Container;
@@ -27,6 +31,7 @@ import js.container.InstanceKey;
 import js.container.InstanceProcessor;
 import js.container.InstanceScope;
 import js.container.InstanceType;
+import js.container.ManagedClass;
 import js.container.ManagedClassSPI;
 import js.container.ManagedMethodSPI;
 import js.container.ScopeFactory;
@@ -52,14 +57,17 @@ import js.transaction.TransactionManager;
 import js.unit.TestContext;
 import js.util.Classes;
 
-import org.junit.BeforeClass;
-import org.junit.Test;
-
 @SuppressWarnings({ "unchecked", "rawtypes", "unused", "hiding" })
 public class ContainerUnitTest {
 	@BeforeClass
 	public static void beforeClass() {
 		System.setProperty("catalina.base", "fixture/server/tomcat");
+	}
+
+	@Before
+	public void beforeTest() {
+		AtomicInteger KEY_SEED = Classes.getFieldValue(ManagedClass.class, "KEY_SEED");
+		KEY_SEED.set(0);
 	}
 
 	// --------------------------------------------------------------------------------------------

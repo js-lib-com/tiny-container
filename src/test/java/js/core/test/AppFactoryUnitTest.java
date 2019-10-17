@@ -54,7 +54,9 @@ public class AppFactoryUnitTest {
 		assertTrue(car1 == car2);
 	}
 
-	/** Two references of the same managed class with APPLICATION scope should be equal even if created from different threads. */
+	/**
+	 * Two references of the same managed class with APPLICATION scope should be equal even if created from different threads.
+	 */
 	@Test
 	public void getInstance_CrossThreadApplicationScope() throws Exception {
 		String descriptor = "<car class='js.core.test.AppFactoryUnitTest$Car' scope='APPLICATION' />";
@@ -72,7 +74,7 @@ public class AppFactoryUnitTest {
 		TestRunnable runnable = new TestRunnable();
 		Thread thread = new Thread(runnable);
 		thread.start();
-		thread.join(2000);
+		join(thread);
 
 		// since Car scope is APPLICATION instance created from main thread is the same as the one created from separated thread
 		assertEquals(runnable.car, factory.getInstance(Car.class));
@@ -104,8 +106,8 @@ public class AppFactoryUnitTest {
 		TestRunnable runnable = new TestRunnable();
 		Thread thread = new Thread(runnable);
 		thread.start();
-		thread.join(2000);
-		
+		join(thread);
+
 		assertTrue(car1 == car2);
 		assertTrue(runnable.car1 == runnable.car2);
 		assertTrue(car1 != runnable.car1);
@@ -496,6 +498,26 @@ public class AppFactoryUnitTest {
 				"   </managed-classes>" + //
 				"</config>";
 		return String.format(config, managedClassDescriptor);
+	}
+
+	/**
+	 * Wait for thread to finish. This method is necessary only when run tests from Maven, Surefire plugin. Apparently there is
+	 * a bug when current thread keeps interrupted flag and, when reused, thread.join() throws InterruptedException. This
+	 * behavior is not consistent; it depends on operating system - for example on Windows is working well, and apparently on
+	 * Maven / Surefire version. Also on a virtual machine on Windows host tests are working properly.
+	 */
+	private static void join(Thread thread) {
+		long timestamp = System.currentTimeMillis() + 2000;
+		for (;;) {
+			long delay = timestamp - System.currentTimeMillis();
+			if (delay <= 0) {
+				break;
+			}
+			try {
+				thread.join(delay);
+			} catch (Throwable unused) {
+			}
+		}
 	}
 
 	// --------------------------------------------------------------------------------------------

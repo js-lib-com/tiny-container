@@ -256,7 +256,7 @@ import js.util.Types;
  * @author Iulian Rotaru
  * @version final
  */
-final class ManagedClass implements ManagedClassSPI {
+public final class ManagedClass implements ManagedClassSPI {
 	/** Class logger. */
 	private static final Log log = LogFactory.getLog(ManagedClass.class);
 
