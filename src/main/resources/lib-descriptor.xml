@@ -2,26 +2,26 @@
 <config>
 	<managed-classes>
 		<!-- App should be declared first to be initialized before the other managed classes with managed life cycle. -->
-		<app class="js.core.App" />
-		<app-context interface="js.core.AppContext" class="js.servlet.TinyContainer" />
-		<observer class="js.container.Observer" />
+		<app class="js.tiny.container.core.App" />
+		<app-context interface="js.tiny.container.core.AppContext" class="js.tiny.container.servlet.TinyContainer" />
+		<observer class="js.tiny.container.Observer" />
 
-		<request-context class="js.servlet.RequestContext" scope="THREAD" />
+		<request-context class="js.tiny.container.servlet.RequestContext" scope="THREAD" />
 
 		<transaction-manager interface="js.transaction.TransactionManager" type="SERVICE" />
-		<data-source class="js.container.TransactionalResourceImpl">
-			<interface name="js.container.TransactionalResource" />
+		<data-source class="js.tiny.container.TransactionalResourceImpl">
+			<interface name="js.tiny.container.TransactionalResource" />
 			<interface name="js.transaction.TransactionContext" />
 		</data-source>
 
-		<views interface="js.mvc.ViewManager" class="js.mvc.ViewManagerImpl" />
-		<captcha class="js.http.captcha.Captcha" />
+		<views interface="js.tiny.container.mvc.ViewManager" class="js.tiny.container.mvc.ViewManagerImpl" />
+		<captcha class="js.tiny.container.http.captcha.Captcha" />
 
-		<event-stream-manager class="js.net.EventStreamManagerImpl">
-			<interface name="js.net.EventStreamManager" />
-			<interface name="js.net.EventStreamManagerSPI" />
+		<event-stream-manager class="js.tiny.container.net.EventStreamManagerImpl">
+			<interface name="js.tiny.container.net.EventStreamManager" />
+			<interface name="js.tiny.container.net.EventStreamManagerSPI" />
 		</event-stream-manager>
-		<event-stream class="js.net.EventStream" scope="LOCAL" />
+		<event-stream class="js.tiny.container.net.EventStream" scope="LOCAL" />
 
 		<json interface="js.json.Json" type="SERVICE" />
 		<document-builder interface="js.dom.DocumentBuilder" type="SERVICE" />
