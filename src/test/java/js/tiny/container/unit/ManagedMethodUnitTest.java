@@ -278,7 +278,7 @@ public class ManagedMethodUnitTest {
 		// wait for asynchronous invoker to finish; there is no way to join asynchronous invoker
 		// next hard coded value is critical and depends on system performance and loading
 		// hopefully 500 is the right value; at least is a round number
-		Thread.sleep(500);
+		sleep(500);
 		assertEquals("John Doe", person.name);
 	}
 
@@ -452,7 +452,7 @@ public class ManagedMethodUnitTest {
 		Classes.invoke(meter, "incrementInvocationsCount");
 		Classes.invoke(meter, "incrementExceptionsCount");
 		Classes.invoke(meter, "startProcessing");
-		Thread.sleep(2);
+		sleep(2);
 		Classes.invoke(meter, "stopProcessing");
 
 		assertEquals(1, meter.getInvocationsCount());
@@ -471,7 +471,7 @@ public class ManagedMethodUnitTest {
 		Classes.invoke(meter, "incrementInvocationsCount");
 		Classes.invoke(meter, "incrementExceptionsCount");
 		Classes.invoke(meter, "startProcessing");
-		Thread.sleep(2);
+		sleep(2);
 		Classes.invoke(meter, "stopProcessing");
 
 		meter.reset();
@@ -488,13 +488,13 @@ public class ManagedMethodUnitTest {
 		InvocationMeter meter = Classes.newInstance("js.tiny.container.ManagedMethod$Meter", method);
 
 		Classes.invoke(meter, "startProcessing");
-		Thread.sleep(200);
+		sleep(200);
 		Classes.invoke(meter, "stopProcessing");
 		assertEquals(meter.getMaxProcessingTime(), meter.getTotalProcessingTime());
 		long maxProcessingTime = meter.getMaxProcessingTime();
 
 		Classes.invoke(meter, "startProcessing");
-		Thread.sleep(1);
+		sleep(1);
 		Classes.invoke(meter, "stopProcessing");
 		assertTrue(meter.getTotalProcessingTime() > meter.getMaxProcessingTime());
 		assertEquals(maxProcessingTime, meter.getMaxProcessingTime());
@@ -525,6 +525,26 @@ public class ManagedMethodUnitTest {
 			}
 		}
 		return invocationMeters;
+	}
+
+	/**
+	 * Put thread on sleep for a while. This method is necessary only when run tests from Maven, Surefire plugin. Apparently
+	 * there is a bug when current thread keeps interrupted flag and, when reused, Thread.sleep() throws InterruptedException.
+	 * This behavior is not consistent; it depends on operating system - for example on Windows is working well, and apparently
+	 * on Maven / Surefire version. Also on a virtual machine on Windows host tests are working properly.
+	 */
+	private static void sleep(long duration) {
+		long timestamp = System.currentTimeMillis() + duration;
+		for (;;) {
+			long delay = timestamp - System.currentTimeMillis();
+			if (delay <= 0) {
+				break;
+			}
+			try {
+				Thread.sleep(delay);
+			} catch (Throwable unused) {
+			}
+		}
 	}
 
 	// --------------------------------------------------------------------------------------------
