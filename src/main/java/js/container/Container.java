@@ -475,7 +475,8 @@ public abstract class Container implements ContainerSPI, Configurable {
 		// also on tests application context interface can be implemented by mock class not in container hierarchy
 		if (appContext != null && Types.isKindOf(appContext.getImplementationClass(), ContainerSPI.class)) {
 			log.debug("Persist container instance on application scope.");
-			scopeFactories.get(InstanceScope.APPLICATION).persistInstance(new InstanceKey(appContext.getKey()), this);
+			// managed class key cannot be null
+			scopeFactories.get(InstanceScope.APPLICATION).persistInstance(new InstanceKey(appContext.getKey().toString()), this);
 		}
 	}
 
@@ -564,7 +565,8 @@ public abstract class Container implements ContainerSPI, Configurable {
 
 		for (ManagedClassSPI managedClass : sortedClasses) {
 			ScopeFactory scopeFactory = scopeFactories.get(managedClass.getInstanceScope());
-			InstanceKey instanceKey = new InstanceKey(managedClass.getKey());
+			// managed class key cannot be null
+			InstanceKey instanceKey = new InstanceKey(managedClass.getKey().toString());
 			Object instance = scopeFactory.getInstance(instanceKey);
 			if (instance == null) {
 				continue;
@@ -607,7 +609,8 @@ public abstract class Container implements ContainerSPI, Configurable {
 			throw new BugError("No managed class associated with interface class |%s|.", interfaceClass);
 		}
 
-		InstanceKey instanceKey = new InstanceKey(managedClass.getKey());
+		// managed class key cannot be null
+		InstanceKey instanceKey = new InstanceKey(managedClass.getKey().toString());
 		return getInstance(managedClass, instanceKey, args);
 	}
 
@@ -639,7 +642,8 @@ public abstract class Container implements ContainerSPI, Configurable {
 		// ServiceInstanceFactory should throw exception that propagates to AppFactory and application code
 		// on the other hand this getOptionalInstance() should return null for missing service provider
 
-		InstanceKey instanceKey = new InstanceKey(managedClass.getKey());
+		// managed class key cannot be null
+		InstanceKey instanceKey = new InstanceKey(managedClass.getKey().toString());
 		try {
 			return getInstance(managedClass, instanceKey, args);
 		} catch (NoProviderException e) {
@@ -651,7 +655,8 @@ public abstract class Container implements ContainerSPI, Configurable {
 
 	@Override
 	public <T> T getInstance(ManagedClassSPI managedClass, Object... args) {
-		InstanceKey instanceKey = new InstanceKey(managedClass.getKey());
+		// managed class key cannot be null
+		InstanceKey instanceKey = new InstanceKey(managedClass.getKey().toString());
 		return getInstance(managedClass, instanceKey, args);
 	}
 

@@ -93,7 +93,7 @@ public class ScopeFactoryUnitTest {
 	@Test
 	public void applicationScopeFactory() {
 		MockManagedClassSPI managedClass = new MockManagedClassSPI();
-		InstanceKey instanceKey = new InstanceKey(managedClass.getKey());
+		InstanceKey instanceKey = new InstanceKey(managedClass.getKey().toString());
 		ScopeFactory factory = getApplicationScopeFactory();
 
 		assertNull(factory.getInstance(instanceKey));
@@ -111,7 +111,7 @@ public class ScopeFactoryUnitTest {
 	@Test
 	public void applicationScopeFactory_CrossThreadApplicationScope() throws InterruptedException {
 		MockManagedClassSPI managedClass = new MockManagedClassSPI();
-		final InstanceKey instanceKey = new InstanceKey(managedClass.getKey());
+		final InstanceKey instanceKey = new InstanceKey(managedClass.getKey().toString());
 		final ScopeFactory factory = getApplicationScopeFactory();
 
 		assertNull(factory.getInstance(instanceKey));
@@ -153,7 +153,7 @@ public class ScopeFactoryUnitTest {
 	@Test
 	public void applicationScopeFactory_StressedConcurentCreation() throws Exception {
 		final ManagedClassSPI managedClass = new MockManagedClassSPI();
-		final InstanceKey instanceKey = new InstanceKey(managedClass.getKey());
+		final InstanceKey instanceKey = new InstanceKey(managedClass.getKey().toString());
 		final ScopeFactory factory = getApplicationScopeFactory();
 
 		assertNull(factory.getInstance(instanceKey));
@@ -225,7 +225,7 @@ public class ScopeFactoryUnitTest {
 	public void threadScopeFactory_NotInheriableThreadLocal() {
 		// get an instance to force instances pool initialization that is lazy
 		MockManagedClassSPI managedClass = new MockManagedClassSPI();
-		InstanceKey instanceKey = new InstanceKey(managedClass.getKey());
+		InstanceKey instanceKey = new InstanceKey(managedClass.getKey().toString());
 		ScopeFactory factory = getThreadScopeFactory();
 
 		assertNull(factory.getInstance(instanceKey));
@@ -246,7 +246,7 @@ public class ScopeFactoryUnitTest {
 	@Test
 	public void threadScopeFactory_StressedMultipleThreads() throws Exception {
 		final ManagedClassSPI managedClass = new MockManagedClassSPI();
-		final InstanceKey instanceKey = new InstanceKey(managedClass.getKey());
+		final InstanceKey instanceKey = new InstanceKey(managedClass.getKey().toString());
 		final ScopeFactory factory = getThreadScopeFactory();
 
 		final int THREADS_COUNT = 1000;
@@ -312,7 +312,7 @@ public class ScopeFactoryUnitTest {
 	@Test(expected = BugError.class)
 	public void threadScopeFactory_BadPersist() {
 		MockManagedClassSPI managedClass = new MockManagedClassSPI();
-		InstanceKey instanceKey = new InstanceKey(managedClass.getKey());
+		InstanceKey instanceKey = new InstanceKey(managedClass.getKey().toString());
 		ScopeFactory factory = getThreadScopeFactory();
 		factory.persistInstance(instanceKey, new Person());
 	}
@@ -329,8 +329,8 @@ public class ScopeFactoryUnitTest {
 
 	private static class MockManagedClassSPI extends ManagedClassSpiStub {
 		@Override
-		public String getKey() {
-			return "1";
+		public Integer getKey() {
+			return 1;
 		}
 	}
 }

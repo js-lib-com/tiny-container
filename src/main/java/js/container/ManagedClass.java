@@ -260,17 +260,21 @@ public final class ManagedClass implements ManagedClassSPI {
 	/** Class logger. */
 	private static final Log log = LogFactory.getLog(ManagedClass.class);
 
-	/** Seed for managed classes key. */
+	/**
+	 * Seed for managed classes key. These keys are created incrementally, but not necessarily in sequence because of concurrent
+	 * applications boot, and can be used to sort managed classes in creation order; creation order is the order of class
+	 * descriptor declarations on application descriptor.
+	 */
 	private static final AtomicInteger KEY_SEED = new AtomicInteger(0);
 
 	/** Back reference to parent container. */
 	private final Container container;
 
 	/**
-	 * Managed class key used to uniquely identifying this managed class. This key is incremental and can be used to sort
-	 * managed classes in creation order.
+	 * Managed class key used to uniquely identifying this managed class. This key is incremental, but not necessarily in
+	 * sequence, and can be used to sort managed classes in creation order.
 	 */
-	private final String key;
+	private final Integer key;
 
 	/**
 	 * Optional managed class configuration object. Every managed class has an name used in <code>managed-classes</code> section
@@ -397,7 +401,7 @@ public final class ManagedClass implements ManagedClassSPI {
 			initializeStaticFields();
 		}
 
-		this.key = Integer.toString(KEY_SEED.getAndIncrement());
+		this.key = KEY_SEED.getAndIncrement();
 		this.string = buildStringRepresentation(descriptor);
 	}
 
@@ -644,7 +648,7 @@ public final class ManagedClass implements ManagedClassSPI {
 	}
 
 	@Override
-	public String getKey() {
+	public Integer getKey() {
 		return key;
 	}
 
@@ -937,9 +941,9 @@ public final class ManagedClass implements ManagedClassSPI {
 	/**
 	 * Get implementation class constructor. Managed class mandates a single constructor with parameters, no matter if private
 	 * or formal parameters count. If both default constructor and constructor with parameters are defined this method returns
-	 * constructor with parameters. Constructors annotated with {@link TestConstructor} are ignored. It is not allowed to have more than a
-	 * single constructor with parameters, of course less those marked for test. Returns null if implementation class is
-	 * missing.
+	 * constructor with parameters. Constructors annotated with {@link TestConstructor} are ignored. It is not allowed to have
+	 * more than a single constructor with parameters, of course less those marked for test. Returns null if implementation
+	 * class is missing.
 	 * 
 	 * @param implementationClass implementation class, possible null.
 	 * @return implementation class constructor or null if given implementation class is null.

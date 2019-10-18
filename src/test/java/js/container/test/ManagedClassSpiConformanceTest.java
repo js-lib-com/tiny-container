@@ -1,14 +1,18 @@
 package js.container.test;
 
+import static org.hamcrest.Matchers.*;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -48,11 +52,17 @@ public class ManagedClassSpiConformanceTest {
 		AtomicInteger keySeed = Classes.getFieldValue(managedClassClass, "KEY_SEED");
 		keySeed.set(0);
 
-		String config = "<test class='js.container.test.ManagedClassSpiConformanceTest$CarImpl' />";
-		assertEquals("0", getManagedClass(config(config)).getKey());
-		assertEquals("1", getManagedClass(config(config)).getKey());
-		assertEquals("2", getManagedClass(config(config)).getKey());
-		assertEquals("3", getManagedClass(config(config)).getKey());
+		String config = config("<test class='js.container.test.ManagedClassSpiConformanceTest$CarImpl' />");
+		List<Integer> keys = new ArrayList<>(4);
+		for (int i = 0; i < keys.size(); ++i) {
+			keys.add(getManagedClass(config).getKey());
+		}
+
+		List<Integer> sortedKeys = new ArrayList<>(keys.size());
+		Collections.copy(sortedKeys, keys);
+		Collections.sort(sortedKeys);
+		
+		assertThat(keys, equalTo(sortedKeys));
 	}
 
 	@Test
@@ -255,7 +265,7 @@ public class ManagedClassSpiConformanceTest {
 		TinyConfigBuilder builder = new TestConfigBuilder(config);
 		Config appDescriptor = builder.build();
 		Container container = new MockContainer();
-		
+
 		Config classDescriptor = null;
 		for (Config managedClasses : appDescriptor.findChildren("managed-classes")) {
 			classDescriptor = managedClasses.getChild("test");

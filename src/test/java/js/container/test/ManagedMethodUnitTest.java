@@ -277,8 +277,8 @@ public class ManagedMethodUnitTest {
 		assertNull(managedMethod.invoke(person, "John Doe"));
 		// wait for asynchronous invoker to finish; there is no way to join asynchronous invoker
 		// next hard coded value is critical and depends on system performance and loading
-		// hopefully 100 is the right value; at least is a round number
-		Thread.sleep(100);
+		// hopefully 500 is the right value; at least is a round number
+		Thread.sleep(500);
 		assertEquals("John Doe", person.name);
 	}
 

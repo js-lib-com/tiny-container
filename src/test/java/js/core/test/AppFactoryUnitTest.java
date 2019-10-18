@@ -21,9 +21,7 @@ import js.lang.BugError;
 import js.lang.InvocationException;
 import js.lang.NoProviderException;
 import js.unit.TestContext;
-import net.jcip.annotations.NotThreadSafe;
 
-@NotThreadSafe
 public class AppFactoryUnitTest {
 	@BeforeClass
 	public static void beforeClass() {

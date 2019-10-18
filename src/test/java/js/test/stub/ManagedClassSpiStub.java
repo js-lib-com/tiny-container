@@ -19,7 +19,7 @@ public class ManagedClassSpiStub implements ManagedClassSPI {
 	}
 
 	@Override
-	public String getKey() {
+	public Integer getKey() {
 		throw new UnsupportedOperationException("getKey()");
 	}
 

@@ -1,9 +1,12 @@
 package js.container.test;
 
+import static org.hamcrest.Matchers.*;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -12,13 +15,16 @@ import java.io.IOException;
 import java.lang.reflect.Proxy;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.Map;
+import java.util.Observer;
 import java.util.Properties;
+import java.util.Set;
+import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -31,7 +37,6 @@ import js.container.InstanceKey;
 import js.container.InstanceProcessor;
 import js.container.InstanceScope;
 import js.container.InstanceType;
-import js.container.ManagedClass;
 import js.container.ManagedClassSPI;
 import js.container.ManagedMethodSPI;
 import js.container.ScopeFactory;
@@ -62,12 +67,6 @@ public class ContainerUnitTest {
 	@BeforeClass
 	public static void beforeClass() {
 		System.setProperty("catalina.base", "fixture/server/tomcat");
-	}
-
-	@Before
-	public void beforeTest() {
-		AtomicInteger KEY_SEED = Classes.getFieldValue(ManagedClass.class, "KEY_SEED");
-		KEY_SEED.set(0);
 	}
 
 	// --------------------------------------------------------------------------------------------
@@ -185,8 +184,6 @@ public class ContainerUnitTest {
 	/** Test that managed keys sequence respects managed classes order from descriptors. */
 	@Test
 	public void config_ManagedKeysSequence() throws Exception {
-		resetKeySeed();
-
 		String config = "<?xml version='1.0' encoding='UTF-8' ?>" + //
 				"<config>" + //
 				"	<managed-classes>" + //
@@ -199,19 +196,14 @@ public class ContainerUnitTest {
 
 		// order depends on lib-descriptor; keep this test case and lib-descriptor in sync
 
-		assertEquals("0", classesPool.get(App.class).getKey());
-		assertEquals("1", classesPool.get(AppContext.class).getKey());
-		// assertEquals("2", classesPool.get(Observer.class).getKey());
-		assertEquals("3", classesPool.get(RequestContext.class).getKey());
-		assertEquals("4", classesPool.get(TransactionManager.class).getKey());
-		assertEquals("5", classesPool.get(TransactionalResource.class).getKey());
-		assertEquals("5", classesPool.get(TransactionContext.class).getKey());
-		assertEquals("6", classesPool.get(ViewManager.class).getKey());
-		// assertEquals("7", classesPool.get(Captcha.class).getKey());
-		assertEquals("8", classesPool.get(EventStreamManager.class).getKey());
-		assertEquals("9", classesPool.get(EventStream.class).getKey());
-		// ...
-		assertEquals("13", classesPool.get(NetCar.class).getKey());
+		Class<?>[] expectedOrder = new Class<?>[] { App.class, AppContext.class, RequestContext.class, TransactionManager.class, TransactionalResource.class, TransactionContext.class, ViewManager.class, EventStreamManager.class, EventStream.class, NetCar.class };
+		for (int i = 1; i < expectedOrder.length; ++i) {
+			Integer previousKey = classesPool.get(expectedOrder[i - 1]).getKey();
+			Integer currentKey = classesPool.get(expectedOrder[i]).getKey();
+			// keys can be equal when two classes implements the same interface
+			// current key is after previous key; exception above condition
+			assertThat(currentKey, greaterThanOrEqualTo(previousKey));
+		}
 	}
 
 	@Test
@@ -241,7 +233,8 @@ public class ContainerUnitTest {
 
 	@Test
 	public void config_ManagedClassOverwritten() throws Exception {
-		resetKeySeed();
+		Class<?> managedClassClass = Class.forName("js.container.ManagedClass");
+		AtomicInteger keySeed = Classes.getFieldValue(managedClassClass, "KEY_SEED");
 
 		String descriptor = "" + //
 				"<config>" + //
@@ -252,7 +245,14 @@ public class ContainerUnitTest {
 				"</config>";
 		ConfigBuilder builder = new ConfigBuilder(descriptor);
 		Container container = new ContainerStub();
-		container.config(builder.build());
+
+		Integer key = null;
+		synchronized (keySeed) {
+			// when tests run on multiple threads, e.g. Maven, is possible for key to be incremented concurrently
+			// so that key class can be greater than current seed value
+			key = keySeed.get();
+			container.config(builder.build());
+		}
 
 		Map<Class<?>, ManagedClassSPI> classesPool = Classes.getFieldValue(container, Container.class, "classesPool");
 		assertNotNull(classesPool);
@@ -260,9 +260,9 @@ public class ContainerUnitTest {
 
 		ManagedClassSPI managedClass = classesPool.get(Car.class);
 		assertNotNull(managedClass);
-		assertEquals("0", managedClass.getKey());
-		assertEquals(InstanceScope.THREAD, managedClass.getInstanceScope());
-		assertEquals(InstanceType.POJO, managedClass.getInstanceType());
+		assertThat(managedClass.getKey(), greaterThanOrEqualTo(key));
+		assertThat(managedClass.getInstanceScope(), equalTo(InstanceScope.THREAD));
+		assertThat(managedClass.getInstanceType(), equalTo(InstanceType.POJO));
 	}
 
 	/** Invalid managed scope should throw configuration exception. */
@@ -1039,13 +1039,6 @@ public class ContainerUnitTest {
 				"   </managed-classes>" + //
 				"</config>";
 		return String.format(config, classDescriptor);
-	}
-
-	private static void resetKeySeed() throws ClassNotFoundException {
-		// reset key seed for this test case in order to have predictable sequence
-		Class<?> managedClassClass = Class.forName("js.container.ManagedClass");
-		AtomicInteger keySeed = Classes.getFieldValue(managedClassClass, "KEY_SEED");
-		keySeed.set(0);
 	}
 
 	// --------------------------------------------------------------------------------------------

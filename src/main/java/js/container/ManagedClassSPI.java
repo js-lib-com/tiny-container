@@ -34,13 +34,13 @@ public interface ManagedClassSPI {
 	ContainerSPI getContainer();
 
 	/**
-	 * Get the key uniquely identifying this managed class. Returned key is created incrementally and can be used to sort
-	 * managed classes in creation order; creation order is the order of class descriptor declarations on application
-	 * descriptor.
+	 * Get the key uniquely identifying this managed class. Returned key is created incrementally, but not necessarily in
+	 * sequence, and can be used to sort managed classes in creation order; creation order is the order of class descriptor
+	 * declarations on application descriptor.
 	 * 
 	 * @return managed class unique key.
 	 */
-	String getKey();
+	Integer getKey();
 
 	/**
 	 * Get optional configuration object or null if no configuration section present into application descriptor. Every managed

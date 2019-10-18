@@ -125,8 +125,8 @@ public class SessionScopeFactoryUnitTest {
 
 	private static class MockManagedClassSPI extends ManagedClassSpiStub {
 		@Override
-		public String getKey() {
-			return "1";
+		public Integer getKey() {
+			return 1;
 		}
 	}
 
