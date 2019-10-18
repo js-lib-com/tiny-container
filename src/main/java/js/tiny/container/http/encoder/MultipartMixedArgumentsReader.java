@@ -7,16 +7,15 @@ import java.lang.reflect.Type;
 
 import javax.servlet.http.HttpServletRequest;
 
-import js.dom.Document;
-import js.json.Json;
-import js.lang.IllegalArgumentException;
-import js.tiny.container.http.ContentType;
-import js.util.Files;
-
 import org.apache.commons.fileupload.FileItemIterator;
 import org.apache.commons.fileupload.FileItemStream;
 import org.apache.commons.fileupload.FileUploadException;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
+
+import js.json.Json;
+import js.lang.IllegalArgumentException;
+import js.tiny.container.http.ContentType;
+import js.util.Files;
 
 /**
  * Reader for arguments encoded with HTTP multipart mixed format. This arguments reader is invoked with a HTTP request with
@@ -26,7 +25,7 @@ import org.apache.commons.fileupload.servlet.ServletFileUpload;
  * {@link ContentType#APPLICATION_JSON}, {@link ContentType#TEXT_XML} and {@link ContentType#APPLICATION_STREAM} body entities.
  * If bytes stream body entity is present it should be the last one. Formal parameters order should be compatible with mixed
  * body entities order. JSON body entity is deserialized to any Java type supported by {@link Json} implementation, XML to
- * {@link Document} instance and bytes stream to a type supported by {@link StreamArgumentsReader}.
+ * document instance and bytes stream to a type supported by {@link StreamArgumentsReader}.
  * <p>
  * This arguments reader implementation is heavily based on {@link js.tiny.container.http.form} package.
  * 

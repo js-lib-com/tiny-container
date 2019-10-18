@@ -7,7 +7,6 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.io.IOException;
-import java.io.OutputStream;
 import java.lang.reflect.Type;
 import java.net.URL;
 import java.util.Enumeration;
@@ -22,9 +21,6 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
-import js.dom.Document;
-import js.dom.DocumentBuilder;
-import js.io.StreamHandler;
 import js.lang.BugError;
 import js.tiny.container.http.ContentType;
 import js.tiny.container.http.encoder.ArgumentsReader;
@@ -65,6 +61,7 @@ public class ServerEncodersTest {
 		});
 
 		try {
+			// need to invoke constructor directly not via ServerEncoders.getInstance()
 			encoders = Classes.newInstance("js.tiny.container.http.encoder.ServerEncoders");
 		} finally {
 			Thread.currentThread().setContextClassLoader(contextClassLoader);
@@ -84,20 +81,20 @@ public class ServerEncodersTest {
 
 	@Test
 	public void getArgumentsReader() {
-		when(request.getContentType()).thenReturn("text/xml");
+		when(request.getContentType()).thenReturn("application/json");
 		ArgumentsReader reader = encoders.getArgumentsReader(request, new Type[] { Object.class });
 
 		assertNotNull(reader);
-		assertEquals("js.tiny.container.http.encoder.XmlArgumentsReader", reader.getClass().getName());
+		assertEquals("js.tiny.container.http.encoder.JsonArgumentsReader", reader.getClass().getName());
 	}
 
 	@Test
 	public void getArgumentsReader_MultipleArguments() {
-		when(request.getContentType()).thenReturn("text/xml");
+		when(request.getContentType()).thenReturn("application/json");
 		ArgumentsReader reader = encoders.getArgumentsReader(request, new Type[] { Object.class, Object.class });
 
 		assertNotNull(reader);
-		assertEquals("js.tiny.container.http.encoder.XmlArgumentsReader", reader.getClass().getName());
+		assertEquals("js.tiny.container.http.encoder.JsonArgumentsReader", reader.getClass().getName());
 	}
 
 	@Test
@@ -128,18 +125,18 @@ public class ServerEncodersTest {
 	/** If attempt to retrieve arguments reader for not registered Java type uses content type base and ignore Java type. */
 	@Test
 	public void getArgumentsReader_NotRegisteredType() {
-		when(request.getContentType()).thenReturn("text/xml");
-		ArgumentsReader reader = encoders.getArgumentsReader(request, new Type[] { Object.class });
+		when(request.getContentType()).thenReturn("application/json");
+		ArgumentsReader reader = encoders.getArgumentsReader(request, new Type[] { Person.class });
 
 		assertNotNull(reader);
-		assertEquals("js.tiny.container.http.encoder.XmlArgumentsReader", reader.getClass().getName());
+		assertEquals("js.tiny.container.http.encoder.JsonArgumentsReader", reader.getClass().getName());
 	}
 
 	@Test
 	public void getArgumentPartReader() {
-		ArgumentsReader reader = encoders.getArgumentPartReader("text/xml", Document.class);
+		ArgumentsReader reader = encoders.getArgumentPartReader("application/json", Person.class);
 		assertNotNull(reader);
-		assertEquals("js.tiny.container.http.encoder.XmlArgumentsReader", reader.getClass().getName());
+		assertEquals("js.tiny.container.http.encoder.JsonArgumentsReader", reader.getClass().getName());
 	}
 
 	@Test(expected = IllegalArgumentException.class)
@@ -154,7 +151,6 @@ public class ServerEncodersTest {
 
 	@Test
 	public void getValueWriter() {
-		assertEquals("js.tiny.container.http.encoder.XmlValueWriter", encoders.getValueWriter(ContentType.TEXT_XML).getClass().getName());
 		assertEquals("js.tiny.container.http.encoder.StreamValueWriter", encoders.getValueWriter(ContentType.APPLICATION_STREAM).getClass().getName());
 		assertEquals("js.tiny.container.http.encoder.JsonValueWriter", encoders.getValueWriter(ContentType.APPLICATION_JSON).getClass().getName());
 	}
@@ -162,21 +158,6 @@ public class ServerEncodersTest {
 	@Test(expected = BugError.class)
 	public void getValueWriter_NotFound() {
 		encoders.getValueWriter(ContentType.TEXT_HTML);
-	}
-
-	@Test
-	public void getContentTypeForValue() {
-		DocumentBuilder builder = Classes.loadService(DocumentBuilder.class);
-		assertEquals(ContentType.TEXT_XML, encoders.getContentTypeForValue(builder.createXML("root")));
-
-		assertEquals(ContentType.APPLICATION_STREAM, encoders.getContentTypeForValue(new StreamHandler<OutputStream>(null) {
-			@Override
-			protected void handle(OutputStream outputStream) throws IOException {
-
-			}
-		}));
-
-		assertEquals(ContentType.APPLICATION_JSON, encoders.getContentTypeForValue(new Object()));
 	}
 
 	@Test(expected = IllegalArgumentException.class)
@@ -210,5 +191,10 @@ public class ServerEncodersTest {
 			writers.put(ContentType.TEXT_HTML, writer);
 			return writers;
 		}
+	}
+
+	private static class Person {
+		@SuppressWarnings("unused")
+		String name;
 	}
 }

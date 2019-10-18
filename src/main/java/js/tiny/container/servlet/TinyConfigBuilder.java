@@ -5,11 +5,18 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.util.Properties;
+import java.util.ServiceLoader;
 import java.util.Stack;
 
 import javax.servlet.ServletContext;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
+
+import org.xml.sax.Attributes;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
+import org.xml.sax.XMLReader;
+import org.xml.sax.helpers.DefaultHandler;
 
 import js.lang.Config;
 import js.lang.ConfigBuilder;
@@ -19,12 +26,6 @@ import js.log.LogFactory;
 import js.tiny.container.Container;
 import js.util.Classes;
 import js.util.Strings;
-
-import org.xml.sax.Attributes;
-import org.xml.sax.InputSource;
-import org.xml.sax.SAXException;
-import org.xml.sax.XMLReader;
-import org.xml.sax.helpers.DefaultHandler;
 
 /**
  * Builder for configuration object used to configure tiny container. Create tiny container configuration object and load it
@@ -81,6 +82,11 @@ public class TinyConfigBuilder extends ConfigBuilder {
 		} catch (FileNotFoundException e) {
 			log.debug("Application |%s| has no descriptor. No application specific configuration.", config.getName());
 			new ConfigException(e);
+		}
+
+		// load plugin configurations
+		for (TinyConfigProvider configProvider : ServiceLoader.load(TinyConfigProvider.class)) {
+			config.addChildren(configProvider.getConfig());
 		}
 	}
 

@@ -668,7 +668,7 @@ public class ContainerUnitTest {
 			++classesCount;
 		}
 		// this hard coded value depends on lib-descriptor.xml
-		assertEquals(15, classesCount);
+		assertEquals(14, classesCount);
 	}
 
 	@Test
