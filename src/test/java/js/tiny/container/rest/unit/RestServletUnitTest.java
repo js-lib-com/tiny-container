@@ -342,6 +342,11 @@ public class RestServletUnitTest {
 		public ServletContext getServletContext() {
 			return context;
 		}
+
+		@Override
+		public String getInitParameter(String name) {
+			return null;
+		}
 	}
 
 	private static class MockServletContext extends ServletContextStub {
@@ -355,6 +360,11 @@ public class RestServletUnitTest {
 		@Override
 		public Object getAttribute(String name) {
 			return attributes.get(name);
+		}
+
+		@Override
+		public String getInitParameter(String name) {
+			return null;
 		}
 	}
 

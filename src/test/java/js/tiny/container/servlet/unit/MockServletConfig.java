@@ -17,4 +17,9 @@ public class MockServletConfig extends ServletConfigStub {
 	public ServletContext getServletContext() {
 		return servletContext;
 	}
+
+	@Override
+	public String getInitParameter(String name) {
+		return null;
+	}
 }

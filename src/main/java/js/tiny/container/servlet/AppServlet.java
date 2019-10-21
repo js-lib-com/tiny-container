@@ -2,9 +2,12 @@ package js.tiny.container.servlet;
 
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
+import java.security.Principal;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletConfig;
+import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.UnavailableException;
 import javax.servlet.http.HttpServlet;
@@ -60,6 +63,8 @@ public abstract class AppServlet extends HttpServlet {
 	/** Class logger. */
 	private static final Log log = LogFactory.getLog(AppServlet.class);
 
+	private static final String PARAMETER_PREVIEW_CONTEXT = "js.tiny.container.preview.context";
+
 	/** Logger diagnostic context stores contextual information regarding current request. */
 	private static final LogContext logContext = LogFactory.getLogContext();
 	/** Diagnostic context name for context path, aka application. */
@@ -93,6 +98,8 @@ public abstract class AppServlet extends HttpServlet {
 	 */
 	protected transient ContainerSPI container;
 
+	private String previewContextPath;
+
 	/**
 	 * Servlet life cycle callback executed at this servlet instance initialization. Mainly takes care to initialize parent
 	 * container reference. If there is no servlet context attribute with the name {@link TinyContainer#ATTR_INSTANCE} this
@@ -106,13 +113,15 @@ public abstract class AppServlet extends HttpServlet {
 	 */
 	@Override
 	public void init(ServletConfig config) throws UnavailableException {
-		container = (ContainerSPI) config.getServletContext().getAttribute(TinyContainer.ATTR_INSTANCE);
+		final ServletContext context = config.getServletContext();
+		previewContextPath = context.getInitParameter(PARAMETER_PREVIEW_CONTEXT);
+		container = (ContainerSPI) context.getAttribute(TinyContainer.ATTR_INSTANCE);
 		if (container == null) {
 			log.fatal("Tiny container instance not properly created, probably misconfigured. Servlet |%s| permanently unvailable.", config.getServletName());
 			throw new UnavailableException("Tiny container instance not properly created, probably misconfigured.");
 		}
 
-		servletName = Strings.concat(config.getServletContext().getServletContextName(), '#', config.getServletName());
+		servletName = Strings.concat(context.getServletContextName(), '#', config.getServletName());
 		log.trace("Initialize servlet |%s|.", servletName);
 	}
 
@@ -158,6 +167,13 @@ public abstract class AppServlet extends HttpServlet {
 		RequestContext context = container.getInstance(RequestContext.class);
 		context.attach(httpRequest, httpResponse);
 		log.trace("Processing request |%s|.", requestURI);
+
+		// if this request was forwarded from preview servlet ensure container is authenticated
+		// current context should declare context parameter js.tiny.container.preview.context 
+		String forwardContextPath = (String) httpRequest.getAttribute(RequestDispatcher.FORWARD_CONTEXT_PATH);
+		if (previewContextPath != null && forwardContextPath != null && forwardContextPath.equals(previewContextPath)) {
+			container.login(new PreviewUser());
+		}
 
 		try {
 			handleRequest(context);
@@ -362,5 +378,12 @@ public abstract class AppServlet extends HttpServlet {
 
 		httpResponse.getOutputStream().write(bytes);
 		httpResponse.getOutputStream().flush();
+	}
+
+	private static class PreviewUser implements Principal {
+		@Override
+		public String getName() {
+			return "preview-user";
+		}
 	}
 }

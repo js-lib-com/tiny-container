@@ -105,10 +105,10 @@ public class TinyContainer extends Container implements ServletContextListener, 
 	private static final Log log = LogFactory.getLog(TinyContainer.class);
 
 	/** Container instance is stored on servlet context with this attribute name. */
-	public static final String ATTR_INSTANCE = "js.servlet.WebContainer.instance";
+	public static final String ATTR_INSTANCE = "js.tiny.container.instance";
 
 	/** Session attribute name for principal storage when authentication is provided by application. */
-	public static final String ATTR_PRINCIPAL = "js.servlet.WebContainer.principal";
+	public static final String ATTR_PRINCIPAL = "js.tiny.container.principal";
 
 	/** Name used for root context path. */
 	public static final String ROOT_CONTEXT = "root";

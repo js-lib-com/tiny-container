@@ -566,6 +566,11 @@ public class AppServletUnitTest {
 		public Cookie[] getCookies() {
 			return null;
 		}
+
+		@Override
+		public Object getAttribute(String name) {
+			return null;
+		}
 	}
 
 	private static class MockHttpServletResponse extends HttpServletResponseStub {
@@ -663,6 +668,11 @@ public class AppServletUnitTest {
 		@Override
 		public Object getAttribute(String name) {
 			return attributes.get(name);
+		}
+
+		@Override
+		public String getInitParameter(String name) {
+			return null;
 		}
 	}
 

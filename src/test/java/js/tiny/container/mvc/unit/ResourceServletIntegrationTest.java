@@ -579,6 +579,11 @@ public class ResourceServletIntegrationTest {
 		public Object getAttribute(String name) {
 			return attributes.get(name);
 		}
+
+		@Override
+		public String getInitParameter(String name) {
+			return null;
+		}
 	}
 
 	private static class MockServletConfig extends ServletConfigStub {
@@ -592,6 +597,11 @@ public class ResourceServletIntegrationTest {
 		@Override
 		public String getServletName() {
 			return "ResourceServlet";
+		}
+
+		@Override
+		public String getInitParameter(String name) {
+			return null;
 		}
 	}
 
@@ -705,6 +715,11 @@ public class ResourceServletIntegrationTest {
 
 		@Override
 		public Principal getUserPrincipal() {
+			return null;
+		}
+
+		@Override
+		public Object getAttribute(String name) {
 			return null;
 		}
 	}
