@@ -99,7 +99,7 @@ public class AppServletUnitTest {
 	}
 
 	@Test
-	public void init() throws UnavailableException {
+	public void init() throws ServletException {
 		AppServlet servlet = new AppServlet() {
 			@Override
 			protected void handleRequest(RequestContext context) throws IOException, ServletException {
@@ -121,7 +121,7 @@ public class AppServletUnitTest {
 	}
 
 	@Test(expected = UnavailableException.class)
-	public void init_NullApp() throws UnavailableException {
+	public void init_NullApp() throws ServletException {
 		AppServlet servlet = new AppServlet() {
 			@Override
 			protected void handleRequest(RequestContext context) throws IOException, ServletException {

@@ -18,6 +18,7 @@ import java.security.Principal;
 
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletContext;
+import javax.servlet.ServletException;
 import javax.servlet.UnavailableException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -66,7 +67,7 @@ public class EventStreamServletTest {
 	private EventStreamServlet servlet;
 
 	@Before
-	public void beforeTest() throws UnavailableException {
+	public void beforeTest() throws ServletException {
 		when(servletConfig.getServletName()).thenReturn("resource-servlet");
 		when(servletConfig.getServletContext()).thenReturn(servletContext);
 

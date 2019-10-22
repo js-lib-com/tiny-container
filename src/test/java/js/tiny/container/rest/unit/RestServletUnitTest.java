@@ -16,6 +16,7 @@ import java.util.Locale;
 import java.util.Map;
 
 import javax.servlet.ServletContext;
+import javax.servlet.ServletException;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.UnavailableException;
 import javax.servlet.WriteListener;
@@ -71,7 +72,7 @@ public class RestServletUnitTest {
 	}
 
 	@Test
-	public void init() throws UnavailableException {
+	public void init() throws ServletException {
 		container.methods.add(new MockManagedMethod("user", void.class, true));
 		container.methods.add(new MockManagedMethod("customer", void.class, false));
 		container.methods.add(new MockManagedMethod("index", Resource.class, true));
@@ -90,7 +91,7 @@ public class RestServletUnitTest {
 	}
 
 	@Test(expected = UnavailableException.class)
-	public void init_NoContainer() throws UnavailableException {
+	public void init_NoContainer() throws ServletException {
 		MockServletConfig config = new MockServletConfig();
 		RestServlet servlet = new RestServlet();
 		servlet.init(config);

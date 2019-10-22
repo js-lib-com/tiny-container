@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Map;
 
 import javax.servlet.ServletContext;
+import javax.servlet.ServletException;
 import javax.servlet.UnavailableException;
 
 import js.tiny.container.ManagedClassSPI;
@@ -35,7 +36,7 @@ public class ResourceServletUnitTest {
 	}
 
 	@Test
-	public void init() throws UnavailableException {
+	public void init() throws ServletException {
 		MockContainer container = new MockContainer();
 		container.methods.add(new MockManagedMethod("setUser", void.class));
 		container.methods.add(new MockManagedMethod("index", Resource.class));
@@ -54,7 +55,7 @@ public class ResourceServletUnitTest {
 	}
 
 	@Test(expected = UnavailableException.class)
-	public void init_NoContainer() throws UnavailableException {
+	public void init_NoContainer() throws ServletException {
 		MockServletConfig config = new MockServletConfig();
 		ResourceServlet servlet = new ResourceServlet();
 		servlet.init(config);

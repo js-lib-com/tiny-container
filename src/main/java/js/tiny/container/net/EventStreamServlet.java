@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.security.Principal;
 
 import javax.servlet.ServletConfig;
+import javax.servlet.ServletException;
 import javax.servlet.UnavailableException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -50,9 +51,10 @@ public class EventStreamServlet extends AppServlet {
 	 * 
 	 * @param config servlet configuration object.
 	 * @throws UnavailableException if servlet initialization fails.
+	 * @throws ServletException if servlet initialization fails.
 	 */
 	@Override
-	public void init(ServletConfig config) throws UnavailableException {
+	public void init(ServletConfig config) throws ServletException {
 		super.init(config);
 		log.trace("init(ServletConfig)");
 		eventStreamManager = container.getInstance(EventStreamManager.class);

@@ -124,9 +124,10 @@ public class ResourceServlet extends AppServlet {
 	 * 
 	 * @param config servlet configuration object.
 	 * @throws UnavailableException if tiny container is not properly initialized.
+	 * @throws ServletException if servlet initialization fails.
 	 */
 	@Override
-	public void init(ServletConfig config) throws UnavailableException {
+	public void init(ServletConfig config) throws ServletException {
 		super.init(config);
 		for (ManagedMethodSPI method : container.getManagedMethods()) {
 			if (Types.isKindOf(method.getReturnType(), Resource.class)) {

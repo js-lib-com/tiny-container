@@ -28,8 +28,6 @@ import js.tiny.container.mvc.ViewManagerImpl;
 import js.tiny.container.mvc.ViewMeta;
 import js.tiny.container.mvc.XspView;
 import js.tiny.container.servlet.RequestContext;
-import js.tiny.container.unit.HttpServletRequestStub;
-import js.tiny.container.unit.HttpServletResponseStub;
 import js.tiny.container.unit.TestContext;
 import js.util.Classes;
 import js.util.Strings;
@@ -170,28 +168,5 @@ public class ViewManagerUnitTest {
 		ConfigBuilder builder = new ConfigBuilder(config);
 		Configurable viewManager = new ViewManagerImpl();
 		viewManager.config(builder.build());
-	}
-
-	// --------------------------------------------------------------------------------------------
-	// FIXTURE
-
-	private static class MockHttpServletRequestEOL extends HttpServletRequestStub {
-		@Override
-		public String getRequestURI() {
-			return "/test-app/page.htm";
-		}
-
-		@Override
-		public String getContextPath() {
-			return "/test-app";
-		}
-
-		@Override
-		public Locale getLocale() {
-			return Locale.US;
-		}
-	}
-
-	private static class MockHttpServletResponseEOL extends HttpServletResponseStub {
 	}
 }

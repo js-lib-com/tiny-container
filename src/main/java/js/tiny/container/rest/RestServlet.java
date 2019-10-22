@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import javax.servlet.ServletConfig;
+import javax.servlet.ServletException;
 import javax.servlet.UnavailableException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -132,9 +133,10 @@ public class RestServlet extends AppServlet {
 	 * 
 	 * @param config servlet configuration object.
 	 * @throws UnavailableException if tiny container is not properly initialized.
+	 * @throws ServletException if servlet initialization fails.
 	 */
 	@Override
-	public void init(ServletConfig config) throws UnavailableException {
+	public void init(ServletConfig config) throws ServletException {
 		super.init(config);
 		for (ManagedMethodSPI managedMethod : container.getManagedMethods()) {
 			if (!managedMethod.isRemotelyAccessible()) {
