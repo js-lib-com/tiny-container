@@ -109,10 +109,13 @@ public abstract class AppServlet extends HttpServlet {
 	 * instance.
 	 * 
 	 * @param config servlet configuration object.
-	 * @throws UnavailableException if tiny container is not properly initialized.
+	 * @throws ServletException if servlet configuration fails.
+	 * @throws UnavailableException if container reference is not on servlet context attributes.
 	 */
 	@Override
-	public void init(ServletConfig config) throws UnavailableException {
+	public void init(ServletConfig config) throws ServletException {
+		super.init(config);
+		
 		final ServletContext context = config.getServletContext();
 		previewContextPath = context.getInitParameter(PARAMETER_PREVIEW_CONTEXT);
 		container = (ContainerSPI) context.getAttribute(TinyContainer.ATTR_INSTANCE);
