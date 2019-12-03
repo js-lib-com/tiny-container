@@ -22,4 +22,9 @@ public class AppFactoryStub implements AppFactory {
 	public <T> T getRemoteInstance(String implementationURL, Class<? super T> interfaceClass) {
 		throw new UnsupportedOperationException("getRemoteInstance(URL, Class<? super T>)");
 	}
+
+	@Override
+	public <T> T loadService(Class<T> serviceInterface) {
+		throw new UnsupportedOperationException("loadService(Class<T> serviceInterface)");
+	}
 }

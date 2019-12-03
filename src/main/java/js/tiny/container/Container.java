@@ -766,6 +766,11 @@ public abstract class Container implements ContainerSPI, Configurable {
 		return ((RemoteFactory) instanceFactory).getRemoteInstance(implementationURL, interfaceClass);
 	}
 
+	@Override
+	public <T> T loadService(Class<T> serviceInterface) {
+		return Classes.loadService(serviceInterface);
+	}
+
 	// ----------------------------------------------------
 	// CONTAINER SPI
 
@@ -799,6 +804,11 @@ public abstract class Container implements ContainerSPI, Configurable {
 
 	@Override
 	public boolean isAuthenticated() {
+		return true;
+	}
+
+	@Override
+	public boolean isAuthorized(String... roles) {
 		return true;
 	}
 

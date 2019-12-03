@@ -179,4 +179,6 @@ public interface AppFactory extends RemoteFactory {
 	 * @throws UnsupportedProtocolException if URL protocol is not supported.
 	 */
 	<T> T getRemoteInstance(String implementationURL, Class<? super T> interfaceClass);
+
+	<T> T loadService(Class<T> serviceInterface);
 }

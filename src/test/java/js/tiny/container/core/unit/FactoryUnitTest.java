@@ -159,5 +159,10 @@ public class FactoryUnitTest {
 			this.args = new Object[] { implementationURL, interfaceClass };
 			return (T) new Integer(1967);
 		}
+
+		@Override
+		public <T> T loadService(Class<T> serviceInterface) {
+			throw new UnsupportedOperationException("loadService(Class<T> serviceInterface)");
+		}
 	}
 }

@@ -17,6 +17,7 @@ import js.tiny.container.annotation.Remote;
 import js.tiny.container.annotation.RequestPath;
 import js.tiny.container.core.SecurityContext;
 import js.util.Classes;
+import js.util.Params;
 import js.util.Strings;
 import js.util.Types;
 
@@ -103,6 +104,8 @@ public final class ManagedMethod implements ManagedMethodSPI {
 	private Meter meter;
 
 	private String cronExpression;
+
+	private String[] roles = new String[0];
 
 	/**
 	 * Construct a managed method. This is a convenient constructor that just delegates
@@ -209,6 +212,12 @@ public final class ManagedMethod implements ManagedMethodSPI {
 		this.cronExpression = cronExpression;
 	}
 
+	void setRoles(String[] roles) {
+		Params.notNullOrEmpty(roles, "Roles");
+		this.access = Access.PRIVATE;
+		this.roles = roles;
+	}
+
 	/**
 	 * Enable instrumentation on the fly and return this method invocation meter.
 	 * 
@@ -271,7 +280,7 @@ public final class ManagedMethod implements ManagedMethodSPI {
 	@SuppressWarnings("unchecked")
 	@Override
 	public <T> T invoke(Object object, Object... args) throws AuthorizationException, IllegalArgumentException, InvocationException {
-		if (remotelyAccessible && !isPublic() && !container.isAuthenticated()) {
+		if (remotelyAccessible && access == Access.PRIVATE && !container.isAuthorized(roles)) {
 			log.info("Reject not authenticated access to |%s|.", method);
 			throw new AuthorizationException();
 		}

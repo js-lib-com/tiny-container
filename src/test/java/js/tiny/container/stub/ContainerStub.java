@@ -21,7 +21,7 @@ public class ContainerStub extends Container {
 	}
 
 	@Override
-	public <T extends Principal> T getUserPrincipal() {
+	public Principal getUserPrincipal() {
 		throw new UnsupportedOperationException("getUserPrincipal()");
 	}
 

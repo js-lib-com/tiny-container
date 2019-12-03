@@ -33,6 +33,7 @@ import js.tiny.container.annotation.Private;
 import js.tiny.container.annotation.Public;
 import js.tiny.container.annotation.Remote;
 import js.tiny.container.annotation.RequestPath;
+import js.tiny.container.annotation.RolesAllowed;
 import js.tiny.container.annotation.Service;
 import js.tiny.container.annotation.TestConstructor;
 import js.tiny.container.core.AppFactory;
@@ -474,6 +475,12 @@ public final class ManagedClass implements ManagedClassSPI {
 		Class<? extends Interceptor> classInterceptor = getInterceptorClass(implementationClass);
 		boolean publicType = hasAnnotation(implementationClass, Public.class);
 
+		String[] typeRoles = null;
+		RolesAllowed rolesAllowed = getAnnotation(implementationClass, RolesAllowed.class);
+		if (rolesAllowed != null) {
+			typeRoles = rolesAllowed.value();
+		}
+
 		// managed classes does not support public inheritance
 		for (Method method : implementationClass.getDeclaredMethods()) {
 			final int modifiers = method.getModifiers();
@@ -621,12 +628,20 @@ public final class ManagedClass implements ManagedClassSPI {
 				autoInstanceCreation = true;
 			}
 
+			if (managedMethod == null) {
+				continue;
+			}
+
+			rolesAllowed = getAnnotation(method, RolesAllowed.class);
+			String[] methodRoles = rolesAllowed != null ? rolesAllowed.value() : typeRoles;
+			if (methodRoles != null) {
+				managedMethod.setRoles(methodRoles);
+			}
+
 			// store managed method, if created, to managed methods pool
-			if (managedMethod != null) {
-				methodsPool.put(interfaceMethod, managedMethod);
-				if (managedMethod.isRemotelyAccessible() && netMethodsPool.put(method.getName(), managedMethod) != null) {
-					throw new BugError("Overloading is not supported for net method |%s|.", managedMethod);
-				}
+			methodsPool.put(interfaceMethod, managedMethod);
+			if (managedMethod.isRemotelyAccessible() && netMethodsPool.put(method.getName(), managedMethod) != null) {
+				throw new BugError("Overloading is not supported for net method |%s|.", managedMethod);
 			}
 		}
 

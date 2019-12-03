@@ -28,6 +28,11 @@ public class ContainerSpiStub implements ContainerSPI {
 	}
 
 	@Override
+	public <T> T loadService(Class<T> serviceInterface) {
+		throw new UnsupportedOperationException("loadService(Class<T> serviceInterface)");
+	}
+
+	@Override
 	public boolean login(String username, String password) {
 		throw new UnsupportedOperationException("login(String username, String password)");
 	}
@@ -43,13 +48,18 @@ public class ContainerSpiStub implements ContainerSPI {
 	}
 
 	@Override
-	public <T extends Principal> T getUserPrincipal() {
+	public Principal getUserPrincipal() {
 		throw new UnsupportedOperationException("getUserPrincipal()");
 	}
 
 	@Override
 	public boolean isAuthenticated() {
 		throw new UnsupportedOperationException("isAuthenticated()");
+	}
+
+	@Override
+	public boolean isAuthorized(String... roles) {
+		throw new UnsupportedOperationException("isAuthorized(String... roles)");
 	}
 
 	@Override

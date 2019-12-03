@@ -1,6 +1,8 @@
-package js.tiny.container.core;
+package js.tiny.container.servlet;
 
 import java.security.Principal;
+
+import js.lang.BugError;
 
 /**
  * Security context is an unified interface for both servlet container and application provided authentication. There are two
@@ -15,7 +17,7 @@ import java.security.Principal;
  * @author Iulian Rotaru
  * @version final
  */
-public interface SecurityContext {
+public interface SecurityContextProvider {
 	/**
 	 * Authenticates the provided username and password and binds the authenticated principal to this security context. Use this
 	 * login variant when authentication is provided by servlet container. Implementation should delegate servlet container
@@ -25,7 +27,7 @@ public interface SecurityContext {
 	 * @param password user password.
 	 * @return true if authentication succeed.
 	 */
-	boolean login(String username, String password);
+	boolean login(RequestContext context, String username, String password);
 
 	/**
 	 * Bind application authenticated principal to this security context. This login variant is used when authentication is
@@ -34,7 +36,7 @@ public interface SecurityContext {
 	 * 
 	 * @param principal application authenticated user principal.
 	 */
-	void login(Principal principal);
+	void login(RequestContext context, Principal principal);
 
 	/**
 	 * Remove authenticated user from this security context. After executing this method security context become not
@@ -43,7 +45,7 @@ public interface SecurityContext {
 	 * If authentication on login was provided by servlet container implementation should inform it about this logout event,
 	 * beside updating implementation own state.
 	 */
-	void logout();
+	void logout(RequestContext context);
 
 	/**
 	 * Get authenticated principal for this security context. A security context become authenticated, and has a principal,
@@ -52,15 +54,7 @@ public interface SecurityContext {
 	 * 
 	 * @return this security context authenticated principal or null if none.
 	 */
-	Principal getUserPrincipal();
-
-	/**
-	 * Test if this security context is authenticated. A security context is authenticated if has bound an authenticated
-	 * principal. This predicate is a convenient alternative for <code>getUserPrincipal() != null</code>.
-	 * 
-	 * @return true if current security context is authenticated.
-	 */
-	boolean isAuthenticated();
+	Principal getUserPrincipal(RequestContext context);
 
 	/**
 	 * Check if this security context is authorized for any of the requested roles. First of all for this security context to be
@@ -75,5 +69,5 @@ public interface SecurityContext {
 	 * @return true if current security context is authorized.
 	 * @throws BugError if <code>roles</code> argument is null.
 	 */
-	boolean isAuthorized(String... roles);
+	boolean isAuthorized(RequestContext context, String... roles);
 }

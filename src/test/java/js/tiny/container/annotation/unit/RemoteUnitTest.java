@@ -15,6 +15,7 @@ import org.junit.Test;
 import js.lang.BugError;
 import js.lang.ConfigBuilder;
 import js.lang.InvocationException;
+import js.tiny.container.Access;
 import js.tiny.container.ManagedClass;
 import js.tiny.container.ManagedClassSPI;
 import js.tiny.container.ManagedMethodSPI;
@@ -26,6 +27,7 @@ import js.tiny.container.annotation.Remote;
 import js.tiny.container.annotation.RequestPath;
 import js.tiny.container.annotation.Service;
 import js.tiny.container.stub.ContainerStub;
+import js.util.Classes;
 import js.util.Strings;
 
 @SuppressWarnings("unused")
@@ -44,10 +46,10 @@ public class RemoteUnitTest {
 		ManagedMethodSPI managedMethod = managedMethods.get(0);
 		assertEquals("managedMethod01", managedMethod.getMethod().getName());
 		assertTrue(managedMethod.isRemotelyAccessible());
-		assertFalse(managedMethod.isPublic());
+		assertFalse(isPublic(managedMethod));
 		assertEquals("managed-method-0-1", managedMethod.getRequestPath());
 	}
-
+	
 	@Test
 	public void remoteClassWithClassPath() throws Throwable {
 		String descriptor = "<test class='js.tiny.container.annotation.unit.RemoteUnitTest$MockClass15' />";
@@ -71,7 +73,7 @@ public class RemoteUnitTest {
 		ManagedMethodSPI managedMethod = managedMethods.get(0);
 		assertEquals("method02", managedMethod.getMethod().getName());
 		assertTrue(managedMethod.isRemotelyAccessible());
-		assertFalse(managedMethod.isPublic());
+		assertFalse(isPublic(managedMethod));
 		assertEquals("method-0-2", managedMethod.getRequestPath());
 	}
 
@@ -123,7 +125,7 @@ public class RemoteUnitTest {
 		ManagedMethodSPI managedMethod = managedMethods.get(0);
 		assertEquals("method05", managedMethod.getMethod().getName());
 		assertTrue(managedMethod.isRemotelyAccessible());
-		assertFalse(managedMethod.isPublic());
+		assertFalse(isPublic(managedMethod));
 		assertEquals("method-0-5", managedMethod.getRequestPath());
 	}
 
@@ -141,7 +143,7 @@ public class RemoteUnitTest {
 		ManagedMethodSPI managedMethod = managedMethods.get(0);
 		assertEquals("method02", managedMethod.getMethod().getName());
 		assertTrue(managedMethod.isRemotelyAccessible());
-		assertFalse(managedMethod.isPublic());
+		assertFalse(isPublic(managedMethod));
 		assertEquals("method-0-2", managedMethod.getRequestPath());
 	}
 
@@ -159,7 +161,7 @@ public class RemoteUnitTest {
 		ManagedMethodSPI managedMethod = managedMethods.get(0);
 		assertEquals("method07", managedMethod.getMethod().getName());
 		assertTrue(managedMethod.isRemotelyAccessible());
-		assertFalse(managedMethod.isPublic());
+		assertFalse(isPublic(managedMethod));
 		assertEquals("method-0-7", managedMethod.getRequestPath());
 	}
 
@@ -177,7 +179,7 @@ public class RemoteUnitTest {
 		ManagedMethodSPI managedMethod = managedMethods.get(0);
 		assertEquals("method08", managedMethod.getMethod().getName());
 		assertTrue(managedMethod.isRemotelyAccessible());
-		assertFalse(managedMethod.isPublic());
+		assertFalse(isPublic(managedMethod));
 		assertEquals("method-0-8", managedMethod.getRequestPath());
 	}
 
@@ -195,7 +197,7 @@ public class RemoteUnitTest {
 		ManagedMethodSPI managedMethod = managedMethods.get(0);
 		assertEquals("method09", managedMethod.getMethod().getName());
 		assertTrue(managedMethod.isRemotelyAccessible());
-		assertTrue(managedMethod.isPublic());
+		assertTrue(isPublic(managedMethod));
 		assertEquals("method-0-9", managedMethod.getRequestPath());
 	}
 
@@ -213,7 +215,7 @@ public class RemoteUnitTest {
 		ManagedMethodSPI managedMethod = managedMethods.get(0);
 		assertEquals("method10", managedMethod.getMethod().getName());
 		assertTrue(managedMethod.isRemotelyAccessible());
-		assertTrue(managedMethod.isPublic());
+		assertTrue(isPublic(managedMethod));
 		assertEquals("method-1-0", managedMethod.getRequestPath());
 	}
 
@@ -231,7 +233,7 @@ public class RemoteUnitTest {
 		ManagedMethodSPI managedMethod = managedMethods.get(0);
 		assertEquals("method11", managedMethod.getMethod().getName());
 		assertTrue(managedMethod.isRemotelyAccessible());
-		assertFalse(managedMethod.isPublic());
+		assertFalse(isPublic(managedMethod));
 		assertEquals("method-1-1", managedMethod.getRequestPath());
 	}
 
@@ -277,6 +279,11 @@ public class RemoteUnitTest {
 			list.add(t);
 		}
 		return list;
+	}
+
+	private static boolean isPublic(ManagedMethodSPI managedMethod) {
+		Access access = Classes.getFieldValue(managedMethod, "access");
+		return access == Access.PUBLIC;
 	}
 
 	// --------------------------------------------------------------------------------------------

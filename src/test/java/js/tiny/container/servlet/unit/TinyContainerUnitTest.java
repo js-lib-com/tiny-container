@@ -7,6 +7,7 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import java.io.File;
+import java.io.IOException;
 import java.security.Principal;
 import java.util.Arrays;
 import java.util.Collections;
@@ -18,8 +19,13 @@ import java.util.Map;
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import javax.servlet.http.HttpSessionEvent;
+
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
+import org.junit.Test;
 
 import js.lang.BugError;
 import js.lang.Config;
@@ -30,20 +36,15 @@ import js.tiny.container.ContainerSPI;
 import js.tiny.container.InstanceScope;
 import js.tiny.container.ManagedClassSPI;
 import js.tiny.container.ScopeFactory;
-import js.tiny.container.core.AppFactory;
 import js.tiny.container.servlet.NonceUser;
 import js.tiny.container.servlet.RequestContext;
 import js.tiny.container.servlet.TinyContainer;
 import js.tiny.container.unit.HttpServletRequestStub;
+import js.tiny.container.unit.HttpServletResponseStub;
 import js.tiny.container.unit.HttpSessionStub;
 import js.tiny.container.unit.ServletContextStub;
-import js.tiny.container.unit.TestConfigBuilder;
 import js.util.Classes;
 import js.util.Files;
-
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
 
 @SuppressWarnings({ "unused", "rawtypes" })
 public class TinyContainerUnitTest {
@@ -697,6 +698,7 @@ public class TinyContainerUnitTest {
 
 	private static class MockRequestContext extends RequestContext {
 		private MockHttpServletRequest request = new MockHttpServletRequest();
+		private MockHttpServletResponse response = new MockHttpServletResponse();
 
 		public MockRequestContext(ContainerSPI container) {
 			super(container);
@@ -715,6 +717,11 @@ public class TinyContainerUnitTest {
 		@Override
 		public HttpServletRequest getRequest() {
 			return request;
+		}
+
+		@Override
+		public HttpServletResponse getResponse() {
+			return response;
 		}
 	}
 
@@ -739,6 +746,11 @@ public class TinyContainerUnitTest {
 			++loginProbe;
 			loginUsername = username;
 			loginPassword = password;
+		}
+
+		@Override
+		public boolean authenticate(HttpServletResponse response) throws IOException, ServletException {
+			return true;
 		}
 
 		@Override
@@ -775,6 +787,9 @@ public class TinyContainerUnitTest {
 		}
 	}
 
+	private static class MockHttpServletResponse extends HttpServletResponseStub {
+	}
+	
 	private static class MockHttpSession extends HttpSessionStub {
 		private boolean exception;
 		private Map<String, Object> attributes = new HashMap<>();

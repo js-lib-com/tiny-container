@@ -13,6 +13,7 @@ import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.lang.reflect.Type;
+import java.security.Principal;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -569,6 +570,11 @@ public class ManagedMethodUnitTest {
 
 		@Override
 		public boolean isAuthenticated() {
+			return authenticated;
+		}
+
+		@Override
+		public boolean isAuthorized(String... roles) {
 			return authenticated;
 		}
 

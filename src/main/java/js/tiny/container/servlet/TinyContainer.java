@@ -5,13 +5,11 @@ import java.security.Principal;
 import java.util.Enumeration;
 import java.util.Locale;
 import java.util.Properties;
+import java.util.ServiceLoader;
 
 import javax.servlet.ServletContext;
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpSession;
 import javax.servlet.http.HttpSessionEvent;
 import javax.servlet.http.HttpSessionListener;
 
@@ -176,11 +174,25 @@ public class TinyContainer extends Container implements ServletContextListener, 
 	 */
 	private String loginPage;
 
+	private SecurityContextProvider securityProvider;
+
 	/** Create tiny container instance. */
 	public TinyContainer() {
 		super();
 		log.trace("TinyContainer()");
 		registerScopeFactory(new SessionScopeFactory(this));
+
+		for (SecurityContextProvider accessControl : ServiceLoader.load(SecurityContextProvider.class)) {
+			log.info("Found access control implementation |%s|.", accessControl.getClass());
+			if (this.securityProvider != null) {
+				throw new BugError("Invalid runtime environment. Multiple access control implementation.");
+			}
+			this.securityProvider = accessControl;
+		}
+
+		if (this.securityProvider == null) {
+			this.securityProvider = new TinySecurityContext();
+		}
 	}
 
 	@Override
@@ -349,103 +361,35 @@ public class TinyContainer extends Container implements ServletContextListener, 
 
 	@Override
 	public boolean login(String username, String password) {
-		try {
-			getHttpServletRequest().login(username, password);
-		} catch (ServletException e) {
-			// exception is thrown if request is already authenticated, servlet container authentication is not enabled or
-			// credentials are not accepted
-			// consider all these conditions as login fail but record the event to application logger
-			log.debug(e);
-			return false;
-		}
-		return true;
+		return securityProvider.login(getInstance(RequestContext.class), username, password);
 	}
 
 	@Override
 	public void login(Principal user) {
-		final HttpServletRequest request = getHttpServletRequest();
-
-		HttpSession session = request.getSession(true);
-		if (user instanceof NonceUser) {
-			final NonceUser nonce = (NonceUser) user;
-			session.setMaxInactiveInterval(nonce.getMaxInactiveInterval());
-		}
-
-		try {
-			session.setAttribute(ATTR_PRINCIPAL, user);
-		} catch (IllegalStateException e) {
-			// improbable condition: exception due to invalid session that was just created
-			// it may occur only if another thread temper with login and somehow invalidates the session
-			// while is arguable hard to believe it can theoretically happen an need to be handled
-			// anyway, is not a security breach; if storing principal on session fails, session is not authenticated
-			log.debug(e);
-		}
+		securityProvider.login(getInstance(RequestContext.class), user);
 	}
 
 	@Override
 	public void logout() {
-		final HttpServletRequest request = getHttpServletRequest();
-
-		try {
-			request.logout();
-		} catch (ServletException e) {
-			// api-doc is not very explicit about this exception: ' If the logout fails'
-			// swallow this exception but record to application logger
-			log.debug(e);
-		}
-
-		HttpSession session = request.getSession(false);
-		if (session != null) {
-			// session invalidate takes care to 'unbind any objects bound to it'
-			// but just to be on the safe side remove principal attribute explicitly
-
-			try {
-				session.removeAttribute(ATTR_PRINCIPAL);
-				session.invalidate();
-			} catch (IllegalStateException e) {
-				// when enter 'if' block session is valid but could be changed from separated thread
-				// swallow this exception but record to application logger
-				log.debug(e);
-			}
-		}
+		securityProvider.logout(getInstance(RequestContext.class));
 	}
 
-	@SuppressWarnings("unchecked")
 	@Override
-	public <T extends Principal> T getUserPrincipal() {
-		RequestContext context = getInstance(RequestContext.class);
-		final HttpServletRequest request = context.getRequest();
-		if (request == null) {
-			log.debug("Attempt to retrieve user principal outside HTTP request.");
-			return null;
-		}
-
-		// if authentication is provided by servlet container it should be a principal on HTTP request
-		// otherwise it must be a session and on session it must be the principal object
-		// if none from above just return null
-
-		Principal principal = request.getUserPrincipal();
-		if (principal != null) {
-			return (T) principal;
-		}
-
-		HttpSession session = request.getSession();
-		if (session == null) {
-			return null;
-		}
-
-		try {
-			return (T) session.getAttribute(ATTR_PRINCIPAL);
-		} catch (IllegalStateException e) {
-			// it can happen session to become invalid from another thread
-			// this is a legal condition; do not even log it to debug
-			return null;
-		}
+	public Principal getUserPrincipal() {
+		return securityProvider.getUserPrincipal(getInstance(RequestContext.class));
 	}
 
 	@Override
 	public boolean isAuthenticated() {
 		return getUserPrincipal() != null;
+	}
+
+	@Override
+	public boolean isAuthorized(String... roles) {
+		if (roles == null) {
+			throw new BugError("Null roles.");
+		}
+		return securityProvider.isAuthorized(getInstance(RequestContext.class), roles);
 	}
 
 	// --------------------------------------------------------------------------------------------
@@ -467,23 +411,5 @@ public class TinyContainer extends Container implements ServletContextListener, 
 			value = ConverterRegistry.getConverter().asString(value);
 		}
 		contextParameters.put(name, value);
-	}
-
-	// --------------------------------------------------------------------------------------------
-	// UTILITY METHODS
-
-	/**
-	 * Get HTTP request from current request context.
-	 * 
-	 * @return current HTTP request.
-	 * @throws BugError if attempt to use not initialized HTTP request.
-	 */
-	private HttpServletRequest getHttpServletRequest() {
-		RequestContext context = getInstance(RequestContext.class);
-		HttpServletRequest request = context.getRequest();
-		if (request == null) {
-			throw new BugError("Attempt to use not initialized HTTP request.");
-		}
-		return request;
 	}
 }
