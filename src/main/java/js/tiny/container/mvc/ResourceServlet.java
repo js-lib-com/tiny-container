@@ -129,7 +129,7 @@ public class ResourceServlet extends AppServlet {
 	@Override
 	public void init(ServletConfig config) throws ServletException {
 		super.init(config);
-		for (ManagedMethodSPI method : container.getManagedMethods()) {
+		for (ManagedMethodSPI method : container.getNetMethods()) {
 			if (Types.isKindOf(method.getReturnType(), Resource.class)) {
 				resourceMethods.put(key(method), method);
 			}

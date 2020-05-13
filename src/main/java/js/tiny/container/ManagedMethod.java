@@ -105,6 +105,10 @@ public final class ManagedMethod implements ManagedMethodSPI {
 
 	private String cronExpression;
 
+	/**
+	 * Roles allowed to invoke this managed method. If empty and if this method is private all authenticated users are
+	 * authorized.
+	 */
 	private String[] roles = new String[0];
 
 	/**

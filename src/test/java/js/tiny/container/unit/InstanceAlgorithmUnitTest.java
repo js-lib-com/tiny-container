@@ -176,7 +176,7 @@ public class InstanceAlgorithmUnitTest {
 		}
 
 		@Override
-		public Iterable<ManagedMethodSPI> getCronManagedMethods() {
+		public Iterable<ManagedMethodSPI> getCronMethods() {
 			return Collections.emptyList();
 		}
 

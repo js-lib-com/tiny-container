@@ -11,14 +11,14 @@ public class CronMethodsProcessor implements InstanceProcessor {
 
 	@Override
 	public void postProcessInstance(ManagedClassSPI managedClass, Object instance) {
-		if (!managedClass.getCronManagedMethods().iterator().hasNext()) {
+		if (!managedClass.getCronMethods().iterator().hasNext()) {
 			// it is legal for a managed instance to not have any cron methods
 			return;
 		}
 		if (!managedClass.getInstanceScope().equals(InstanceScope.APPLICATION)) {
 			throw new BugError("Crom method requires %s instance scope.", InstanceScope.APPLICATION);
 		}
-		for (ManagedMethodSPI managedMethod : managedClass.getCronManagedMethods()) {
+		for (ManagedMethodSPI managedMethod : managedClass.getCronMethods()) {
 			cronManager.register(instance, managedMethod);
 		}
 	}

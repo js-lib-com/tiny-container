@@ -189,7 +189,7 @@ public class ResourceServletHandlerUnitTest {
 		private String loginPage;
 
 		@Override
-		public Iterable<ManagedMethodSPI> getManagedMethods() {
+		public Iterable<ManagedMethodSPI> getNetMethods() {
 			return methods;
 		}
 

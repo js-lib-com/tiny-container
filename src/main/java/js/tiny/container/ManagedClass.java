@@ -706,7 +706,12 @@ public final class ManagedClass implements ManagedClassSPI {
 	}
 
 	@Override
-	public Iterable<ManagedMethodSPI> getCronManagedMethods() {
+	public Iterable<ManagedMethodSPI> getNetMethods() {
+		return netMethodsPool.values();
+	}
+
+	@Override
+	public Iterable<ManagedMethodSPI> getCronMethods() {
 		return cronMethodsPool;
 	}
 

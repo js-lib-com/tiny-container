@@ -140,25 +140,37 @@ public class TinySecurityContext implements SecurityContextProvider {
 			return false;
 		}
 
-		if (request.getUserPrincipal() == null) {
-			return false;
-		}
-		if (roles.length == 0) {
-			return true;
-		}
-
-		for (String role : roles) {
-			if (request.isUserInRole(role)) {
+		// test container provided authorization only if request is authenticated
+		if (request.getUserPrincipal() != null) {
+			if (roles.length == 0) {
 				return true;
 			}
+			for (String role : roles) {
+				if (request.isUserInRole(role)) {
+					return true;
+				}
+			}
+			return false;
 		}
 
+		// application provided authorization uses principal kept on session
 		HttpSession session = request.getSession();
 		if (session == null) {
 			return false;
 		}
+		Object attribute = session.getAttribute(TinyContainer.ATTR_PRINCIPAL);
+		if (attribute == null) {
+			return false;
+		}
+		if (!(attribute instanceof RolesPrincipal)) {
+			log.bug("Attempt to use authorization without roles principal. Authenticated user class is |%s|.", attribute.getClass());
+			return false;
+		}
 
-		RolesPrincipal principal = (RolesPrincipal) session.getAttribute(TinyContainer.ATTR_PRINCIPAL);
+		if (roles.length == 0) {
+			return true;
+		}
+		RolesPrincipal principal = (RolesPrincipal) attribute;
 		for (String role : roles) {
 			for (String rolePrincipal : principal.getRoles()) {
 				if (role.equals(rolePrincipal)) {

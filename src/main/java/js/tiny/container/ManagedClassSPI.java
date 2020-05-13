@@ -114,12 +114,14 @@ public interface ManagedClassSPI {
 	 */
 	Iterable<ManagedMethodSPI> getManagedMethods();
 
+	Iterable<ManagedMethodSPI> getNetMethods();
+
 	/**
 	 * Return this managed class methods annotated with {@link Cron} annotation.
 	 * 
 	 * @return this managed class cron methods.
 	 */
-	Iterable<ManagedMethodSPI> getCronManagedMethods();
+	Iterable<ManagedMethodSPI> getCronMethods();
 
 	/**
 	 * Get managed method wrapping requested Java method. This getter is designed to be used with managed classes of

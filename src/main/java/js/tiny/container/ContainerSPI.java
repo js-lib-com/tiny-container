@@ -75,6 +75,8 @@ public interface ContainerSPI extends AppFactory, SecurityContext {
 	 */
 	Iterable<ManagedMethodSPI> getManagedMethods();
 
+	Iterable<ManagedMethodSPI> getNetMethods();
+
 	/**
 	 * Get basic authentication realm. If realm is not defined into application descriptor uses context name.
 	 * <p>

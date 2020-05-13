@@ -88,6 +88,11 @@ public class ContainerSpiStub implements ContainerSPI {
 	}
 
 	@Override
+	public Iterable<ManagedMethodSPI> getNetMethods() {
+		throw new UnsupportedOperationException("getNetMethods()");
+	}
+
+	@Override
 	public String getLoginRealm() {
 		throw new UnsupportedOperationException("getLoginRealm()");
 	}

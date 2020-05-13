@@ -107,7 +107,7 @@ public class ResourceServletUnitTest {
 		private List<ManagedMethodSPI> methods = new ArrayList<>();
 
 		@Override
-		public Iterable<ManagedMethodSPI> getManagedMethods() {
+		public Iterable<ManagedMethodSPI> getNetMethods() {
 			return methods;
 		}
 	}

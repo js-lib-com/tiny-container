@@ -784,7 +784,17 @@ public abstract class Container implements ContainerSPI, Configurable {
 		return new Iterable<ManagedMethodSPI>() {
 			@Override
 			public Iterator<ManagedMethodSPI> iterator() {
-				return new ManagedMethodsIterator();
+				return new ManagedMethodsIterator(ManagedMethodsIterator.ALL_METHODS);
+			}
+		};
+	}
+
+	@Override
+	public Iterable<ManagedMethodSPI> getNetMethods() {
+		return new Iterable<ManagedMethodSPI>() {
+			@Override
+			public Iterator<ManagedMethodSPI> iterator() {
+				return new ManagedMethodsIterator(ManagedMethodsIterator.NET_METHODS);
 			}
 		};
 	}
@@ -846,20 +856,27 @@ public abstract class Container implements ContainerSPI, Configurable {
 	 * @version final
 	 */
 	private class ManagedMethodsIterator implements Iterator<ManagedMethodSPI> {
+		public static final boolean ALL_METHODS = false;
+		public static final boolean NET_METHODS = true;
+
 		/** Managed classes iterator. */
-		private Iterator<ManagedClassSPI> classesIterator;
+		private final Iterator<ManagedClassSPI> classesIterator;
+
+		private final boolean netMethod;
+
 		/** Iterator on managed methods from current managed class. */
 		private Iterator<ManagedMethodSPI> currentMethodsIterator;
 
 		/**
 		 * Initialize iterators for managed classes and current class methods.
 		 */
-		public ManagedMethodsIterator() {
+		public ManagedMethodsIterator(boolean... netMethod) {
 			classesIterator = classesPool.values().iterator();
 			if (!classesIterator.hasNext()) {
 				throw new BugError("Empty classes pool.");
 			}
-			currentMethodsIterator = classesIterator.next().getManagedMethods().iterator();
+			this.netMethod = netMethod.length == 1 ? netMethod[0] : false;
+			currentMethodsIterator = nextMethodIterator();
 		}
 
 		@Override
@@ -868,7 +885,7 @@ public abstract class Container implements ContainerSPI, Configurable {
 				if (!classesIterator.hasNext()) {
 					return false;
 				}
-				currentMethodsIterator = classesIterator.next().getManagedMethods().iterator();
+				currentMethodsIterator = nextMethodIterator();
 			}
 			return true;
 		}
@@ -876,6 +893,13 @@ public abstract class Container implements ContainerSPI, Configurable {
 		@Override
 		public ManagedMethodSPI next() {
 			return currentMethodsIterator.next();
+		}
+
+		private Iterator<ManagedMethodSPI> nextMethodIterator() {
+			if (netMethod) {
+				return classesIterator.next().getNetMethods().iterator();
+			}
+			return classesIterator.next().getManagedMethods().iterator();
 		}
 	}
 
