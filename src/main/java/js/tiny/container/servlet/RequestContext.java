@@ -3,6 +3,7 @@ package js.tiny.container.servlet;
 import java.util.Enumeration;
 import java.util.Locale;
 
+import javax.servlet.RequestDispatcher;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
@@ -350,6 +351,11 @@ public class RequestContext {
 		return httpRequest.getRemotePort();
 	}
 
+	public String getForwardContextPath() {
+		assertAttached();
+		return (String) httpRequest.getAttribute(RequestDispatcher.FORWARD_CONTEXT_PATH);
+	}
+	
 	/**
 	 * Allows access to servlet request interface.
 	 * 

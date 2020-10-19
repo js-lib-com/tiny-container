@@ -73,10 +73,10 @@ public class QueryParametersTest {
 	public void asObject() throws Throwable {
 		assertEquals((Byte) (byte) 64, asObject("64", Byte.class));
 		assertEquals((Short) (short) 1964, asObject("1964", Short.class));
-		assertEquals(65536, asObject("65536", Integer.class));
-		assertEquals(65536L, asObject("65536", Long.class));
-		assertEquals(65536F, asObject("65536", Float.class));
-		assertEquals(65536.0, asObject("65536", Double.class));
+		assertEquals(65536, (int)asObject("65536", Integer.class));
+		assertEquals(65536L, (long)asObject("65536", Long.class));
+		assertEquals(65536F, (float)asObject("65536", Float.class), 0);
+		assertEquals(65536.0, (double)asObject("65536", Double.class), 0);
 		assertTrue((boolean) asObject("true", Boolean.class));
 		assertEquals("string", asObject("string", String.class));
 		assertEquals(new File("path"), asObject("path", File.class));
@@ -84,12 +84,12 @@ public class QueryParametersTest {
 
 	@Test
 	public void asObject_NullValue() throws Throwable {
-		assertEquals((byte) 0, asObject(null, Byte.class));
-		assertEquals((short) 0, asObject(null, Short.class));
-		assertEquals(0, asObject(null, Integer.class));
-		assertEquals(0L, asObject(null, Long.class));
-		assertEquals(0.0F, asObject(null, Float.class));
-		assertEquals(0.0, asObject(null, Double.class));
+		assertEquals((byte) 0, (byte)asObject(null, Byte.class));
+		assertEquals((short) 0, (short)asObject(null, Short.class));
+		assertEquals(0, (int)asObject(null, Integer.class));
+		assertEquals(0L, (long)asObject(null, Long.class));
+		assertEquals(0.0F, (float)asObject(null, Float.class), 0);
+		assertEquals(0.0, (double)asObject(null, Double.class), 0);
 		assertFalse((boolean) asObject(null, Boolean.class));
 		assertEquals("", asObject(null, String.class));
 		assertNull(asObject(null, File.class));

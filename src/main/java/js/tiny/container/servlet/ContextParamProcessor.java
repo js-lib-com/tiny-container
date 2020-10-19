@@ -70,6 +70,10 @@ public class ContextParamProcessor implements ClassProcessor, InstanceProcessor 
 	 */
 	private void setField(Field field, String parameterName, Object instance) {
 		final Object value = context.getProperty(parameterName, field.getType());
+		if (value == null) {
+			log.warn("Field |%s| has no context parameter. Leave it on compiled value.", field);
+			return;
+		}
 		try {
 			field.set(instance, value);
 		} catch (Exception e) {

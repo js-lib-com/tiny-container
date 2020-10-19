@@ -53,7 +53,7 @@ public class CaptchaTest {
 		Object captcha = config(REPOSITORY_DIR, 5);
 		assertNotNull(captcha);
 		assertEquals(REPOSITORY_DIR, ((File) Classes.getFieldValue(captcha, "imagesRepositoryDir")).getPath());
-		assertEquals(5, Classes.getFieldValue(captcha, "challengeSetSize"));
+		assertEquals(5, (int)Classes.getFieldValue(captcha, "challengeSetSize"));
 	}
 
 	@Test(expected = ConfigException.class)

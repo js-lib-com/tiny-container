@@ -8,6 +8,8 @@ import js.lang.Config;
 import js.lang.ConfigBuilder;
 import js.lang.ConfigException;
 import js.log.LogFactory;
+import js.log.LogProvider;
+import js.util.Classes;
 
 /**
  * Server global state and applications logger initialization. This class assumes standard Tomcat deployment. System property
@@ -37,6 +39,11 @@ final class Server {
 	/** Applications logger configuration file. */
 	private static final String LOG_XML = "log.xml";
 
+	private final LogProvider logProvider;
+
+	/** Hook register to JVM to be executed just before JVM halt. */
+	private final Thread shutdownHook;
+
 	/** Server base directory, absolute path. */
 	private final File serverBase;
 
@@ -45,17 +52,22 @@ final class Server {
 
 	/** Initialize server global state and applications logger. */
 	public Server() {
+		this.logProvider = Classes.loadService(LogProvider.class);
+		this.shutdownHook = new ShutdownHook(this.logProvider);
+		this.shutdownHook.setDaemon(false);
+		Runtime.getRuntime().addShutdownHook(this.shutdownHook);
+
 		String serverBaseProperty = System.getProperty(SERVER_BASE);
 		if (serverBaseProperty == null) {
 			throw new BugError(log("Invalid environment: missing ${%s} system property. Server startup abort.", SERVER_BASE));
 		}
-		serverBase = new File(serverBaseProperty);
-		if (!serverBase.exists()) {
+		this.serverBase = new File(serverBaseProperty);
+		if (!this.serverBase.exists()) {
 			throw new BugError(log("Invalid environment: bad ${%s} system property. Web server directory |%s| does not exist. Server startup abort.", SERVER_BASE, serverBase));
 		}
 
-		appWorkDir = new File(serverBase, APP_WORK);
-		appWorkDir.mkdirs();
+		this.appWorkDir = new File(serverBase, APP_WORK);
+		this.appWorkDir.mkdirs();
 
 		File logsDir = new File(serverBase, LOGS_DIR);
 		if (!logsDir.exists()) {
@@ -110,5 +122,18 @@ final class Server {
 		message = String.format(message, args);
 		java.util.logging.Logger.getLogger(Server.class.getCanonicalName()).log(java.util.logging.Level.SEVERE, message);
 		return message;
+	}
+
+	private static class ShutdownHook extends Thread {
+		private final LogProvider logProvider;
+
+		public ShutdownHook(LogProvider logProvider) {
+			this.logProvider = logProvider;
+		}
+
+		@Override
+		public void run() {
+			logProvider.forceImmediateFlush();
+		}
 	}
 }

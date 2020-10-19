@@ -102,7 +102,7 @@ public class RemoteInstanceFactory implements InstanceFactory, RemoteFactory {
 
 		RemoteFactory remoteFactory = remoteFactories.get(protocol);
 		if (remoteFactory == null) {
-			throw new UnsupportedProtocolException("No remote factory registered for protocol |%s|.", protocol);
+			throw new UnsupportedProtocolException("No service provider for remote factory on protocol |%s|. Ensure service provider for |%s| interface is deployed on runtime libraries.", protocol, RemoteFactoryProvider.class);
 		}
 		return remoteFactory.getRemoteInstance(implementationURL, interfaceClass);
 	}

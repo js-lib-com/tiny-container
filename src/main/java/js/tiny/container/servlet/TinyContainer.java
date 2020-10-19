@@ -129,6 +129,13 @@ public class TinyContainer extends Container implements ServletContextListener, 
 	private String appName = "test-app";
 
 	/**
+	 * Development context is running in the same JVM and is allowed to do cross context forward to this context private
+	 * resources WITHOUT AUTHENTICATION. It should be explicitly configured on context parameters with the name
+	 * 'js.tiny.container.dev.context'.
+	 */
+	private String developmentContext;
+
+	/**
 	 * Application private storage. Privateness is merely a good practice rather than enforced by some system level rights
 	 * protection. So called <code>private</code> directory is on working directory and has context name. Files returned by
 	 * {@link #getAppFile(String)} are always relative to this <code>private</code> directory.
@@ -267,6 +274,9 @@ public class TinyContainer extends Container implements ServletContextListener, 
 			log.debug("Load context parameter |%s| value |%s|.", name, value);
 		}
 
+		// WARN: if development context is declared it can access private resources without authentication		
+		developmentContext = contextParameters.getProperty("js.tiny.container.dev.context");
+
 		try {
 			ConfigBuilder builder = new TinyConfigBuilder(servletContext, contextParameters);
 			config(builder.build());
@@ -389,7 +399,12 @@ public class TinyContainer extends Container implements ServletContextListener, 
 		if (roles == null) {
 			throw new BugError("Null roles.");
 		}
-		return securityProvider.isAuthorized(getInstance(RequestContext.class), roles);
+		// WARN: if development context is declared it can access private resources without authentication
+		RequestContext context = getInstance(RequestContext.class);
+		if (developmentContext != null && developmentContext.equals(context.getForwardContextPath())) {
+			return true;
+		}
+		return securityProvider.isAuthorized(context, roles);
 	}
 
 	// --------------------------------------------------------------------------------------------

@@ -196,6 +196,15 @@ public class RestServlet extends AppServlet {
 			}
 		}
 
+		// because character encoding is explicitly set, Tomcat force charset attribute on Content-Type header
+		// so that application/json becomes on response header application/json;charset=UTF-8
+		//
+		// Excerpt from Servlet Specification:
+		// Calls to setContentType set the character encoding only if the given content type string provides a value for the
+		// charset attribute.
+		// 
+		// seems like Tomcat breaks the specs
+
 		httpResponse.setCharacterEncoding("UTF-8");
 
 		if (method.isVoid()) {

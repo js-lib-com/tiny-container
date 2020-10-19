@@ -250,7 +250,7 @@ public class EventStream implements Closeable {
 
 		sendEvent(event);
 		onSent(event);
-		log.debug("Event |%s| was sent to event stream |%s|.", event, this);
+		log.trace("Event |%s| was sent to event stream |%s|.", event, this);
 		return !writer.checkError();
 	}
 

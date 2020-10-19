@@ -35,8 +35,8 @@ public class JavaConformityTest {
 		Classes.invoke(instanceA, "setField", 1);
 
 		assertFalse(Classes.getFieldValue(instanceA, "field") == Classes.getFieldValue(instanceB, "field"));
-		assertEquals(Classes.getFieldValue(instanceA, "field"), 1);
-		assertEquals(Classes.getFieldValue(instanceB, "field"), 0);
+		assertEquals((int)Classes.getFieldValue(instanceA, "field"), 1);
+		assertEquals((int)Classes.getFieldValue(instanceB, "field"), 0);
 	}
 
 	/** New operator as a whole fails with exception if constructor throw it. */
