@@ -10,6 +10,7 @@ import js.log.LogFactory;
 import js.tiny.container.ClassProcessor;
 import js.tiny.container.InstanceProcessor;
 import js.tiny.container.ManagedClassSPI;
+import js.tiny.container.annotation.ContextParam;
 import js.tiny.container.core.AppContext;
 
 /**
@@ -71,6 +72,13 @@ public class ContextParamProcessor implements ClassProcessor, InstanceProcessor 
 	private void setField(Field field, String parameterName, Object instance) {
 		final Object value = context.getProperty(parameterName, field.getType());
 		if (value == null) {
+			ContextParam contextParam = field.getAnnotation(ContextParam.class);
+			if (contextParam == null) {
+				throw new BugError("Missing ContextParam annotation from field |%s|.", field);
+			}
+			if (contextParam.mandatory()) {
+				throw new RuntimeException(String.format("Missing context parameter |%s| requested by field |%s|.", contextParam.value(), field));
+			}
 			log.warn("Field |%s| has no context parameter. Leave it on compiled value.", field);
 			return;
 		}

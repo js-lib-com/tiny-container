@@ -229,7 +229,7 @@ public class TinyContainerUnitTest {
 		assertNull(servletContext.attributes.get(TinyContainer.ATTR_INSTANCE));
 	}
 
-	@Test
+	@Test(expected = RuntimeException.class)
 	public void contextInitialized_Throwable() {
 		class MockContainer extends TinyContainer {
 			@Override
@@ -789,7 +789,7 @@ public class TinyContainerUnitTest {
 
 	private static class MockHttpServletResponse extends HttpServletResponseStub {
 	}
-	
+
 	private static class MockHttpSession extends HttpSessionStub {
 		private boolean exception;
 		private Map<String, Object> attributes = new HashMap<>();

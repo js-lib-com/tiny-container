@@ -1,13 +1,8 @@
 package js.tiny.container.servlet;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 
 import js.lang.BugError;
-import js.lang.Config;
-import js.lang.ConfigBuilder;
-import js.lang.ConfigException;
-import js.log.LogFactory;
 import js.log.LogProvider;
 import js.util.Classes;
 
@@ -32,12 +27,6 @@ final class Server {
 
 	/** Web server logs directory. */
 	private static final String LOGS_DIR = "logs";
-
-	/** Web server configuration directory. */
-	private static final String CONF_DIR = "conf";
-
-	/** Applications logger configuration file. */
-	private static final String LOG_XML = "log.xml";
 
 	private final LogProvider logProvider;
 
@@ -76,25 +65,6 @@ final class Server {
 		}
 		// system property 'logs' is used by log4j, e.g. RollingFileAppender
 		System.setProperty("logs", logsDir.getAbsolutePath());
-
-		File confDir = new File(serverBase, CONF_DIR);
-		if (!confDir.isDirectory()) {
-			log("Missing web server configuration directory |%s|. Force logger to console.", logsDir);
-			return;
-		}
-
-		File logDescriptor = new File(confDir, LOG_XML);
-		Config config = null;
-		try {
-			ConfigBuilder builder = new ConfigBuilder(logDescriptor);
-			config = builder.build();
-		} catch (FileNotFoundException unused) {
-			log("Logger configuration file |%s| not found. Force logger to console.", logDescriptor);
-			return;
-		} catch (ConfigException e) {
-			throw new BugError(log("Fail to load logger configuration from |%s|. Server fatal stop. Correct logger configuration or remove it to force logger to console.", logDescriptor.getAbsoluteFile()));
-		}
-		LogFactory.config(config);
 	}
 
 	/**

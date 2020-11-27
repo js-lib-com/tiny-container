@@ -252,6 +252,9 @@ public class TinyContainer extends Container implements ServletContextListener, 
 	 * handler is called before servlets initialization. Here is the relevant excerpt from API-DOC: <em>All
 	 * ServletContextListeners are notified of context initialization before any filter or servlet in the web application is
 	 * initialized.</em>
+	 * <p>
+	 * If tiny container start ends in fatal error, signal the host container that hopefully will stop the application. Stack
+	 * trace is dumped to logger.
 	 * 
 	 * @param contextEvent context event provided by servlet container.
 	 */
@@ -274,7 +277,7 @@ public class TinyContainer extends Container implements ServletContextListener, 
 			log.debug("Load context parameter |%s| value |%s|.", name, value);
 		}
 
-		// WARN: if development context is declared it can access private resources without authentication		
+		// WARN: if development context is declared it can access private resources without authentication
 		developmentContext = contextParameters.getProperty("js.tiny.container.dev.context");
 
 		try {
@@ -290,8 +293,10 @@ public class TinyContainer extends Container implements ServletContextListener, 
 		} catch (ConfigException e) {
 			log.error(e);
 			log.fatal("Bad container |%s| configuration.", appName);
-		} catch (Throwable t) {
-			log.dump(String.format("Fatal error on container |%s| start:", appName), t);
+		} catch (Error | RuntimeException e) {
+			log.dump(String.format("Fatal error on container |%s| start:", appName), e);
+			log.debug("Signal fatal error |%s| to host container. Application abort.", e.getClass());
+			throw e;
 		}
 	}
 
