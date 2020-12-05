@@ -115,7 +115,7 @@ public abstract class AppServlet extends HttpServlet {
 	@Override
 	public void init(ServletConfig config) throws ServletException {
 		super.init(config);
-		
+
 		final ServletContext context = config.getServletContext();
 		previewContextPath = context.getInitParameter(PARAMETER_PREVIEW_CONTEXT);
 		container = (ContainerSPI) context.getAttribute(TinyContainer.ATTR_INSTANCE);
@@ -172,7 +172,7 @@ public abstract class AppServlet extends HttpServlet {
 		log.trace("Processing request |%s|.", requestURI);
 
 		// if this request was forwarded from preview servlet ensure container is authenticated
-		// current context should declare context parameter js.tiny.container.preview.context 
+		// current context should declare context parameter js.tiny.container.preview.context
 		String forwardContextPath = (String) httpRequest.getAttribute(RequestDispatcher.FORWARD_CONTEXT_PATH);
 		if (previewContextPath != null && forwardContextPath != null && forwardContextPath.equals(previewContextPath)) {
 			container.login(new PreviewUser());
@@ -380,6 +380,22 @@ public abstract class AppServlet extends HttpServlet {
 		httpResponse.setHeader("Content-Language", context.getLocale().toLanguageTag());
 
 		httpResponse.getOutputStream().write(bytes);
+		httpResponse.getOutputStream().flush();
+	}
+
+	protected static void sendRedirect(RequestContext context, String location) throws IOException {
+		sendRedirect(context, HttpServletResponse.SC_MOVED_TEMPORARILY, location);
+	}
+
+	protected static void sendRedirect(RequestContext context, int statusCode, String location) throws IOException {
+		final HttpServletResponse httpResponse = context.getResponse();
+		if (httpResponse.isCommitted()) {
+			log.fatal("Abort HTTP transaction. Attempt to redirect after reponse commited.");
+			return;
+		}
+		log.trace("Send redirect |%d| to |%s|.", statusCode, location);
+		httpResponse.setStatus(statusCode);
+		httpResponse.setHeader("Location", location);
 		httpResponse.getOutputStream().flush();
 	}
 
