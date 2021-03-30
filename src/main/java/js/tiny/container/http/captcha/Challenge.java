@@ -40,7 +40,7 @@ public final class Challenge implements Serializable {
 	private transient final Random randomValueGenerator = new Random();
 
 	/** Current challenge set of tokens mapped to related image files, from images repository given to constructor. */
-	private transient final Map<String, File> tokenedImageFiles;
+	private final Map<String, File> tokenedImageFiles = new HashMap<>();
 
 	/**
 	 * Images set stored as relative URL with token request parameter. Image URL is based on {@link #RESOURCE_URL}. Every image
@@ -48,7 +48,7 @@ public final class Challenge implements Serializable {
 	 * <p>
 	 * This field is visible on client script with this specific name.
 	 */
-	private final List<String> images;
+	private final List<String> images = new ArrayList<>();
 
 	/**
 	 * Challenge value. This value is displayed to user as a hint related to one of {@link #images}. This field is visible on
@@ -67,9 +67,6 @@ public final class Challenge implements Serializable {
 	 * @param setSize challenge images set size.
 	 */
 	public Challenge(File repository, int setSize) {
-		this.images = new ArrayList<>(setSize);
-		this.tokenedImageFiles = new HashMap<>(setSize);
-
 		// loads random images from repository
 		// Random.nextInt(int) has an approximative uniform distribution and with very unlikely probability can return the same
 		// image file index multiple times
