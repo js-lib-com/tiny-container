@@ -2,7 +2,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.js-lib</groupId>
 	<artifactId>tiny-container</artifactId>
-	<version>1.3.5</version>
+	<version>1.3.1-SNAPSHOT</version>
 	<packaging>jar</packaging>
 
 	<name>Web Tiny Container</name>
@@ -115,7 +115,7 @@
 		<dependency>
 			<groupId>com.js-lib</groupId>
 			<artifactId>js-commons</artifactId>
-			<version>1.3.4</version>
+			<version>1.3.1-SNAPSHOT</version>
 		</dependency>
 		<dependency>
 			<groupId>commons-fileupload</groupId>
@@ -174,7 +174,7 @@
 		<dependency>
 			<groupId>com.js-lib</groupId>
 			<artifactId>js-log4j</artifactId>
-			<version>1.2.1</version>
+			<version>1.3.0-SNAPSHOT</version>
 			<scope>test</scope>
 		</dependency>
 	</dependencies>
@@ -182,12 +182,21 @@
 	<repositories>
 		<repository>
 			<id>js-lib</id>
-			<name>j(s)-lib maven</name>
 			<url>http://maven.js-lib.com/</url>
 		</repository>
 	</repositories>
+	<pluginRepositories>
+		<pluginRepository>
+			<id>js-lib</id>
+			<url>http://maven.js-lib.com/</url>
+		</pluginRepository>
+	</pluginRepositories>
 
 	<distributionManagement>
+		<snapshotRepository>
+			<id>js-lib</id>
+			<url>http://maven.js-lib.com/</url>
+		</snapshotRepository>
 		<repository>
 			<id>ossrh</id>
 			<url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
