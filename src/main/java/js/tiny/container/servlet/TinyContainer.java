@@ -26,7 +26,6 @@ import js.tiny.container.InstanceScope;
 import js.tiny.container.core.AppContext;
 import js.tiny.container.core.Factory;
 import js.tiny.container.core.SecurityContext;
-import js.util.Strings;
 
 /**
  * Container specialization for web applications. This class extends {@link Container} adding implementation for
@@ -231,7 +230,14 @@ public class TinyContainer extends Container implements ServletContextListener, 
 			loginRealm = loginConfig.getProperty("realm", appName);
 			loginPage = loginConfig.getProperty("page");
 			if (loginPage != null && !loginPage.startsWith("/")) {
-				loginPage = Strings.concat('/', appName, '/', loginPage);
+				StringBuilder loginPageBuilder = new StringBuilder();
+				loginPageBuilder.append('/');
+				if (!TinyConfigBuilder.ROOT_APP_NAME.equals(appName)) {
+					loginPageBuilder.append(appName);
+					loginPageBuilder.append('/');
+				}
+				loginPageBuilder.append(loginPage);
+				loginPage = loginPageBuilder.toString();
 			}
 		}
 	}

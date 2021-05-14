@@ -40,7 +40,7 @@ public class TinyConfigBuilder extends ConfigBuilder {
 	private static final Log log = LogFactory.getLog(TinyConfigBuilder.class);
 
 	/** Name for application deployed on ROOT context. */
-	private static final String ROOT_APP_NAME = "ROOT";
+	public static final String ROOT_APP_NAME = "ROOT";
 
 	/**
 	 * Configuration object for tiny container loaded from library and application descriptors. This is the root of
