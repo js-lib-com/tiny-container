@@ -5,10 +5,10 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.Map;
 
+import js.annotation.ContextParam;
 import js.lang.BugError;
 import js.lang.Config;
 import js.lang.ManagedLifeCycle;
-import js.tiny.container.annotation.ContextParam;
 import js.tiny.container.annotation.Cron;
 import js.tiny.container.annotation.Inject;
 import js.tiny.container.annotation.Remote;

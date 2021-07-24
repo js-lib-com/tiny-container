@@ -4,13 +4,13 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.Map;
 
+import js.annotation.ContextParam;
 import js.lang.BugError;
 import js.log.Log;
 import js.log.LogFactory;
 import js.tiny.container.ClassProcessor;
 import js.tiny.container.InstanceProcessor;
 import js.tiny.container.ManagedClassSPI;
-import js.tiny.container.annotation.ContextParam;
 import js.tiny.container.core.AppContext;
 
 /**

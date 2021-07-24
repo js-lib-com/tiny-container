@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import js.annotation.ContextParam;
 import js.converter.Converter;
 import js.converter.ConverterException;
 import js.lang.BugError;
@@ -23,7 +24,6 @@ import js.lang.ManagedLifeCycle;
 import js.log.Log;
 import js.log.LogFactory;
 import js.tiny.container.annotation.Asynchronous;
-import js.tiny.container.annotation.ContextParam;
 import js.tiny.container.annotation.Controller;
 import js.tiny.container.annotation.Cron;
 import js.tiny.container.annotation.Inject;
