@@ -224,7 +224,7 @@ final class QueryParametersParser {
 			Class<?> type = (Class<?>) formalParameters[0];
 			Object object = Classes.newInstance(type);
 			for (Parameter parameter : parameters) {
-				Field field = Classes.getField(type, Strings.dashedToMemberName(parameter.getName()));
+				Field field = Classes.getField(type, Strings.toMemberName(parameter.getName()));
 				Classes.setFieldValue(object, field, asObject(parameter.getValue(), field.getType()));
 			}
 			return new Object[] { object };
