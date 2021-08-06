@@ -25,6 +25,7 @@ import js.lang.InvocationException;
 import js.tiny.container.AuthorizationException;
 import js.tiny.container.ManagedClassSPI;
 import js.tiny.container.ManagedMethodSPI;
+import js.tiny.container.http.ContentType;
 import js.tiny.container.http.Resource;
 import js.tiny.container.rest.RestServlet;
 import js.tiny.container.servlet.AppServlet;
@@ -293,6 +294,11 @@ public class RestServletUnitTest {
 		@Override
 		public Type getReturnType() {
 			return returnType;
+		}
+
+		@Override
+		public ContentType getReturnContentType() {
+			return null;
 		}
 
 		@Override

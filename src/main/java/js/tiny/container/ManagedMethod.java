@@ -10,12 +10,15 @@ import java.util.List;
 import js.lang.AsyncTask;
 import js.lang.BugError;
 import js.lang.InvocationException;
+import js.lang.SyntaxException;
 import js.log.Log;
 import js.log.LogFactory;
 import js.tiny.container.annotation.Intercepted;
+import js.tiny.container.annotation.Produces;
 import js.tiny.container.annotation.Remote;
 import js.tiny.container.annotation.RequestPath;
 import js.tiny.container.core.SecurityContext;
+import js.tiny.container.http.ContentType;
 import js.util.Classes;
 import js.util.Params;
 import js.util.Strings;
@@ -110,6 +113,9 @@ public final class ManagedMethod implements ManagedMethodSPI {
 	 * authorized.
 	 */
 	private String[] roles = new String[0];
+
+	/** Returned content type initialized from {@link Produces} annotation. */
+	private ContentType returnContentType;
 
 	/**
 	 * Construct a managed method. This is a convenient constructor that just delegates
@@ -223,6 +229,18 @@ public final class ManagedMethod implements ManagedMethodSPI {
 	}
 
 	/**
+	 * Set method returned content type from {@link Produces} annotation. Given content type value should be accepted by
+	 * {@link ContentType#valueOf(String)}.
+	 * 
+	 * @param contentType content type to be used on HTTP response.
+	 * @throws SyntaxException if <code>value</code> is not a valid content type.
+	 * @see ContentType
+	 */
+	void setReturnContentType(String contentType) throws SyntaxException {
+		this.returnContentType = ContentType.valueOf(contentType);
+	}
+
+	/**
 	 * Enable instrumentation on the fly and return this method invocation meter.
 	 * 
 	 * @return this method invocation meter.
@@ -266,6 +284,11 @@ public final class ManagedMethod implements ManagedMethodSPI {
 	@Override
 	public Type getReturnType() {
 		return method.getGenericReturnType();
+	}
+
+	@Override
+	public ContentType getReturnContentType() {
+		return returnContentType;
 	}
 
 	/**

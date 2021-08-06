@@ -7,6 +7,7 @@ import js.lang.InvocationException;
 import js.tiny.container.AuthorizationException;
 import js.tiny.container.ManagedClassSPI;
 import js.tiny.container.ManagedMethodSPI;
+import js.tiny.container.http.ContentType;
 
 public class ManagedMethodSpiStub implements ManagedMethodSPI {
 	@Override
@@ -27,6 +28,11 @@ public class ManagedMethodSpiStub implements ManagedMethodSPI {
 	@Override
 	public Type getReturnType() {
 		throw new UnsupportedOperationException("getReturnType()");
+	}
+
+	@Override
+	public ContentType getReturnContentType() {
+		throw new UnsupportedOperationException("getReturnContentType()");
 	}
 
 	@Override

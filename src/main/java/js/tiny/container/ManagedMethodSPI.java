@@ -7,10 +7,12 @@ import js.lang.BugError;
 import js.lang.InvocationException;
 import js.tiny.container.annotation.Asynchronous;
 import js.tiny.container.annotation.Private;
+import js.tiny.container.annotation.Produces;
 import js.tiny.container.annotation.Public;
 import js.tiny.container.annotation.Remote;
 import js.tiny.container.annotation.RequestPath;
 import js.tiny.container.core.SecurityContext;
+import js.tiny.container.http.ContentType;
 import js.transaction.Immutable;
 import js.transaction.Mutable;
 import js.transaction.Transactional;
@@ -54,6 +56,14 @@ public interface ManagedMethodSPI {
 	 * @return this managed class return type.
 	 */
 	Type getReturnType();
+
+	/**
+	 * Get content type used when serialize method return value to HTTP response. This value is initialized from
+	 * {@link Produces} annotation. Return null if annotation is not declared.
+	 * 
+	 * @return content type used for returned value serialization.
+	 */
+	ContentType getReturnContentType();
 
 	/**
 	 * Invoke managed method. Just delegate wrapped Java reflective method but takes care to execute {@link Interceptor}, if any
@@ -120,7 +130,7 @@ public interface ManagedMethodSPI {
 	 * @return true if this managed method is transactional.
 	 */
 	boolean isTransactional();
-	
+
 	/**
 	 * Test if this transactional managed method is immutable. This predicate has meaning only if {@link #isTransactional()} is
 	 * true. A managed method is immutable it is tagged so using {@link Immutable} annotation. Also is immutable if its

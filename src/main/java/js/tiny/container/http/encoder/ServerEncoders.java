@@ -62,6 +62,7 @@ public final class ServerEncoders implements ArgumentsReaderFactory, ValueWriter
 		readers.put(new EncoderKey(ContentType.MULTIPART_FORM), new MultipartFormArgumentsReader());
 		readers.put(new EncoderKey(ContentType.URLENCODED_FORM), new FormUrlArgumentsReader());
 
+		writers.put(ContentType.TEXT_PLAIN, new PlainTextValueWriter());
 		writers.put(ContentType.APPLICATION_STREAM, new StreamValueWriter());
 		writers.put(ContentType.APPLICATION_JSON, new JsonValueWriter());
 

@@ -202,7 +202,7 @@ public class RestServlet extends AppServlet {
 		// Excerpt from Servlet Specification:
 		// Calls to setContentType set the character encoding only if the given content type string provides a value for the
 		// charset attribute.
-		// 
+		//
 		// seems like Tomcat breaks the specs
 
 		httpResponse.setCharacterEncoding("UTF-8");
@@ -222,7 +222,10 @@ public class RestServlet extends AppServlet {
 		// JSON but with limited capacity; if capacity is not exceeded set response content length; if capacity is exceeded
 		// switch to chunked transfer
 
-		ContentType contentType = valueWriterFactory.getContentTypeForValue(value);
+		ContentType contentType = method.getReturnContentType();
+		if (contentType == null) {
+			contentType = valueWriterFactory.getContentTypeForValue(value);
+		}
 		httpResponse.setStatus(HttpServletResponse.SC_OK);
 		httpResponse.setContentType(contentType.getValue());
 

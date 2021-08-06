@@ -30,6 +30,7 @@ import js.tiny.container.annotation.Inject;
 import js.tiny.container.annotation.Intercepted;
 import js.tiny.container.annotation.Local;
 import js.tiny.container.annotation.Private;
+import js.tiny.container.annotation.Produces;
 import js.tiny.container.annotation.Public;
 import js.tiny.container.annotation.Remote;
 import js.tiny.container.annotation.RequestPath;
@@ -636,6 +637,11 @@ public final class ManagedClass implements ManagedClassSPI {
 			String[] methodRoles = rolesAllowed != null ? rolesAllowed.value() : typeRoles;
 			if (methodRoles != null) {
 				managedMethod.setRoles(methodRoles);
+			}
+
+			Produces producesMethod = getAnnotation(method, Produces.class);
+			if (producesMethod != null) {
+				managedMethod.setReturnContentType(producesMethod.value());
 			}
 
 			// store managed method, if created, to managed methods pool
