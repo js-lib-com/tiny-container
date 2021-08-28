@@ -97,7 +97,7 @@ public class ContainerUnitTest {
 		assertClass("InstanceFieldsInitializationProcessor", instanceProcessors.get(1));
 		assertClass("ConfigurableInstanceProcessor", instanceProcessors.get(2));
 		assertClass("PostConstructInstanceProcessor", instanceProcessors.get(3));
-		assertClass("CronMethodsProcessor", instanceProcessors.get(4));
+		assertClass("TimerMethodsProcessor", instanceProcessors.get(4));
 		assertClass("LoggerInstanceProcessor", instanceProcessors.get(5));
 
 		assertNotNull(Classes.getFieldValue(container, Container.class, "argumentsProcessor"));

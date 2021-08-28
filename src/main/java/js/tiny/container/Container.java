@@ -36,6 +36,9 @@ import js.tiny.container.annotation.Private;
 import js.tiny.container.core.App;
 import js.tiny.container.core.AppContext;
 import js.tiny.container.core.AppFactory;
+import js.tiny.container.timer.CalendarTimerService;
+import js.tiny.container.timer.ICalendarTimerService;
+import js.tiny.container.timer.TimerMethodsProcessor;
 import js.transaction.Transaction;
 import js.util.Classes;
 import js.util.Params;
@@ -279,7 +282,7 @@ public abstract class Container implements ContainerSPI, Configurable {
 	 */
 	private final Map<Class<?>, ManagedClassSPI> classesPool = new HashMap<>();
 
-	private final CronManager cronManager;
+	private final ICalendarTimerService timerService;
 
 	// --------------------------------------------------------------------------------------------
 	// CONTAINER LIFE CYCLE
@@ -291,7 +294,7 @@ public abstract class Container implements ContainerSPI, Configurable {
 	public Container() {
 		log.trace("Container()");
 
-		cronManager = new CronManager();
+		timerService = new CalendarTimerService();
 
 		// first register plug-in scope factories in order to avoid overriding built-in factories
 		for (ScopeFactory scopeFactory : ServiceLoader.load(ScopeFactory.class)) {
@@ -326,7 +329,7 @@ public abstract class Container implements ContainerSPI, Configurable {
 		registerInstanceProcessor(new InstanceFieldsInitializationProcessor());
 		registerInstanceProcessor(new ConfigurableInstanceProcessor());
 		registerInstanceProcessor(new PostConstructInstanceProcessor());
-		registerInstanceProcessor(new CronMethodsProcessor(cronManager));
+		registerInstanceProcessor(new TimerMethodsProcessor(timerService));
 		registerInstanceProcessor(new LoggerInstanceProcessor());
 	}
 
@@ -539,8 +542,8 @@ public abstract class Container implements ContainerSPI, Configurable {
 	public void destroy() {
 		log.trace("destroy()");
 
-		// cron manager should be destroyed first to avoid invoking cron methods on cleaned managed instance
-		cronManager.destroy();
+		// timer service should be destroyed first to avoid invoking timer methods on cleaned managed instance
+		timerService.destroy();
 
 		// classes pool is not sorted; it is a hash map for performance reasons
 		// also, a managed class may appear multiple times if have multiple interfaces

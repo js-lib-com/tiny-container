@@ -57,7 +57,7 @@ public class InstanceProcessorUnitTest {
 		assertEquals("InstanceFieldsInitializationProcessor", processors.get(2).getClass().getSimpleName());
 		assertEquals("ConfigurableInstanceProcessor", processors.get(3).getClass().getSimpleName());
 		assertEquals("PostConstructInstanceProcessor", processors.get(4).getClass().getSimpleName());
-		assertEquals("CronMethodsProcessor", processors.get(5).getClass().getSimpleName());
+		assertEquals("TimerMethodsProcessor", processors.get(5).getClass().getSimpleName());
 		assertEquals("LoggerInstanceProcessor", processors.get(6).getClass().getSimpleName());
 	}
 

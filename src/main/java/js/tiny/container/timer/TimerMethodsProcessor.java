@@ -1,12 +1,16 @@
-package js.tiny.container;
+package js.tiny.container.timer;
 
 import js.lang.BugError;
+import js.tiny.container.InstanceProcessor;
+import js.tiny.container.InstanceScope;
+import js.tiny.container.ManagedClassSPI;
+import js.tiny.container.ManagedMethodSPI;
 
-public class CronMethodsProcessor implements InstanceProcessor {
-	private final CronManager cronManager;
+public class TimerMethodsProcessor implements InstanceProcessor {
+	private final ICalendarTimerService timerService;
 
-	public CronMethodsProcessor(CronManager cronManager) {
-		this.cronManager = cronManager;
+	public TimerMethodsProcessor(ICalendarTimerService timerService) {
+		this.timerService = timerService;
 	}
 
 	@Override
@@ -19,7 +23,7 @@ public class CronMethodsProcessor implements InstanceProcessor {
 			throw new BugError("Crom method requires %s instance scope.", InstanceScope.APPLICATION);
 		}
 		for (ManagedMethodSPI managedMethod : managedClass.getCronMethods()) {
-			cronManager.register(instance, managedMethod);
+			timerService.createTimer(instance, managedMethod);
 		}
 	}
 }
