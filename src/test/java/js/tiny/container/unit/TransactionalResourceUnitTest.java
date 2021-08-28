@@ -4,6 +4,10 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
+
 import js.lang.BugError;
 import js.lang.Config;
 import js.lang.InvocationException;
@@ -15,10 +19,6 @@ import js.tiny.container.stub.TransactionStub;
 import js.transaction.Transaction;
 import js.transaction.TransactionManager;
 import js.util.Classes;
-
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
 
 /**
  * Managed proxy handler unit test. This class focuses on general behavior and leave transactions life cycle for

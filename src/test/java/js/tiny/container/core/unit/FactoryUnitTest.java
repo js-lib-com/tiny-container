@@ -9,12 +9,12 @@ import java.io.File;
 import java.net.MalformedURLException;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import org.junit.Test;
+
 import js.lang.BugError;
 import js.tiny.container.core.AppFactory;
 import js.tiny.container.core.Factory;
 import js.util.Classes;
-
-import org.junit.Test;
 
 public class FactoryUnitTest {
 	@Test

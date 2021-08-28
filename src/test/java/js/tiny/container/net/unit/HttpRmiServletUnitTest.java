@@ -8,6 +8,8 @@ import static org.junit.Assert.assertTrue;
 import java.lang.reflect.Type;
 import java.util.regex.Pattern;
 
+import org.junit.Test;
+
 import js.tiny.container.ContainerSPI;
 import js.tiny.container.ManagedClassSPI;
 import js.tiny.container.ManagedMethodSPI;
@@ -17,8 +19,6 @@ import js.tiny.container.stub.ContainerStub;
 import js.tiny.container.stub.ManagedClassSpiStub;
 import js.tiny.container.stub.ManagedMethodSpiStub;
 import js.util.Classes;
-
-import org.junit.Test;
 
 public class HttpRmiServletUnitTest {
 	@Test

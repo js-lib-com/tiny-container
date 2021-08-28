@@ -20,6 +20,8 @@ import java.util.Iterator;
 import java.util.Locale;
 import java.util.Map;
 
+import javax.annotation.security.PermitAll;
+import javax.ejb.Remote;
 import javax.servlet.ReadListener;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletInputStream;
@@ -29,11 +31,13 @@ import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
+
 import js.tiny.container.ContainerSPI;
 import js.tiny.container.annotation.Controller;
 import js.tiny.container.annotation.Private;
-import js.tiny.container.annotation.Public;
-import js.tiny.container.annotation.Remote;
 import js.tiny.container.core.App;
 import js.tiny.container.core.AppContext;
 import js.tiny.container.core.Factory;
@@ -58,10 +62,6 @@ import js.tiny.container.unit.TestContext;
 import js.util.Classes;
 import js.util.Files;
 import js.util.Strings;
-
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
 
 @SuppressWarnings({ "unused" })
 public class ResourceServletIntegrationTest {
@@ -400,7 +400,7 @@ public class ResourceServletIntegrationTest {
 	}
 
 	@Remote
-	@Public
+	@PermitAll
 	private static class DefaultController {
 		public View index() {
 			return new MockView();
@@ -434,7 +434,7 @@ public class ResourceServletIntegrationTest {
 	}
 
 	@Controller("resource")
-	@Public
+	@PermitAll
 	private static class ControllerImpl implements ControllerInterface {
 		@Override
 		public View index() {

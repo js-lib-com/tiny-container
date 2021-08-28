@@ -10,6 +10,11 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 
+import org.junit.Before;
+import org.junit.Test;
+import org.xml.sax.Attributes;
+import org.xml.sax.SAXException;
+
 import js.lang.Config;
 import js.lang.ConfigException;
 import js.tiny.container.servlet.TinyConfigBuilder;
@@ -17,11 +22,6 @@ import js.tiny.container.servlet.TinyConfigBuilder.Loader;
 import js.tiny.container.unit.SaxAttributesStub;
 import js.tiny.container.unit.ServletContextStub;
 import js.util.Classes;
-
-import org.junit.Before;
-import org.junit.Test;
-import org.xml.sax.Attributes;
-import org.xml.sax.SAXException;
 
 public class TinyConfigBuilderUnitTest {
 	private Properties properties;

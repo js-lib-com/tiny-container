@@ -13,6 +13,10 @@ import java.util.ServiceLoader;
 import java.util.Set;
 import java.util.TreeSet;
 
+import javax.annotation.security.PermitAll;
+import javax.inject.Inject;
+import javax.interceptor.Interceptors;
+
 import js.converter.Converter;
 import js.converter.ConverterException;
 import js.converter.ConverterRegistry;
@@ -28,12 +32,7 @@ import js.lang.NoProviderException;
 import js.log.Log;
 import js.log.LogFactory;
 import js.rmi.RemoteFactory;
-import js.tiny.container.annotation.Asynchronous;
-import js.tiny.container.annotation.Inject;
-import js.tiny.container.annotation.Intercepted;
 import js.tiny.container.annotation.Private;
-import js.tiny.container.annotation.Public;
-import js.tiny.container.annotation.Remote;
 import js.tiny.container.core.App;
 import js.tiny.container.core.AppContext;
 import js.tiny.container.core.AppFactory;
@@ -99,13 +98,13 @@ import js.util.Types;
  * uses {@link Converter} to convert string to value type. Of course static field should not be final.</dd>
  * <dt>Authenticated remote access to managed methods; authentication occurs at method invocation.</dt>
  * <dd>A method annotated with, or owned by a class annotated with {@link Remote} is named net method and is accessible from
- * remote. Remote access is controller by {@link Public} and {@link Private} annotations. A private net method can be accessed
+ * remote. Remote access is controller by {@link PermitAll} and {@link Private} annotations. A private net method can be accessed
  * only after authentication.</dd>
  * <dt>Declarative asynchronous execution mode for long running logic, executed in separated thread.</dt>
  * <dd>If a managed method is annotated with {@link Asynchronous} container creates a separated thread and execute method
  * asynchronously. Asynchronous method should return void.</dd>
  * <dt>Method invocation listeners. There are interceptors for before, after and around method invocation.</dt>
- * <dd>Invocation listeners provide a naive, but still useful AOP. There is {@link Intercepted} annotation for tagging methods -
+ * <dd>Invocation listeners provide a naive, but still useful AOP. There is {@link Interceptors} annotation for tagging methods -
  * declaring join points, and related interface to be implemented by interceptors, aka AOP advice. See {@link Interceptor}
  * interface for sample usage.</dd>
  * <dt>Method instrumentation. Uses {@link InvocationMeter} to monitor method invocations.</dt>

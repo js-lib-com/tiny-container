@@ -3,14 +3,16 @@ package js.tiny.container;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 
+import javax.annotation.security.PermitAll;
+import javax.ejb.Asynchronous;
+import javax.ejb.Remote;
+import javax.ejb.Schedule;
+import javax.ws.rs.Path;
+import javax.ws.rs.Produces;
+
 import js.lang.BugError;
 import js.lang.InvocationException;
-import js.tiny.container.annotation.Asynchronous;
 import js.tiny.container.annotation.Private;
-import js.tiny.container.annotation.Produces;
-import js.tiny.container.annotation.Public;
-import js.tiny.container.annotation.Remote;
-import js.tiny.container.annotation.RequestPath;
 import js.tiny.container.core.SecurityContext;
 import js.tiny.container.http.ContentType;
 import js.transaction.Immutable;
@@ -82,9 +84,9 @@ public interface ManagedMethodSPI {
 	/**
 	 * Get request URI path of this net method, that is, the path component by which net method is referred into request URI. A
 	 * net method is a managed method marked as remote accessible via {@link Remote} annotation. A net method can have a name by
-	 * which is publicly known, set via {@link RequestPath} annotation.
+	 * which is publicly known, set via {@link Path} annotation.
 	 * <p>
-	 * A net method is not mandatory to have {@link RequestPath} annotation. If annotation is missing implementation should use
+	 * A net method is not mandatory to have {@link Path} annotation. If annotation is missing implementation should use
 	 * this method name converted to dash case, see {@link Strings#toDashCase(String)}.
 	 * <p>
 	 * Attempting to retrieve request URI path for a local managed method is considered a bug.
@@ -114,7 +116,7 @@ public interface ManagedMethodSPI {
 	/**
 	 * Test if this managed method can be accessed remotely without authorization. This predicate value has meaning only if this
 	 * managed method is remote, as defined by {@link #isRemotelyAccessible()}. A managed method is by default private; it can
-	 * be accessed remotely only inside an authorized security context. Anyway, it becomes public if tagged with {@link Public}
+	 * be accessed remotely only inside an authorized security context. Anyway, it becomes public if tagged with {@link PermitAll}
 	 * annotation or if its declaring class is public and has no {@link Private} annotation.
 	 * <p>
 	 * <b>Warning:</b> a public remote managed method can be accessed without authorization.
@@ -150,5 +152,5 @@ public interface ManagedMethodSPI {
 	 */
 	boolean isAsynchronous();
 
-	String getCronExpression();
+	Schedule getSchedule();
 }

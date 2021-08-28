@@ -21,6 +21,9 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import javax.annotation.security.PermitAll;
+import javax.ejb.Remote;
+
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -44,8 +47,6 @@ import js.tiny.container.ManagedClassSPI;
 import js.tiny.container.ManagedMethodSPI;
 import js.tiny.container.ScopeFactory;
 import js.tiny.container.TransactionalResource;
-import js.tiny.container.annotation.Public;
-import js.tiny.container.annotation.Remote;
 import js.tiny.container.core.App;
 import js.tiny.container.core.AppContext;
 import js.tiny.container.mvc.ViewManager;
@@ -1061,7 +1062,7 @@ public class ContainerUnitTest {
 	private static class NetCar {
 		private String name;
 
-		@Public
+		@PermitAll
 		public String getName() {
 			return name;
 		}

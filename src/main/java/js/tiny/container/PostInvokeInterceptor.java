@@ -1,10 +1,10 @@
 package js.tiny.container;
 
-import js.tiny.container.annotation.Intercepted;
+import javax.interceptor.Interceptors;
 
 /**
  * Invocation interceptor executed just after managed method invocation. Post-invoke interceptor interface works closely with
- * {@link Intercepted} annotation, see below.
+ * {@link Interceptors} annotation, see below.
  * <p>
  * In sample code, managed method is intercepted by audit class. Container executes Audit#postInvoke just after managed method
  * return.

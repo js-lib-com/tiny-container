@@ -1,10 +1,11 @@
 package js.tiny.container;
 
+import javax.annotation.security.PermitAll;
+
 import js.tiny.container.annotation.Private;
-import js.tiny.container.annotation.Public;
 
 /**
- * Access control for managed method when invoked remotely. This enumeration is internal representation for {@link Public} and
+ * Access control for managed method when invoked remotely. This enumeration is internal representation for {@link PermitAll} and
  * {@link Private} annotations.
  * 
  * @author Iulian Rotaru

@@ -6,6 +6,8 @@ import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.inject.Inject;
+
 import org.junit.Test;
 
 import js.lang.BugError;
@@ -14,7 +16,6 @@ import js.lang.InvocationException;
 import js.tiny.container.Container;
 import js.tiny.container.ManagedClass;
 import js.tiny.container.ManagedClassSPI;
-import js.tiny.container.annotation.Inject;
 import js.tiny.container.stub.ContainerStub;
 import js.util.Strings;
 

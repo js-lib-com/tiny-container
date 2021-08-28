@@ -7,14 +7,14 @@ import static org.junit.Assert.assertTrue;
 import java.lang.reflect.Method;
 import java.util.Date;
 
+import org.junit.Before;
+import org.junit.Test;
+
 import js.tiny.container.Access;
 import js.tiny.container.ContainerSPI;
 import js.tiny.container.ManagedMethodSPI;
 import js.tiny.container.stub.ManagedClassSpiStub;
 import js.util.Classes;
-
-import org.junit.Before;
-import org.junit.Test;
 
 @SuppressWarnings("unused")
 public class ManagedMethodSpiConformanceTest {

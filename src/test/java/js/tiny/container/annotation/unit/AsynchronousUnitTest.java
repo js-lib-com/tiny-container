@@ -5,6 +5,9 @@ import static org.junit.Assert.assertEquals;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.ejb.Asynchronous;
+import javax.ejb.Remote;
+
 import org.junit.Test;
 
 import js.lang.BugError;
@@ -15,9 +18,7 @@ import js.tiny.container.InstanceType;
 import js.tiny.container.ManagedClass;
 import js.tiny.container.ManagedClassSPI;
 import js.tiny.container.ManagedMethodSPI;
-import js.tiny.container.annotation.Asynchronous;
 import js.tiny.container.annotation.Controller;
-import js.tiny.container.annotation.Remote;
 import js.tiny.container.annotation.Service;
 import js.tiny.container.stub.ContainerStub;
 import js.transaction.Transactional;

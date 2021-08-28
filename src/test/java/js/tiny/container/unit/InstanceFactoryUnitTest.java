@@ -9,11 +9,9 @@ import static org.junit.Assert.assertTrue;
 import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.net.URL;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.Enumeration;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -33,7 +31,6 @@ import js.tiny.container.InstanceFactory;
 import js.tiny.container.InstanceType;
 import js.tiny.container.ManagedClassSPI;
 import js.tiny.container.stub.ManagedClassSpiStub;
-import js.tiny.container.unit.TestContext;
 import js.util.Classes;
 
 /**

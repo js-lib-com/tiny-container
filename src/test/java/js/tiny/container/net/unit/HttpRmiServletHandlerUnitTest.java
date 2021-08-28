@@ -15,6 +15,9 @@ import java.util.Map;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.WriteListener;
 
+import org.junit.Before;
+import org.junit.Test;
+
 import js.lang.InvocationException;
 import js.tiny.container.AuthorizationException;
 import js.tiny.container.ManagedClassSPI;
@@ -29,9 +32,6 @@ import js.tiny.container.unit.HttpServletRequestStub;
 import js.tiny.container.unit.HttpServletResponseStub;
 import js.util.Classes;
 import js.util.Types;
-
-import org.junit.Before;
-import org.junit.Test;
 
 @SuppressWarnings({ "unchecked", "rawtypes" })
 public class HttpRmiServletHandlerUnitTest {

@@ -2,6 +2,8 @@ package js.tiny.container.core;
 
 import java.security.Principal;
 
+import js.lang.BugError;
+
 /**
  * Security context is an unified interface for both servlet container and application provided authentication. There are two
  * login method variants: one for servlet container provided authentication, see {@link #login(String, String)} and the second

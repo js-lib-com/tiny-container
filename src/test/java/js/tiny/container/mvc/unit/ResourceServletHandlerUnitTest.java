@@ -18,6 +18,9 @@ import javax.servlet.UnavailableException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.junit.Before;
+import org.junit.Test;
+
 import js.lang.BugError;
 import js.lang.InvocationException;
 import js.tiny.container.AuthorizationException;
@@ -39,9 +42,6 @@ import js.tiny.container.unit.HttpServletResponseStub;
 import js.tiny.container.unit.ServletConfigStub;
 import js.tiny.container.unit.ServletContextStub;
 import js.util.Classes;
-
-import org.junit.Before;
-import org.junit.Test;
 
 @SuppressWarnings({ "unchecked", "rawtypes" })
 public class ResourceServletHandlerUnitTest {

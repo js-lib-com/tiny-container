@@ -21,6 +21,9 @@ import javax.servlet.ServletOutputStream;
 import javax.servlet.UnavailableException;
 import javax.servlet.WriteListener;
 
+import org.junit.Before;
+import org.junit.Test;
+
 import js.lang.InvocationException;
 import js.tiny.container.AuthorizationException;
 import js.tiny.container.ManagedClassSPI;
@@ -40,9 +43,6 @@ import js.tiny.container.unit.ServletConfigStub;
 import js.tiny.container.unit.ServletContextStub;
 import js.util.Classes;
 import js.util.Types;
-
-import org.junit.Before;
-import org.junit.Test;
 
 @SuppressWarnings({ "unchecked", "rawtypes" })
 public class RestServletUnitTest {

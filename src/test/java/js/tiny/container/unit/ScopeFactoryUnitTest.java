@@ -13,6 +13,9 @@ import java.util.Random;
 import java.util.Set;
 import java.util.UUID;
 
+import org.junit.BeforeClass;
+import org.junit.Test;
+
 import js.converter.Converter;
 import js.converter.ConverterRegistry;
 import js.lang.BugError;
@@ -22,11 +25,7 @@ import js.tiny.container.InstanceScope;
 import js.tiny.container.ManagedClassSPI;
 import js.tiny.container.ScopeFactory;
 import js.tiny.container.stub.ManagedClassSpiStub;
-import js.tiny.container.unit.TestContext;
 import js.util.Classes;
-
-import org.junit.BeforeClass;
-import org.junit.Test;
 
 public class ScopeFactoryUnitTest {
 	@BeforeClass

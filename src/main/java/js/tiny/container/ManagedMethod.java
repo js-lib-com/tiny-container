@@ -7,16 +7,18 @@ import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.ejb.Remote;
+import javax.ejb.Schedule;
+import javax.interceptor.Interceptors;
+import javax.ws.rs.Path;
+import javax.ws.rs.Produces;
+
 import js.lang.AsyncTask;
 import js.lang.BugError;
 import js.lang.InvocationException;
 import js.lang.SyntaxException;
 import js.log.Log;
 import js.log.LogFactory;
-import js.tiny.container.annotation.Intercepted;
-import js.tiny.container.annotation.Produces;
-import js.tiny.container.annotation.Remote;
-import js.tiny.container.annotation.RequestPath;
 import js.tiny.container.core.SecurityContext;
 import js.tiny.container.http.ContentType;
 import js.util.Classes;
@@ -56,7 +58,7 @@ public final class ManagedMethod implements ManagedMethodSPI {
 	private final Method method;
 
 	/**
-	 * Request URI path for this managed method configured by {@link RequestPath} annotation. If annotation is missing this
+	 * Request URI path for this managed method configured by {@link Path} annotation. If annotation is missing this
 	 * request path is initialized with method name converted to dashed case. Initialization is performed by
 	 * {@link #setRequestPath(String)}.
 	 */
@@ -106,7 +108,7 @@ public final class ManagedMethod implements ManagedMethodSPI {
 	 */
 	private Meter meter;
 
-	private String cronExpression;
+	private Schedule schedule;
 
 	/**
 	 * Roles allowed to invoke this managed method. If empty and if this method is private all authenticated users are
@@ -218,8 +220,8 @@ public final class ManagedMethod implements ManagedMethodSPI {
 		}
 	}
 
-	void setCronExpression(String cronExpression) {
-		this.cronExpression = cronExpression;
+	void setCronExpression(Schedule schedule) {
+		this.schedule = schedule;
 	}
 
 	void setRoles(String[] roles) {
@@ -394,8 +396,8 @@ public final class ManagedMethod implements ManagedMethodSPI {
 	}
 
 	@Override
-	public String getCronExpression() {
-		return cronExpression;
+	public Schedule getSchedule() {
+		return schedule;
 	}
 
 	/**
@@ -415,7 +417,7 @@ public final class ManagedMethod implements ManagedMethodSPI {
 	 * <ol>
 	 * <li>{@link DefaultInvoker} default implementation used when no additional services are defined,
 	 * <li>{@link InterceptedInvoker} implements the actual intercepted invocation for managed methods tagged with
-	 * {@link Intercepted} annotation,
+	 * {@link Interceptors} annotation,
 	 * <li>{@link AsyncInvoker} execute method in a separated thread of execution.
 	 * </ol>
 	 * 

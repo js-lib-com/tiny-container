@@ -11,15 +11,15 @@ import java.util.Iterator;
 
 import javax.servlet.http.Cookie;
 
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+
 import js.tiny.container.servlet.Cookies;
 import js.tiny.container.unit.CookieStub;
 import js.tiny.container.unit.HttpServletRequestStub;
 import js.tiny.container.unit.HttpServletResponseStub;
 import js.util.Classes;
-
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
 
 public class CookiesUnitTest {
 	private MockHttpServletRequest httpRequest;

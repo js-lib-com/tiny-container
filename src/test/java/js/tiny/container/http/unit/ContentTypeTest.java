@@ -9,11 +9,11 @@ import static org.junit.Assert.assertTrue;
 import java.io.File;
 import java.util.Map;
 
+import org.junit.Test;
+
 import js.lang.SyntaxException;
 import js.tiny.container.http.ContentType;
 import js.util.Classes;
-
-import org.junit.Test;
 
 public class ContentTypeTest {
 	@Test

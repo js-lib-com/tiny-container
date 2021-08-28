@@ -18,13 +18,13 @@ import java.lang.reflect.Type;
 import java.util.Collection;
 import java.util.List;
 
+import org.junit.Test;
+
 import js.lang.BugError;
 import js.lang.GType;
 import js.lang.InvocationException;
 import js.lang.SyntaxException;
 import js.util.Classes;
-
-import org.junit.Test;
 
 @SuppressWarnings({ "unchecked", "rawtypes" })
 public class QueryParametersTest {

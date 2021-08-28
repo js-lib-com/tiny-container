@@ -3,6 +3,8 @@ package js.tiny.container.unit;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
+import javax.inject.Inject;
+
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -11,10 +13,8 @@ import org.junit.Test;
 import js.lang.Config;
 import js.log.Log;
 import js.log.LogFactory;
-import js.tiny.container.annotation.Inject;
 import js.tiny.container.core.AppFactory;
 import js.tiny.container.stub.TransactionManagerStub;
-import js.tiny.container.unit.TestContext;
 import js.transaction.Immutable;
 import js.transaction.Transaction;
 import js.transaction.TransactionContext;

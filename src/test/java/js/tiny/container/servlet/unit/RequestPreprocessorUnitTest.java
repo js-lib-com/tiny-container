@@ -21,6 +21,10 @@ import javax.servlet.ServletResponse;
 import javax.servlet.UnavailableException;
 import javax.servlet.http.HttpServletRequest;
 
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
+
 import js.tiny.container.ContainerSPI;
 import js.tiny.container.rest.RestServlet;
 import js.tiny.container.servlet.RequestContext;
@@ -32,10 +36,6 @@ import js.tiny.container.unit.RequestDispatcherStub;
 import js.tiny.container.unit.ServletContextStub;
 import js.tiny.container.unit.TestContext;
 import js.util.Classes;
-
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
 
 public class RequestPreprocessorUnitTest {
 	@BeforeClass

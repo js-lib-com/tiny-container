@@ -15,6 +15,9 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import javax.annotation.security.DenyAll;
+import javax.inject.Inject;
+
 import org.junit.Test;
 
 import js.lang.BugError;
@@ -28,8 +31,6 @@ import js.tiny.container.InstanceType;
 import js.tiny.container.ManagedClass;
 import js.tiny.container.ManagedClassSPI;
 import js.tiny.container.ManagedMethodSPI;
-import js.tiny.container.annotation.Inject;
-import js.tiny.container.annotation.Local;
 import js.tiny.container.annotation.Service;
 import js.tiny.container.servlet.TinyConfigBuilder;
 import js.tiny.container.stub.ContainerStub;
@@ -333,7 +334,7 @@ public class ManagedClassSpiConformanceTest {
 			return "ford";
 		}
 
-		@Local
+		@DenyAll
 		public String getCountry() {
 			return "US";
 		}

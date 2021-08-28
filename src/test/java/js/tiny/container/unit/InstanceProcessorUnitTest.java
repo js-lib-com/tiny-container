@@ -8,15 +8,14 @@ import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
 import java.lang.reflect.Field;
-import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Proxy;
-import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
+
+import org.junit.BeforeClass;
+import org.junit.Test;
 
 import js.converter.ConverterException;
 import js.lang.BugError;
@@ -24,7 +23,6 @@ import js.lang.Config;
 import js.lang.ConfigBuilder;
 import js.lang.ConfigException;
 import js.lang.Configurable;
-import js.lang.InstanceInvocationHandler;
 import js.lang.ManagedPostConstruct;
 import js.tiny.container.Container;
 import js.tiny.container.ContainerSPI;
@@ -35,13 +33,9 @@ import js.tiny.container.ManagedClassSPI;
 import js.tiny.container.core.AppFactory;
 import js.tiny.container.stub.ContainerStub;
 import js.tiny.container.stub.ManagedClassSpiStub;
-import js.tiny.container.unit.TestContext;
 import js.transaction.TransactionManager;
 import js.util.Classes;
 import js.util.Types;
-
-import org.junit.BeforeClass;
-import org.junit.Test;
 
 @SuppressWarnings("unused")
 public class InstanceProcessorUnitTest {

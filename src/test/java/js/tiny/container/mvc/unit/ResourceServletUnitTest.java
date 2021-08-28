@@ -13,6 +13,8 @@ import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.UnavailableException;
 
+import org.junit.Test;
+
 import js.tiny.container.ManagedClassSPI;
 import js.tiny.container.ManagedMethodSPI;
 import js.tiny.container.http.Resource;
@@ -24,8 +26,6 @@ import js.tiny.container.stub.ManagedMethodSpiStub;
 import js.tiny.container.unit.ServletConfigStub;
 import js.tiny.container.unit.ServletContextStub;
 import js.util.Classes;
-
-import org.junit.Test;
 
 public class ResourceServletUnitTest {
 	@Test

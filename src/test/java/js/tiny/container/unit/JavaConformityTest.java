@@ -8,9 +8,9 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 
-import js.util.Classes;
-
 import org.junit.Test;
+
+import js.util.Classes;
 
 public class JavaConformityTest {
 	/**

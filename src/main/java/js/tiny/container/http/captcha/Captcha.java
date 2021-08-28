@@ -4,7 +4,11 @@ import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.annotation.security.DenyAll;
+import javax.annotation.security.PermitAll;
+import javax.ejb.Remote;
 import javax.servlet.http.HttpSession;
+import javax.ws.rs.Path;
 
 import js.lang.BugError;
 import js.lang.Config;
@@ -12,9 +16,6 @@ import js.lang.ConfigException;
 import js.lang.Configurable;
 import js.log.Log;
 import js.log.LogFactory;
-import js.tiny.container.annotation.Public;
-import js.tiny.container.annotation.Remote;
-import js.tiny.container.annotation.RequestPath;
 import js.tiny.container.core.AppContext;
 import js.tiny.container.http.NoSuchResourceException;
 import js.tiny.container.http.Resource;
@@ -56,8 +57,9 @@ import js.util.Params;
  * @author Iulian Rotaru
  * @version final
  */
-@RequestPath("captcha")
-@Public
+@Remote
+@Path("captcha")
+@PermitAll
 final class Captcha implements Configurable {
 	/** Class logger. */
 	private static final Log log = LogFactory.getLog(Captcha.class);
@@ -92,6 +94,7 @@ final class Captcha implements Configurable {
 	 * @param config configuration section from application descriptor.
 	 */
 	@Override
+	@DenyAll
 	public void config(Config config) throws ConfigException {
 		imagesRepositoryDir = config.getProperty("captcha.repository.path", File.class);
 		if (imagesRepositoryDir == null) {
@@ -130,7 +133,6 @@ final class Captcha implements Configurable {
 	 * @return newly created CAPTCHA challenge.
 	 * @throws BugError if this CAPTCHA manager is not properly initialized.
 	 */
-	@Remote
 	public Challenge getChallenge(int captchaIndex) {
 		if (imagesRepositoryDir == null) {
 			log.debug("Simple CAPTCHA not properly initialized. Missing <captcha> section from application descriptor:\r\n" + //
@@ -160,7 +162,6 @@ final class Captcha implements Configurable {
 	 * @throws IllegalArgumentException if given challenge response is null or empty.
 	 * @throws IllegalStateException if there is no challenge on session.
 	 */
-	@Remote
 	public Challenge verifyResponse(int captchaIndex, String challengeResponse) throws IllegalArgumentException, IllegalStateException {
 		Params.notNullOrEmpty(challengeResponse, "Challenge response");
 		Challenge challenge = getChallenges().get(captchaIndex);
@@ -182,8 +183,7 @@ final class Captcha implements Configurable {
 	 * @throws IllegalArgumentException if <code>token</code> argument is null or empty.
 	 * @throws NoSuchResourceException if there is no challenge on session or token does not identify a challenge image.
 	 */
-	@Remote
-	@RequestPath("image")
+	@Path("image")
 	public Resource getImage(String token) throws IllegalArgumentException, NoSuchResourceException {
 		Params.notNullOrEmpty(token, "Image token");
 		for (Challenge challenge : getChallenges().values()) {

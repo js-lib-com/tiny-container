@@ -13,6 +13,17 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import javax.annotation.security.DenyAll;
+import javax.annotation.security.PermitAll;
+import javax.annotation.security.RolesAllowed;
+import javax.ejb.Asynchronous;
+import javax.ejb.Remote;
+import javax.ejb.Schedule;
+import javax.inject.Inject;
+import javax.interceptor.Interceptors;
+import javax.ws.rs.Path;
+import javax.ws.rs.Produces;
+
 import js.annotation.ContextParam;
 import js.converter.Converter;
 import js.converter.ConverterException;
@@ -23,18 +34,8 @@ import js.lang.Configurable;
 import js.lang.ManagedLifeCycle;
 import js.log.Log;
 import js.log.LogFactory;
-import js.tiny.container.annotation.Asynchronous;
 import js.tiny.container.annotation.Controller;
-import js.tiny.container.annotation.Cron;
-import js.tiny.container.annotation.Inject;
-import js.tiny.container.annotation.Intercepted;
-import js.tiny.container.annotation.Local;
 import js.tiny.container.annotation.Private;
-import js.tiny.container.annotation.Produces;
-import js.tiny.container.annotation.Public;
-import js.tiny.container.annotation.Remote;
-import js.tiny.container.annotation.RequestPath;
-import js.tiny.container.annotation.RolesAllowed;
 import js.tiny.container.annotation.Service;
 import js.tiny.container.annotation.TestConstructor;
 import js.tiny.container.core.AppFactory;
@@ -170,7 +171,7 @@ import js.util.Types;
  * <td>true
  * <td>false
  * <tr>
- * <td>{@link Local}
+ * <td>{@link DenyAll}
  * <td>N/A
  * <td>Forbid remote access to particular methods inside a {@link Remote} accessible managed instance.
  * <td>false
@@ -191,7 +192,7 @@ import js.util.Types;
  * <td>false
  * <td>false
  * <tr>
- * <td>{@link RequestPath}
+ * <td>{@link Path}
  * <td>Method request URI path
  * <td>Managed method binding to particular resource path.
  * <td>false
@@ -205,7 +206,7 @@ import js.util.Types;
  * <td>true
  * <td>false
  * <tr>
- * <td>{@link Public}
+ * <td>{@link PermitAll}
  * <td>N/A
  * <td>Remote accessible entity that do not require authorization.
  * <td>true
@@ -247,7 +248,7 @@ import js.util.Types;
  * <td>false
  * <td>true
  * <tr>
- * <td>{@link Intercepted}
+ * <td>{@link Interceptors}
  * <td>interceptor class
  * <td>An intercepted managed method executes an interceptor cross-cutting logic whenever is invoked.
  * <td>true
@@ -444,7 +445,7 @@ public final class ManagedClass implements ManagedClassSPI {
 		if (remoteAnnotation != null) {
 			remoteType = true;
 		}
-		RequestPath requestPathAnnotation = getAnnotation(implementationClass, RequestPath.class);
+		Path requestPathAnnotation = getAnnotation(implementationClass, Path.class);
 		if (requestPathAnnotation != null) {
 			requestPath = requestPathAnnotation.value();
 		}
@@ -455,6 +456,8 @@ public final class ManagedClass implements ManagedClassSPI {
 		if (remoteType) {
 			remotelyAccessible = true;
 		}
+
+		boolean denyAllType = hasAnnotation(implementationClass, DenyAll.class);
 
 		// set transactional annotation, optional schema and immutable type
 		Transactional transactionalType = getAnnotation(implementationClass, Transactional.class);
@@ -474,7 +477,7 @@ public final class ManagedClass implements ManagedClassSPI {
 		}
 
 		Class<? extends Interceptor> classInterceptor = getInterceptorClass(implementationClass);
-		boolean publicType = hasAnnotation(implementationClass, Public.class);
+		boolean publicType = hasAnnotation(implementationClass, PermitAll.class);
 
 		String[] typeRoles = null;
 		RolesAllowed rolesAllowed = getAnnotation(implementationClass, RolesAllowed.class);
@@ -496,10 +499,12 @@ public final class ManagedClass implements ManagedClassSPI {
 			if (!remoteMethod) {
 				remoteMethod = remoteType;
 			}
-			if (hasAnnotation(method, Local.class)) {
+			if (hasAnnotation(method, DenyAll.class)) {
 				if (!remoteMethod) {
 					throw new BugError("@Local annotation on not remote method |%s|.", method);
 				}
+				remoteMethod = false;
+			} else if (denyAllType && !hasAnnotation(method, PermitAll.class)) {
 				remoteMethod = false;
 			}
 			if (remoteMethod) {
@@ -522,7 +527,7 @@ public final class ManagedClass implements ManagedClassSPI {
 
 			// handle remote accessible methods
 
-			boolean publicMethod = hasAnnotation(method, Public.class);
+			boolean publicMethod = hasAnnotation(method, PermitAll.class);
 			if (publicMethod && !remotelyAccessible) {
 				throw new BugError("@Public annotation on not remote method |%s|.", method);
 			}
@@ -535,7 +540,7 @@ public final class ManagedClass implements ManagedClassSPI {
 				}
 				publicMethod = false;
 			}
-			RequestPath methodPath = getAnnotation(method, RequestPath.class);
+			Path methodPath = getAnnotation(method, Path.class);
 			if (!remotelyAccessible && methodPath != null) {
 				throw new BugError("@MethodPath annotation on not remote method |%s|.", method);
 			}
@@ -609,7 +614,7 @@ public final class ManagedClass implements ManagedClassSPI {
 				managedMethod.setAsynchronous(asynchronousMethod);
 			}
 
-			Cron cronMethod = getAnnotation(method, Cron.class);
+			Schedule cronMethod = getAnnotation(method, Schedule.class);
 			if (cronMethod != null) {
 				if (remotelyAccessible) {
 					throw new BugError("Remote accessible method |%s| cannot be executed by cron.", method);
@@ -624,7 +629,7 @@ public final class ManagedClass implements ManagedClassSPI {
 				if (managedMethod == null) {
 					managedMethod = new ManagedMethod(this, interfaceMethod);
 				}
-				managedMethod.setCronExpression(cronMethod.value());
+				managedMethod.setCronExpression(cronMethod);
 				cronMethodsPool.add(managedMethod);
 				autoInstanceCreation = true;
 			}
@@ -641,7 +646,7 @@ public final class ManagedClass implements ManagedClassSPI {
 
 			Produces producesMethod = getAnnotation(method, Produces.class);
 			if (producesMethod != null) {
-				managedMethod.setReturnContentType(producesMethod.value());
+				managedMethod.setReturnContentType(producesMethod.value()[0]);
 			}
 
 			// store managed method, if created, to managed methods pool
@@ -1265,26 +1270,26 @@ public final class ManagedClass implements ManagedClassSPI {
 	}
 
 	/**
-	 * Get class value of intercepted annotation of a given class. Returns null if given class has no {@link Intercepted}
+	 * Get class value of intercepted annotation of a given class. Returns null if given class has no {@link Interceptors}
 	 * annotation.
 	 * 
 	 * @param clazz annotated class.
 	 * @return interceptor class or null if intercepted annotation is missing.
 	 */
 	private static Class<? extends Interceptor> getInterceptorClass(Class<?> clazz) {
-		Intercepted intercepted = getAnnotation(clazz, Intercepted.class);
-		return intercepted != null ? intercepted.value() : null;
+		Interceptors intercepted = getAnnotation(clazz, Interceptors.class);
+		return intercepted != null ? intercepted.value()[0] : null;
 	}
 
 	/**
-	 * Get class value of intercepted annotation of a given method. Returns null if given method has no {@link Intercepted}
+	 * Get class value of intercepted annotation of a given method. Returns null if given method has no {@link Interceptors}
 	 * annotation.
 	 * 
 	 * @param method annotated method.
 	 * @return interceptor class or null if intercepted annotation is missing.
 	 */
 	private static Class<? extends Interceptor> getInterceptorClass(Method method) {
-		Intercepted intercepted = getAnnotation(method, Intercepted.class);
-		return intercepted != null ? intercepted.value() : null;
+		Interceptors intercepted = getAnnotation(method, Interceptors.class);
+		return intercepted != null ? intercepted.value()[0] : null;
 	}
 }

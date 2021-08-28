@@ -1,14 +1,16 @@
 package js.tiny.container.http.unit;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 import java.util.List;
+
+import org.junit.Test;
 
 import js.lang.GType;
 import js.tiny.container.http.ContentType;
 import js.tiny.container.http.encoder.EncoderKey;
-
-import org.junit.Test;
 
 public class EncoderKeyTest {
 	@Test

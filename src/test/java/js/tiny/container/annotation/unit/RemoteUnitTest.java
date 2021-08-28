@@ -10,6 +10,11 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.annotation.security.DenyAll;
+import javax.annotation.security.PermitAll;
+import javax.ejb.Remote;
+import javax.ws.rs.Path;
+
 import org.junit.Test;
 
 import js.lang.BugError;
@@ -20,11 +25,7 @@ import js.tiny.container.ManagedClass;
 import js.tiny.container.ManagedClassSPI;
 import js.tiny.container.ManagedMethodSPI;
 import js.tiny.container.annotation.Controller;
-import js.tiny.container.annotation.Local;
 import js.tiny.container.annotation.Private;
-import js.tiny.container.annotation.Public;
-import js.tiny.container.annotation.Remote;
-import js.tiny.container.annotation.RequestPath;
 import js.tiny.container.annotation.Service;
 import js.tiny.container.stub.ContainerStub;
 import js.util.Classes;
@@ -293,8 +294,8 @@ public class RemoteUnitTest {
 	private static interface MockInterface01 {
 	}
 
+	@Remote
 	private static interface MockInterface02 {
-		@Remote
 		void method02();
 	}
 
@@ -307,21 +308,21 @@ public class RemoteUnitTest {
 		}
 	}
 
+	@Remote
 	private static class MockClass02 {
-		@Remote
 		public void method02() {
 		}
 	}
 
 	@Remote
 	private static class MockClass03 {
-		@Local
+		@DenyAll
 		public void method03() {
 		}
 	}
 
 	private static class MockClass04 {
-		@Local
+		@DenyAll
 		public void method04() {
 		}
 	}
@@ -349,7 +350,7 @@ public class RemoteUnitTest {
 	}
 
 	@Remote
-	@Public
+	@PermitAll
 	private static class MockClass09 {
 		public void method09() {
 		}
@@ -357,13 +358,13 @@ public class RemoteUnitTest {
 
 	@Remote
 	private static class MockClass10 {
-		@Public
+		@PermitAll
 		public void method10() {
 		}
 	}
 
 	@Remote
-	@Public
+	@PermitAll
 	private static class MockClass11 {
 		@Private
 		public void method11() {
@@ -371,7 +372,7 @@ public class RemoteUnitTest {
 	}
 
 	private static class MockClass12 {
-		@Public
+		@PermitAll
 		public void method12() {
 		}
 	}
@@ -383,7 +384,7 @@ public class RemoteUnitTest {
 	}
 
 	private static class MockClass14 {
-		@RequestPath("method")
+		@Path("method")
 		public void method14() {
 		}
 	}
@@ -403,7 +404,7 @@ public class RemoteUnitTest {
 
 	@Remote
 	private static class MockClass17 {
-		@RequestPath("method/path")
+		@Path("method/path")
 		public void method17() {
 		}
 	}

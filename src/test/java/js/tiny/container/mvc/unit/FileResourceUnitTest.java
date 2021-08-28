@@ -14,13 +14,13 @@ import java.util.TimeZone;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.WriteListener;
 
+import org.junit.Test;
+
 import js.tiny.container.http.ContentType;
 import js.tiny.container.mvc.FileResource;
 import js.tiny.container.unit.HttpServletResponseStub;
 import js.util.Classes;
 import js.util.Strings;
-
-import org.junit.Test;
 
 public class FileResourceUnitTest {
 	@Test

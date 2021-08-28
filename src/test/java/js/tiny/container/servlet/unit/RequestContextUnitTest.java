@@ -13,6 +13,9 @@ import java.util.Locale;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpSession;
 
+import org.junit.Before;
+import org.junit.Test;
+
 import js.lang.BugError;
 import js.tiny.container.servlet.Cookies;
 import js.tiny.container.servlet.RequestContext;
@@ -21,9 +24,6 @@ import js.tiny.container.unit.HttpServletRequestStub;
 import js.tiny.container.unit.HttpServletResponseStub;
 import js.tiny.container.unit.HttpSessionStub;
 import js.util.Classes;
-
-import org.junit.Before;
-import org.junit.Test;
 
 @SuppressWarnings({ "rawtypes" })
 public class RequestContextUnitTest {

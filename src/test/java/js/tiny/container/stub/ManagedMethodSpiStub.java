@@ -3,6 +3,8 @@ package js.tiny.container.stub;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 
+import javax.ejb.Schedule;
+
 import js.lang.InvocationException;
 import js.tiny.container.AuthorizationException;
 import js.tiny.container.ManagedClassSPI;
@@ -76,7 +78,7 @@ public class ManagedMethodSpiStub implements ManagedMethodSPI {
 	}
 
 	@Override
-	public String getCronExpression() {
-		throw new UnsupportedOperationException("getCronExpression()");
+	public Schedule getSchedule() {
+		throw new UnsupportedOperationException("getSchedule()");
 	}
 }

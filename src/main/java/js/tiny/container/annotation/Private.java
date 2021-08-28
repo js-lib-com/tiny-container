@@ -5,6 +5,8 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+import javax.annotation.security.PermitAll;
+
 /**
  * Private net methods, that cannot be invoked without authorization. Trying to remotely invoke a method tagged as
  * <code>private</code> will redirect client to authentication form. Since net classes are by default <code>private</code> for
@@ -12,7 +14,7 @@ import java.lang.annotation.Target;
  * has no effect.
  * <p>
  * This annotation is used to selectively declare <code>private</code> couple methods in a net class that is declared
- * <code>public</code>. If {@link Public} annotation is not used on net class all methods are <code>private</code> by default
+ * <code>public</code>. If {@link PermitAll} annotation is not used on net class all methods are <code>private</code> by default
  * and &#064;Private annotation is superfluous.
  * 
  * <pre>

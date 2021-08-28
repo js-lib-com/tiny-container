@@ -8,14 +8,16 @@ import static org.junit.Assert.assertTrue;
 
 import java.lang.reflect.Method;
 
+import javax.annotation.security.PermitAll;
+import javax.ejb.Asynchronous;
+import javax.ejb.Remote;
+import javax.interceptor.Interceptors;
+
 import org.junit.Test;
 
 import js.tiny.container.ManagedClass;
 import js.tiny.container.ManagedMethodSPI;
 import js.tiny.container.PreInvokeInterceptor;
-import js.tiny.container.annotation.Asynchronous;
-import js.tiny.container.annotation.Intercepted;
-import js.tiny.container.annotation.Remote;
 import js.transaction.Transactional;
 import js.util.Classes;
 
@@ -66,14 +68,14 @@ public class AnnotationsScannerUnitTest {
 	@Test
 	public void getInheritedMethodAnnotation() throws Exception {
 		Method method = MethodInheritedAnnotation.class.getMethod("getManufacturer");
-		assertNotNull(invokeStatic("getAnnotation", method, Remote.class));
+		assertNotNull(invokeStatic("getAnnotation", method, PermitAll.class));
 		assertNull(invokeStatic("getAnnotation", method, Asynchronous.class));
 	}
 
 	@Test
 	public void hasInheritedMethodAnnotation() throws Exception {
 		Method method = MethodInheritedAnnotation.class.getMethod("getManufacturer");
-		assertTrue((boolean) invokeStatic("hasAnnotation", method, Remote.class));
+		assertTrue((boolean) invokeStatic("hasAnnotation", method, PermitAll.class));
 		assertFalse((boolean) invokeStatic("hasAnnotation", method, Asynchronous.class));
 	}
 
@@ -130,14 +132,14 @@ public class AnnotationsScannerUnitTest {
 	// FIXTURE
 
 	@Transactional
-	@Intercepted(InterceptorClass.class)
+	@Interceptors(InterceptorClass.class)
 	private static class AnnotatedClass {
 
 	}
 
 	private static class AnnotatedMethod {
 		@Asynchronous
-		@Intercepted(InterceptorClass.class)
+		@Interceptors(InterceptorClass.class)
 		public boolean exec() {
 			return false;
 		}
@@ -155,8 +157,9 @@ public class AnnotationsScannerUnitTest {
 		}
 	}
 
+	@Remote
 	private static interface AnnotatedInterfaceMethod {
-		@Remote
+		@PermitAll
 		String getManufacturer();
 	}
 

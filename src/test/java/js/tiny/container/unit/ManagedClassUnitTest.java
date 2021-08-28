@@ -11,6 +11,12 @@ import java.lang.reflect.Method;
 import java.util.Collection;
 import java.util.Map;
 
+import javax.annotation.security.DenyAll;
+import javax.annotation.security.PermitAll;
+import javax.ejb.Asynchronous;
+import javax.ejb.Remote;
+import javax.inject.Inject;
+
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -18,7 +24,6 @@ import js.lang.BugError;
 import js.lang.Config;
 import js.lang.ConfigException;
 import js.lang.Configurable;
-import js.lang.InvocationException;
 import js.lang.ManagedLifeCycle;
 import js.lang.VarArgs;
 import js.tiny.container.Access;
@@ -28,10 +33,6 @@ import js.tiny.container.InstanceType;
 import js.tiny.container.ManagedClass;
 import js.tiny.container.ManagedClassSPI;
 import js.tiny.container.ManagedMethodSPI;
-import js.tiny.container.annotation.Asynchronous;
-import js.tiny.container.annotation.Inject;
-import js.tiny.container.annotation.Public;
-import js.tiny.container.annotation.Remote;
 import js.tiny.container.core.Factory;
 import js.tiny.container.servlet.TinyConfigBuilder;
 import js.tiny.container.stub.ContainerStub;
@@ -439,9 +440,10 @@ public class ManagedClassUnitTest {
 
 	}
 
+	@Remote
+	@DenyAll
 	private static interface Car {
-		@Remote
-		@Public
+		@PermitAll
 		String getManufacturer();
 
 		String getModel();
@@ -518,7 +520,7 @@ public class ManagedClassUnitTest {
 	}
 
 	@Remote
-	@Public
+	@PermitAll
 	private static interface NetCar {
 		String getModel();
 	}

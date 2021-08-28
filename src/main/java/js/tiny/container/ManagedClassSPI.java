@@ -5,13 +5,14 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.Map;
 
+import javax.ejb.Remote;
+import javax.ejb.Schedule;
+import javax.inject.Inject;
+
 import js.annotation.ContextParam;
 import js.lang.BugError;
 import js.lang.Config;
 import js.lang.ManagedLifeCycle;
-import js.tiny.container.annotation.Cron;
-import js.tiny.container.annotation.Inject;
-import js.tiny.container.annotation.Remote;
 import js.tiny.container.servlet.ContextParamProcessor;
 import js.transaction.Transactional;
 
@@ -117,7 +118,7 @@ public interface ManagedClassSPI {
 	Iterable<ManagedMethodSPI> getNetMethods();
 
 	/**
-	 * Return this managed class methods annotated with {@link Cron} annotation.
+	 * Return this managed class methods annotated with {@link Schedule} annotation.
 	 * 
 	 * @return this managed class cron methods.
 	 */
@@ -219,7 +220,7 @@ public interface ManagedClassSPI {
 	 * <p>
 	 * This flag is true for following conditions:
 	 * <ul>
-	 * <li>this managed class has {@link Cron} methods,
+	 * <li>this managed class has {@link Schedule} methods,
 	 * <li>this managed class implements {@link ManagedLifeCycle} interface.
 	 * </ul>
 	 * 

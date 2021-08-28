@@ -16,6 +16,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
 
+import org.junit.Test;
+
 import js.lang.BugError;
 import js.lang.InvocationException;
 import js.tiny.container.Container;
@@ -28,8 +30,6 @@ import js.tiny.container.stub.AppFactoryStub;
 import js.tiny.container.stub.ContainerStub;
 import js.tiny.container.stub.ManagedClassSpiStub;
 import js.util.Classes;
-
-import org.junit.Test;
 
 @SuppressWarnings({ "unused", "unchecked" })
 public class DependencyProcessorUnitTest {

@@ -5,6 +5,9 @@ import static org.junit.Assert.assertEquals;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.ejb.Remote;
+import javax.interceptor.Interceptors;
+
 import org.junit.Test;
 
 import js.lang.BugError;
@@ -16,8 +19,6 @@ import js.tiny.container.ManagedClass;
 import js.tiny.container.ManagedClassSPI;
 import js.tiny.container.ManagedMethodSPI;
 import js.tiny.container.annotation.Controller;
-import js.tiny.container.annotation.Intercepted;
-import js.tiny.container.annotation.Remote;
 import js.tiny.container.annotation.Service;
 import js.tiny.container.stub.ContainerStub;
 import js.util.Classes;
@@ -25,7 +26,7 @@ import js.util.Strings;
 
 @SuppressWarnings("unused")
 public class InterceptedUnitTest {
-	/** Using {@link Intercepted} annotation on class should be applied only on public method but not on private. */
+	/** Using {@link Interceptors} annotation on class should be applied only on public method but not on private. */
 	@Test
 	public void interceptedProxyClass() throws Throwable {
 		String descriptor = "<test interface='js.tiny.container.annotation.unit.InterceptedUnitTest$MockInterface'  class='js.tiny.container.annotation.unit.InterceptedUnitTest$MockClass01' type='PROXY' />";
@@ -169,7 +170,7 @@ public class InterceptedUnitTest {
 	private static class MockInterceptor implements Interceptor {
 	}
 
-	@Intercepted(MockInterceptor.class)
+	@Interceptors(MockInterceptor.class)
 	private static class MockClass01 implements MockInterface {
 		public void publicMethod01() {
 		}
@@ -179,13 +180,13 @@ public class InterceptedUnitTest {
 	}
 
 	private static class MockClass02 implements MockInterface {
-		@Intercepted(MockInterceptor.class)
+		@Interceptors(MockInterceptor.class)
 		public void method02() {
 		}
 	}
 
 	@Remote
-	@Intercepted(MockInterceptor.class)
+	@Interceptors(MockInterceptor.class)
 	private static class MockClass03 {
 		public void publicMethod03() {
 		}
@@ -195,7 +196,7 @@ public class InterceptedUnitTest {
 	}
 
 	@Controller
-	@Intercepted(MockInterceptor.class)
+	@Interceptors(MockInterceptor.class)
 	private static class MockClass04 {
 		public void publicMethod04() {
 		}
@@ -205,7 +206,7 @@ public class InterceptedUnitTest {
 	}
 
 	@Service
-	@Intercepted(MockInterceptor.class)
+	@Interceptors(MockInterceptor.class)
 	private static class MockClass05 {
 		public void publicMethod05() {
 		}
@@ -216,21 +217,21 @@ public class InterceptedUnitTest {
 
 	@Remote
 	private static class MockClass06 {
-		@Intercepted(MockInterceptor.class)
+		@Interceptors(MockInterceptor.class)
 		public void method06() {
 		}
 	}
 
 	@Controller
 	private static class MockClass07 {
-		@Intercepted(MockInterceptor.class)
+		@Interceptors(MockInterceptor.class)
 		public void method07() {
 		}
 	}
 
 	@Service
 	private static class MockClass08 {
-		@Intercepted(MockInterceptor.class)
+		@Interceptors(MockInterceptor.class)
 		public void method08() {
 		}
 	}

@@ -2,8 +2,9 @@ package js.tiny.container;
 
 import java.lang.reflect.Field;
 
+import javax.inject.Inject;
+
 import js.lang.BugError;
-import js.tiny.container.annotation.Inject;
 import js.util.Classes;
 
 /**

@@ -17,7 +17,6 @@ import js.log.LogFactory;
 import js.tiny.container.AuthorizationException;
 import js.tiny.container.ManagedClassSPI;
 import js.tiny.container.ManagedMethodSPI;
-import js.tiny.container.annotation.RequestPath;
 import js.tiny.container.http.ContentType;
 import js.tiny.container.http.Resource;
 import js.tiny.container.http.encoder.ArgumentsReader;
@@ -62,7 +61,7 @@ import js.util.Types;
  * 
  * Resource part identify method declaring class and is optional, in which case default class is used. In this context default
  * class means one without request path. Sub-resource identifies managed method by its request path,
- * {@link ManagedMethodSPI#getRequestPath()}. Note that if managed method is not annotated with {@link RequestPath} it request
+ * {@link ManagedMethodSPI#getRequestPath()}. Note that if managed method is not annotated with {@link Path} it request
  * path is method name converted to dashed case.
  * <p>
  * In order to locate REST method this servlet keeps a cache of methods, {@link #restMethods} initialized eagerly by

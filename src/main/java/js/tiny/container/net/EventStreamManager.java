@@ -4,8 +4,9 @@ import java.security.Principal;
 import java.util.Collection;
 import java.util.List;
 
+import javax.inject.Inject;
+
 import js.lang.Event;
-import js.tiny.container.annotation.Inject;
 import js.tiny.container.core.AppContext;
 
 /**

@@ -3,6 +3,9 @@ package js.tiny.container.core.unit;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
+import org.junit.BeforeClass;
+import org.junit.Test;
+
 import js.lang.Config;
 import js.lang.ConfigBuilder;
 import js.lang.ConfigException;
@@ -11,9 +14,6 @@ import js.tiny.container.core.App;
 import js.tiny.container.core.AppContext;
 import js.tiny.container.servlet.TinyContainer;
 import js.tiny.container.stub.AppContextStub;
-
-import org.junit.BeforeClass;
-import org.junit.Test;
 
 @SuppressWarnings("hiding")
 public class AppUnitTest {

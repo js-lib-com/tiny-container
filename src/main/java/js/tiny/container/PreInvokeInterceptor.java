@@ -1,10 +1,10 @@
 package js.tiny.container;
 
-import js.tiny.container.annotation.Intercepted;
+import javax.interceptor.Interceptors;
 
 /**
  * Invocation interceptor executed just before managed method invocation. Pre-invoke interceptor interface works closely with
- * {@link Intercepted} annotation, see below.
+ * {@link Interceptors} annotation, see below.
  * <p>
  * In sample code, managed method is intercepted by audit class. Container executes Audit#preInvoke just before invoking managed
  * method.

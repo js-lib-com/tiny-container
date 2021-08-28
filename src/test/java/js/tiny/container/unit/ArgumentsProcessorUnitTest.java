@@ -8,6 +8,9 @@ import static org.junit.Assert.assertTrue;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 
+import org.junit.Before;
+import org.junit.Test;
+
 import js.lang.VarArgs;
 import js.tiny.container.ContainerSPI;
 import js.tiny.container.ManagedClassSPI;
@@ -16,9 +19,6 @@ import js.tiny.container.stub.ContainerStub;
 import js.tiny.container.stub.ManagedClassSpiStub;
 import js.tiny.container.stub.ManagedMethodSpiStub;
 import js.util.Classes;
-
-import org.junit.Before;
-import org.junit.Test;
 
 public class ArgumentsProcessorUnitTest {
 	private MockManagedClassSPI managedClass;
