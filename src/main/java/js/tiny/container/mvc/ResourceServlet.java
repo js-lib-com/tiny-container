@@ -19,7 +19,6 @@ import js.tiny.container.AuthorizationException;
 import js.tiny.container.ContainerSPI;
 import js.tiny.container.ManagedClassSPI;
 import js.tiny.container.ManagedMethodSPI;
-import js.tiny.container.annotation.Controller;
 import js.tiny.container.annotation.TestConstructor;
 import js.tiny.container.http.NoSuchResourceException;
 import js.tiny.container.http.Resource;

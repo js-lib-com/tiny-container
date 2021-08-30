@@ -16,7 +16,9 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.annotation.security.DenyAll;
+import javax.ejb.Remote;
 import javax.inject.Inject;
+import javax.ws.rs.Path;
 
 import org.junit.Test;
 
@@ -31,7 +33,6 @@ import js.tiny.container.InstanceType;
 import js.tiny.container.ManagedClass;
 import js.tiny.container.ManagedClassSPI;
 import js.tiny.container.ManagedMethodSPI;
-import js.tiny.container.annotation.Service;
 import js.tiny.container.servlet.TinyConfigBuilder;
 import js.tiny.container.stub.ContainerStub;
 import js.transaction.Transactional;
@@ -319,6 +320,7 @@ public class ManagedClassSpiConformanceTest {
 		}
 	}
 
+	@SuppressWarnings("unused")
 	private static class Agency {
 		@Inject
 		private String person;
@@ -327,7 +329,8 @@ public class ManagedClassSpiConformanceTest {
 		private Car car;
 	}
 
-	@Service("net/car")
+	@Remote
+	@Path("net/car")
 	private static class NetCar {
 		@SuppressWarnings("unused")
 		public String getModel() {

@@ -18,8 +18,6 @@ import js.tiny.container.Interceptor;
 import js.tiny.container.ManagedClass;
 import js.tiny.container.ManagedClassSPI;
 import js.tiny.container.ManagedMethodSPI;
-import js.tiny.container.annotation.Controller;
-import js.tiny.container.annotation.Service;
 import js.tiny.container.stub.ContainerStub;
 import js.util.Classes;
 import js.util.Strings;
@@ -195,7 +193,7 @@ public class InterceptedUnitTest {
 		}
 	}
 
-	@Controller
+	@Remote
 	@Interceptors(MockInterceptor.class)
 	private static class MockClass04 {
 		public void publicMethod04() {
@@ -205,7 +203,7 @@ public class InterceptedUnitTest {
 		}
 	}
 
-	@Service
+	@Remote
 	@Interceptors(MockInterceptor.class)
 	private static class MockClass05 {
 		public void publicMethod05() {
@@ -222,14 +220,14 @@ public class InterceptedUnitTest {
 		}
 	}
 
-	@Controller
+	@Remote
 	private static class MockClass07 {
 		@Interceptors(MockInterceptor.class)
 		public void method07() {
 		}
 	}
 
-	@Service
+	@Remote
 	private static class MockClass08 {
 		@Interceptors(MockInterceptor.class)
 		public void method08() {

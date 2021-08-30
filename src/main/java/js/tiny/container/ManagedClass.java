@@ -19,6 +19,9 @@ import javax.annotation.security.RolesAllowed;
 import javax.ejb.Asynchronous;
 import javax.ejb.Remote;
 import javax.ejb.Schedule;
+import javax.ejb.Singleton;
+import javax.ejb.Stateful;
+import javax.ejb.Stateless;
 import javax.inject.Inject;
 import javax.interceptor.Interceptors;
 import javax.ws.rs.Path;
@@ -34,9 +37,6 @@ import js.lang.Configurable;
 import js.lang.ManagedLifeCycle;
 import js.log.Log;
 import js.log.LogFactory;
-import js.tiny.container.annotation.Controller;
-import js.tiny.container.annotation.Private;
-import js.tiny.container.annotation.Service;
 import js.tiny.container.annotation.TestConstructor;
 import js.tiny.container.core.AppFactory;
 import js.tiny.container.servlet.ContextParamProcessor;
@@ -178,38 +178,45 @@ import js.util.Types;
  * <td>true
  * <td>false
  * <tr>
- * <td>{@link Controller}
+ * <td>{@link PermitAll}
+ * <td>N/A
+ * <td>Remote accessible entity that do not require authorization.
+ * <td>true
+ * <td>true
+ * <td>false
+ * <tr>
+ * <td>{@link Singleton}
  * <td>Class request URI path
- * <td>A controller is a remote accessible managed class that has methods returning resources.
+ * <td>Configure managed instance with {@link InstanceScope#APPLICATION}.
  * <td>true
  * <td>false
  * <td>false
  * <tr>
- * <td>{@link Service}
- * <td>Class request URI path
- * <td>A service is a managed class that has methods remotely accessible.
- * <td>true
- * <td>false
- * <td>false
- * <tr>
- * <td>{@link Path}
- * <td>Method request URI path
- * <td>Managed method binding to particular resource path.
- * <td>false
- * <td>true
- * <td>false
- * <tr>
- * <td>{@link Private}
+ * <td>{@link Startup}
  * <td>N/A
  * <td>Private remote accessible managed methods, that cannot be invoked without authorization.
  * <td>false
  * <td>true
  * <td>false
  * <tr>
- * <td>{@link PermitAll}
- * <td>N/A
- * <td>Remote accessible entity that do not require authorization.
+ * <td>{@link Stateless}
+ * <td>Class request URI path
+ * <td>Configure managed instance with {@link InstanceScope#LOCAL}.
  * <td>true
+ * <td>false
+ * <td>false
+ * <tr>
+ * <td>{@link Stateful}
+ * <td>N/A
+ * <td>Configure managed instance with {@link InstanceScope#SESSION}.
+ * <td>false
+ * <td>true
+ * <td>false
+ * <tr>
+ * <td>{@link Path}
+ * <td>Method request URI path
+ * <td>Managed method binding to particular resource path.
+ * <td>false
  * <td>true
  * <td>false
  * <tr>
@@ -358,7 +365,7 @@ public final class ManagedClass implements ManagedClassSPI {
 	private String transactionalSchema;
 
 	/**
-	 * Request URI path for this managed class configured by {@link Remote}, {@link Controller} or {@link Service} annotations.
+	 * Request URI path for this managed class configured by {@link Path} annotation.
 	 */
 	private String requestPath;
 
@@ -430,17 +437,6 @@ public final class ManagedClass implements ManagedClassSPI {
 	private void scanAnnotations() {
 		// set remote type and request URI path from @Remote, @Controller or @Service
 		boolean remoteType = false;
-		Controller controllerAnnotation = getAnnotation(implementationClass, Controller.class);
-		if (controllerAnnotation != null) {
-			remoteType = true;
-			requestPath = controllerAnnotation.value();
-		}
-		Service serviceAnnotation = getAnnotation(implementationClass, Service.class);
-		if (serviceAnnotation != null) {
-			remoteType = true;
-			requestPath = serviceAnnotation.value();
-		}
-
 		Remote remoteAnnotation = getAnnotation(implementationClass, Remote.class);
 		if (remoteAnnotation != null) {
 			remoteType = true;
@@ -477,7 +473,8 @@ public final class ManagedClass implements ManagedClassSPI {
 		}
 
 		Class<? extends Interceptor> classInterceptor = getInterceptorClass(implementationClass);
-		boolean publicType = hasAnnotation(implementationClass, PermitAll.class);
+		// security unchecked class has all method remotely accessible without authentication
+		boolean uncheckedType = hasAnnotation(implementationClass, PermitAll.class);
 
 		String[] typeRoles = null;
 		RolesAllowed rolesAllowed = getAnnotation(implementationClass, RolesAllowed.class);
@@ -527,19 +524,14 @@ public final class ManagedClass implements ManagedClassSPI {
 
 			// handle remote accessible methods
 
-			boolean publicMethod = hasAnnotation(method, PermitAll.class);
-			if (publicMethod && !remotelyAccessible) {
+			boolean uncheckedMethod = hasAnnotation(method, PermitAll.class);
+			if (uncheckedMethod && !remotelyAccessible) {
 				throw new BugError("@Public annotation on not remote method |%s|.", method);
 			}
-			if (!publicMethod) {
-				publicMethod = publicType;
+			if (!uncheckedMethod) {
+				uncheckedMethod = uncheckedType;
 			}
-			if (hasAnnotation(method, Private.class)) {
-				if (!remotelyAccessible) {
-					throw new BugError("@Private annotation on not remote method |%s|.", method);
-				}
-				publicMethod = false;
-			}
+
 			Path methodPath = getAnnotation(method, Path.class);
 			if (!remotelyAccessible && methodPath != null) {
 				throw new BugError("@MethodPath annotation on not remote method |%s|.", method);
@@ -550,7 +542,7 @@ public final class ManagedClass implements ManagedClassSPI {
 				}
 				managedMethod.setRequestPath(methodPath != null ? methodPath.value() : null);
 				managedMethod.setRemotelyAccessible(remoteMethod);
-				managedMethod.setAccess(publicMethod ? Access.PUBLIC : Access.PRIVATE);
+				managedMethod.setUnchecked(uncheckedMethod);
 			}
 
 			// handle declarative transaction
@@ -634,14 +626,21 @@ public final class ManagedClass implements ManagedClassSPI {
 				autoInstanceCreation = true;
 			}
 
+			// set security roles after security unchecked state - PermitAll annotation, processed
+			rolesAllowed = getAnnotation(method, RolesAllowed.class);
+			if (rolesAllowed != null && !remotelyAccessible) {
+				throw new BugError("@RolesAllowed annotation on not remote method |%s|.", method);
+			}
+
 			if (managedMethod == null) {
 				continue;
 			}
 
-			rolesAllowed = getAnnotation(method, RolesAllowed.class);
 			String[] methodRoles = rolesAllowed != null ? rolesAllowed.value() : typeRoles;
 			if (methodRoles != null) {
-				managedMethod.setRoles(methodRoles);
+				if (!hasAnnotation(method, PermitAll.class)) {
+					managedMethod.setRoles(methodRoles);
+				}
 			}
 
 			Produces producesMethod = getAnnotation(method, Produces.class);

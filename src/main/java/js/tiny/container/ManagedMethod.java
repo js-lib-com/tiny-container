@@ -58,8 +58,8 @@ public final class ManagedMethod implements ManagedMethodSPI {
 	private final Method method;
 
 	/**
-	 * Request URI path for this managed method configured by {@link Path} annotation. If annotation is missing this
-	 * request path is initialized with method name converted to dashed case. Initialization is performed by
+	 * Request URI path for this managed method configured by {@link Path} annotation. If annotation is missing this request
+	 * path is initialized with method name converted to dashed case. Initialization is performed by
 	 * {@link #setRequestPath(String)}.
 	 */
 	private String requestPath;
@@ -83,10 +83,12 @@ public final class ManagedMethod implements ManagedMethodSPI {
 	private boolean asynchronous;
 
 	/**
-	 * Remote access authorization, default to private. This means that by default this method cannot be invoked from remote
-	 * outside an authorized context. This field can be changed by {@link #setAccess(Access)}.
+	 * EJB3.1 17.3.2.2 - The Bean Provider or Application Assembler can indicate that all roles are permitted to execute one or
+	 * more specified methods (i.e., the methods should not be “checked” for authorization prior to invocation by the
+	 * container). The unchecked element is used instead of a role name in the method-permission element to indicate that all
+	 * roles are permitted.
 	 */
-	private Access access = Access.PRIVATE;
+	private boolean unchecked;
 
 	/**
 	 * Invoker strategy, initialized at this managed method construction. If managed method is created without interceptor
@@ -180,13 +182,8 @@ public final class ManagedMethod implements ManagedMethodSPI {
 		this.remotelyAccessible = remotelyAccessible;
 	}
 
-	/**
-	 * Set remote accessibility to public or private.
-	 * 
-	 * @param access access type.
-	 */
-	void setAccess(Access access) {
-		this.access = access;
+	void setUnchecked(boolean unchecked) {
+		this.unchecked = unchecked;
 	}
 
 	/**
@@ -226,7 +223,7 @@ public final class ManagedMethod implements ManagedMethodSPI {
 
 	void setRoles(String[] roles) {
 		Params.notNullOrEmpty(roles, "Roles");
-		this.access = Access.PRIVATE;
+		this.unchecked = false;
 		this.roles = roles;
 	}
 
@@ -309,7 +306,7 @@ public final class ManagedMethod implements ManagedMethodSPI {
 	@SuppressWarnings("unchecked")
 	@Override
 	public <T> T invoke(Object object, Object... args) throws AuthorizationException, IllegalArgumentException, InvocationException {
-		if (remotelyAccessible && access == Access.PRIVATE && !container.isAuthorized(roles)) {
+		if (remotelyAccessible && !unchecked && !container.isAuthorized(roles)) {
 			log.info("Reject not authenticated access to |%s|.", method);
 			throw new AuthorizationException();
 		}
@@ -376,8 +373,8 @@ public final class ManagedMethod implements ManagedMethodSPI {
 	}
 
 	@Override
-	public boolean isPublic() {
-		return access == Access.PUBLIC;
+	public boolean isUnchecked() {
+		return unchecked;
 	}
 
 	@Override

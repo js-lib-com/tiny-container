@@ -32,7 +32,6 @@ import js.lang.NoProviderException;
 import js.log.Log;
 import js.log.LogFactory;
 import js.rmi.RemoteFactory;
-import js.tiny.container.annotation.Private;
 import js.tiny.container.core.App;
 import js.tiny.container.core.AppContext;
 import js.tiny.container.core.AppFactory;

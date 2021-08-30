@@ -66,7 +66,7 @@ public class ManagedMethodUnitTest {
 		assertEquals(String.class, managedMethod.getReturnType());
 		assertFalse(managedMethod.isVoid());
 		assertFalse(managedMethod.isRemotelyAccessible());
-		assertFalse(managedMethod.isPublic());
+		assertFalse(managedMethod.isUnchecked());
 		assertFalse(managedMethod.isTransactional());
 		assertFalse(managedMethod.isImmutable());
 		assertFalse(managedMethod.isAsynchronous());

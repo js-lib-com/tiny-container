@@ -10,7 +10,6 @@ import java.util.Date;
 import org.junit.Before;
 import org.junit.Test;
 
-import js.tiny.container.Access;
 import js.tiny.container.ContainerSPI;
 import js.tiny.container.ManagedMethodSPI;
 import js.tiny.container.stub.ManagedClassSpiStub;
@@ -88,9 +87,9 @@ public class ManagedMethodSpiConformanceTest {
 
 	@Test
 	public void isPublic() throws Exception {
-		assertFalse(getterManagedMethod.isPublic());
-		Classes.invoke(getterManagedMethod, "setAccess", Access.PUBLIC);
-		assertTrue(getterManagedMethod.isPublic());
+		assertFalse(getterManagedMethod.isUnchecked());
+		Classes.invoke(getterManagedMethod, "setUnchecked", true);
+		assertTrue(getterManagedMethod.isUnchecked());
 	}
 
 	@Test

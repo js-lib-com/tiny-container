@@ -12,6 +12,7 @@ import java.util.List;
 
 import javax.annotation.security.DenyAll;
 import javax.annotation.security.PermitAll;
+import javax.annotation.security.RolesAllowed;
 import javax.ejb.Remote;
 import javax.ws.rs.Path;
 
@@ -20,13 +21,9 @@ import org.junit.Test;
 import js.lang.BugError;
 import js.lang.ConfigBuilder;
 import js.lang.InvocationException;
-import js.tiny.container.Access;
 import js.tiny.container.ManagedClass;
 import js.tiny.container.ManagedClassSPI;
 import js.tiny.container.ManagedMethodSPI;
-import js.tiny.container.annotation.Controller;
-import js.tiny.container.annotation.Private;
-import js.tiny.container.annotation.Service;
 import js.tiny.container.stub.ContainerStub;
 import js.util.Classes;
 import js.util.Strings;
@@ -283,8 +280,7 @@ public class RemoteUnitTest {
 	}
 
 	private static boolean isPublic(ManagedMethodSPI managedMethod) {
-		Access access = Classes.getFieldValue(managedMethod, "access");
-		return access == Access.PUBLIC;
+		return Classes.getFieldValue(managedMethod, "unchecked");
 	}
 
 	// --------------------------------------------------------------------------------------------
@@ -337,13 +333,13 @@ public class RemoteUnitTest {
 		}
 	}
 
-	@Controller
+	@Remote
 	private static class MockClass07 {
 		public void method07() {
 		}
 	}
 
-	@Service
+	@Remote
 	private static class MockClass08 {
 		public void method08() {
 		}
@@ -366,7 +362,7 @@ public class RemoteUnitTest {
 	@Remote
 	@PermitAll
 	private static class MockClass11 {
-		@Private
+		@RolesAllowed("*")
 		public void method11() {
 		}
 	}
@@ -378,7 +374,7 @@ public class RemoteUnitTest {
 	}
 
 	private static class MockClass13 {
-		@Private
+		@RolesAllowed("*")
 		public void method13() {
 		}
 	}
@@ -389,7 +385,8 @@ public class RemoteUnitTest {
 		}
 	}
 
-	@Service("mock")
+	@Remote
+	@Path("mock")
 	private static class MockClass15 {
 	}
 

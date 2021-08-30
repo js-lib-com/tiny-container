@@ -21,6 +21,7 @@ import java.util.Locale;
 import java.util.Map;
 
 import javax.annotation.security.PermitAll;
+import javax.annotation.security.RolesAllowed;
 import javax.ejb.Remote;
 import javax.servlet.ReadListener;
 import javax.servlet.ServletContext;
@@ -30,14 +31,13 @@ import javax.servlet.WriteListener;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
+import javax.ws.rs.Path;
 
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
 import js.tiny.container.ContainerSPI;
-import js.tiny.container.annotation.Controller;
-import js.tiny.container.annotation.Private;
 import js.tiny.container.core.App;
 import js.tiny.container.core.AppContext;
 import js.tiny.container.core.Factory;
@@ -422,10 +422,10 @@ public class ResourceServletIntegrationTest {
 
 		View uploadMultipartForm(FormIterator form) throws IOException;
 
-		@Private
+		@RolesAllowed("*")
 		View privateAction();
 
-		@Private
+		@RolesAllowed("*")
 		View privateForm(Form form);
 
 		View actionException();
@@ -433,7 +433,8 @@ public class ResourceServletIntegrationTest {
 		View formException(Form form);
 	}
 
-	@Controller("resource")
+	@Remote
+	@Path("resource")
 	@PermitAll
 	private static class ControllerImpl implements ControllerInterface {
 		@Override

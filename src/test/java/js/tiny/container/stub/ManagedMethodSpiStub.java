@@ -53,8 +53,8 @@ public class ManagedMethodSpiStub implements ManagedMethodSPI {
 	}
 
 	@Override
-	public boolean isPublic() {
-		throw new UnsupportedOperationException("isPublic()");
+	public boolean isUnchecked() {
+		throw new UnsupportedOperationException("isUnchecked()");
 	}
 
 	@Override

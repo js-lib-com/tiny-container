@@ -12,7 +12,6 @@ import javax.ws.rs.Produces;
 
 import js.lang.BugError;
 import js.lang.InvocationException;
-import js.tiny.container.annotation.Private;
 import js.tiny.container.core.SecurityContext;
 import js.tiny.container.http.ContentType;
 import js.transaction.Immutable;
@@ -86,8 +85,8 @@ public interface ManagedMethodSPI {
 	 * net method is a managed method marked as remote accessible via {@link Remote} annotation. A net method can have a name by
 	 * which is publicly known, set via {@link Path} annotation.
 	 * <p>
-	 * A net method is not mandatory to have {@link Path} annotation. If annotation is missing implementation should use
-	 * this method name converted to dash case, see {@link Strings#toDashCase(String)}.
+	 * A net method is not mandatory to have {@link Path} annotation. If annotation is missing implementation should use this
+	 * method name converted to dash case, see {@link Strings#toDashCase(String)}.
 	 * <p>
 	 * Attempting to retrieve request URI path for a local managed method is considered a bug.
 	 * 
@@ -114,16 +113,22 @@ public interface ManagedMethodSPI {
 	boolean isRemotelyAccessible();
 
 	/**
-	 * Test if this managed method can be accessed remotely without authorization. This predicate value has meaning only if this
-	 * managed method is remote, as defined by {@link #isRemotelyAccessible()}. A managed method is by default private; it can
-	 * be accessed remotely only inside an authorized security context. Anyway, it becomes public if tagged with {@link PermitAll}
-	 * annotation or if its declaring class is public and has no {@link Private} annotation.
+	 * Test if this managed method is unchecked, that is, can be accessed remotely without authorization. This predicate value
+	 * has meaning only if this managed method is remote, as defined by {@link #isRemotelyAccessible()}.
+	 * <p>
+	 * Usually, a managed method is private; it can be accessed remotely only inside an authorized security context. Anyway, it
+	 * becomes public if tagged with {@link PermitAll} annotation - this public state is known as security unchecked.
 	 * <p>
 	 * <b>Warning:</b> a public remote managed method can be accessed without authorization.
+	 * <p>
+	 * EJB3.1 17.3.2.2 - The Bean Provider or Application Assembler can indicate that all roles are permitted to execute one or
+	 * more specified methods (i.e., the methods should not be “checked” for authorization prior to invocation by the
+	 * container). The unchecked element is used instead of a role name in the method-permission element to indicate that all
+	 * roles are permitted.
 	 * 
-	 * @return true if this managed method can be accessed remotely without authorization.
+	 * @return true if this managed method is unchecked, that is, can be accessed remotely without authorization.
 	 */
-	boolean isPublic();
+	boolean isUnchecked();
 
 	/**
 	 * Test if this managed method should be executed into a transactional context. A managed method is transactional if it has

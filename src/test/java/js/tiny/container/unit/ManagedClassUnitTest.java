@@ -26,7 +26,6 @@ import js.lang.ConfigException;
 import js.lang.Configurable;
 import js.lang.ManagedLifeCycle;
 import js.lang.VarArgs;
-import js.tiny.container.Access;
 import js.tiny.container.Container;
 import js.tiny.container.InstanceScope;
 import js.tiny.container.InstanceType;
@@ -379,13 +378,6 @@ public class ManagedClassUnitTest {
 	public void objectToString() throws Exception {
 		String config = "<test class='js.tiny.container.unit.ManagedClassUnitTest$CarImpl' />";
 		assertEquals("test:js.tiny.container.unit.ManagedClassUnitTest$CarImpl:js.tiny.container.unit.ManagedClassUnitTest$CarImpl:POJO:APPLICATION:NET", getManagedClass(config(config)).toString());
-	}
-
-	@Test
-	public void accessEnumeration() {
-		Access.values();
-		Access.valueOf("PUBLIC");
-		Access.valueOf("PRIVATE");
 	}
 
 	// --------------------------------------------------------------------------------------------

@@ -151,7 +151,6 @@
 			<groupId>com.js-lib</groupId>
 			<artifactId>tiny-servlet-api</artifactId>
 			<version>1.0-SNAPSHOT</version>
-			<scope>provided</scope>
 		</dependency>
 		<dependency>
 			<groupId>junit</groupId>
