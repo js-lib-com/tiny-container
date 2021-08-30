@@ -9,12 +9,12 @@ import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.nio.charset.Charset;
 
+import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
 
 import js.json.Json;
 import js.json.JsonException;
 import js.lang.IllegalArgumentException;
-import js.tiny.container.annotation.TestConstructor;
 import js.util.Classes;
 import js.util.Types;
 
@@ -31,11 +31,11 @@ public final class JsonArgumentsReader implements ArgumentsReader, ArgumentPartR
 	private final Json json;
 
 	/** Create JSON arguments reader. */
+	@Inject
 	public JsonArgumentsReader() {
 		this.json = Classes.loadService(Json.class);
 	}
 
-	@TestConstructor
 	public JsonArgumentsReader(Json json) {
 		this.json = json;
 	}

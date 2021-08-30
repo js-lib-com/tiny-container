@@ -5,6 +5,7 @@ import java.lang.reflect.Type;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.inject.Inject;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 import javax.servlet.UnavailableException;
@@ -19,7 +20,6 @@ import js.tiny.container.AuthorizationException;
 import js.tiny.container.ContainerSPI;
 import js.tiny.container.ManagedClassSPI;
 import js.tiny.container.ManagedMethodSPI;
-import js.tiny.container.annotation.TestConstructor;
 import js.tiny.container.http.NoSuchResourceException;
 import js.tiny.container.http.Resource;
 import js.tiny.container.http.encoder.ArgumentsReader;
@@ -97,6 +97,7 @@ public class ResourceServlet extends AppServlet {
 	private final Map<String, ManagedMethodSPI> resourceMethods;
 
 	/** Construct resources servlet instance. */
+	@Inject
 	public ResourceServlet() {
 		log.trace("ResourcesServlet()");
 		argumentsReaderFactory = ServerEncoders.getInstance();
@@ -108,7 +109,6 @@ public class ResourceServlet extends AppServlet {
 	 * 
 	 * @param argumentsReaderFactory mock arguments reader factory.
 	 */
-	@TestConstructor
 	public ResourceServlet(ArgumentsReaderFactory argumentsReaderFactory) {
 		log.trace("ResourceServlet(ArgumentsReaderFactory)");
 		this.argumentsReaderFactory = argumentsReaderFactory;

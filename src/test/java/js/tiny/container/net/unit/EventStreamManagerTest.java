@@ -1,11 +1,9 @@
 package js.tiny.container.net.unit;
 
-import static org.junit.Assert.assertNotNull;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import java.lang.reflect.Constructor;
 import java.security.Principal;
 import java.util.Arrays;
 import java.util.List;
@@ -18,7 +16,6 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
 import js.lang.Event;
-import js.tiny.container.annotation.TestConstructor;
 import js.tiny.container.core.AppFactory;
 import js.tiny.container.net.EventStream;
 import js.tiny.container.net.EventStreamConfig;
@@ -45,13 +42,6 @@ public class EventStreamManagerTest {
 	@Before
 	public void beforeTest() {
 		manager = new EventStreamManagerImpl(factory, eventStreams);
-	}
-
-	/** Assert test constructor is marked with {@link TestConstructor} annotation. */
-	@Test
-	public void testConstructor() throws NoSuchMethodException, SecurityException {
-		Constructor<EventStreamManagerImpl> testConstructor = EventStreamManagerImpl.class.getConstructor(AppFactory.class, Map.class);
-		assertNotNull("Missing annotation from test constructor.", testConstructor.getAnnotation(TestConstructor.class));
 	}
 
 	@Test

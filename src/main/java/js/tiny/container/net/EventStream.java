@@ -8,13 +8,14 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import javax.inject.Inject;
+
 import js.json.Json;
 import js.lang.BugError;
 import js.lang.Event;
 import js.lang.KeepAliveEvent;
 import js.log.Log;
 import js.log.LogFactory;
-import js.tiny.container.annotation.TestConstructor;
 import js.util.Classes;
 import js.util.Strings;
 
@@ -143,6 +144,7 @@ public class EventStream implements Closeable {
 	private String string;
 
 	/** Default constructor. */
+	@Inject
 	public EventStream() {
 		log.trace("EventStream()");
 		this.json = new JsonSerializer(Classes.loadService(Json.class));
@@ -157,7 +159,6 @@ public class EventStream implements Closeable {
 	 * @param eventsQueue mock events queue,
 	 * @param active flag for initialization of internal active state.
 	 */
-	@TestConstructor
 	public EventStream(Json json, BlockingQueue<Event> eventsQueue, boolean active) {
 		log.trace("EventStream(BlockingQueue<Event>,boolean)");
 		this.json = new JsonSerializer(json);

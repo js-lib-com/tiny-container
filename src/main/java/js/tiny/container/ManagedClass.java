@@ -20,6 +20,7 @@ import javax.ejb.Asynchronous;
 import javax.ejb.Remote;
 import javax.ejb.Schedule;
 import javax.ejb.Singleton;
+import javax.ejb.Startup;
 import javax.ejb.Stateful;
 import javax.ejb.Stateless;
 import javax.inject.Inject;
@@ -37,7 +38,6 @@ import js.lang.Configurable;
 import js.lang.ManagedLifeCycle;
 import js.log.Log;
 import js.log.LogFactory;
-import js.tiny.container.annotation.TestConstructor;
 import js.tiny.container.core.AppFactory;
 import js.tiny.container.servlet.ContextParamProcessor;
 import js.transaction.Immutable;
@@ -998,15 +998,18 @@ public final class ManagedClass implements ManagedClassSPI {
 			if (declaredConstructor.isSynthetic()) {
 				continue;
 			}
-			if (declaredConstructor.getAnnotation(TestConstructor.class) != null) {
-				continue;
+
+			if (declaredConstructor.getAnnotation(Inject.class) != null) {
+				constructor = declaredConstructor;
+				break;
 			}
+
 			if (declaredConstructor.getParameterTypes().length == 0) {
 				defaultConstructor = declaredConstructor;
 				continue;
 			}
 			if (constructor != null) {
-				throw new BugError("Implementation class |%s| has not a single constructor with parameters.", implementationClass);
+				throw new BugError("Implementation class |%s| has not a single constructor with parameters. Use @Inject to declare which constructor to use.", implementationClass);
 			}
 			constructor = declaredConstructor;
 		}
@@ -1275,9 +1278,19 @@ public final class ManagedClass implements ManagedClassSPI {
 	 * @param clazz annotated class.
 	 * @return interceptor class or null if intercepted annotation is missing.
 	 */
+	@SuppressWarnings("unchecked")
 	private static Class<? extends Interceptor> getInterceptorClass(Class<?> clazz) {
-		Interceptors intercepted = getAnnotation(clazz, Interceptors.class);
-		return intercepted != null ? intercepted.value()[0] : null;
+		Interceptors interceptors = getAnnotation(clazz, Interceptors.class);
+		if (interceptors == null) {
+			return null;
+		}
+
+		Class<?> interceptorClass = interceptors.value()[0];
+		if (!Types.isKindOf(interceptorClass, Interceptor.class)) {
+			throw new IllegalArgumentException("Interceptor should implement " + Interceptor.class.getCanonicalName());
+		}
+
+		return (Class<? extends Interceptor>) interceptorClass;
 	}
 
 	/**
@@ -1287,8 +1300,18 @@ public final class ManagedClass implements ManagedClassSPI {
 	 * @param method annotated method.
 	 * @return interceptor class or null if intercepted annotation is missing.
 	 */
+	@SuppressWarnings("unchecked")
 	private static Class<? extends Interceptor> getInterceptorClass(Method method) {
-		Interceptors intercepted = getAnnotation(method, Interceptors.class);
-		return intercepted != null ? intercepted.value()[0] : null;
+		Interceptors interceptors = getAnnotation(method, Interceptors.class);
+		if (interceptors == null) {
+			return null;
+		}
+
+		Class<?> interceptorClass = interceptors.value()[0];
+		if (!Types.isKindOf(interceptorClass, Interceptor.class)) {
+			throw new IllegalArgumentException("Interceptor should implement " + Interceptor.class.getCanonicalName());
+		}
+
+		return (Class<? extends Interceptor>) interceptorClass;
 	}
 }

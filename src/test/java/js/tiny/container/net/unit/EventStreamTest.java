@@ -4,7 +4,6 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
@@ -17,7 +16,6 @@ import static org.mockito.Mockito.when;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.io.Writer;
-import java.lang.reflect.Constructor;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.TimeUnit;
 
@@ -36,7 +34,6 @@ import org.mockito.stubbing.Stubber;
 import js.json.Json;
 import js.lang.BugError;
 import js.lang.Event;
-import js.tiny.container.annotation.TestConstructor;
 import js.tiny.container.net.EventStream;
 import js.tiny.container.net.EventStreamConfig;
 import js.util.Classes;
@@ -59,13 +56,6 @@ public class EventStreamTest {
 	@Before
 	public void beforeTest() {
 		eventStream = new EventStream(json, eventsQueue, true);
-	}
-
-	/** Assert test constructor is marked with {@link TestConstructor} annotation. */
-	@Test
-	public void testConstructor() throws NoSuchMethodException, SecurityException {
-		Constructor<EventStream> testConstructor = EventStream.class.getConstructor(Json.class, BlockingQueue.class, boolean.class);
-		assertNotNull("Missing annotation from test constructor.", testConstructor.getAnnotation(TestConstructor.class));
 	}
 
 	@Test

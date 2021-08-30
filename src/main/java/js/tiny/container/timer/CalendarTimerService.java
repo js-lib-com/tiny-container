@@ -6,11 +6,11 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 import javax.ejb.Schedule;
+import javax.inject.Inject;
 
 import js.log.Log;
 import js.log.LogFactory;
 import js.tiny.container.ManagedMethodSPI;
-import js.tiny.container.annotation.TestConstructor;
 import js.util.Params;
 
 public class CalendarTimerService implements ICalendarTimerService {
@@ -20,12 +20,12 @@ public class CalendarTimerService implements ICalendarTimerService {
 
 	private final ScheduledExecutorService scheduler;
 
+	@Inject
 	public CalendarTimerService() {
 		log.trace("CalendarTimerService()");
 		scheduler = Executors.newScheduledThreadPool(10);
 	}
 
-	@TestConstructor
 	public CalendarTimerService(ScheduledExecutorService scheduler) {
 		this.scheduler = scheduler;
 	}

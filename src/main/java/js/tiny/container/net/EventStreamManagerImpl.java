@@ -5,11 +5,12 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.inject.Inject;
+
 import js.lang.Event;
 import js.lang.ManagedPreDestroy;
 import js.log.Log;
 import js.log.LogFactory;
-import js.tiny.container.annotation.TestConstructor;
 import js.tiny.container.core.AppFactory;
 
 /**
@@ -74,6 +75,7 @@ public class EventStreamManagerImpl implements EventStreamManager, ManagedPreDes
 	 * 
 	 * @param factory application factory.
 	 */
+	@Inject
 	public EventStreamManagerImpl(AppFactory factory) {
 		this.factory = factory;
 		this.eventStreams = new HashMap<>();
@@ -85,7 +87,6 @@ public class EventStreamManagerImpl implements EventStreamManager, ManagedPreDes
 	 * @param factory application factory mock,
 	 * @param eventStreams mock for events streams storage.
 	 */
-	@TestConstructor
 	public EventStreamManagerImpl(AppFactory factory, Map<Principal, EventStream> eventStreams) {
 		this.factory = factory;
 		this.eventStreams = eventStreams;
