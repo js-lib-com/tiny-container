@@ -63,16 +63,15 @@ public class CalendarTimerService implements ICalendarTimerService {
 	 * @return delay to the next scheduler timeout, in milliseconds, or zero if no schedule passed.
 	 */
 	public long computeDelay(Schedule schedule) {
-		final CalendarEx now = new CalendarEx();
-
+		final Date now = new Date();
 		Date next = getNextTimeout(now, schedule);
 		if (next == null) {
 			// schedule is passed and there are no more future timeouts
 			return 0;
 		}
 
-		long delay = (next.getTime() - now.getTimeInMillis());
-		log.debug("Next execution date |%s|. Delay is |%d|", next.getTime(), delay);
+		long delay = (next.getTime() - now.getTime());
+		log.debug("Next execution date |%s|. Delay is |%d|", next, delay);
 		return delay;
 	}
 
@@ -84,7 +83,8 @@ public class CalendarTimerService implements ICalendarTimerService {
 	 * @param schedule method configured schedule.
 	 * @return next scheduler event or null if configured schedule is passed.
 	 */
-	Date getNextTimeout(CalendarEx evaluationMoment, Schedule schedule) {
+	Date getNextTimeout(Date now, Schedule schedule) {
+		CalendarEx evaluationMoment = new CalendarEx(now);
 		// next scheduler timeout should be at least one second after the evaluation moment
 		evaluationMoment.increment(CalendarUnit.SECOND);
 		log.debug("Evaluation moment: %s.", evaluationMoment.getTime());

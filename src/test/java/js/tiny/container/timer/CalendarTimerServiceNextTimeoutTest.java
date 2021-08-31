@@ -51,7 +51,7 @@ public class CalendarTimerServiceNextTimeoutTest {
 		now.set(CalendarUnit.SECOND, 30);
 
 		// when
-		Date timeout = service.getNextTimeout(now, schedule);
+		Date timeout = service.getNextTimeout(now.getTime(), schedule);
 
 		// then
 		assertThat(timeout, equals(2020, 1, 2, 0, 0, 0));
@@ -68,7 +68,7 @@ public class CalendarTimerServiceNextTimeoutTest {
 		when(schedule.year()).thenReturn("2021");
 
 		// when
-		Date timeout = service.getNextTimeout(now, schedule);
+		Date timeout = service.getNextTimeout(now.getTime(), schedule);
 
 		// then
 		assertThat(timeout, equals(2021, 1, 1, 0, 0, 0));
@@ -89,7 +89,7 @@ public class CalendarTimerServiceNextTimeoutTest {
 		now.set(CalendarUnit.SECOND, 30);
 
 		// when
-		Date timeout = service.getNextTimeout(now, schedule);
+		Date timeout = service.getNextTimeout(now.getTime(), schedule);
 
 		// then
 		assertThat(timeout, nullValue());
@@ -103,7 +103,7 @@ public class CalendarTimerServiceNextTimeoutTest {
 		now.set(CalendarUnit.SECOND, 10);
 
 		// when
-		Date timeout = service.getNextTimeout(now, schedule);
+		Date timeout = service.getNextTimeout(now.getTime(), schedule);
 
 		// then
 		assertThat(timeout, equals(2020, 1, 1, 0, 0, 20));
@@ -117,7 +117,7 @@ public class CalendarTimerServiceNextTimeoutTest {
 		now.set(CalendarUnit.SECOND, 20);
 
 		// when
-		Date timeout = service.getNextTimeout(now, schedule);
+		Date timeout = service.getNextTimeout(now.getTime(), schedule);
 
 		// then
 		assertThat(timeout, equals(2020, 1, 1, 0, 0, 21));
@@ -131,7 +131,7 @@ public class CalendarTimerServiceNextTimeoutTest {
 		when(schedule.second()).thenReturn("20-40");
 
 		// when
-		Date timeout = service.getNextTimeout(now, schedule);
+		Date timeout = service.getNextTimeout(now.getTime(), schedule);
 
 		// then
 		assertThat(timeout, equals(2020, 1, 1, 0, 0, 31));
@@ -150,7 +150,7 @@ public class CalendarTimerServiceNextTimeoutTest {
 		when(schedule.second()).thenReturn("50-10");
 
 		// when
-		Date timeout = service.getNextTimeout(now, schedule);
+		Date timeout = service.getNextTimeout(now.getTime(), schedule);
 
 		// then
 		assertThat(timeout, equals(2020, 1, 2, 0, 0, 0));
@@ -163,7 +163,7 @@ public class CalendarTimerServiceNextTimeoutTest {
 		when(schedule.dayOfWeek()).thenReturn("Fri");
 
 		// when
-		Date timeout = service.getNextTimeout(now, schedule);
+		Date timeout = service.getNextTimeout(now.getTime(), schedule);
 
 		// then
 		assertThat(timeout, equals(2020, 1, 3, 0, 0, 0));
@@ -176,7 +176,7 @@ public class CalendarTimerServiceNextTimeoutTest {
 		when(schedule.dayOfWeek()).thenReturn("Fri");
 
 		// when
-		Date timeout = service.getNextTimeout(now, schedule);
+		Date timeout = service.getNextTimeout(now.getTime(), schedule);
 
 		// then
 		assertThat(timeout, equals(2020, 1, 3, 0, 0, 0));
@@ -189,7 +189,7 @@ public class CalendarTimerServiceNextTimeoutTest {
 		when(schedule.dayOfWeek()).thenReturn("Fri-Sun");
 
 		// when
-		Date timeout = service.getNextTimeout(now, schedule);
+		Date timeout = service.getNextTimeout(now.getTime(), schedule);
 
 		// then
 		assertThat(timeout, equals(2020, 1, 3, 0, 0, 0));
@@ -205,7 +205,7 @@ public class CalendarTimerServiceNextTimeoutTest {
 		now.set(CalendarUnit.MINUTE, 30);
 
 		// when
-		Date timeout = service.getNextTimeout(now, schedule);
+		Date timeout = service.getNextTimeout(now.getTime(), schedule);
 
 		// then
 		assertThat(timeout, equals(2020, 1, 1, 10, 0, 0));
@@ -219,7 +219,7 @@ public class CalendarTimerServiceNextTimeoutTest {
 		when(schedule.hour()).thenReturn("4");
 
 		// when
-		Date timeout = service.getNextTimeout(now, schedule);
+		Date timeout = service.getNextTimeout(now.getTime(), schedule);
 
 		// then
 		assertThat(timeout, equals(2020, 1, 1, 4, 30, 0));
@@ -234,7 +234,7 @@ public class CalendarTimerServiceNextTimeoutTest {
 		when(schedule.dayOfMonth()).thenReturn("10");
 
 		// when
-		Date timeout = service.getNextTimeout(now, schedule);
+		Date timeout = service.getNextTimeout(now.getTime(), schedule);
 
 		// then
 		assertThat(timeout, equals(2020, 1, 10, 4, 30, 0));
@@ -250,7 +250,7 @@ public class CalendarTimerServiceNextTimeoutTest {
 		when(schedule.month()).thenReturn("2");
 
 		// when
-		Date timeout = service.getNextTimeout(now, schedule);
+		Date timeout = service.getNextTimeout(now.getTime(), schedule);
 
 		// then
 		assertThat(timeout, equals(2020, 2, 10, 4, 30, 0));
@@ -267,7 +267,7 @@ public class CalendarTimerServiceNextTimeoutTest {
 		when(schedule.year()).thenReturn("2021");
 
 		// when
-		Date timeout = service.getNextTimeout(now, schedule);
+		Date timeout = service.getNextTimeout(now.getTime(), schedule);
 
 		// then
 		assertThat(timeout, equals(2021, 2, 10, 4, 30, 0));
@@ -286,7 +286,7 @@ public class CalendarTimerServiceNextTimeoutTest {
 		now.set(CalendarUnit.SECOND, 30);
 
 		// when
-		Date timeout = service.getNextTimeout(now, schedule);
+		Date timeout = service.getNextTimeout(now.getTime(), schedule);
 
 		// then
 		assertThat(timeout, equals(2022, 1, 1, 0, 0, 0));
@@ -305,7 +305,7 @@ public class CalendarTimerServiceNextTimeoutTest {
 		now.set(CalendarUnit.SECOND, 59);
 
 		// when
-		Date timeout = service.getNextTimeout(now, schedule);
+		Date timeout = service.getNextTimeout(now.getTime(), schedule);
 
 		// then
 		assertThat(timeout, equals(2022, 1, 1, 0, 0, 0));
@@ -319,7 +319,7 @@ public class CalendarTimerServiceNextTimeoutTest {
 		when(schedule.month()).thenReturn("Mar");
 
 		// when
-		Date timeout = service.getNextTimeout(now, schedule);
+		Date timeout = service.getNextTimeout(now.getTime(), schedule);
 
 		// then
 		assertThat(timeout, equals(2020, 3, 1, 0, 0, 0));
@@ -332,7 +332,7 @@ public class CalendarTimerServiceNextTimeoutTest {
 		when(schedule.dayOfMonth()).thenReturn("Last");
 
 		// when
-		Date timeout = service.getNextTimeout(now, schedule);
+		Date timeout = service.getNextTimeout(now.getTime(), schedule);
 
 		// then
 		assertThat(timeout, equals(2020, 1, 31, 0, 0, 0));
@@ -345,7 +345,7 @@ public class CalendarTimerServiceNextTimeoutTest {
 		when(schedule.dayOfMonth()).thenReturn("-1");
 
 		// when
-		Date timeout = service.getNextTimeout(now, schedule);
+		Date timeout = service.getNextTimeout(now.getTime(), schedule);
 
 		// then
 		assertThat(timeout, equals(2020, 1, 30, 0, 0, 0));
@@ -360,7 +360,7 @@ public class CalendarTimerServiceNextTimeoutTest {
 		when(schedule.year()).thenReturn("2021");
 
 		// when
-		Date timeout = service.getNextTimeout(now, schedule);
+		Date timeout = service.getNextTimeout(now.getTime(), schedule);
 
 		// then
 		assertThat(timeout, equals(2021, 2, 28, 0, 0, 0));
@@ -375,7 +375,7 @@ public class CalendarTimerServiceNextTimeoutTest {
 		when(schedule.year()).thenReturn("2021");
 
 		// when
-		Date timeout = service.getNextTimeout(now, schedule);
+		Date timeout = service.getNextTimeout(now.getTime(), schedule);
 
 		// then
 		assertThat(timeout, equals(2021, 2, 27, 0, 0, 0));
@@ -393,7 +393,7 @@ public class CalendarTimerServiceNextTimeoutTest {
 		when(schedule.year()).thenReturn("2020");
 
 		// when
-		Date timeout = service.getNextTimeout(now, schedule);
+		Date timeout = service.getNextTimeout(now.getTime(), schedule);
 
 		// then
 		assertThat(timeout, equals(2020, 2, 29, 0, 0, 0));
@@ -411,7 +411,7 @@ public class CalendarTimerServiceNextTimeoutTest {
 		when(schedule.year()).thenReturn("2020");
 
 		// when
-		Date timeout = service.getNextTimeout(now, schedule);
+		Date timeout = service.getNextTimeout(now.getTime(), schedule);
 
 		// then
 		assertThat(timeout, equals(2020, 2, 29, 0, 0, 0));
@@ -429,7 +429,7 @@ public class CalendarTimerServiceNextTimeoutTest {
 		when(schedule.year()).thenReturn("2020");
 
 		// when
-		Date timeout = service.getNextTimeout(now, schedule);
+		Date timeout = service.getNextTimeout(now.getTime(), schedule);
 
 		// then
 		assertThat(timeout, equals(2020, 2, 28, 0, 0, 0));

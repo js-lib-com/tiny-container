@@ -683,9 +683,9 @@ public class ContainerUnitTest {
 		// this hard coded value depends on library classes declared as managed
 		// it counts only methods from classes of PROXY type
 		// curent methods are:
-		// js.http.captcha.Captcha#verifyResponse(int,String)
-		// js.http.captcha.Captcha#getChallenge(int)
-		// js.http.captcha.Captcha#getImage(String)
+		// js.tiny.container.http.captcha.Captcha#verifyResponse(int,String)
+		// js.tiny.container.http.captcha.Captcha#getChallenge(int)
+		// js.tiny.container.http.captcha.Captcha#getChallenges()
 		assertEquals(3, methodsCount);
 	}
 

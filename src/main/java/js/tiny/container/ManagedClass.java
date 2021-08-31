@@ -485,7 +485,7 @@ public final class ManagedClass implements ManagedClassSPI {
 		// managed classes does not support public inheritance
 		for (Method method : implementationClass.getDeclaredMethods()) {
 			final int modifiers = method.getModifiers();
-			if (Modifier.isStatic(modifiers) || !Modifier.isPublic(modifiers)) {
+			if (Modifier.isStatic(modifiers) || (!Modifier.isPublic(modifiers) && !hasAnnotation(method, Schedule.class))) {
 				// scans only public and non-static methods
 				continue;
 			}
@@ -606,14 +606,8 @@ public final class ManagedClass implements ManagedClassSPI {
 				managedMethod.setAsynchronous(asynchronousMethod);
 			}
 
-			Schedule cronMethod = getAnnotation(method, Schedule.class);
-			if (cronMethod != null) {
-				if (remotelyAccessible) {
-					throw new BugError("Remote accessible method |%s| cannot be executed by cron.", method);
-				}
-				if (transactional) {
-					throw new BugError("Transactional method |%s| cannot be executed by cron.", method);
-				}
+			Schedule scheduleMethod = getAnnotation(method, Schedule.class);
+			if (scheduleMethod != null) {
 				if (!Types.isVoid(method.getReturnType())) {
 					throw new BugError("Cron method |%s| must be void.", method);
 				}
@@ -621,7 +615,7 @@ public final class ManagedClass implements ManagedClassSPI {
 				if (managedMethod == null) {
 					managedMethod = new ManagedMethod(this, interfaceMethod);
 				}
-				managedMethod.setCronExpression(cronMethod);
+				managedMethod.setSchedule(scheduleMethod);
 				cronMethodsPool.add(managedMethod);
 				autoInstanceCreation = true;
 			}
@@ -1278,19 +1272,8 @@ public final class ManagedClass implements ManagedClassSPI {
 	 * @param clazz annotated class.
 	 * @return interceptor class or null if intercepted annotation is missing.
 	 */
-	@SuppressWarnings("unchecked")
 	private static Class<? extends Interceptor> getInterceptorClass(Class<?> clazz) {
-		Interceptors interceptors = getAnnotation(clazz, Interceptors.class);
-		if (interceptors == null) {
-			return null;
-		}
-
-		Class<?> interceptorClass = interceptors.value()[0];
-		if (!Types.isKindOf(interceptorClass, Interceptor.class)) {
-			throw new IllegalArgumentException("Interceptor should implement " + Interceptor.class.getCanonicalName());
-		}
-
-		return (Class<? extends Interceptor>) interceptorClass;
+		return getInterceptorClass(getAnnotation(clazz, Interceptors.class));
 	}
 
 	/**
@@ -1300,9 +1283,12 @@ public final class ManagedClass implements ManagedClassSPI {
 	 * @param method annotated method.
 	 * @return interceptor class or null if intercepted annotation is missing.
 	 */
-	@SuppressWarnings("unchecked")
 	private static Class<? extends Interceptor> getInterceptorClass(Method method) {
-		Interceptors interceptors = getAnnotation(method, Interceptors.class);
+		return getInterceptorClass(getAnnotation(method, Interceptors.class));
+	}
+
+	@SuppressWarnings("unchecked")
+	private static Class<? extends Interceptor> getInterceptorClass(Interceptors interceptors) {
 		if (interceptors == null) {
 			return null;
 		}

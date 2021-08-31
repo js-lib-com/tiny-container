@@ -217,8 +217,9 @@ public final class ManagedMethod implements ManagedMethodSPI {
 		}
 	}
 
-	void setCronExpression(Schedule schedule) {
+	void setSchedule(Schedule schedule) {
 		this.schedule = schedule;
+		this.remotelyAccessible = false;
 	}
 
 	void setRoles(String[] roles) {

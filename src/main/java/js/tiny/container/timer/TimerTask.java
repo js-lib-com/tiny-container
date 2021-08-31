@@ -14,6 +14,7 @@ class TimerTask implements Runnable {
 	private final ManagedMethodSPI managedMethod;
 
 	public TimerTask(CalendarTimerService service, Object instance, ManagedMethodSPI managedMethod) {
+		log.trace("TimerTask(service, instance, managedMethod)");
 		this.service = service;
 		this.instance = instance;
 		this.managedMethod = managedMethod;
@@ -21,7 +22,8 @@ class TimerTask implements Runnable {
 
 	@Override
 	public void run() {
-		log.debug("Execute cron method |%s|.", managedMethod);
+		log.trace("run()");
+		log.debug("Execute timer method |%s|.", managedMethod);
 		try {
 			managedMethod.invoke(instance);
 			long delay = service.computeDelay(managedMethod.getSchedule());
@@ -30,6 +32,8 @@ class TimerTask implements Runnable {
 			}
 		} catch (IllegalArgumentException | InvocationException | AuthorizationException e) {
 			log.error(e);
+		} catch (Throwable t) {
+			log.error(t);
 		}
 	}
 }
