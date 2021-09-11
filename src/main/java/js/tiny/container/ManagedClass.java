@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import javax.annotation.Resource;
 import javax.annotation.security.DenyAll;
 import javax.annotation.security.PermitAll;
 import javax.annotation.security.RolesAllowed;
@@ -1027,7 +1028,7 @@ public final class ManagedClass implements ManagedClassSPI {
 	 * 
 	 * @param clazz class to scan dependencies for, null tolerated.
 	 * @return dependencies collection, in no particular order.
-	 * @throws BugError if inject annotation is used on final or static field.
+	 * @throws BugError if annotation is used on final or static field.
 	 */
 	private static Collection<Field> scanDependencies(Class<?> clazz) {
 		if (clazz == null) {
@@ -1035,7 +1036,7 @@ public final class ManagedClass implements ManagedClassSPI {
 		}
 		Collection<Field> dependencies = new ArrayList<>();
 		for (Field field : clazz.getDeclaredFields()) {
-			if (!field.isAnnotationPresent(Inject.class)) {
+			if (!field.isAnnotationPresent(Inject.class) && !field.isAnnotationPresent(Resource.class)) {
 				continue;
 			}
 			if (Modifier.isFinal(field.getModifiers())) {

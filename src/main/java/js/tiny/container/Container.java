@@ -14,6 +14,8 @@ import java.util.Set;
 import java.util.TreeSet;
 
 import javax.annotation.security.PermitAll;
+import javax.ejb.Asynchronous;
+import javax.ejb.Remote;
 import javax.inject.Inject;
 import javax.interceptor.Interceptors;
 
