@@ -9,13 +9,9 @@ import java.util.regex.Pattern;
 
 import javax.ejb.Schedule;
 
-import js.log.Log;
-import js.log.LogFactory;
 import js.util.Params;
 
 class DayExpressionParser extends BaseExpressionParser {
-	private static final Log log = LogFactory.getLog(DayExpressionParser.class);
-
 	private static final Map<String, Integer> WEEK_DAYS = new HashMap<>();
 	static {
 		WEEK_DAYS.put("sun", 0);
@@ -36,13 +32,8 @@ class DayExpressionParser extends BaseExpressionParser {
 		ORDINALS.put("5th", 5);
 	}
 
-	public DayExpressionParser() {
-		log.trace("DayScheduleExpression()");
-	}
-
 	@Override
 	public SortedSet<Integer> parse(Schedule schedule, CalendarEx calendar) {
-		log.trace("parse(schedule, calendar)");
 		Params.notNull(calendar, "Calendar");
 
 		String dayOfMonth = schedule.dayOfMonth();

@@ -78,7 +78,7 @@ final class InstanceFieldsInjectionProcessor extends DependencyProcessor impleme
 
 			if (value == null) {
 				log.debug("Null dependency for field |%s|. Leave it unchanged.", field);
-				return;
+				continue;
 			}
 
 			Classes.setFieldValue(instance, field, value);
@@ -89,21 +89,9 @@ final class InstanceFieldsInjectionProcessor extends DependencyProcessor impleme
 	private Object getEnvEntryValue(Field field, Resource resourceAnnotation) {
 		String lookupName = resourceAnnotation.lookup();
 		if (!lookupName.isEmpty()) {
-			Object value = null;
-			if (globalEnvironment != null) {
-				try {
-					value = globalEnvironment.lookup(lookupName);
-					log.debug("Load global resource |%s| of type |%s|.", lookupName, field.getType());
-				} catch (NamingException e) {
-					throw new BugError(e);
-				}
-			}
-			return value;
+			return getEnvEntryValue(globalEnvironment, lookupName, field.getType());
 		}
 
-		if (componentEnvironment == null) {
-			return null;
-		}
 		String name = resourceAnnotation.name();
 		if (name.isEmpty()) {
 			name = Strings.concat(field.getDeclaringClass().getName(), '/', field.getName());
@@ -111,13 +99,19 @@ final class InstanceFieldsInjectionProcessor extends DependencyProcessor impleme
 		if (name.startsWith("java:")) {
 			throw new IllegalArgumentException("Resource name should be relative to component environment: " + name);
 		}
+		return getEnvEntryValue(componentEnvironment, name, field.getType());
+	}
 
+	private static Object getEnvEntryValue(Context context, String name, Class<?> type) {
+		if (context == null) {
+			return null;
+		}
 		Object value = null;
 		try {
-			value = componentEnvironment.lookup(name);
-			log.debug("Load resource |java:/comp/env/%s| of type |%s|.", name, field.getType());
+			value = context.lookup(name);
+			log.info("Load environment entry |java:comp/env/%s| of type |%s|.", name, type);
 		} catch (NamingException e) {
-			throw new BugError(e);
+			log.warn("Missing environment entry |java:comp/env/%s|.", name);
 		}
 		return value;
 	}

@@ -181,6 +181,16 @@ public class InstanceAlgorithmUnitTest {
 		}
 
 		@Override
+		public ManagedMethodSPI getPostConstructMethod() {
+			return null;
+		}
+
+		@Override
+		public ManagedMethodSPI getPreDestroyMethod() {
+			return null;
+		}
+
+		@Override
 		public InstanceScope getInstanceScope() {
 			return scope;
 		}

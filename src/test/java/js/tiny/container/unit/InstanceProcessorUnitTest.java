@@ -8,6 +8,8 @@ import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -23,16 +25,20 @@ import js.lang.Config;
 import js.lang.ConfigBuilder;
 import js.lang.ConfigException;
 import js.lang.Configurable;
+import js.lang.InvocationException;
 import js.lang.ManagedPostConstruct;
+import js.tiny.container.AuthorizationException;
 import js.tiny.container.Container;
 import js.tiny.container.ContainerSPI;
 import js.tiny.container.InstanceProcessor;
 import js.tiny.container.InstanceScope;
 import js.tiny.container.InstanceType;
 import js.tiny.container.ManagedClassSPI;
+import js.tiny.container.ManagedMethodSPI;
 import js.tiny.container.core.AppFactory;
 import js.tiny.container.stub.ContainerStub;
 import js.tiny.container.stub.ManagedClassSpiStub;
+import js.tiny.container.stub.ManagedMethodSpiStub;
 import js.transaction.TransactionManager;
 import js.util.Classes;
 import js.util.Types;
@@ -424,6 +430,14 @@ public class InstanceProcessorUnitTest {
 			}
 			++postConstructProbe;
 		}
+
+		public static Method getPostConstructMethod() {
+			try {
+				return Joker.class.getMethod("postConstruct");
+			} catch (NoSuchMethodException | SecurityException e) {
+				throw new BugError(e);
+			}
+		}
 	}
 
 	private static class MockContainer extends ContainerStub {
@@ -527,6 +541,35 @@ public class InstanceProcessorUnitTest {
 		@Override
 		public boolean isTransactional() {
 			return transactional;
+		}
+
+		@Override
+		public ManagedMethodSPI getPostConstructMethod() {
+			return implementationClass.equals(Joker.class) ? new MockManagedMethodSPI(Joker.getPostConstructMethod()) : null;
+		}
+
+		@Override
+		public ManagedMethodSPI getPreDestroyMethod() {
+			return null;
+		}
+	}
+
+	private static class MockManagedMethodSPI extends ManagedMethodSpiStub {
+		private final Method method;;
+
+		public MockManagedMethodSPI(Method method) {
+			super();
+			this.method = method;
+		}
+
+		@SuppressWarnings("unchecked")
+		@Override
+		public <T> T invoke(Object object, Object... arguments) throws IllegalArgumentException, InvocationException, AuthorizationException {
+			try {
+				return (T) method.invoke(object, arguments);
+			} catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
+				throw new BugError(e);
+			}
 		}
 	}
 }

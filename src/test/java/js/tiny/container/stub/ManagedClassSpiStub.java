@@ -54,6 +54,16 @@ public class ManagedClassSpiStub implements ManagedClassSPI {
 	}
 
 	@Override
+	public ManagedMethodSPI getPostConstructMethod() {
+		throw new UnsupportedOperationException("getPostConstructMethod()");
+	}
+
+	@Override
+	public ManagedMethodSPI getPreDestroyMethod() {
+		throw new UnsupportedOperationException("getPreDestroyMethod()");
+	}
+
+	@Override
 	public String getRequestPath() {
 		throw new UnsupportedOperationException("getRequestPath()");
 	}

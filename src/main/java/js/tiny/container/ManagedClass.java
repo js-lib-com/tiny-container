@@ -6,6 +6,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -13,6 +14,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import javax.annotation.PostConstruct;
+import javax.annotation.PreDestroy;
 import javax.annotation.Resource;
 import javax.annotation.security.DenyAll;
 import javax.annotation.security.PermitAll;
@@ -37,6 +40,9 @@ import js.lang.Config;
 import js.lang.ConfigException;
 import js.lang.Configurable;
 import js.lang.ManagedLifeCycle;
+import js.lang.ManagedPostConstruct;
+import js.lang.ManagedPreDestroy;
+import js.lang.NoSuchBeingException;
 import js.log.Log;
 import js.log.LogFactory;
 import js.tiny.container.core.AppFactory;
@@ -344,6 +350,10 @@ public final class ManagedClass implements ManagedClassSPI {
 	/** Collection of managed methods annotated with {@link Cron} annotation. */
 	private final List<ManagedMethodSPI> cronMethodsPool = new ArrayList<>();
 
+	private ManagedMethodSPI postConstructor;
+
+	private ManagedMethodSPI preDestructor;
+
 	/** Cached value of managed class string representation, merely for logging. */
 	private final String string;
 
@@ -410,10 +420,56 @@ public final class ManagedClass implements ManagedClassSPI {
 		if (this.instanceType.requiresImplementation()) {
 			scanAnnotations();
 			initializeStaticFields();
+
+			// handle ManagedPostConstruct and ManagedPredestroy interfaces only if no related method annotations
+			if (hasLifeCycleInterface(this.implementationClass, ManagedPostConstruct.class)) {
+				if (this.postConstructor != null) {
+					throw new BugError("Managed class |%s| has @PostConstruct method |%s| and implements ManagedPostConstruct interface.", this.implementationClass, this.postConstructor);
+				}
+				Method method = getInterfaceMethod(this.implementationClass, ManagedPostConstruct.class);
+				if (method != null) {
+					this.postConstructor = new ManagedMethod(this, method);
+				}
+			}
+			if (hasLifeCycleInterface(this.implementationClass, ManagedPreDestroy.class)) {
+				if (this.preDestructor != null) {
+					throw new BugError("Managed class |%s| has @PreDestroy method |%s| and implements ManagedPreDestroy interface.", this.implementationClass, this.preDestructor);
+				}
+				Method method = getInterfaceMethod(this.implementationClass, ManagedPreDestroy.class);
+				if (method != null) {
+					this.preDestructor = new ManagedMethod(this, method);
+				}
+			}
 		}
 
 		this.key = KEY_SEED.getAndIncrement();
 		this.string = buildStringRepresentation(descriptor);
+	}
+
+	private static boolean hasLifeCycleInterface(Class<?> implementationClass, Class<?> interfaceClass) {
+		if (implementationClass == null) {
+			return false;
+		}
+		List<Class<?>> interfaces = Arrays.asList(implementationClass.getInterfaces());
+		if (interfaces.contains(ManagedLifeCycle.class) || interfaces.contains(interfaceClass)) {
+			return true;
+		}
+		return hasLifeCycleInterface(implementationClass.getSuperclass(), interfaceClass);
+	}
+
+	private static Method getInterfaceMethod(Class<?> implementationClass, Class<?> interfaceClass) {
+		if (!interfaceClass.isInterface()) {
+			throw new BugError("Type |%s| is not an interface.", interfaceClass);
+		}
+		Method[] methods = interfaceClass.getMethods();
+		if (methods.length != 1) {
+			throw new BugError("Interface |%s| does not have exactly one method.", interfaceClass);
+		}
+		try {
+			return Classes.getMethod(implementationClass, methods[0].getName(), methods[0].getParameterTypes());
+		} catch (NoSuchBeingException e) {
+			return null;
+		}
 	}
 
 	/**
@@ -467,7 +523,7 @@ public final class ManagedClass implements ManagedClassSPI {
 		}
 		boolean immutableType = hasAnnotation(implementationClass, Immutable.class);
 		if (transactionalType == null && immutableType) {
-			throw new BugError("@Immutable annotation without @Transactional on class |%s|.", implementationClass.getName());
+			throw new BugError("@Immutable annotation without @Transactional on class |%s|.", implementationClass);
 		}
 		if (transactionalType != null && !instanceType.isPROXY()) {
 			throw new BugError("@Transactional requires |%s| type but found |%s| on |%s|.", InstanceType.PROXY, instanceType, implementationClass);
@@ -486,11 +542,30 @@ public final class ManagedClass implements ManagedClassSPI {
 		// managed classes does not support public inheritance
 		for (Method method : implementationClass.getDeclaredMethods()) {
 			final int modifiers = method.getModifiers();
-			if (Modifier.isStatic(modifiers) || (!Modifier.isPublic(modifiers) && !hasAnnotation(method, Schedule.class))) {
-				// scans only public and non-static methods
+			if (Modifier.isStatic(modifiers)) {
 				continue;
 			}
+
 			Method interfaceMethod = getInterfaceMethod(method);
+			if (hasAnnotation(method, PostConstruct.class)) {
+				if (postConstructor != null) {
+					throw new BugError("Duplicated @PostConstruct method |%s|.", method);
+				}
+				postConstructor = new ManagedMethod(this, interfaceMethod);
+				continue;
+			}
+			if (hasAnnotation(method, PreDestroy.class)) {
+				if (preDestructor != null) {
+					throw new BugError("Duplicated @PreDestroy method |%s|.", method);
+				}
+				preDestructor = new ManagedMethod(this, interfaceMethod);
+				continue;
+			}
+
+			if (!Modifier.isPublic(modifiers) && !hasAnnotation(method, Schedule.class)) {
+				// continue scanning only public methods
+				continue;
+			}
 			ManagedMethod managedMethod = null;
 
 			boolean remoteMethod = hasAnnotation(method, Remote.class);
@@ -718,6 +793,16 @@ public final class ManagedClass implements ManagedClassSPI {
 	@Override
 	public Iterable<ManagedMethodSPI> getCronMethods() {
 		return cronMethodsPool;
+	}
+
+	@Override
+	public ManagedMethodSPI getPostConstructMethod() {
+		return postConstructor;
+	}
+
+	@Override
+	public ManagedMethodSPI getPreDestroyMethod() {
+		return preDestructor;
 	}
 
 	@Override

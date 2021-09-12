@@ -1,6 +1,7 @@
 package js.tiny.container.timer;
 
 import java.util.Date;
+import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -15,8 +16,6 @@ import js.util.Params;
 
 public class CalendarTimerService implements ICalendarTimerService {
 	private static final Log log = LogFactory.getLog(CalendarTimerService.class);
-
-	private static final long SHUTDOWN_TIMEOUT = 8000L;
 
 	private final ScheduledExecutorService scheduler;
 
@@ -43,12 +42,9 @@ public class CalendarTimerService implements ICalendarTimerService {
 
 	@Override
 	public void destroy() {
-		scheduler.shutdown();
-		try {
-			scheduler.awaitTermination(SHUTDOWN_TIMEOUT, TimeUnit.MILLISECONDS);
-		} catch (InterruptedException e) {
-			log.error(e);
-		}
+		log.trace("destroy()");
+		List<Runnable> timers = scheduler.shutdownNow();
+		log.debug("Shutdown %d unprocessed timer(s).", timers.size());
 	}
 
 	public void schedule(TimerTask task, long delay) {

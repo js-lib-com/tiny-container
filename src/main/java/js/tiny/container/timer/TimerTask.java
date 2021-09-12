@@ -22,7 +22,6 @@ class TimerTask implements Runnable {
 
 	@Override
 	public void run() {
-		log.trace("run()");
 		log.debug("Execute timer method |%s|.", managedMethod);
 		try {
 			managedMethod.invoke(instance);

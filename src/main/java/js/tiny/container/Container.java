@@ -102,14 +102,14 @@ import js.util.Types;
  * uses {@link Converter} to convert string to value type. Of course static field should not be final.</dd>
  * <dt>Authenticated remote access to managed methods; authentication occurs at method invocation.</dt>
  * <dd>A method annotated with, or owned by a class annotated with {@link Remote} is named net method and is accessible from
- * remote. Remote access is controller by {@link PermitAll} and {@link Private} annotations. A private net method can be accessed
- * only after authentication.</dd>
+ * remote. Remote access is controller by {@link PermitAll} and {@link Private} annotations. A private net method can be
+ * accessed only after authentication.</dd>
  * <dt>Declarative asynchronous execution mode for long running logic, executed in separated thread.</dt>
  * <dd>If a managed method is annotated with {@link Asynchronous} container creates a separated thread and execute method
  * asynchronously. Asynchronous method should return void.</dd>
  * <dt>Method invocation listeners. There are interceptors for before, after and around method invocation.</dt>
- * <dd>Invocation listeners provide a naive, but still useful AOP. There is {@link Interceptors} annotation for tagging methods -
- * declaring join points, and related interface to be implemented by interceptors, aka AOP advice. See {@link Interceptor}
+ * <dd>Invocation listeners provide a naive, but still useful AOP. There is {@link Interceptors} annotation for tagging methods
+ * - declaring join points, and related interface to be implemented by interceptors, aka AOP advice. See {@link Interceptor}
  * interface for sample usage.</dd>
  * <dt>Method instrumentation. Uses {@link InvocationMeter} to monitor method invocations.</dt>
  * <dd>Every managed method has a meter that updates internal counters about execution time, invocation and exceptions count.
@@ -560,28 +560,32 @@ public abstract class Container implements ContainerSPI, Configurable {
 		});
 
 		for (ManagedClassSPI managedClass : classesPool.values()) {
-			// process only implementations of managed pre-destroy interface
-			if (Types.isKindOf(managedClass.getImplementationClass(), ManagedPreDestroy.class)) {
+			// process only managed classes with pre-destroy hook
+			if (managedClass.getPreDestroyMethod() != null) {
 				sortedClasses.add(managedClass);
 			}
 		}
 
 		for (ManagedClassSPI managedClass : sortedClasses) {
+			ManagedMethodSPI preDestroyMethod = managedClass.getPreDestroyMethod();
+
 			ScopeFactory scopeFactory = scopeFactories.get(managedClass.getInstanceScope());
 			// managed class key cannot be null
 			InstanceKey instanceKey = new InstanceKey(managedClass.getKey().toString());
 			Object instance = scopeFactory.getInstance(instanceKey);
 			if (instance == null) {
+				log.debug("Cannot obtain instance for pre-destroy method |%s|.", preDestroyMethod);
 				continue;
 			}
 
 			// sorted managed classes contains only implementations of pre-destroy interface
 			// in case instance is a Java Proxy takes care to execute pre-destroy hook on wrapped instance
 			// in order to avoid adding container services to this finalization hook
-			ManagedPreDestroy managedInstance = (ManagedPreDestroy) Classes.unproxy(instance);
-			log.debug("Pre-destroy managed instance |%s|.", managedInstance.getClass());
+			instance = Classes.unproxy(instance);
+			log.debug("Pre-destroy managed instance |%s|.", instance.getClass());
+
 			try {
-				managedInstance.preDestroy();
+				preDestroyMethod.invoke(instance);
 			} catch (Throwable t) {
 				log.dump(String.format("Managed instance |%s| pre-destroy fail:", instance.getClass()), t);
 			}

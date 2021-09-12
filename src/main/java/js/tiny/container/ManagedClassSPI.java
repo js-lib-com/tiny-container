@@ -124,6 +124,10 @@ public interface ManagedClassSPI {
 	 */
 	Iterable<ManagedMethodSPI> getCronMethods();
 
+	ManagedMethodSPI getPostConstructMethod();
+
+	ManagedMethodSPI getPreDestroyMethod();
+
 	/**
 	 * Get managed method wrapping requested Java method. This getter is designed to be used with managed classes of
 	 * {@link InstanceType#PROXY} type. Attempting to use with other types is considered a bug.

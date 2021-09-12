@@ -26,13 +26,13 @@ final class PostConstructInstanceProcessor implements InstanceProcessor {
 	 */
 	@Override
 	public void postProcessInstance(ManagedClassSPI managedClass, Object instance) {
-		if (!(instance instanceof ManagedPostConstruct)) {
+		ManagedMethodSPI method = managedClass.getPostConstructMethod();
+		if (method == null) {
 			return;
 		}
-		ManagedPostConstruct managedInstance = (ManagedPostConstruct) instance;
-		log.debug("Post-construct managed instance |%s|", managedInstance.getClass());
+		log.debug("Post-construct managed instance |%s|", instance.getClass());
 		try {
-			managedInstance.postConstruct();
+			method.invoke(instance);
 		} catch (Throwable t) {
 			throw new BugError("Managed instance |%s| post-construct fail: %s", instance, t);
 		}

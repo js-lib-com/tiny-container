@@ -4,24 +4,18 @@ import java.util.SortedSet;
 
 import javax.ejb.Schedule;
 
-import js.log.Log;
-import js.log.LogFactory;
 import js.util.Params;
 
 class NumericExpressionParser extends BaseExpressionParser {
-	private static final Log log = LogFactory.getLog(NumericExpressionParser.class);
-
 	private final CalendarUnit calendarUnit;
 
 	public NumericExpressionParser(CalendarUnit calendarUnit) {
 		super();
-		log.trace("NumericExpressionParser(calendarUnit)");
 		this.calendarUnit = calendarUnit;
 	}
 
 	@Override
 	public SortedSet<Integer> parse(Schedule schedule, CalendarEx calendar) {
-		log.trace("parse(schedule, calendar)");
 		Params.notNull(schedule, "Schedule");
 		Params.notNull(calendar, "Calendar");
 

@@ -6,13 +6,9 @@ import java.util.SortedSet;
 
 import javax.ejb.Schedule;
 
-import js.log.Log;
-import js.log.LogFactory;
 import js.util.Params;
 
 class MonthExpressionParser extends BaseExpressionParser {
-	private static final Log log = LogFactory.getLog(MonthExpressionParser.class);
-
 	private static final Map<String, Integer> ALIASES = new HashMap<>();
 	static {
 		ALIASES.put("jan", 1);
@@ -29,14 +25,8 @@ class MonthExpressionParser extends BaseExpressionParser {
 		ALIASES.put("dec", 12);
 	}
 
-	public MonthExpressionParser() {
-		super();
-		log.trace("MonthExpressionParser()");
-	}
-
 	@Override
 	public SortedSet<Integer> parse(Schedule schedule, CalendarEx calendar) {
-		log.trace("parse(schedule, calendar)");
 		Params.notNull(schedule, "Schedule");
 		Params.notNull(calendar, "Calendar");
 
