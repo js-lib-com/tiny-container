@@ -412,6 +412,11 @@ public final class ManagedClass implements ManagedClassSPI {
 		this.interfaceClasses = loadInterfaceClasses(descriptor);
 		this.implementationURL = loadImplementationURL(descriptor);
 
+		// startup attribute is enable only on singletons, that is, managed instances with application scope
+		if (this.instanceScope == InstanceScope.APPLICATION && descriptor.hasAttribute("startup")) {
+			this.autoInstanceCreation = descriptor.getAttribute("startup", boolean.class);
+		}
+
 		// get declared constructor return null if no implementation class
 		this.constructor = getDeclaredConstructor(this.implementationClass);
 		// scan dependencies return empty collection if no implementation class
@@ -492,6 +497,11 @@ public final class ManagedClass implements ManagedClassSPI {
 	 * @throws BugError for insane conditions.
 	 */
 	private void scanAnnotations() {
+		// startup annotation works only on singletons, that is, managed instances with application scope
+		if (hasAnnotation(implementationClass, Startup.class) && instanceScope == InstanceScope.APPLICATION) {
+			autoInstanceCreation = true;
+		}
+
 		// set remote type and request URI path from @Remote, @Controller or @Service
 		boolean remoteType = false;
 		Remote remoteAnnotation = getAnnotation(implementationClass, Remote.class);
