@@ -16,13 +16,14 @@ import js.util.Params;
 
 public class CalendarTimerService implements ICalendarTimerService {
 	private static final Log log = LogFactory.getLog(CalendarTimerService.class);
-
+	
+	private static final int SCHEDULERS_THREAD_POLL = 2;
 	private final ScheduledExecutorService scheduler;
 
 	@Inject
 	public CalendarTimerService() {
 		log.trace("CalendarTimerService()");
-		scheduler = Executors.newScheduledThreadPool(10);
+		scheduler = Executors.newScheduledThreadPool(SCHEDULERS_THREAD_POLL);
 	}
 
 	public CalendarTimerService(ScheduledExecutorService scheduler) {
