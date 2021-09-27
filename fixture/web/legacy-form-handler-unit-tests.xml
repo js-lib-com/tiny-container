@@ -1,7 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<test-config>
-	<managed-classes>
-		<app class="js.test.web.MockApp" interface="js.servlet.App" />
-		<controller class="js.test.web.LegacyFormControllerImpl" interface="js.test.web.LegacyFormController" type="PROXY" scope="APPLICATION" />
-	</managed-classes>
-</test-config>
