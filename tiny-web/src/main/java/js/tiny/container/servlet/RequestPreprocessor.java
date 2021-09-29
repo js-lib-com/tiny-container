@@ -17,7 +17,7 @@ import javax.servlet.http.HttpServletRequest;
 
 import js.log.Log;
 import js.log.LogFactory;
-import js.tiny.container.ContainerSPI;
+import js.tiny.container.spi.IContainer;
 import js.util.Strings;
 
 /**
@@ -91,7 +91,7 @@ public class RequestPreprocessor implements Filter {
 	private static final String PARAM_SECURITY_DOMAIN = "security-domain";
 
 	/** Application tiny container, service provider interface. */
-	private ContainerSPI container;
+	private IContainer container;
 
 	/** Locale list loaded from <code>locale</code> filter parameter, default to empty list if filter parameter is not declared. */
 	private List<String> locales = Collections.emptyList();
@@ -117,7 +117,7 @@ public class RequestPreprocessor implements Filter {
 		log.trace("init(FilterConfig)");
 
 		// is safe to store container reference on filter instance since container has application life span
-		container = (ContainerSPI) config.getServletContext().getAttribute(TinyContainer.ATTR_INSTANCE);
+		container = (IContainer) config.getServletContext().getAttribute(TinyContainer.ATTR_INSTANCE);
 		if (container == null) {
 			log.fatal("Tiny container instance not properly created, probably misconfigured. Request preprocessor permanently unvailable.");
 			throw new UnavailableException("Tiny container instance not properly created, probably misconfigured.");

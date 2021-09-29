@@ -8,10 +8,10 @@ import js.annotation.ContextParam;
 import js.lang.BugError;
 import js.log.Log;
 import js.log.LogFactory;
-import js.tiny.container.ManagedClassSPI;
 import js.tiny.container.core.AppContext;
-import js.tiny.container.core.IClassPostProcessor;
-import js.tiny.container.core.IInstancePostProcessor;
+import js.tiny.container.spi.IClassPostProcessor;
+import js.tiny.container.spi.IInstancePostProcessor;
+import js.tiny.container.spi.IManagedClass;
 
 /**
  * Initialize fields depending on context parameters, both class and instance.
@@ -39,7 +39,7 @@ public class ContextParamProcessor implements IClassPostProcessor, IInstancePost
 	}
 
 	@Override
-	public void postProcessClass(ManagedClassSPI managedClass) {
+	public void postProcessClass(IManagedClass managedClass) {
 		for (Map.Entry<String, Field> entry : managedClass.getContextParamFields().entrySet()) {
 			final String parameterName = entry.getKey();
 			final Field field = entry.getValue();
@@ -51,7 +51,7 @@ public class ContextParamProcessor implements IClassPostProcessor, IInstancePost
 	}
 
 	@Override
-	public void postProcessInstance(ManagedClassSPI managedClass, Object instance) {
+	public void postProcessInstance(IManagedClass managedClass, Object instance) {
 		for (Map.Entry<String, Field> entry : managedClass.getContextParamFields().entrySet()) {
 			final String parameterName = entry.getKey();
 			final Field field = entry.getValue();

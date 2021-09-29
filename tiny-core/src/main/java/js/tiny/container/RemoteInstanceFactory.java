@@ -10,6 +10,7 @@ import js.rmi.RemoteFactory;
 import js.rmi.RemoteFactoryProvider;
 import js.rmi.UnsupportedProtocolException;
 import js.tiny.container.core.AppFactory;
+import js.tiny.container.spi.IManagedClass;
 import js.util.Strings;
 
 /**
@@ -56,7 +57,7 @@ public class RemoteInstanceFactory implements InstanceFactory, RemoteFactory {
 
 	/**
 	 * Create a new instance for given remote managed class. Managed class should be declared as remote into class descriptor.
-	 * Also {@link ManagedClassSPI#getImplementationURL()} should be not null, that is, implementation URL should be present
+	 * Also {@link IManagedClass#getImplementationURL()} should be not null, that is, implementation URL should be present
 	 * into class descriptor. Returned value is a Java proxy that delegates a HTTP-RMI client.
 	 * <p>
 	 * This factory method does not check managed class argument validity. It should be not null and configured for remote
@@ -68,7 +69,7 @@ public class RemoteInstanceFactory implements InstanceFactory, RemoteFactory {
 	 */
 	@SuppressWarnings("unchecked")
 	@Override
-	public <T> T newInstance(ManagedClassSPI managedClass, Object... args) {
+	public <T> T newInstance(IManagedClass managedClass, Object... args) {
 		if (args.length > 0) {
 			throw new IllegalArgumentException("REMOTE instance factory does not support arguments.");
 		}
@@ -76,7 +77,7 @@ public class RemoteInstanceFactory implements InstanceFactory, RemoteFactory {
 	}
 
 	/**
-	 * Alternative to {@link #newInstance(ManagedClassSPI, Object...)} when implementation URL is obtained at run-time, perhaps
+	 * Alternative to {@link #newInstance(IManagedClass, Object...)} when implementation URL is obtained at run-time, perhaps
 	 * from user interface. Returned value is a Java proxy that delegates a HTTP-RMI client. This method is designed
 	 * specifically for {@link AppFactory#getRemoteInstance(String, Class)}.
 	 * <p>

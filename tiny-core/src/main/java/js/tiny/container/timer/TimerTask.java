@@ -3,17 +3,17 @@ package js.tiny.container.timer;
 import js.lang.InvocationException;
 import js.log.Log;
 import js.log.LogFactory;
-import js.tiny.container.AuthorizationException;
-import js.tiny.container.ManagedMethodSPI;
+import js.tiny.container.spi.AuthorizationException;
+import js.tiny.container.spi.IManagedMethod;
 
 class TimerTask implements Runnable {
 	private static final Log log = LogFactory.getLog(TimerTask.class);
 
 	private final CalendarTimerService service;
 	private final Object instance;
-	private final ManagedMethodSPI managedMethod;
+	private final IManagedMethod managedMethod;
 
-	public TimerTask(CalendarTimerService service, Object instance, ManagedMethodSPI managedMethod) {
+	public TimerTask(CalendarTimerService service, Object instance, IManagedMethod managedMethod) {
 		log.trace("TimerTask(service, instance, managedMethod)");
 		this.service = service;
 		this.instance = instance;

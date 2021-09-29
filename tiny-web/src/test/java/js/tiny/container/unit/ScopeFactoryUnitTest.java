@@ -22,8 +22,8 @@ import js.lang.BugError;
 import js.tiny.container.Container;
 import js.tiny.container.InstanceKey;
 import js.tiny.container.InstanceScope;
-import js.tiny.container.ManagedClassSPI;
 import js.tiny.container.ScopeFactory;
+import js.tiny.container.spi.IManagedClass;
 import js.tiny.container.stub.ManagedClassSpiStub;
 import js.util.Classes;
 
@@ -151,7 +151,7 @@ public class ScopeFactoryUnitTest {
 	 */
 	@Test
 	public void applicationScopeFactory_StressedConcurentCreation() throws Exception {
-		final ManagedClassSPI managedClass = new MockManagedClassSPI();
+		final IManagedClass managedClass = new MockManagedClassSPI();
 		final InstanceKey instanceKey = new InstanceKey(managedClass.getKey().toString());
 		final ScopeFactory factory = getApplicationScopeFactory();
 
@@ -231,7 +231,7 @@ public class ScopeFactoryUnitTest {
 		factory.persistInstance(instanceKey, new Person());
 		assertNotNull(factory.getInstance(instanceKey));
 
-		Map<ManagedClassSPI, Object> instancesPool = Classes.getFieldValue(factory, "instancesPool");
+		Map<IManagedClass, Object> instancesPool = Classes.getFieldValue(factory, "instancesPool");
 		assertFalse(instancesPool.get(managedClass) instanceof InheritableThreadLocal);
 	}
 
@@ -244,7 +244,7 @@ public class ScopeFactoryUnitTest {
 	 */
 	@Test
 	public void threadScopeFactory_StressedMultipleThreads() throws Exception {
-		final ManagedClassSPI managedClass = new MockManagedClassSPI();
+		final IManagedClass managedClass = new MockManagedClassSPI();
 		final InstanceKey instanceKey = new InstanceKey(managedClass.getKey().toString());
 		final ScopeFactory factory = getThreadScopeFactory();
 

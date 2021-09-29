@@ -18,7 +18,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
-import js.tiny.container.ManagedMethodSPI;
+import js.tiny.container.spi.IManagedMethod;
 
 @RunWith(MockitoJUnitRunner.class)
 public class CalendarTimerServiceTest {
@@ -27,7 +27,7 @@ public class CalendarTimerServiceTest {
 	@Mock
 	private Object instance;
 	@Mock
-	private ManagedMethodSPI managedMethod;
+	private IManagedMethod managedMethod;
 	@Mock
 	private ScheduleMeta schedule;
 

@@ -30,7 +30,6 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
-import js.tiny.container.ContainerSPI;
 import js.tiny.container.net.EventStream;
 import js.tiny.container.net.EventStreamConfig;
 import js.tiny.container.net.EventStreamManager;
@@ -39,12 +38,13 @@ import js.tiny.container.net.EventStreamServlet;
 import js.tiny.container.servlet.AppServlet;
 import js.tiny.container.servlet.RequestContext;
 import js.tiny.container.servlet.TinyContainer;
+import js.tiny.container.spi.IContainer;
 import js.util.Classes;
 
 @RunWith(MockitoJUnitRunner.class)
 public class EventStreamServletTest {
 	@Mock
-	private ContainerSPI container;
+	private IContainer container;
 	@Mock
 	private RequestContext requestContext;
 	@Mock

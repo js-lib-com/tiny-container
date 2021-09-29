@@ -33,25 +33,25 @@ import org.mockito.junit.MockitoJUnitRunner;
 
 import js.json.Json;
 import js.lang.InvocationException;
-import js.tiny.container.AuthorizationException;
-import js.tiny.container.ContainerSPI;
-import js.tiny.container.ManagedClassSPI;
-import js.tiny.container.ManagedMethodSPI;
 import js.tiny.container.http.Resource;
 import js.tiny.container.rest.RestServlet;
 import js.tiny.container.servlet.AppServlet;
 import js.tiny.container.servlet.RequestContext;
 import js.tiny.container.servlet.TinyContainer;
+import js.tiny.container.spi.AuthorizationException;
+import js.tiny.container.spi.IContainer;
+import js.tiny.container.spi.IManagedClass;
+import js.tiny.container.spi.IManagedMethod;
 import js.util.Classes;
 
 @RunWith(MockitoJUnitRunner.class)
 public class RestServletUnitTest {
 	@Mock
-	private ContainerSPI container;
+	private IContainer container;
 	@Mock
-	private ManagedClassSPI managedClass;
+	private IManagedClass managedClass;
 	@Mock
-	private ManagedMethodSPI managedMethod;
+	private IManagedMethod managedMethod;
 
 	@Mock
 	private ServletConfig servletConfig;
@@ -112,7 +112,7 @@ public class RestServletUnitTest {
 		servlet.init(servletConfig);
 
 		// then
-		Map<String, ManagedMethodSPI> methods = Classes.getFieldValue(servlet, "restMethods");
+		Map<String, IManagedMethod> methods = Classes.getFieldValue(servlet, "restMethods");
 		assertNotNull(methods);
 		assertEquals(1, methods.size());
 		assertNotNull(methods.get("/resource/user"));
@@ -130,7 +130,7 @@ public class RestServletUnitTest {
 		servlet.init(servletConfig);
 
 		// then
-		Map<String, ManagedMethodSPI> methods = Classes.getFieldValue(servlet, "restMethods");
+		Map<String, IManagedMethod> methods = Classes.getFieldValue(servlet, "restMethods");
 		assertNotNull(methods);
 		assertEquals(0, methods.size());
 	}
@@ -147,7 +147,7 @@ public class RestServletUnitTest {
 		servlet.init(servletConfig);
 
 		// then
-		Map<String, ManagedMethodSPI> methods = Classes.getFieldValue(servlet, "restMethods");
+		Map<String, IManagedMethod> methods = Classes.getFieldValue(servlet, "restMethods");
 		assertNotNull(methods);
 		assertEquals(0, methods.size());
 	}
@@ -355,7 +355,7 @@ public class RestServletUnitTest {
 		Classes.invoke(servlet, "handleRequest", context);
 	}
 
-	private static String key(ManagedMethodSPI resourceMethod) throws Exception {
+	private static String key(IManagedMethod resourceMethod) throws Exception {
 		return Classes.invoke(RestServlet.class, "key", resourceMethod);
 	}
 

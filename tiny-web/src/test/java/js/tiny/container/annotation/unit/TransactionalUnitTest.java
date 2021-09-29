@@ -14,8 +14,8 @@ import js.lang.ConfigBuilder;
 import js.tiny.container.Container;
 import js.tiny.container.InstanceType;
 import js.tiny.container.ManagedClass;
-import js.tiny.container.ManagedClassSPI;
-import js.tiny.container.ManagedMethodSPI;
+import js.tiny.container.spi.IManagedClass;
+import js.tiny.container.spi.IManagedMethod;
 import js.tiny.container.stub.ContainerStub;
 import js.transaction.Immutable;
 import js.transaction.Mutable;
@@ -28,13 +28,13 @@ public class TransactionalUnitTest {
 	@Test
 	public void transactionalClass() throws Throwable {
 		String descriptor = "<test interface='js.tiny.container.annotation.unit.TransactionalUnitTest$MockInterface1' class='js.tiny.container.annotation.unit.TransactionalUnitTest$MockClass1' type='PROXY' />";
-		ManagedClassSPI managedClass = managedClass(descriptor);
+		IManagedClass managedClass = managedClass(descriptor);
 		assertTrue(managedClass.isTransactional());
 
-		List<ManagedMethodSPI> managedMethods = list(managedClass.getManagedMethods());
+		List<IManagedMethod> managedMethods = list(managedClass.getManagedMethods());
 		assertEquals(1, managedMethods.size());
 
-		ManagedMethodSPI managedMethod = managedMethods.get(0);
+		IManagedMethod managedMethod = managedMethods.get(0);
 		assertEquals("method1", managedMethod.getMethod().getName());
 		assertTrue(managedMethod.isTransactional());
 		assertFalse(managedMethod.isImmutable());
@@ -44,13 +44,13 @@ public class TransactionalUnitTest {
 	@Test
 	public void transactionalMethod() throws Throwable {
 		String descriptor = "<test interface='js.tiny.container.annotation.unit.TransactionalUnitTest$MockInterface1' class='js.tiny.container.annotation.unit.TransactionalUnitTest$MockClass2' type='PROXY' />";
-		ManagedClassSPI managedClass = managedClass(descriptor);
+		IManagedClass managedClass = managedClass(descriptor);
 		assertTrue(managedClass.isTransactional());
 
-		List<ManagedMethodSPI> managedMethods = list(managedClass.getManagedMethods());
+		List<IManagedMethod> managedMethods = list(managedClass.getManagedMethods());
 		assertEquals(1, managedMethods.size());
 
-		ManagedMethodSPI managedMethod = managedMethods.get(0);
+		IManagedMethod managedMethod = managedMethods.get(0);
 		assertEquals("method2", managedMethod.getMethod().getName());
 		assertTrue(managedMethod.isTransactional());
 		assertFalse(managedMethod.isImmutable());
@@ -60,13 +60,13 @@ public class TransactionalUnitTest {
 	@Test
 	public void transactionalClassInherit() throws Throwable {
 		String descriptor = "<test interface='js.tiny.container.annotation.unit.TransactionalUnitTest$MockInterface2' class='js.tiny.container.annotation.unit.TransactionalUnitTest$MockClass3' type='PROXY' />";
-		ManagedClassSPI managedClass = managedClass(descriptor);
+		IManagedClass managedClass = managedClass(descriptor);
 		assertTrue(managedClass.isTransactional());
 
-		List<ManagedMethodSPI> managedMethods = list(managedClass.getManagedMethods());
+		List<IManagedMethod> managedMethods = list(managedClass.getManagedMethods());
 		assertEquals(1, managedMethods.size());
 
-		ManagedMethodSPI managedMethod = managedMethods.get(0);
+		IManagedMethod managedMethod = managedMethods.get(0);
 		assertEquals("method2", managedMethod.getMethod().getName());
 		assertTrue(managedMethod.isTransactional());
 		assertFalse(managedMethod.isImmutable());
@@ -76,13 +76,13 @@ public class TransactionalUnitTest {
 	@Test
 	public void transactionalMethodInherit() throws Throwable {
 		String descriptor = "<test interface='js.tiny.container.annotation.unit.TransactionalUnitTest$MockInterface3' class='js.tiny.container.annotation.unit.TransactionalUnitTest$MockClass4' type='PROXY' />";
-		ManagedClassSPI managedClass = managedClass(descriptor);
+		IManagedClass managedClass = managedClass(descriptor);
 		assertTrue(managedClass.isTransactional());
 
-		List<ManagedMethodSPI> managedMethods = list(managedClass.getManagedMethods());
+		List<IManagedMethod> managedMethods = list(managedClass.getManagedMethods());
 		assertEquals(1, managedMethods.size());
 
-		ManagedMethodSPI managedMethod = managedMethods.get(0);
+		IManagedMethod managedMethod = managedMethods.get(0);
 		assertEquals("method3", managedMethod.getMethod().getName());
 		assertTrue(managedMethod.isTransactional());
 		assertFalse(managedMethod.isImmutable());
@@ -106,23 +106,23 @@ public class TransactionalUnitTest {
 	@Test
 	public void privateTransactionalMethod() throws Throwable {
 		String descriptor = "<test interface='js.tiny.container.annotation.unit.TransactionalUnitTest$MockInterface1' class='js.tiny.container.annotation.unit.TransactionalUnitTest$MockClass5' type='PROXY' />";
-		ManagedClassSPI managedClass = managedClass(descriptor);
+		IManagedClass managedClass = managedClass(descriptor);
 		assertFalse(managedClass.isTransactional());
 
-		List<ManagedMethodSPI> managedMethods = list(managedClass.getManagedMethods());
+		List<IManagedMethod> managedMethods = list(managedClass.getManagedMethods());
 		assertEquals(0, managedMethods.size());
 	}
 
 	@Test
 	public void immutableTransactionalClass() throws Throwable {
 		String descriptor = "<test interface='js.tiny.container.annotation.unit.TransactionalUnitTest$MockInterface1' class='js.tiny.container.annotation.unit.TransactionalUnitTest$MockClass6' type='PROXY' />";
-		ManagedClassSPI managedClass = managedClass(descriptor);
+		IManagedClass managedClass = managedClass(descriptor);
 		assertTrue(managedClass.isTransactional());
 
-		List<ManagedMethodSPI> managedMethods = list(managedClass.getManagedMethods());
+		List<IManagedMethod> managedMethods = list(managedClass.getManagedMethods());
 		assertEquals(1, managedMethods.size());
 
-		ManagedMethodSPI managedMethod = managedMethods.get(0);
+		IManagedMethod managedMethod = managedMethods.get(0);
 		assertEquals("method6", managedMethod.getMethod().getName());
 		assertTrue(managedMethod.isTransactional());
 		assertTrue(managedMethod.isImmutable());
@@ -131,13 +131,13 @@ public class TransactionalUnitTest {
 	@Test
 	public void immutableTransactionalMethod() throws Throwable {
 		String descriptor = "<test interface='js.tiny.container.annotation.unit.TransactionalUnitTest$MockInterface1' class='js.tiny.container.annotation.unit.TransactionalUnitTest$MockClass7' type='PROXY' />";
-		ManagedClassSPI managedClass = managedClass(descriptor);
+		IManagedClass managedClass = managedClass(descriptor);
 		assertTrue(managedClass.isTransactional());
 
-		List<ManagedMethodSPI> managedMethods = list(managedClass.getManagedMethods());
+		List<IManagedMethod> managedMethods = list(managedClass.getManagedMethods());
 		assertEquals(1, managedMethods.size());
 
-		ManagedMethodSPI managedMethod = managedMethods.get(0);
+		IManagedMethod managedMethod = managedMethods.get(0);
 		assertEquals("method7", managedMethod.getMethod().getName());
 		assertTrue(managedMethod.isTransactional());
 		assertTrue(managedMethod.isImmutable());
@@ -146,13 +146,13 @@ public class TransactionalUnitTest {
 	@Test
 	public void mutableMethodOverwrite() throws Throwable {
 		String descriptor = "<test interface='js.tiny.container.annotation.unit.TransactionalUnitTest$MockInterface1' class='js.tiny.container.annotation.unit.TransactionalUnitTest$MockClass8' type='PROXY' />";
-		ManagedClassSPI managedClass = managedClass(descriptor);
+		IManagedClass managedClass = managedClass(descriptor);
 		assertTrue(managedClass.isTransactional());
 
-		List<ManagedMethodSPI> managedMethods = list(managedClass.getManagedMethods());
+		List<IManagedMethod> managedMethods = list(managedClass.getManagedMethods());
 		assertEquals(1, managedMethods.size());
 
-		ManagedMethodSPI managedMethod = managedMethods.get(0);
+		IManagedMethod managedMethod = managedMethods.get(0);
 		assertEquals("method8", managedMethod.getMethod().getName());
 		assertTrue(managedMethod.isTransactional());
 		assertFalse(managedMethod.isImmutable());
@@ -161,7 +161,7 @@ public class TransactionalUnitTest {
 	@Test(expected = BugError.class)
 	public void immutableNonTransactionalClass() throws Throwable {
 		String descriptor = "<test interface='js.tiny.container.annotation.unit.TransactionalUnitTest$MockInterface1' class='js.tiny.container.annotation.unit.TransactionalUnitTest$MockClass9' type='PROXY' />";
-		ManagedClassSPI managedClass = managedClass(descriptor);
+		IManagedClass managedClass = managedClass(descriptor);
 	}
 
 	/** Immutable annotation on not transactional method is ignored and should not rise exception. */
@@ -181,7 +181,7 @@ public class TransactionalUnitTest {
 	// --------------------------------------------------------------------------------------------
 	// UTILITY METHODS
 
-	private static ManagedClassSPI managedClass(String descriptor) throws Throwable {
+	private static IManagedClass managedClass(String descriptor) throws Throwable {
 		Container container = new ContainerStub();
 		String xml = Strings.concat("<?xml version='1.0' encoding='UTF-8' ?><managed-classes>", descriptor, "</managed-classes>");
 		ConfigBuilder builder = new ConfigBuilder(xml);

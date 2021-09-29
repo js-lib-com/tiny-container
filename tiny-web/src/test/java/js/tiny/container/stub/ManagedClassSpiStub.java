@@ -6,13 +6,13 @@ import java.lang.reflect.Method;
 import java.util.Map;
 
 import js.lang.Config;
-import js.tiny.container.ContainerSPI;
 import js.tiny.container.InstanceScope;
 import js.tiny.container.InstanceType;
-import js.tiny.container.ManagedClassSPI;
-import js.tiny.container.ManagedMethodSPI;
+import js.tiny.container.spi.IContainer;
+import js.tiny.container.spi.IManagedClass;
+import js.tiny.container.spi.IManagedMethod;
 
-public class ManagedClassSpiStub implements ManagedClassSPI {
+public class ManagedClassSpiStub implements IManagedClass {
 	@Override
 	public String getImplementationURL() {
 		throw new UnsupportedOperationException("getImplementationURL()");
@@ -39,22 +39,22 @@ public class ManagedClassSpiStub implements ManagedClassSPI {
 	}
 
 	@Override
-	public Iterable<ManagedMethodSPI> getManagedMethods() {
+	public Iterable<IManagedMethod> getManagedMethods() {
 		throw new UnsupportedOperationException("getManagedMethods()");
 	}
 
 	@Override
-	public Iterable<ManagedMethodSPI> getNetMethods() {
+	public Iterable<IManagedMethod> getNetMethods() {
 		throw new UnsupportedOperationException("getNetMethods()");
 	}
 
 	@Override
-	public ManagedMethodSPI getPostConstructMethod() {
+	public IManagedMethod getPostConstructMethod() {
 		throw new UnsupportedOperationException("getPostConstructMethod()");
 	}
 
 	@Override
-	public ManagedMethodSPI getPreDestroyMethod() {
+	public IManagedMethod getPreDestroyMethod() {
 		throw new UnsupportedOperationException("getPreDestroyMethod()");
 	}
 
@@ -64,12 +64,12 @@ public class ManagedClassSpiStub implements ManagedClassSPI {
 	}
 
 	@Override
-	public ManagedMethodSPI getNetMethod(String methodName) {
+	public IManagedMethod getNetMethod(String methodName) {
 		throw new UnsupportedOperationException("getNetMethod(String methodName)");
 	}
 
 	@Override
-	public ManagedMethodSPI getManagedMethod(Method method) throws NoSuchMethodException {
+	public IManagedMethod getManagedMethod(Method method) throws NoSuchMethodException {
 		throw new UnsupportedOperationException("getManagedMethod(Method method)");
 	}
 
@@ -94,7 +94,7 @@ public class ManagedClassSpiStub implements ManagedClassSPI {
 	}
 
 	@Override
-	public ContainerSPI getContainer() {
+	public IContainer getContainer() {
 		throw new UnsupportedOperationException("getContainer()");
 	}
 

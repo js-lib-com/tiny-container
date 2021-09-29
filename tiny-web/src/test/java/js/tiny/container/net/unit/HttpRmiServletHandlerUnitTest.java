@@ -19,12 +19,12 @@ import org.junit.Before;
 import org.junit.Test;
 
 import js.lang.InvocationException;
-import js.tiny.container.AuthorizationException;
-import js.tiny.container.ManagedClassSPI;
-import js.tiny.container.ManagedMethodSPI;
 import js.tiny.container.net.HttpRmiServlet;
 import js.tiny.container.servlet.AppServlet;
 import js.tiny.container.servlet.RequestContext;
+import js.tiny.container.spi.AuthorizationException;
+import js.tiny.container.spi.IManagedClass;
+import js.tiny.container.spi.IManagedMethod;
 import js.tiny.container.stub.ContainerSpiStub;
 import js.tiny.container.stub.ManagedClassSpiStub;
 import js.tiny.container.stub.ManagedMethodSpiStub;
@@ -127,12 +127,12 @@ public class HttpRmiServletHandlerUnitTest {
 		private MockManagedClass managedClass = new MockManagedClass();
 
 		@Override
-		public ManagedClassSPI getManagedClass(Class<?> interfaceClass) {
+		public IManagedClass getManagedClass(Class<?> interfaceClass) {
 			return managedClass;
 		}
 
 		@Override
-		public <T> T getInstance(ManagedClassSPI managedClass, Object... args) {
+		public <T> T getInstance(IManagedClass managedClass, Object... args) {
 			return (T) new Object();
 		}
 
@@ -156,7 +156,7 @@ public class HttpRmiServletHandlerUnitTest {
 		}
 
 		@Override
-		public ManagedMethodSPI getNetMethod(String methodName) {
+		public IManagedMethod getNetMethod(String methodName) {
 			return managedMethod;
 		}
 	}

@@ -1,4 +1,4 @@
-package js.tiny.container;
+package js.tiny.container.spi;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
@@ -13,6 +13,8 @@ import js.annotation.ContextParam;
 import js.lang.BugError;
 import js.lang.Config;
 import js.lang.ManagedLifeCycle;
+import js.tiny.container.InstanceScope;
+import js.tiny.container.InstanceType;
 import js.transaction.Transactional;
 
 /**
@@ -25,13 +27,13 @@ import js.transaction.Transactional;
  * @author Iulian Rotaru
  * @version final
  */
-public interface ManagedClassSPI {
+public interface IManagedClass {
 	/**
 	 * Get parent container that created this managed class.
 	 * 
 	 * @return parent container.
 	 */
-	ContainerSPI getContainer();
+	IContainer getContainer();
 
 	/**
 	 * Get the key uniquely identifying this managed class. Returned key is created incrementally, but not necessarily in
@@ -70,7 +72,7 @@ public interface ManagedClassSPI {
 	 * interface.
 	 * <p>
 	 * As with {@link #getInterfaceClasses()} returned class is not mandatory to be an actual Java interface. It can be for
-	 * example an abstract or even concrete base class. {@link ManagedClass} uses <code>interface</code> term in a broader
+	 * example an abstract or even concrete base class. {@link IManagedClass} uses <code>interface</code> term in a broader
 	 * sense: it is the class that identify the managed class.
 	 * 
 	 * @return managed class interface.
@@ -112,13 +114,13 @@ public interface ManagedClassSPI {
 	 * 
 	 * @return managed methods sequence, in no particular order and possible empty.
 	 */
-	Iterable<ManagedMethodSPI> getManagedMethods();
+	Iterable<IManagedMethod> getManagedMethods();
 
-	Iterable<ManagedMethodSPI> getNetMethods();
+	Iterable<IManagedMethod> getNetMethods();
 
-	ManagedMethodSPI getPostConstructMethod();
+	IManagedMethod getPostConstructMethod();
 
-	ManagedMethodSPI getPreDestroyMethod();
+	IManagedMethod getPreDestroyMethod();
 
 	/**
 	 * Get managed method wrapping requested Java method. This getter is designed to be used with managed classes of
@@ -129,7 +131,7 @@ public interface ManagedClassSPI {
 	 * @throws NoSuchMethodException if there is no managed method wrapping requested Java method.
 	 * @throws BugError if attempt to use this getter on not {@link InstanceType#PROXY} types.
 	 */
-	ManagedMethodSPI getManagedMethod(Method method) throws NoSuchMethodException;
+	IManagedMethod getManagedMethod(Method method) throws NoSuchMethodException;
 
 	/**
 	 * Get managed method by name, method that should be usable for remote requests. This getter tries to locate named managed
@@ -139,7 +141,7 @@ public interface ManagedClassSPI {
 	 * @param methodName the name of managed method intended for remote access.
 	 * @return requested managed method, possible null.
 	 */
-	ManagedMethodSPI getNetMethod(String methodName);
+	IManagedMethod getNetMethod(String methodName);
 
 	/**
 	 * Get managed instance scope. There are predefined scope values, see {@link InstanceScope}, but user defined scopes are
@@ -179,7 +181,7 @@ public interface ManagedClassSPI {
 	/**
 	 * Test if this managed class is remotely accessible, that is, is a net class. A managed class is remotely accessible if it
 	 * is tagged so with {@link Remote} annotation or has at least one method accessible remote, see
-	 * {@link ManagedMethodSPI#isRemotelyAccessible()}.
+	 * {@link IManagedMethod#isRemotelyAccessible()}.
 	 * <p>
 	 * A remotely accessible managed class is also knows as <code>net class</code>.
 	 * 
@@ -211,8 +213,8 @@ public interface ManagedClassSPI {
 	String getImplementationURL();
 
 	/**
-	 * Flag indicating that this managed class should be instantiated automatically by container, see {@link Container#start()}.
-	 * Note that created instance is a singleton and managed instance scope should be {@link InstanceScope#APPLICATION}.
+	 * Flag indicating that this managed class should be instantiated automatically by container. Note that created instance is
+	 * a singleton and managed instance scope should be {@link InstanceScope#APPLICATION}.
 	 * <p>
 	 * This flag is true for following conditions:
 	 * <ul>

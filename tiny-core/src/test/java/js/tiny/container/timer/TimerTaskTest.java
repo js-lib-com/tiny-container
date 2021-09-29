@@ -13,8 +13,8 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
 import js.lang.InvocationException;
-import js.tiny.container.AuthorizationException;
-import js.tiny.container.ManagedMethodSPI;
+import js.tiny.container.spi.AuthorizationException;
+import js.tiny.container.spi.IManagedMethod;
 
 @RunWith(MockitoJUnitRunner.class)
 public class TimerTaskTest {
@@ -23,7 +23,7 @@ public class TimerTaskTest {
 	@Mock
 	private Object instance;
 	@Mock
-	private ManagedMethodSPI managedMethod;
+	private IManagedMethod managedMethod;
 	@Mock
 	private ScheduleMeta schedule;
 

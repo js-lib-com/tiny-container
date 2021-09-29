@@ -2,7 +2,7 @@ package js.tiny.container.timer;
 
 import javax.ejb.Schedule;
 
-import js.tiny.container.core.IServiceMeta;
+import js.tiny.container.spi.IServiceMeta;
 
 class ScheduleMeta implements IServiceMeta {
 	private final String second;

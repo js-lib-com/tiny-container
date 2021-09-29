@@ -2,7 +2,8 @@ package js.tiny.container;
 
 import js.log.Log;
 import js.log.LogFactory;
-import js.tiny.container.core.IInstancePostProcessor;
+import js.tiny.container.spi.IInstancePostProcessor;
+import js.tiny.container.spi.IManagedClass;
 
 /**
  * Dump managed instance to {@link Container} class logger. This processor dumps instance managed class to container logger but
@@ -26,7 +27,7 @@ final class LoggerInstanceProcessor implements IInstancePostProcessor {
 	 * @param instance instance of managed class.
 	 */
 	@Override
-	public void postProcessInstance(ManagedClassSPI managedClass, Object instance) {
+	public void postProcessInstance(IManagedClass managedClass, Object instance) {
 		if (!managedClass.getInstanceScope().equals(InstanceScope.APPLICATION)) {
 			return;
 		}

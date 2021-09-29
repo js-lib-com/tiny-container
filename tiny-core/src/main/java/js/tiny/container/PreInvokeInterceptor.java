@@ -2,6 +2,8 @@ package js.tiny.container;
 
 import javax.interceptor.Interceptors;
 
+import js.tiny.container.spi.IManagedMethod;
+
 /**
  * Invocation interceptor executed just before managed method invocation. Pre-invoke interceptor interface works closely with
  * {@link Interceptors} annotation, see below.
@@ -34,5 +36,5 @@ public interface PreInvokeInterceptor extends Interceptor {
 	 * @param args method actual call arguments.
 	 * @throws Exception any exception thrown by hook logic.
 	 */
-	void preInvoke(ManagedMethodSPI managedMethod, Object[] args) throws Exception;
+	void preInvoke(IManagedMethod managedMethod, Object[] args) throws Exception;
 }

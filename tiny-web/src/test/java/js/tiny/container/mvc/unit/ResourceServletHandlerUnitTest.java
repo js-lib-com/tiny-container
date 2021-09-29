@@ -23,9 +23,6 @@ import org.junit.Test;
 
 import js.lang.BugError;
 import js.lang.InvocationException;
-import js.tiny.container.AuthorizationException;
-import js.tiny.container.ManagedClassSPI;
-import js.tiny.container.ManagedMethodSPI;
 import js.tiny.container.http.NoSuchResourceException;
 import js.tiny.container.http.Resource;
 import js.tiny.container.http.encoder.ArgumentPartReader;
@@ -34,6 +31,9 @@ import js.tiny.container.http.encoder.ArgumentsReaderFactory;
 import js.tiny.container.mvc.ResourceServlet;
 import js.tiny.container.servlet.RequestContext;
 import js.tiny.container.servlet.TinyContainer;
+import js.tiny.container.spi.AuthorizationException;
+import js.tiny.container.spi.IManagedClass;
+import js.tiny.container.spi.IManagedMethod;
 import js.tiny.container.stub.ContainerStub;
 import js.tiny.container.stub.ManagedClassSpiStub;
 import js.tiny.container.stub.ManagedMethodSpiStub;
@@ -185,16 +185,16 @@ public class ResourceServletHandlerUnitTest {
 	// FIXTURE
 
 	private static class MockContainer extends ContainerStub {
-		private List<ManagedMethodSPI> methods = new ArrayList<>();
+		private List<IManagedMethod> methods = new ArrayList<>();
 		private String loginPage;
 
 		@Override
-		public Iterable<ManagedMethodSPI> getNetMethods() {
+		public Iterable<IManagedMethod> getNetMethods() {
 			return methods;
 		}
 
 		@Override
-		public <T> T getInstance(ManagedClassSPI managedClass, Object... args) {
+		public <T> T getInstance(IManagedClass managedClass, Object... args) {
 			return (T) new Object();
 		}
 
@@ -234,7 +234,7 @@ public class ResourceServletHandlerUnitTest {
 		}
 
 		@Override
-		public ManagedClassSPI getDeclaringClass() {
+		public IManagedClass getDeclaringClass() {
 			return declaringClass;
 		}
 

@@ -27,15 +27,15 @@ import js.lang.ConfigException;
 import js.lang.Configurable;
 import js.lang.InvocationException;
 import js.lang.ManagedPostConstruct;
-import js.tiny.container.AuthorizationException;
 import js.tiny.container.Container;
-import js.tiny.container.ContainerSPI;
 import js.tiny.container.InstanceScope;
 import js.tiny.container.InstanceType;
-import js.tiny.container.ManagedClassSPI;
-import js.tiny.container.ManagedMethodSPI;
 import js.tiny.container.core.AppFactory;
-import js.tiny.container.core.IInstancePostProcessor;
+import js.tiny.container.spi.AuthorizationException;
+import js.tiny.container.spi.IContainer;
+import js.tiny.container.spi.IInstancePostProcessor;
+import js.tiny.container.spi.IManagedClass;
+import js.tiny.container.spi.IManagedMethod;
 import js.tiny.container.stub.ContainerStub;
 import js.tiny.container.stub.ManagedClassSpiStub;
 import js.tiny.container.stub.ManagedMethodSpiStub;
@@ -441,14 +441,14 @@ public class InstanceProcessorUnitTest {
 	}
 
 	private static class MockContainer extends ContainerStub {
-		private Map<Class<?>, ManagedClassSPI> classesPool = new HashMap<>();
+		private Map<Class<?>, IManagedClass> classesPool = new HashMap<>();
 
-		private void registerManagedClass(Class<?> interfaceClass, ManagedClassSPI managedClass) {
+		private void registerManagedClass(Class<?> interfaceClass, IManagedClass managedClass) {
 			classesPool.put(interfaceClass, managedClass);
 		}
 
 		@Override
-		public ManagedClassSPI getManagedClass(Class<?> interfaceClass) {
+		public IManagedClass getManagedClass(Class<?> interfaceClass) {
 			return classesPool.get(interfaceClass);
 		}
 
@@ -468,7 +468,7 @@ public class InstanceProcessorUnitTest {
 			if (Types.isKindOf(interfaceClass, TransactionManager.class)) {
 				return (T) Classes.loadService(interfaceClass);
 			}
-			ManagedClassSPI managedClass = classesPool.get(interfaceClass);
+			IManagedClass managedClass = classesPool.get(interfaceClass);
 			if (managedClass == null) {
 				return null;
 			}
@@ -499,7 +499,7 @@ public class InstanceProcessorUnitTest {
 		}
 
 		@Override
-		public ContainerSPI getContainer() {
+		public IContainer getContainer() {
 			return container;
 		}
 
@@ -544,12 +544,12 @@ public class InstanceProcessorUnitTest {
 		}
 
 		@Override
-		public ManagedMethodSPI getPostConstructMethod() {
+		public IManagedMethod getPostConstructMethod() {
 			return implementationClass.equals(Joker.class) ? new MockManagedMethodSPI(Joker.getPostConstructMethod()) : null;
 		}
 
 		@Override
-		public ManagedMethodSPI getPreDestroyMethod() {
+		public IManagedMethod getPreDestroyMethod() {
 			return null;
 		}
 	}

@@ -30,10 +30,10 @@ import js.tiny.container.Container;
 import js.tiny.container.InstanceScope;
 import js.tiny.container.InstanceType;
 import js.tiny.container.ManagedClass;
-import js.tiny.container.ManagedClassSPI;
-import js.tiny.container.ManagedMethodSPI;
 import js.tiny.container.core.Factory;
 import js.tiny.container.servlet.TinyConfigBuilder;
+import js.tiny.container.spi.IManagedClass;
+import js.tiny.container.spi.IManagedMethod;
 import js.tiny.container.stub.ContainerStub;
 import js.transaction.Transactional;
 import js.util.Classes;
@@ -51,7 +51,7 @@ public class ManagedClassUnitTest {
 	@Test
 	public void pojoConstructor() throws Throwable {
 		String config = "<test class='js.tiny.container.unit.ManagedClassUnitTest$PojoImpl' interface='js.tiny.container.unit.ManagedClassUnitTest$Pojo' />";
-		ManagedClassSPI managedClass = getManagedClass(config(config));
+		IManagedClass managedClass = getManagedClass(config(config));
 
 		assertEquals(Pojo.class, managedClass.getInterfaceClasses()[0]);
 		assertEquals(PojoImpl.class, managedClass.getImplementationClass());
@@ -71,7 +71,7 @@ public class ManagedClassUnitTest {
 		assertNotNull(dependencies);
 		assertEquals(0, dependencies.size());
 
-		Map<Method, ManagedMethodSPI> methodsPool = Classes.getFieldValue(managedClass, "methodsPool");
+		Map<Method, IManagedMethod> methodsPool = Classes.getFieldValue(managedClass, "methodsPool");
 		assertNotNull(methodsPool);
 		assertEquals(0, methodsPool.size());
 	}
@@ -79,7 +79,7 @@ public class ManagedClassUnitTest {
 	@Test
 	public void transactionalConstructor() throws Throwable {
 		String config = "<test class='js.tiny.container.unit.ManagedClassUnitTest$DaoImpl' interface='js.tiny.container.unit.ManagedClassUnitTest$Dao' type='PROXY' />";
-		ManagedClassSPI managedClass = getManagedClass(config(config));
+		IManagedClass managedClass = getManagedClass(config(config));
 
 		assertEquals(Dao.class, managedClass.getInterfaceClasses()[0]);
 		assertEquals(DaoImpl.class, managedClass.getImplementationClass());
@@ -95,7 +95,7 @@ public class ManagedClassUnitTest {
 	@Test
 	public void containerConstructor() throws Throwable {
 		String config = "<test class='js.tiny.container.unit.ManagedClassUnitTest$PojoImpl' interface='js.tiny.container.unit.ManagedClassUnitTest$Pojo' type='PROXY' />";
-		ManagedClassSPI managedClass = getManagedClass(config(config));
+		IManagedClass managedClass = getManagedClass(config(config));
 
 		assertEquals(Pojo.class, managedClass.getInterfaceClasses()[0]);
 		assertEquals(PojoImpl.class, managedClass.getImplementationClass());
@@ -115,7 +115,7 @@ public class ManagedClassUnitTest {
 		assertNotNull(dependencies);
 		assertEquals(0, dependencies.size());
 
-		Map<Method, ManagedMethodSPI> methodsPool = Classes.getFieldValue(managedClass, "methodsPool");
+		Map<Method, IManagedMethod> methodsPool = Classes.getFieldValue(managedClass, "methodsPool");
 		assertNotNull(methodsPool);
 		assertEquals(1, methodsPool.size());
 	}
@@ -131,7 +131,7 @@ public class ManagedClassUnitTest {
 		assertNotNull(methodsPool);
 
 		Method method = NetCar.class.getMethod("getModel");
-		ManagedMethodSPI managedMethod = (ManagedMethodSPI) methodsPool.get(method);
+		IManagedMethod managedMethod = (IManagedMethod) methodsPool.get(method);
 		assertNotNull(managedMethod);
 	}
 
@@ -162,7 +162,7 @@ public class ManagedClassUnitTest {
 				"	</test>" + //
 				"</config>";
 
-		ManagedClassSPI managedClass = getManagedClass(descriptor);
+		IManagedClass managedClass = getManagedClass(descriptor);
 		Config config = managedClass.getConfig();
 
 		assertNotNull(config);
@@ -362,7 +362,7 @@ public class ManagedClassUnitTest {
 	@Test
 	public void objectEquals() throws Exception {
 		String config = "<test class='js.tiny.container.unit.ManagedClassUnitTest$CarImpl' />";
-		ManagedClassSPI managedClass = getManagedClass(config(config));
+		IManagedClass managedClass = getManagedClass(config(config));
 		assertTrue(managedClass.equals(managedClass));
 		assertFalse(managedClass.equals(null));
 	}
@@ -382,7 +382,7 @@ public class ManagedClassUnitTest {
 	// --------------------------------------------------------------------------------------------
 	// UTILITY METHODS
 
-	private static ManagedClassSPI getManagedClass(String config) throws Exception {
+	private static IManagedClass getManagedClass(String config) throws Exception {
 		TinyConfigBuilder builder = new TestConfigBuilder(config);
 		Config appDescriptor = builder.build();
 		Container container = new MockContainer();

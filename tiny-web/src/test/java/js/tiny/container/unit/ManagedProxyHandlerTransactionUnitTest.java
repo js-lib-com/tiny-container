@@ -11,10 +11,10 @@ import org.junit.Before;
 import org.junit.Test;
 
 import js.lang.InvocationException;
-import js.tiny.container.AuthorizationException;
-import js.tiny.container.ManagedMethodSPI;
 import js.tiny.container.ManagedProxyHandler;
 import js.tiny.container.TransactionalResource;
+import js.tiny.container.spi.AuthorizationException;
+import js.tiny.container.spi.IManagedMethod;
 import js.tiny.container.stub.ManagedClassSpiStub;
 import js.tiny.container.stub.ManagedMethodSpiStub;
 import js.transaction.Transaction;
@@ -254,7 +254,7 @@ public class ManagedProxyHandlerTransactionUnitTest {
 		private boolean immutable;
 
 		@Override
-		public ManagedMethodSPI getManagedMethod(Method method) throws NoSuchMethodException {
+		public IManagedMethod getManagedMethod(Method method) throws NoSuchMethodException {
 			MockManagedMethodSPI managedMethod = new MockManagedMethodSPI(method, transactional, immutable);
 			return managedMethod;
 		}

@@ -12,6 +12,8 @@ import js.log.Log;
 import js.log.LogFactory;
 import js.tiny.container.core.AppContext;
 import js.tiny.container.core.Factory;
+import js.tiny.container.spi.IContainer;
+import js.tiny.container.spi.IManagedMethod;
 
 /**
  * Performance meters observer. Collect periodically application invocation meters and dump values to meter logger. In order to
@@ -151,8 +153,8 @@ final class Observer implements Configurable, ManagedLifeCycle, Runnable {
 	 */
 	private static List<InvocationMeter> getMeters() {
 		List<InvocationMeter> invocationMeters = new ArrayList<InvocationMeter>();
-		ContainerSPI container = (ContainerSPI) Factory.getAppFactory();
-		for (ManagedMethodSPI managedMethod : container.getManagedMethods()) {
+		IContainer container = (IContainer) Factory.getAppFactory();
+		for (IManagedMethod managedMethod : container.getManagedMethods()) {
 			invocationMeters.add(((ManagedMethod) managedMethod).getMeter());
 		}
 		return invocationMeters;

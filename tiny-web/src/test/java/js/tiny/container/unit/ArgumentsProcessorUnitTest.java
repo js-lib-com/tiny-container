@@ -12,9 +12,9 @@ import org.junit.Before;
 import org.junit.Test;
 
 import js.lang.VarArgs;
-import js.tiny.container.ContainerSPI;
-import js.tiny.container.ManagedClassSPI;
 import js.tiny.container.core.AppFactory;
+import js.tiny.container.spi.IContainer;
+import js.tiny.container.spi.IManagedClass;
 import js.tiny.container.stub.ContainerStub;
 import js.tiny.container.stub.ManagedClassSpiStub;
 import js.tiny.container.stub.ManagedMethodSpiStub;
@@ -178,7 +178,7 @@ public class ArgumentsProcessorUnitTest {
 		private Constructor<?> constructor;
 
 		@Override
-		public ContainerSPI getContainer() {
+		public IContainer getContainer() {
 			return container;
 		}
 
@@ -198,7 +198,7 @@ public class ArgumentsProcessorUnitTest {
 		private Method method;
 
 		@Override
-		public ManagedClassSPI getDeclaringClass() {
+		public IManagedClass getDeclaringClass() {
 			return declaringClass;
 		}
 

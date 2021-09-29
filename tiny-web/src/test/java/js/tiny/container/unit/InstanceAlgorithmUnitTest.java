@@ -14,16 +14,16 @@ import org.junit.Before;
 import org.junit.Test;
 
 import js.lang.Config;
-import js.tiny.container.ContainerSPI;
 import js.tiny.container.InstanceScope;
 import js.tiny.container.InstanceType;
-import js.tiny.container.ManagedMethodSPI;
+import js.tiny.container.spi.IContainer;
+import js.tiny.container.spi.IManagedMethod;
 import js.tiny.container.stub.ContainerStub;
 import js.tiny.container.stub.ManagedClassSpiStub;
 
 public class InstanceAlgorithmUnitTest {
 	private MockManagedClassSPI managedClass;
-	private ContainerSPI container;
+	private IContainer container;
 
 	@Before
 	public void beforeTest() {
@@ -119,24 +119,24 @@ public class InstanceAlgorithmUnitTest {
 	}
 
 	private static class MockManagedClassSPI extends ManagedClassSpiStub {
-		private final ContainerSPI container;
+		private final IContainer container;
 		private Class<?> implementationClass;
 		private InstanceScope scope;
 		private InstanceType type;
 		private boolean transactional;
 		private boolean remote;
 
-		public MockManagedClassSPI(ContainerSPI container) {
+		public MockManagedClassSPI(IContainer container) {
 			this.container = container;
 		}
 
 		@Override
-		public ContainerSPI getContainer() {
+		public IContainer getContainer() {
 			return container;
 		}
 
 		@Override
-		public Iterable<ManagedMethodSPI> getManagedMethods() {
+		public Iterable<IManagedMethod> getManagedMethods() {
 			return Collections.emptyList();
 		}
 
@@ -181,12 +181,12 @@ public class InstanceAlgorithmUnitTest {
 		}
 
 		@Override
-		public ManagedMethodSPI getPostConstructMethod() {
+		public IManagedMethod getPostConstructMethod() {
 			return null;
 		}
 
 		@Override
-		public ManagedMethodSPI getPreDestroyMethod() {
+		public IManagedMethod getPreDestroyMethod() {
 			return null;
 		}
 

@@ -16,8 +16,8 @@ import js.lang.InvocationException;
 import js.tiny.container.Container;
 import js.tiny.container.InstanceType;
 import js.tiny.container.ManagedClass;
-import js.tiny.container.ManagedClassSPI;
-import js.tiny.container.ManagedMethodSPI;
+import js.tiny.container.spi.IManagedClass;
+import js.tiny.container.spi.IManagedMethod;
 import js.tiny.container.stub.ContainerStub;
 import js.transaction.Transactional;
 import js.util.Classes;
@@ -29,13 +29,13 @@ public class AsynchronousUnitTest {
 	@Test
 	public void asynchronousProxyType() throws Throwable {
 		String descriptor = "<test interface='js.tiny.container.annotation.unit.AsynchronousUnitTest$MockInterface1' class='js.tiny.container.annotation.unit.AsynchronousUnitTest$MockClass1' type='PROXY' />";
-		ManagedClassSPI managedClass = managedClass(descriptor);
+		IManagedClass managedClass = managedClass(descriptor);
 
-		List<ManagedMethodSPI> managedMethods = list(managedClass.getManagedMethods());
+		List<IManagedMethod> managedMethods = list(managedClass.getManagedMethods());
 		assertEquals(1, managedMethods.size());
 		assertEquals("method1", managedMethods.get(0).getMethod().getName());
 
-		ManagedMethodSPI managedMethod = managedMethods.get(0);
+		IManagedMethod managedMethod = managedMethods.get(0);
 		assertEquals("AsyncInvoker", Classes.getFieldValue(managedMethod, "invoker").getClass().getSimpleName());
 	}
 
@@ -43,13 +43,13 @@ public class AsynchronousUnitTest {
 	@Test
 	public void asynchronousInherit() throws Throwable {
 		String descriptor = "<test interface='js.tiny.container.annotation.unit.AsynchronousUnitTest$MockInterface2' class='js.tiny.container.annotation.unit.AsynchronousUnitTest$MockClass2' type='PROXY' />";
-		ManagedClassSPI managedClass = managedClass(descriptor);
+		IManagedClass managedClass = managedClass(descriptor);
 
-		List<ManagedMethodSPI> managedMethods = list(managedClass.getManagedMethods());
+		List<IManagedMethod> managedMethods = list(managedClass.getManagedMethods());
 		assertEquals(1, managedMethods.size());
 		assertEquals("method2", managedMethods.get(0).getMethod().getName());
 
-		ManagedMethodSPI managedMethod = managedMethods.get(0);
+		IManagedMethod managedMethod = managedMethods.get(0);
 		assertEquals("AsyncInvoker", Classes.getFieldValue(managedMethod, "invoker").getClass().getSimpleName());
 	}
 
@@ -57,13 +57,13 @@ public class AsynchronousUnitTest {
 	@Test
 	public void asynchronousRemoteAccessible() throws Throwable {
 		String descriptor = "<test class='js.tiny.container.annotation.unit.AsynchronousUnitTest$MockClass3' />";
-		ManagedClassSPI managedClass = managedClass(descriptor);
+		IManagedClass managedClass = managedClass(descriptor);
 
-		List<ManagedMethodSPI> managedMethods = list(managedClass.getManagedMethods());
+		List<IManagedMethod> managedMethods = list(managedClass.getManagedMethods());
 		assertEquals(1, managedMethods.size());
 		assertEquals("method3", managedMethods.get(0).getMethod().getName());
 
-		ManagedMethodSPI managedMethod = managedMethods.get(0);
+		IManagedMethod managedMethod = managedMethods.get(0);
 		assertEquals("AsyncInvoker", Classes.getFieldValue(managedMethod, "invoker").getClass().getSimpleName());
 	}
 
@@ -71,13 +71,13 @@ public class AsynchronousUnitTest {
 	@Test
 	public void asynchronousController() throws Throwable {
 		String descriptor = "<test class='js.tiny.container.annotation.unit.AsynchronousUnitTest$MockClass4' />";
-		ManagedClassSPI managedClass = managedClass(descriptor);
+		IManagedClass managedClass = managedClass(descriptor);
 
-		List<ManagedMethodSPI> managedMethods = list(managedClass.getManagedMethods());
+		List<IManagedMethod> managedMethods = list(managedClass.getManagedMethods());
 		assertEquals(1, managedMethods.size());
 		assertEquals("method4", managedMethods.get(0).getMethod().getName());
 
-		ManagedMethodSPI managedMethod = managedMethods.get(0);
+		IManagedMethod managedMethod = managedMethods.get(0);
 		assertEquals("AsyncInvoker", Classes.getFieldValue(managedMethod, "invoker").getClass().getSimpleName());
 	}
 
@@ -88,13 +88,13 @@ public class AsynchronousUnitTest {
 	@Test
 	public void asynchronousService() throws Throwable {
 		String descriptor = "<test class='js.tiny.container.annotation.unit.AsynchronousUnitTest$MockClass5' />";
-		ManagedClassSPI managedClass = managedClass(descriptor);
+		IManagedClass managedClass = managedClass(descriptor);
 
-		List<ManagedMethodSPI> managedMethods = list(managedClass.getManagedMethods());
+		List<IManagedMethod> managedMethods = list(managedClass.getManagedMethods());
 		assertEquals(1, managedMethods.size());
 		assertEquals("method5", managedMethods.get(0).getMethod().getName());
 
-		ManagedMethodSPI managedMethod = managedMethods.get(0);
+		IManagedMethod managedMethod = managedMethods.get(0);
 		assertEquals("AsyncInvoker", Classes.getFieldValue(managedMethod, "invoker").getClass().getSimpleName());
 	}
 
@@ -102,9 +102,9 @@ public class AsynchronousUnitTest {
 	@Test
 	public void asynchronousRemoteType() throws Throwable {
 		String descriptor = "<test interface='js.tiny.container.annotation.unit.AsynchronousUnitTest$MockInterface2' type='REMOTE' url='http://localhost/' />";
-		ManagedClassSPI managedClass = managedClass(descriptor);
+		IManagedClass managedClass = managedClass(descriptor);
 
-		List<ManagedMethodSPI> managedMethods = list(managedClass.getManagedMethods());
+		List<IManagedMethod> managedMethods = list(managedClass.getManagedMethods());
 		assertEquals(0, managedMethods.size());
 	}
 
@@ -112,34 +112,34 @@ public class AsynchronousUnitTest {
 	@Test
 	public void asynchronousServiceType() throws Throwable {
 		String descriptor = "<test interface='js.tiny.container.annotation.unit.AsynchronousUnitTest$MockInterface2' type='SERVICE' />";
-		ManagedClassSPI managedClass = managedClass(descriptor);
+		IManagedClass managedClass = managedClass(descriptor);
 
-		List<ManagedMethodSPI> managedMethods = list(managedClass.getManagedMethods());
+		List<IManagedMethod> managedMethods = list(managedClass.getManagedMethods());
 		assertEquals(0, managedMethods.size());
 	}
 
 	@Test(expected = BugError.class)
 	public void asynchronousPojoLocal() throws Throwable {
 		String descriptor = "<test class='js.tiny.container.annotation.unit.AsynchronousUnitTest$MockClass1' />";
-		ManagedClassSPI managedClass = managedClass(descriptor);
+		IManagedClass managedClass = managedClass(descriptor);
 	}
 
 	@Test(expected = BugError.class)
 	public void asynchronousTransactional() throws Throwable {
 		String descriptor = "<test interface='js.tiny.container.annotation.unit.AsynchronousUnitTest$MockInterface1' class='js.tiny.container.annotation.unit.AsynchronousUnitTest$MockClass6' type='PROXY' />";
-		ManagedClassSPI managedClass = managedClass(descriptor);
+		IManagedClass managedClass = managedClass(descriptor);
 	}
 
 	@Test(expected = BugError.class)
 	public void asynchronousNonVoid() throws Throwable {
 		String descriptor = "<test interface='js.tiny.container.annotation.unit.AsynchronousUnitTest$MockInterface1' class='js.tiny.container.annotation.unit.AsynchronousUnitTest$MockClass7' type='PROXY' />";
-		ManagedClassSPI managedClass = managedClass(descriptor);
+		IManagedClass managedClass = managedClass(descriptor);
 	}
 
 	// --------------------------------------------------------------------------------------------
 	// UTILITY METHODS
 
-	private static ManagedClassSPI managedClass(String descriptor) throws Throwable {
+	private static IManagedClass managedClass(String descriptor) throws Throwable {
 		Container container = new ContainerStub();
 		String xml = Strings.concat("<?xml version='1.0' encoding='UTF-8' ?><managed-classes>", descriptor, "</managed-classes>");
 		ConfigBuilder builder = new ConfigBuilder(xml);

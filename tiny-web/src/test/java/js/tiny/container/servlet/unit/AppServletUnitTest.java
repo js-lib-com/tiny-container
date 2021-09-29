@@ -41,11 +41,11 @@ import org.mockito.junit.MockitoJUnitRunner;
 import js.json.Json;
 import js.lang.InvocationException;
 import js.rmi.BusinessException;
-import js.tiny.container.ContainerSPI;
 import js.tiny.container.core.Factory;
 import js.tiny.container.servlet.AppServlet;
 import js.tiny.container.servlet.RequestContext;
 import js.tiny.container.servlet.TinyContainer;
+import js.tiny.container.spi.IContainer;
 import js.tiny.container.unit.HttpServletRequestStub;
 import js.tiny.container.unit.HttpServletResponseStub;
 import js.tiny.container.unit.ServletContextStub;
@@ -75,20 +75,20 @@ public class AppServletUnitTest {
 	}
 	
 	@Mock
-	private ContainerSPI container;
+	private IContainer container;
 	@Mock
 	private RequestContext context;
 	@Mock
 	private Json json;
 	
-	private ContainerSPI containerSPI;
+	private IContainer containerSPI;
 	private MockHttpServletRequest httpRequest;
 	private MockHttpServletResponse httpResponse;
 	private MockRequestContext requestContext;
 
 	@Before
 	public void beforeTest() throws Exception {
-		containerSPI = (ContainerSPI) TestContext.start(DESCRIPTOR);
+		containerSPI = (IContainer) TestContext.start(DESCRIPTOR);
 		httpRequest = new MockHttpServletRequest();
 		httpResponse = new MockHttpServletResponse();
 		requestContext = (MockRequestContext) Factory.getInstance(RequestContext.class);
@@ -631,7 +631,7 @@ public class AppServletUnitTest {
 		private int detachProbe;
 		private int dumpProbe;
 
-		public MockRequestContext(ContainerSPI container) {
+		public MockRequestContext(IContainer container) {
 			super(container);
 		}
 

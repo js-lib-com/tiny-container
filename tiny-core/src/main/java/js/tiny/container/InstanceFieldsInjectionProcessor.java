@@ -11,14 +11,15 @@ import javax.naming.NamingException;
 import js.lang.BugError;
 import js.log.Log;
 import js.log.LogFactory;
-import js.tiny.container.core.IInstancePostProcessor;
+import js.tiny.container.spi.IInstancePostProcessor;
+import js.tiny.container.spi.IManagedClass;
 import js.util.Classes;
 import js.util.Strings;
 
 /**
  * Post processor for instance fields injection. Fields are discovered by managed class based on {@link Inject} annotation and
- * provided to this processor by {@link ManagedClassSPI#getDependencies()}. This class inherits dependency processor and
- * delegates {@link DependencyProcessor#getDependencyValue(ManagedClassSPI, Class)} for dependency value processing.
+ * provided to this processor by {@link IManagedClass#getDependencies()}. This class inherits dependency processor and
+ * delegates {@link DependencyProcessor#getDependencyValue(IManagedClass, Class)} for dependency value processing.
  * <p>
  * In essence this processor scans all dependencies detected by managed class and for every field retrieve its dependency value
  * and inject it reflexively.
@@ -50,14 +51,14 @@ final class InstanceFieldsInjectionProcessor extends DependencyProcessor impleme
 
 	/**
 	 * Inject dependencies described by given managed class into related managed instance. For every dependency field retrieve
-	 * its value using {@link DependencyProcessor#getDependencyValue(ManagedClassSPI, Class)} and inject it reflexively.
+	 * its value using {@link DependencyProcessor#getDependencyValue(IManagedClass, Class)} and inject it reflexively.
 	 * 
 	 * @param managedClass managed class,
 	 * @param instance instance of given managed class.
 	 * @throws BugError if a field dependency cannot be resolved.
 	 */
 	@Override
-	public void postProcessInstance(ManagedClassSPI managedClass, Object instance) {
+	public void postProcessInstance(IManagedClass managedClass, Object instance) {
 		if (instance == null) {
 			// null instance is silently ignored since container ensure not null instance argument
 			return;

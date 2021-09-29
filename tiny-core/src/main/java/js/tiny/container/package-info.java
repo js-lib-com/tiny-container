@@ -6,7 +6,7 @@
  * <p>
  * A managed class is a standard Java class declared as managed into application descriptor. Into application descriptor there is a
  * predefined section named <code>managed-classes</code> where all managed classes are declared, a class per child element. For a
- * discussion about managed class configuration please see {@link js.tiny.container.ManagedClassSPI} description.
+ * discussion about managed class configuration please see {@link js.tiny.container.spi.IManagedClass} description.
  * <pre>
  * &lt;managed-classes&gt;
  *  &lt;demo interface="comp.prj.Demo" implementation="comp.prj.DemoImpl" type="POJO" scope="SESSION" /&gt;

@@ -29,7 +29,7 @@ import js.rmi.UnsupportedProtocolException;
 import js.tiny.container.Container;
 import js.tiny.container.InstanceFactory;
 import js.tiny.container.InstanceType;
-import js.tiny.container.ManagedClassSPI;
+import js.tiny.container.spi.IManagedClass;
 import js.tiny.container.stub.ManagedClassSpiStub;
 import js.util.Classes;
 
@@ -159,7 +159,7 @@ public class InstanceFactoryUnitTest {
 	/** Null constructor should throw bug error. */
 	@Test(expected = BugError.class)
 	public void localInstanceFactory_NullConstructor() {
-		ManagedClassSPI managedClass = new MockManagedClassSPI_NullConstructor();
+		IManagedClass managedClass = new MockManagedClassSPI_NullConstructor();
 		InstanceFactory factory = getLocalInstanceFactory();
 		factory.newInstance(managedClass);
 	}

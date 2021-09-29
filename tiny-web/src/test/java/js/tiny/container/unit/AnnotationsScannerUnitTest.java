@@ -16,8 +16,8 @@ import javax.interceptor.Interceptors;
 import org.junit.Test;
 
 import js.tiny.container.ManagedClass;
-import js.tiny.container.ManagedMethodSPI;
 import js.tiny.container.PreInvokeInterceptor;
+import js.tiny.container.spi.IManagedMethod;
 import js.transaction.Transactional;
 import js.util.Classes;
 
@@ -172,7 +172,7 @@ public class AnnotationsScannerUnitTest {
 
 	private static class InterceptorClass implements PreInvokeInterceptor {
 		@Override
-		public void preInvoke(ManagedMethodSPI managedMethod, Object[] args) throws Exception {
+		public void preInvoke(IManagedMethod managedMethod, Object[] args) throws Exception {
 		}
 	}
 }

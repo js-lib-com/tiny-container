@@ -10,8 +10,8 @@ import java.util.Date;
 import org.junit.Before;
 import org.junit.Test;
 
-import js.tiny.container.ContainerSPI;
-import js.tiny.container.ManagedMethodSPI;
+import js.tiny.container.spi.IContainer;
+import js.tiny.container.spi.IManagedMethod;
 import js.tiny.container.stub.ManagedClassSpiStub;
 import js.util.Classes;
 
@@ -20,8 +20,8 @@ public class ManagedMethodSpiConformanceTest {
 	private MockManagedClassSPI managedClass;
 	private Method setterMethod;
 	private Method getterMethod;
-	private ManagedMethodSPI setterManagedMethod;
-	private ManagedMethodSPI getterManagedMethod;
+	private IManagedMethod setterManagedMethod;
+	private IManagedMethod getterManagedMethod;
 
 	@Before
 	public void beforeTest() throws NoSuchMethodException, SecurityException {
@@ -133,7 +133,7 @@ public class ManagedMethodSpiConformanceTest {
 
 	private static class MockManagedClassSPI extends ManagedClassSpiStub {
 		@Override
-		public ContainerSPI getContainer() {
+		public IContainer getContainer() {
 			return null;
 		}
 

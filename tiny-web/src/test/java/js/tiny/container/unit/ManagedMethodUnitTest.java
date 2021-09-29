@@ -26,17 +26,17 @@ import org.junit.Test;
 import js.lang.BugError;
 import js.lang.GType;
 import js.lang.InvocationException;
-import js.tiny.container.AuthorizationException;
 import js.tiny.container.Container;
-import js.tiny.container.ContainerSPI;
 import js.tiny.container.InvocationMeter;
-import js.tiny.container.ManagedClassSPI;
 import js.tiny.container.ManagedMethod;
-import js.tiny.container.ManagedMethodSPI;
 import js.tiny.container.PostInvokeInterceptor;
 import js.tiny.container.PreInvokeInterceptor;
 import js.tiny.container.core.AppFactory;
 import js.tiny.container.core.Factory;
+import js.tiny.container.spi.AuthorizationException;
+import js.tiny.container.spi.IContainer;
+import js.tiny.container.spi.IManagedClass;
+import js.tiny.container.spi.IManagedMethod;
 import js.tiny.container.stub.ContainerStub;
 import js.tiny.container.stub.ManagedClassSpiStub;
 import js.util.Classes;
@@ -57,7 +57,7 @@ public class ManagedMethodUnitTest {
 	@Test
 	public void constructor() throws Exception {
 		Method method = Person.class.getDeclaredMethod("setName", String.class);
-		ManagedMethodSPI managedMethod = new ManagedMethod(managedClass, method);
+		IManagedMethod managedMethod = new ManagedMethod(managedClass, method);
 
 		assertEquals(managedClass, managedMethod.getDeclaringClass());
 		assertEquals(method, managedMethod.getMethod());
@@ -75,7 +75,7 @@ public class ManagedMethodUnitTest {
 
 	@Test
 	public void getRequestPath() throws Exception {
-		ManagedMethodSPI managedMethod = getManagedMethod();
+		IManagedMethod managedMethod = getManagedMethod();
 		Classes.setFieldValue(managedMethod, "remotelyAccessible", true);
 
 		assertNull(managedMethod.getRequestPath());
@@ -136,7 +136,7 @@ public class ManagedMethodUnitTest {
 
 	@Test
 	public void setAsynchronous() throws Exception {
-		ManagedMethodSPI managedMethod = getManagedMethod();
+		IManagedMethod managedMethod = getManagedMethod();
 
 		assertFalse(managedMethod.isAsynchronous());
 		assertEquals("DefaultInvoker", Classes.getFieldValue(managedMethod, "invoker").getClass().getSimpleName());
@@ -152,7 +152,7 @@ public class ManagedMethodUnitTest {
 
 	@Test
 	public void getMeter() throws Exception {
-		ManagedMethodSPI managedMethod = getManagedMethod();
+		IManagedMethod managedMethod = getManagedMethod();
 		assertNull(Classes.getFieldValue(managedMethod, "meter"));
 		assertNotNull(Classes.invoke(managedMethod, "getMeter"));
 		assertNotNull(Classes.getFieldValue(managedMethod, "meter"));
@@ -163,7 +163,7 @@ public class ManagedMethodUnitTest {
 
 	@Test
 	public void defaultInvoker() throws Exception {
-		ManagedMethodSPI managedMethod = getManagedMethod();
+		IManagedMethod managedMethod = getManagedMethod();
 		assertEquals("DefaultInvoker", Classes.getFieldValue(managedMethod, "invoker").getClass().getSimpleName());
 
 		Person person = new Person();
@@ -173,7 +173,7 @@ public class ManagedMethodUnitTest {
 
 	@Test
 	public void interceptedInvoker_PojoConstructor() throws Exception {
-		ManagedMethodSPI methodInstance = getManagedMethod();
+		IManagedMethod methodInstance = getManagedMethod();
 		Class<?> invokerClass = Class.forName("js.tiny.container.ManagedMethod$InterceptedInvoker");
 		Constructor<?> constructor = invokerClass.getConstructor(methodInstance.getClass(), Class.class);
 		constructor.setAccessible(true);
@@ -184,7 +184,7 @@ public class ManagedMethodUnitTest {
 
 	@Test
 	public void interceptedInvoker_ManagedConstructor() throws Exception {
-		ManagedMethodSPI methodInstance = getManagedMethod();
+		IManagedMethod methodInstance = getManagedMethod();
 		Class<?> invokerClass = Class.forName("js.tiny.container.ManagedMethod$InterceptedInvoker");
 		Constructor<?> constructor = invokerClass.getConstructor(methodInstance.getClass(), Class.class);
 		constructor.setAccessible(true);
@@ -197,7 +197,7 @@ public class ManagedMethodUnitTest {
 	@Test
 	public void interceptedInvoker_Invoke() throws Exception {
 		Method method = Person.class.getDeclaredMethod("setName", String.class);
-		ManagedMethodSPI managedMethod = new ManagedMethod(managedClass, MockInterceptor.class, method);
+		IManagedMethod managedMethod = new ManagedMethod(managedClass, MockInterceptor.class, method);
 		assertEquals("InterceptedInvoker", Classes.getFieldValue(managedMethod, "invoker").getClass().getSimpleName());
 
 		MockInterceptor.preInvokeProbe = 0;
@@ -214,7 +214,7 @@ public class ManagedMethodUnitTest {
 	@Test
 	public void interceptedInvoker_PreInvoke() throws Exception {
 		Method method = Person.class.getDeclaredMethod("setName", String.class);
-		ManagedMethodSPI managedMethod = new ManagedMethod(managedClass, MockPreInvoker.class, method);
+		IManagedMethod managedMethod = new ManagedMethod(managedClass, MockPreInvoker.class, method);
 		assertEquals("InterceptedInvoker", Classes.getFieldValue(managedMethod, "invoker").getClass().getSimpleName());
 
 		MockPreInvoker.exception = false;
@@ -230,7 +230,7 @@ public class ManagedMethodUnitTest {
 	@Test
 	public void interceptedInvoker_PostInvoke() throws Exception {
 		Method method = Person.class.getDeclaredMethod("setName", String.class);
-		ManagedMethodSPI managedMethod = new ManagedMethod(managedClass, MockPostInvoker.class, method);
+		IManagedMethod managedMethod = new ManagedMethod(managedClass, MockPostInvoker.class, method);
 		assertEquals("InterceptedInvoker", Classes.getFieldValue(managedMethod, "invoker").getClass().getSimpleName());
 
 		MockPostInvoker.exception = false;
@@ -246,7 +246,7 @@ public class ManagedMethodUnitTest {
 	@Test(expected = InvocationException.class)
 	public void interceptedInvoker_PreInvokeException() throws Exception {
 		Method method = Person.class.getDeclaredMethod("setName", String.class);
-		ManagedMethodSPI managedMethod = new ManagedMethod(managedClass, MockPreInvoker.class, method);
+		IManagedMethod managedMethod = new ManagedMethod(managedClass, MockPreInvoker.class, method);
 		assertEquals("InterceptedInvoker", Classes.getFieldValue(managedMethod, "invoker").getClass().getSimpleName());
 
 		MockPreInvoker.exception = true;
@@ -257,7 +257,7 @@ public class ManagedMethodUnitTest {
 	@Test(expected = InvocationException.class)
 	public void interceptedInvoker_PostInvokeException() throws Exception {
 		Method method = Person.class.getDeclaredMethod("setName", String.class);
-		ManagedMethodSPI managedMethod = new ManagedMethod(managedClass, MockPostInvoker.class, method);
+		IManagedMethod managedMethod = new ManagedMethod(managedClass, MockPostInvoker.class, method);
 		assertEquals("InterceptedInvoker", Classes.getFieldValue(managedMethod, "invoker").getClass().getSimpleName());
 
 		MockPostInvoker.exception = true;
@@ -267,7 +267,7 @@ public class ManagedMethodUnitTest {
 
 	@Test
 	public void asyncInvoker() throws Exception {
-		ManagedMethodSPI managedMethod = getManagedMethod();
+		IManagedMethod managedMethod = getManagedMethod();
 		Classes.invoke(managedMethod, "setAsynchronous", true);
 		assertTrue(managedMethod.isAsynchronous());
 		assertEquals("AsyncInvoker", Classes.getFieldValue(managedMethod, "invoker").getClass().getSimpleName());
@@ -286,7 +286,7 @@ public class ManagedMethodUnitTest {
 
 	@Test
 	public void invokeObject() throws Exception {
-		ManagedMethodSPI managedMethod = getManagedMethod();
+		IManagedMethod managedMethod = getManagedMethod();
 		Person person = new Person();
 		assertEquals("John Doe", managedMethod.invoke(person, "John Doe"));
 		assertEquals("John Doe", person.name);
@@ -295,7 +295,7 @@ public class ManagedMethodUnitTest {
 	/** Throws authorization exception if container is not authenticated and managed method is private remote. */
 	@Test(expected = AuthorizationException.class)
 	public void invokeObject_NoAuthorization() throws Exception {
-		ManagedMethodSPI managedMethod = getManagedMethod();
+		IManagedMethod managedMethod = getManagedMethod();
 		container.authenticated = false;
 		Classes.invoke(managedMethod, "setRemotelyAccessible", true);
 
@@ -318,7 +318,7 @@ public class ManagedMethodUnitTest {
 	@Test(expected = BugError.class)
 	public void invokeObject_NoAccessibleMethod() throws Exception {
 		Method method = Person.class.getDeclaredMethod("setName", String.class);
-		ManagedMethodSPI managedMethod = new ManagedMethod(managedClass, method);
+		IManagedMethod managedMethod = new ManagedMethod(managedClass, method);
 		method.setAccessible(false);
 		managedMethod.invoke(new Person(), "John Doe");
 	}
@@ -330,7 +330,7 @@ public class ManagedMethodUnitTest {
 		Human human = (Human) Proxy.newProxyInstance(getClass().getClassLoader(), new Class<?>[] { Human.class }, handler);
 
 		Method method = Human.class.getDeclaredMethod("setName", String.class);
-		ManagedMethodSPI managedMethod = new ManagedMethod(managedClass, method);
+		IManagedMethod managedMethod = new ManagedMethod(managedClass, method);
 		assertEquals("John Doe", managedMethod.invoke(human, "John Doe"));
 		assertEquals("John Doe", ((Person) handler.instance).name);
 	}
@@ -349,7 +349,7 @@ public class ManagedMethodUnitTest {
 		Human human = (Human) Proxy.newProxyInstance(getClass().getClassLoader(), new Class<?>[] { Human.class }, handler);
 
 		Method method = Human.class.getDeclaredMethod("setName", String.class);
-		ManagedMethodSPI managedMethod = new ManagedMethod(managedClass, method);
+		IManagedMethod managedMethod = new ManagedMethod(managedClass, method);
 		assertEquals("John Doe", managedMethod.invoke(human, "John Doe"));
 		assertEquals("John Doe", ((Person) handler.instance).name);
 	}
@@ -362,14 +362,14 @@ public class ManagedMethodUnitTest {
 		Human human = (Human) Proxy.newProxyInstance(getClass().getClassLoader(), new Class<?>[] { Human.class }, handler);
 
 		Method method = Human.class.getDeclaredMethod("setName", String.class);
-		ManagedMethodSPI managedMethod = new ManagedMethod(managedClass, method);
+		IManagedMethod managedMethod = new ManagedMethod(managedClass, method);
 		method.setAccessible(false);
 		managedMethod.invoke(human, "John Doe");
 	}
 
 	@Test
 	public void invokeObject_InstrumentationEnabled() throws Exception {
-		ManagedMethodSPI managedMethod = getManagedMethod();
+		IManagedMethod managedMethod = getManagedMethod();
 		InvocationMeter meter = Classes.invoke(managedMethod, "getMeter");
 
 		Person person = new Person();
@@ -390,7 +390,7 @@ public class ManagedMethodUnitTest {
 			}
 		}
 		Method method = PersonEx.class.getDeclaredMethod("method");
-		ManagedMethodSPI managedMethod = new ManagedMethod(managedClass, method);
+		IManagedMethod managedMethod = new ManagedMethod(managedClass, method);
 		InvocationMeter meter = Classes.invoke(managedMethod, "getMeter");
 
 		try {
@@ -408,7 +408,7 @@ public class ManagedMethodUnitTest {
 	@Test
 	public void invokeObject_InstrumentationEnabled_NoAccessibleMethod() throws Exception {
 		Method method = Person.class.getDeclaredMethod("setName", String.class);
-		ManagedMethodSPI managedMethod = new ManagedMethod(managedClass, method);
+		IManagedMethod managedMethod = new ManagedMethod(managedClass, method);
 		method.setAccessible(false);
 		InvocationMeter meter = Classes.invoke(managedMethod, "getMeter");
 
@@ -502,7 +502,7 @@ public class ManagedMethodUnitTest {
 	// --------------------------------------------------------------------------------------------
 	// UTILITY METHODS
 
-	private ManagedMethodSPI getManagedMethod() throws NoSuchMethodException, SecurityException {
+	private IManagedMethod getManagedMethod() throws NoSuchMethodException, SecurityException {
 		Method method = Person.class.getDeclaredMethod("setName", String.class);
 		return new ManagedMethod(managedClass, method);
 	}
@@ -514,11 +514,11 @@ public class ManagedMethodUnitTest {
 	private static List<InvocationMeter> getMeters() throws Throwable {
 		List<InvocationMeter> invocationMeters = new ArrayList<InvocationMeter>();
 		AppFactory appFactory = Classes.invoke(Factory.class, "getAppFactory");
-		Map<Class<?>, ManagedClassSPI> managedClasses = Classes.getFieldValue(appFactory, Container.class, "classesPool");
-		Set<ManagedClassSPI> managedClassesSet = new HashSet<ManagedClassSPI>(managedClasses.values());
-		for (ManagedClassSPI managedClass : managedClassesSet) {
-			Map<Method, ManagedMethodSPI> managedMethods = Classes.getFieldValue(managedClass, "methodsPool");
-			for (ManagedMethodSPI managedMethod : managedMethods.values()) {
+		Map<Class<?>, IManagedClass> managedClasses = Classes.getFieldValue(appFactory, Container.class, "classesPool");
+		Set<IManagedClass> managedClassesSet = new HashSet<IManagedClass>(managedClasses.values());
+		for (IManagedClass managedClass : managedClassesSet) {
+			Map<Method, IManagedMethod> managedMethods = Classes.getFieldValue(managedClass, "methodsPool");
+			for (IManagedMethod managedMethod : managedMethods.values()) {
 				Field field = Classes.getFieldEx(managedMethod.getClass(), "meter");
 				invocationMeters.add((InvocationMeter) field.get(managedMethod));
 			}
@@ -592,7 +592,7 @@ public class ManagedMethodUnitTest {
 		private MockContainer container;
 
 		@Override
-		public ContainerSPI getContainer() {
+		public IContainer getContainer() {
 			return container;
 		}
 
@@ -606,22 +606,22 @@ public class ManagedMethodUnitTest {
 		private static int preInvokeProbe;
 		private static int postInvokeProbe;
 
-		private ManagedMethodSPI preMethod;
+		private IManagedMethod preMethod;
 		private Object[] preArgs;
 
-		private ManagedMethodSPI postMethod;
+		private IManagedMethod postMethod;
 		private Object[] postArgs;
 		private Object postReturnValue;
 
 		@Override
-		public void preInvoke(ManagedMethodSPI managedMethod, Object[] args) {
+		public void preInvoke(IManagedMethod managedMethod, Object[] args) {
 			++preInvokeProbe;
 			this.preMethod = managedMethod;
 			this.preArgs = args;
 		}
 
 		@Override
-		public void postInvoke(ManagedMethodSPI managedMethod, Object[] args, Object returnValue) {
+		public void postInvoke(IManagedMethod managedMethod, Object[] args, Object returnValue) {
 			++postInvokeProbe;
 			this.postMethod = managedMethod;
 			this.postArgs = args;
@@ -634,7 +634,7 @@ public class ManagedMethodUnitTest {
 		private static int invokeProbe;
 
 		@Override
-		public void preInvoke(ManagedMethodSPI managedMethod, Object[] args) throws Exception {
+		public void preInvoke(IManagedMethod managedMethod, Object[] args) throws Exception {
 			if (exception) {
 				throw new Exception("exception");
 			}
@@ -647,7 +647,7 @@ public class ManagedMethodUnitTest {
 		private static int invokeProbe;
 
 		@Override
-		public void postInvoke(ManagedMethodSPI managedMethod, Object[] args, Object returnValue) throws Exception {
+		public void postInvoke(IManagedMethod managedMethod, Object[] args, Object returnValue) throws Exception {
 			if (exception) {
 				throw new Exception("exception");
 			}

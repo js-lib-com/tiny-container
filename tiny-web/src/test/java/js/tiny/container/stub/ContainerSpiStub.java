@@ -3,12 +3,12 @@ package js.tiny.container.stub;
 import java.security.Principal;
 import java.util.List;
 
-import js.tiny.container.ContainerSPI;
-import js.tiny.container.ManagedClassSPI;
-import js.tiny.container.ManagedMethodSPI;
-import js.tiny.container.core.IContainerService;
+import js.tiny.container.spi.IContainer;
+import js.tiny.container.spi.IContainerService;
+import js.tiny.container.spi.IManagedClass;
+import js.tiny.container.spi.IManagedMethod;
 
-public class ContainerSpiStub implements ContainerSPI {
+public class ContainerSpiStub implements IContainer {
 	@Override
 	public List<IContainerService> getServices() {
 		throw new UnsupportedOperationException("getPlugins()");
@@ -70,7 +70,7 @@ public class ContainerSpiStub implements ContainerSPI {
 	}
 
 	@Override
-	public <T> T getInstance(ManagedClassSPI managedClass, Object... args) {
+	public <T> T getInstance(IManagedClass managedClass, Object... args) {
 		throw new UnsupportedOperationException("getInstance(ManagedClassSPI managedClass, Object... args)");
 	}
 
@@ -80,22 +80,22 @@ public class ContainerSpiStub implements ContainerSPI {
 	}
 
 	@Override
-	public ManagedClassSPI getManagedClass(Class<?> interfaceClass) {
+	public IManagedClass getManagedClass(Class<?> interfaceClass) {
 		throw new UnsupportedOperationException("getManagedClass(Class<?> interfaceClass)");
 	}
 
 	@Override
-	public Iterable<ManagedClassSPI> getManagedClasses() {
+	public Iterable<IManagedClass> getManagedClasses() {
 		throw new UnsupportedOperationException("getManagedClasses()");
 	}
 
 	@Override
-	public Iterable<ManagedMethodSPI> getManagedMethods() {
+	public Iterable<IManagedMethod> getManagedMethods() {
 		throw new UnsupportedOperationException("getManagedMethods()");
 	}
 
 	@Override
-	public Iterable<ManagedMethodSPI> getNetMethods() {
+	public Iterable<IManagedMethod> getNetMethods() {
 		throw new UnsupportedOperationException("getNetMethods()");
 	}
 

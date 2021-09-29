@@ -1,4 +1,4 @@
-package js.tiny.container;
+package js.tiny.container.spi;
 
 import java.util.List;
 
@@ -9,7 +9,6 @@ import js.lang.InvocationException;
 import js.lang.NoProviderException;
 import js.tiny.container.core.AppContext;
 import js.tiny.container.core.AppFactory;
-import js.tiny.container.core.IContainerService;
 import js.tiny.container.core.SecurityContext;
 
 /**
@@ -21,7 +20,7 @@ import js.tiny.container.core.SecurityContext;
  * @author Iulian Rotaru
  * @version final
  */
-public interface ContainerSPI extends AppFactory, SecurityContext {
+public interface IContainer extends AppFactory, SecurityContext {
 	List<IContainerService> getServices();
 	
 	/**
@@ -48,7 +47,7 @@ public interface ContainerSPI extends AppFactory, SecurityContext {
 	 * @throws BugError if instance post-construction fails due to exception of user defined logic.
 	 * @throws BugError if attempt to assign field to not POJO type.
 	 */
-	<T> T getInstance(ManagedClassSPI managedClass, Object... args);
+	<T> T getInstance(IManagedClass managedClass, Object... args);
 
 	/**
 	 * Test if interface class has a managed class bound.
@@ -64,23 +63,23 @@ public interface ContainerSPI extends AppFactory, SecurityContext {
 	 * @param interfaceClass interface class to retrieve managed class for.
 	 * @return managed class bound to requested interface or null.
 	 */
-	ManagedClassSPI getManagedClass(Class<?> interfaceClass);
+	IManagedClass getManagedClass(Class<?> interfaceClass);
 
 	/**
 	 * Get all managed classes registered to this container.
 	 * 
 	 * @return container managed classes, in no particular order.
 	 */
-	Iterable<ManagedClassSPI> getManagedClasses();
+	Iterable<IManagedClass> getManagedClasses();
 
 	/**
 	 * Get all managed methods, from all managed classes, registered to this container.
 	 * 
 	 * @return container managed methods, in no particular order.
 	 */
-	Iterable<ManagedMethodSPI> getManagedMethods();
+	Iterable<IManagedMethod> getManagedMethods();
 
-	Iterable<ManagedMethodSPI> getNetMethods();
+	Iterable<IManagedMethod> getNetMethods();
 
 	/**
 	 * Get basic authentication realm. If realm is not defined into application descriptor uses context name.

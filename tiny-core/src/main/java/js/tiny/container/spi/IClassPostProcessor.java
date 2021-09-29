@@ -1,11 +1,7 @@
-package js.tiny.container.core;
-
-import js.tiny.container.Container;
-import js.tiny.container.ManagedClass;
-import js.tiny.container.ManagedClassSPI;
+package js.tiny.container.spi;
 
 /**
- * Post processor executed on managed class. These hooks are executed by {@link Container} after {@link ManagedClass} creation
+ * Post processor executed on managed class. These hooks are executed by {@link IContainer} after {@link IManagedClass} creation
  * and generally deals with implementation static fields initialization, but not limited to.
  * <p>
  * Note that these processors are global and executed for every created managed classes.
@@ -18,5 +14,5 @@ public interface IClassPostProcessor extends IJoinPointProcessor {
 	 * 
 	 * @param managedClass just created managed class.
 	 */
-	void postProcessClass(ManagedClassSPI managedClass);
+	void postProcessClass(IManagedClass managedClass);
 }

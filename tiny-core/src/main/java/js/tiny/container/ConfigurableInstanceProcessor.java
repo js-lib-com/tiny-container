@@ -6,7 +6,8 @@ import js.lang.ConfigException;
 import js.lang.Configurable;
 import js.log.Log;
 import js.log.LogFactory;
-import js.tiny.container.core.IInstancePostProcessor;
+import js.tiny.container.spi.IInstancePostProcessor;
+import js.tiny.container.spi.IManagedClass;
 
 /**
  * Configure instance with configuration object provided by instance managed class. The actual instance configuration is
@@ -25,7 +26,7 @@ final class ConfigurableInstanceProcessor implements IInstancePostProcessor {
 	/**
 	 * Configure instance with configuration object provided by instance managed class. In order to perform instance
 	 * configuration, instance should implement {@link Configurable} and managed class should have configuration object, see
-	 * {@link ManagedClassSPI#getConfig()}. If both conditions are satisfied this method executes
+	 * {@link IManagedClass#getConfig()}. If both conditions are satisfied this method executes
 	 * {@link Configurable#config(Config)} on instance.
 	 * 
 	 * @param managedClass managed class,
@@ -34,7 +35,7 @@ final class ConfigurableInstanceProcessor implements IInstancePostProcessor {
 	 *             user defined logic.
 	 */
 	@Override
-	public void postProcessInstance(ManagedClassSPI managedClass, Object instance) {
+	public void postProcessInstance(IManagedClass managedClass, Object instance) {
 		if (!(instance instanceof Configurable)) {
 			return;
 		}

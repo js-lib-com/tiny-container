@@ -12,8 +12,8 @@ import javax.servlet.ServletResponse;
 
 import js.log.Log;
 import js.log.LogFactory;
-import js.tiny.container.ContainerSPI;
 import js.tiny.container.core.Factory;
+import js.tiny.container.spi.IContainer;
 
 /**
  * Bind global factory {@link Factory} to current servlet request thread. This filter should be configured for third party
@@ -66,13 +66,13 @@ public class FactoryFilter implements Filter {
 	 * Container singleton reference. There is a single tiny container instance per servlet context so is safe to stored it in
 	 * filter instance - that is also a single instance per servlet context.
 	 */
-	private ContainerSPI container;
+	private IContainer container;
 
 	@Override
 	public void init(FilterConfig config) throws ServletException {
 		final ServletContext context = config.getServletContext();
 		log.trace("Initialize filter |%s#%s|.", context.getServletContextName(), config.getFilterName());
-		container = (ContainerSPI) context.getAttribute(TinyContainer.ATTR_INSTANCE);
+		container = (IContainer) context.getAttribute(TinyContainer.ATTR_INSTANCE);
 	}
 
 	@Override

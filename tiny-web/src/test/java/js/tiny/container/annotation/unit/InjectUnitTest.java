@@ -15,7 +15,7 @@ import js.lang.ConfigBuilder;
 import js.lang.InvocationException;
 import js.tiny.container.Container;
 import js.tiny.container.ManagedClass;
-import js.tiny.container.ManagedClassSPI;
+import js.tiny.container.spi.IManagedClass;
 import js.tiny.container.stub.ContainerStub;
 import js.util.Strings;
 
@@ -24,7 +24,7 @@ public class InjectUnitTest {
 	@Test
 	public void fieldInject() throws Throwable {
 		String descriptor = "<test class='js.tiny.container.annotation.unit.InjectUnitTest$MockClass1' />";
-		ManagedClassSPI managedClass = managedClass(descriptor);
+		IManagedClass managedClass = managedClass(descriptor);
 
 		List<Field> dependencies = list(managedClass.getDependencies());
 		assertEquals(1, dependencies.size());
@@ -48,7 +48,7 @@ public class InjectUnitTest {
 	// --------------------------------------------------------------------------------------------
 	// UTILITY METHODS
 
-	private static ManagedClassSPI managedClass(String descriptor) throws Throwable {
+	private static IManagedClass managedClass(String descriptor) throws Throwable {
 		Container container = new ContainerStub();
 		String xml = Strings.concat("<?xml version='1.0' encoding='UTF-8' ?><managed-classes>", descriptor, "</managed-classes>");
 		ConfigBuilder builder = new ConfigBuilder(xml);

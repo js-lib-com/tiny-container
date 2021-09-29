@@ -15,11 +15,11 @@ import javax.servlet.UnavailableException;
 
 import org.junit.Test;
 
-import js.tiny.container.ManagedClassSPI;
-import js.tiny.container.ManagedMethodSPI;
 import js.tiny.container.http.Resource;
 import js.tiny.container.mvc.ResourceServlet;
 import js.tiny.container.servlet.TinyContainer;
+import js.tiny.container.spi.IManagedClass;
+import js.tiny.container.spi.IManagedMethod;
 import js.tiny.container.stub.ContainerStub;
 import js.tiny.container.stub.ManagedClassSpiStub;
 import js.tiny.container.stub.ManagedMethodSpiStub;
@@ -47,7 +47,7 @@ public class ResourceServletUnitTest {
 		ResourceServlet servlet = new ResourceServlet();
 		servlet.init(config);
 
-		Map<String, ManagedMethodSPI> methods = Classes.getFieldValue(servlet, "resourceMethods");
+		Map<String, IManagedMethod> methods = Classes.getFieldValue(servlet, "resourceMethods");
 		assertNotNull(methods);
 		assertEquals(1, methods.size());
 		assertNotNull(methods.get("/controller/index"));
@@ -92,7 +92,7 @@ public class ResourceServletUnitTest {
 	// --------------------------------------------------------------------------------------------
 	// UTILITY METHODS
 
-	private static String key(ManagedMethodSPI resourceMethod) throws Exception {
+	private static String key(IManagedMethod resourceMethod) throws Exception {
 		return Classes.invoke(ResourceServlet.class, "key", resourceMethod);
 	}
 
@@ -104,10 +104,10 @@ public class ResourceServletUnitTest {
 	// FIXTURE
 
 	private static class MockContainer extends ContainerStub {
-		private List<ManagedMethodSPI> methods = new ArrayList<>();
+		private List<IManagedMethod> methods = new ArrayList<>();
 
 		@Override
-		public Iterable<ManagedMethodSPI> getNetMethods() {
+		public Iterable<IManagedMethod> getNetMethods() {
 			return methods;
 		}
 	}
@@ -132,7 +132,7 @@ public class ResourceServletUnitTest {
 		}
 
 		@Override
-		public ManagedClassSPI getDeclaringClass() {
+		public IManagedClass getDeclaringClass() {
 			return declaringClass;
 		}
 

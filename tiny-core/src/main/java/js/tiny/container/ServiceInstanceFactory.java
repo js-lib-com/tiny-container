@@ -2,6 +2,7 @@ package js.tiny.container;
 
 import js.lang.BugError;
 import js.lang.NoProviderException;
+import js.tiny.container.spi.IManagedClass;
 import js.util.Classes;
 
 /**
@@ -35,7 +36,7 @@ final class ServiceInstanceFactory implements InstanceFactory {
 	 */
 	@SuppressWarnings("unchecked")
 	@Override
-	public <I> I newInstance(ManagedClassSPI managedClass, Object... args) {
+	public <I> I newInstance(IManagedClass managedClass, Object... args) {
 		if (args.length > 0) {
 			throw new IllegalArgumentException("Service instances factory does not support arguments.");
 		}

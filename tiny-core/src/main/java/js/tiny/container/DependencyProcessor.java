@@ -7,12 +7,14 @@ import js.lang.BugError;
 import js.log.Log;
 import js.log.LogFactory;
 import js.tiny.container.core.AppFactory;
+import js.tiny.container.spi.IContainer;
+import js.tiny.container.spi.IManagedClass;
 import js.util.Classes;
 import js.util.Types;
 
 /**
  * Base class for all processors dealing with dependencies. Supplies utility method for dependency instance retrieval with guard
- * against circular dependencies. Usually {@link #getDependencyValue(ManagedClassSPI, Class)} expect as dependency type a
+ * against circular dependencies. Usually {@link #getDependencyValue(IManagedClass, Class)} expect as dependency type a
  * managed class and just delegate container for instance retrieval, see
  * {@link AppFactory#getOptionalInstance(Class, Object...)}. Anyway, if dependency type is not a managed class tries to
  * instantiate it with standard {@link Class#newInstance()}; of course type should be concrete class and have default
@@ -21,7 +23,7 @@ import js.util.Types;
  * Depending on host and dependency managed classes scope is possible that dependency value to be replaced by a scope proxy, see
  * {@link ScopeProxyHandler}. This is to adapt dependency with shorted life span into host with larger life span; otherwise
  * dependency may become invalid while host instance is still active. Logic to detect if scope proxy is required is encapsulated
- * into separated utility method, see {@link #isProxyRequired(ManagedClassSPI, ManagedClassSPI)}.
+ * into separated utility method, see {@link #isProxyRequired(IManagedClass, IManagedClass)}.
  * 
  * <h3>Circular Dependencies</h3>
  * <p>
@@ -37,8 +39,8 @@ import js.util.Types;
  * <p>
  * Application factory and its hierarchy cannot be managed classes since their job is to manage managed classes. If requested
  * dependency type is a kind of application factory, container cannot be used for instance retrieval. This is <b>special</b>
- * case handled by {@link #getDependencyValue(ManagedClassSPI, Class)} with special logic: if dependency type is a kind of
- * {@link AppFactory} returns container reference provided by host managed class, see {@link ManagedClassSPI#getContainer()}.
+ * case handled by {@link #getDependencyValue(IManagedClass, Class)} with special logic: if dependency type is a kind of
+ * {@link AppFactory} returns container reference provided by host managed class, see {@link IManagedClass#getContainer()}.
  * 
  * @author Iulian Rotaru
  * @version final
@@ -60,13 +62,13 @@ abstract class DependencyProcessor {
 	 * @throws BugError if dependency value cannot be created or circular dependency is detected.
 	 */
 	@SuppressWarnings("unchecked")
-	protected static Object getDependencyValue(ManagedClassSPI hostManagedClass, Class<?> type) {
+	protected static Object getDependencyValue(IManagedClass hostManagedClass, Class<?> type) {
 		Stack<Class<?>> stackTrace = dependenciesStack.get();
 		if (stackTrace == null) {
 			stackTrace = new Stack<>();
 			dependenciesStack.set(stackTrace);
 		}
-		ContainerSPI container = hostManagedClass.getContainer();
+		IContainer container = hostManagedClass.getContainer();
 
 		if (stackTrace.contains(type)) {
 			try {
@@ -92,7 +94,7 @@ abstract class DependencyProcessor {
 		stackTrace.push(type);
 		try {
 
-			ManagedClassSPI dependencyManagedClass = container.getManagedClass(type);
+			IManagedClass dependencyManagedClass = container.getManagedClass(type);
 			if (isProxyRequired(hostManagedClass, dependencyManagedClass)) {
 				// if scope proxy is required returns a Java Proxy handled by ScopeProxyHandler
 				ScopeProxyHandler<?> handler = new ScopeProxyHandler<>(container, type);
@@ -137,7 +139,7 @@ abstract class DependencyProcessor {
 	 * @param dependencyManagedClass dependency managed class, possible null.
 	 * @return true if scope proxy is required.
 	 */
-	private static boolean isProxyRequired(ManagedClassSPI hostManagedClass, ManagedClassSPI dependencyManagedClass) {
+	private static boolean isProxyRequired(IManagedClass hostManagedClass, IManagedClass dependencyManagedClass) {
 		if (dependencyManagedClass != null) {
 			InstanceScope dependencyScope = dependencyManagedClass.getInstanceScope();
 			if (InstanceScope.THREAD.equals(dependencyScope)) {

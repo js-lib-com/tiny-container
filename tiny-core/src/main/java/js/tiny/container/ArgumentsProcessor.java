@@ -6,6 +6,8 @@ import java.lang.reflect.Method;
 
 import js.lang.IllegalArgumentException;
 import js.lang.VarArgs;
+import js.tiny.container.spi.IManagedClass;
+import js.tiny.container.spi.IManagedMethod;
 import js.util.Types;
 
 /**
@@ -24,13 +26,13 @@ final class ArgumentsProcessor extends DependencyProcessor {
 	 * Pre-process constructor arguments for local managed classes. A managed class is <code>local</code> if is of
 	 * {@link InstanceType#POJO} or {@link InstanceType#PROXY} type. Attempting to pre-process arguments for other managed class
 	 * types is silently ignored. This method delegates
-	 * {@link #preProcessArguments(ManagedClassSPI, Member, Class[], Object...)}.
+	 * {@link #preProcessArguments(IManagedClass, Member, Class[], Object...)}.
 	 * 
 	 * @param managedClass managed class,
 	 * @param args constructor arguments.
 	 * @return processed arguments.
 	 */
-	public Object[] preProcessArguments(ManagedClassSPI managedClass, Object... args) {
+	public Object[] preProcessArguments(IManagedClass managedClass, Object... args) {
 		// arguments can be null if on invocations chain there is Proxy handler invoked with no arguments
 		if (args == null) {
 			args = EMPTY_ARGS;
@@ -50,19 +52,19 @@ final class ArgumentsProcessor extends DependencyProcessor {
 
 	/**
 	 * Pre-process managed method invocation arguments. This processor prepares invocation arguments for given managed method;
-	 * it just delegates {@link #preProcessArguments(ManagedClassSPI, Member, Class[], Object...)}.
+	 * it just delegates {@link #preProcessArguments(IManagedClass, Member, Class[], Object...)}.
 	 * 
 	 * @param managedMethod managed method,
 	 * @param args method invocation arguments.
 	 * @return processed arguments.
 	 */
-	public Object[] preProcessArguments(ManagedMethodSPI managedMethod, Object... args) {
+	public Object[] preProcessArguments(IManagedMethod managedMethod, Object... args) {
 		// arguments can be null if on invocations chain there is Proxy handler invoked with no arguments
 		if (args == null) {
 			args = EMPTY_ARGS;
 		}
 
-		final ManagedClassSPI managedClass = managedMethod.getDeclaringClass();
+		final IManagedClass managedClass = managedMethod.getDeclaringClass();
 		final Method method = managedMethod.getMethod();
 		final Class<?>[] types = method.getParameterTypes();
 		return preProcessArguments(managedClass, method, types, args);
@@ -70,7 +72,7 @@ final class ArgumentsProcessor extends DependencyProcessor {
 
 	/**
 	 * Update and validate invocation arguments against given formal parameter types. If formal parameters is not empty but no
-	 * invocation arguments this method will inject dependency using {@link #getDependencyValue(ManagedClassSPI, Class)}. This
+	 * invocation arguments this method will inject dependency using {@link #getDependencyValue(IManagedClass, Class)}. This
 	 * method also performs arguments validity check against formal parameters throwing illegal arguments if validation fails.
 	 * 
 	 * @param managedClass managed class owning constructor or method,
@@ -79,7 +81,7 @@ final class ArgumentsProcessor extends DependencyProcessor {
 	 * @param args constructor or method invocation arguments.
 	 * @return given arguments updated and validated.
 	 */
-	private static Object[] preProcessArguments(ManagedClassSPI managedClass, Member member, Class<?>[] formalParameters, Object... args) {
+	private static Object[] preProcessArguments(IManagedClass managedClass, Member member, Class<?>[] formalParameters, Object... args) {
 		switch (args.length) {
 		case 0:
 			args = new Object[formalParameters.length];

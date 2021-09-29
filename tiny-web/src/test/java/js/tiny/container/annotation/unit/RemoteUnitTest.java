@@ -22,8 +22,8 @@ import js.lang.BugError;
 import js.lang.ConfigBuilder;
 import js.lang.InvocationException;
 import js.tiny.container.ManagedClass;
-import js.tiny.container.ManagedClassSPI;
-import js.tiny.container.ManagedMethodSPI;
+import js.tiny.container.spi.IManagedClass;
+import js.tiny.container.spi.IManagedMethod;
 import js.tiny.container.stub.ContainerStub;
 import js.util.Classes;
 import js.util.Strings;
@@ -33,15 +33,15 @@ public class RemoteUnitTest {
 	@Test
 	public void remoteClass() throws Throwable {
 		String descriptor = "<test class='js.tiny.container.annotation.unit.RemoteUnitTest$MockClass01' />";
-		ManagedClassSPI managedClass = managedClass(descriptor);
+		IManagedClass managedClass = managedClass(descriptor);
 
 		assertTrue(managedClass.isRemotelyAccessible());
 		assertNull(managedClass.getRequestPath());
 
-		List<ManagedMethodSPI> managedMethods = list(managedClass.getManagedMethods());
+		List<IManagedMethod> managedMethods = list(managedClass.getManagedMethods());
 		assertEquals(1, managedMethods.size());
 
-		ManagedMethodSPI managedMethod = managedMethods.get(0);
+		IManagedMethod managedMethod = managedMethods.get(0);
 		assertEquals("managedMethod01", managedMethod.getMethod().getName());
 		assertTrue(managedMethod.isRemotelyAccessible());
 		assertFalse(isPublic(managedMethod));
@@ -51,7 +51,7 @@ public class RemoteUnitTest {
 	@Test
 	public void remoteClassWithClassPath() throws Throwable {
 		String descriptor = "<test class='js.tiny.container.annotation.unit.RemoteUnitTest$MockClass15' />";
-		ManagedClassSPI managedClass = managedClass(descriptor);
+		IManagedClass managedClass = managedClass(descriptor);
 
 		assertTrue(managedClass.isRemotelyAccessible());
 		assertEquals("mock", managedClass.getRequestPath());
@@ -60,15 +60,15 @@ public class RemoteUnitTest {
 	@Test
 	public void remoteMethod() throws Throwable {
 		String descriptor = "<test class='js.tiny.container.annotation.unit.RemoteUnitTest$MockClass02' />";
-		ManagedClassSPI managedClass = managedClass(descriptor);
+		IManagedClass managedClass = managedClass(descriptor);
 
 		assertTrue(managedClass.isRemotelyAccessible());
 		assertNull(managedClass.getRequestPath());
 
-		List<ManagedMethodSPI> managedMethods = list(managedClass.getManagedMethods());
+		List<IManagedMethod> managedMethods = list(managedClass.getManagedMethods());
 		assertEquals(1, managedMethods.size());
 
-		ManagedMethodSPI managedMethod = managedMethods.get(0);
+		IManagedMethod managedMethod = managedMethods.get(0);
 		assertEquals("method02", managedMethod.getMethod().getName());
 		assertTrue(managedMethod.isRemotelyAccessible());
 		assertFalse(isPublic(managedMethod));
@@ -78,19 +78,19 @@ public class RemoteUnitTest {
 	@Test
 	public void pathMethod() throws Throwable {
 		String descriptor = "<test class='js.tiny.container.annotation.unit.RemoteUnitTest$MockClass17' />";
-		ManagedClassSPI managedClass = managedClass(descriptor);
+		IManagedClass managedClass = managedClass(descriptor);
 
-		List<ManagedMethodSPI> managedMethods = list(managedClass.getManagedMethods());
+		List<IManagedMethod> managedMethods = list(managedClass.getManagedMethods());
 		assertEquals(1, managedMethods.size());
 
-		ManagedMethodSPI managedMethod = managedMethods.get(0);
+		IManagedMethod managedMethod = managedMethods.get(0);
 		assertEquals("method/path", managedMethod.getRequestPath());
 	}
 
 	@Test
 	public void localMethod() throws Throwable {
 		String descriptor = "<test class='js.tiny.container.annotation.unit.RemoteUnitTest$MockClass03' />";
-		ManagedClassSPI managedClass = managedClass(descriptor);
+		IManagedClass managedClass = managedClass(descriptor);
 
 		assertTrue(managedClass.isRemotelyAccessible());
 		assertNull(managedClass.getRequestPath());
@@ -112,15 +112,15 @@ public class RemoteUnitTest {
 	@Test
 	public void remoteClassInheritance() throws Throwable {
 		String descriptor = "<test interface='js.tiny.container.annotation.unit.RemoteUnitTest$MockInterface01' class='js.tiny.container.annotation.unit.RemoteUnitTest$MockClass05' />";
-		ManagedClassSPI managedClass = managedClass(descriptor);
+		IManagedClass managedClass = managedClass(descriptor);
 
 		assertTrue(managedClass.isRemotelyAccessible());
 		assertNull(managedClass.getRequestPath());
 
-		List<ManagedMethodSPI> managedMethods = list(managedClass.getManagedMethods());
+		List<IManagedMethod> managedMethods = list(managedClass.getManagedMethods());
 		assertEquals(1, managedMethods.size());
 
-		ManagedMethodSPI managedMethod = managedMethods.get(0);
+		IManagedMethod managedMethod = managedMethods.get(0);
 		assertEquals("method05", managedMethod.getMethod().getName());
 		assertTrue(managedMethod.isRemotelyAccessible());
 		assertFalse(isPublic(managedMethod));
@@ -130,15 +130,15 @@ public class RemoteUnitTest {
 	@Test
 	public void remoteMethodInheritance() throws Throwable {
 		String descriptor = "<test interface='js.tiny.container.annotation.unit.RemoteUnitTest$MockInterface02' class='js.tiny.container.annotation.unit.RemoteUnitTest$MockClass06' />";
-		ManagedClassSPI managedClass = managedClass(descriptor);
+		IManagedClass managedClass = managedClass(descriptor);
 
 		assertTrue(managedClass.isRemotelyAccessible());
 		assertNull(managedClass.getRequestPath());
 
-		List<ManagedMethodSPI> managedMethods = list(managedClass.getManagedMethods());
+		List<IManagedMethod> managedMethods = list(managedClass.getManagedMethods());
 		assertEquals(1, managedMethods.size());
 
-		ManagedMethodSPI managedMethod = managedMethods.get(0);
+		IManagedMethod managedMethod = managedMethods.get(0);
 		assertEquals("method02", managedMethod.getMethod().getName());
 		assertTrue(managedMethod.isRemotelyAccessible());
 		assertFalse(isPublic(managedMethod));
@@ -148,15 +148,15 @@ public class RemoteUnitTest {
 	@Test
 	public void controllerClass() throws Throwable {
 		String descriptor = "<test class='js.tiny.container.annotation.unit.RemoteUnitTest$MockClass07' />";
-		ManagedClassSPI managedClass = managedClass(descriptor);
+		IManagedClass managedClass = managedClass(descriptor);
 
 		assertTrue(managedClass.isRemotelyAccessible());
 		assertNull(managedClass.getRequestPath());
 
-		List<ManagedMethodSPI> managedMethods = list(managedClass.getManagedMethods());
+		List<IManagedMethod> managedMethods = list(managedClass.getManagedMethods());
 		assertEquals(1, managedMethods.size());
 
-		ManagedMethodSPI managedMethod = managedMethods.get(0);
+		IManagedMethod managedMethod = managedMethods.get(0);
 		assertEquals("method07", managedMethod.getMethod().getName());
 		assertTrue(managedMethod.isRemotelyAccessible());
 		assertFalse(isPublic(managedMethod));
@@ -166,15 +166,15 @@ public class RemoteUnitTest {
 	@Test
 	public void serviceClass() throws Throwable {
 		String descriptor = "<test class='js.tiny.container.annotation.unit.RemoteUnitTest$MockClass08' />";
-		ManagedClassSPI managedClass = managedClass(descriptor);
+		IManagedClass managedClass = managedClass(descriptor);
 
 		assertTrue(managedClass.isRemotelyAccessible());
 		assertNull(managedClass.getRequestPath());
 
-		List<ManagedMethodSPI> managedMethods = list(managedClass.getManagedMethods());
+		List<IManagedMethod> managedMethods = list(managedClass.getManagedMethods());
 		assertEquals(1, managedMethods.size());
 
-		ManagedMethodSPI managedMethod = managedMethods.get(0);
+		IManagedMethod managedMethod = managedMethods.get(0);
 		assertEquals("method08", managedMethod.getMethod().getName());
 		assertTrue(managedMethod.isRemotelyAccessible());
 		assertFalse(isPublic(managedMethod));
@@ -184,15 +184,15 @@ public class RemoteUnitTest {
 	@Test
 	public void remotePublicClass() throws Throwable {
 		String descriptor = "<test class='js.tiny.container.annotation.unit.RemoteUnitTest$MockClass09' />";
-		ManagedClassSPI managedClass = managedClass(descriptor);
+		IManagedClass managedClass = managedClass(descriptor);
 
 		assertTrue(managedClass.isRemotelyAccessible());
 		assertNull(managedClass.getRequestPath());
 
-		List<ManagedMethodSPI> managedMethods = list(managedClass.getManagedMethods());
+		List<IManagedMethod> managedMethods = list(managedClass.getManagedMethods());
 		assertEquals(1, managedMethods.size());
 
-		ManagedMethodSPI managedMethod = managedMethods.get(0);
+		IManagedMethod managedMethod = managedMethods.get(0);
 		assertEquals("method09", managedMethod.getMethod().getName());
 		assertTrue(managedMethod.isRemotelyAccessible());
 		assertTrue(isPublic(managedMethod));
@@ -202,15 +202,15 @@ public class RemoteUnitTest {
 	@Test
 	public void remotePublicMethod() throws Throwable {
 		String descriptor = "<test class='js.tiny.container.annotation.unit.RemoteUnitTest$MockClass10' />";
-		ManagedClassSPI managedClass = managedClass(descriptor);
+		IManagedClass managedClass = managedClass(descriptor);
 
 		assertTrue(managedClass.isRemotelyAccessible());
 		assertNull(managedClass.getRequestPath());
 
-		List<ManagedMethodSPI> managedMethods = list(managedClass.getManagedMethods());
+		List<IManagedMethod> managedMethods = list(managedClass.getManagedMethods());
 		assertEquals(1, managedMethods.size());
 
-		ManagedMethodSPI managedMethod = managedMethods.get(0);
+		IManagedMethod managedMethod = managedMethods.get(0);
 		assertEquals("method10", managedMethod.getMethod().getName());
 		assertTrue(managedMethod.isRemotelyAccessible());
 		assertTrue(isPublic(managedMethod));
@@ -220,15 +220,15 @@ public class RemoteUnitTest {
 	@Test
 	public void remoteClassPrivateMethod() throws Throwable {
 		String descriptor = "<test class='js.tiny.container.annotation.unit.RemoteUnitTest$MockClass11' />";
-		ManagedClassSPI managedClass = managedClass(descriptor);
+		IManagedClass managedClass = managedClass(descriptor);
 
 		assertTrue(managedClass.isRemotelyAccessible());
 		assertNull(managedClass.getRequestPath());
 
-		List<ManagedMethodSPI> managedMethods = list(managedClass.getManagedMethods());
+		List<IManagedMethod> managedMethods = list(managedClass.getManagedMethods());
 		assertEquals(1, managedMethods.size());
 
-		ManagedMethodSPI managedMethod = managedMethods.get(0);
+		IManagedMethod managedMethod = managedMethods.get(0);
 		assertEquals("method11", managedMethod.getMethod().getName());
 		assertTrue(managedMethod.isRemotelyAccessible());
 		assertFalse(isPublic(managedMethod));
@@ -256,12 +256,12 @@ public class RemoteUnitTest {
 	// --------------------------------------------------------------------------------------------
 	// UTILITY METHODS
 
-	private static ManagedClassSPI managedClass(String descriptor) throws Throwable {
+	private static IManagedClass managedClass(String descriptor) throws Throwable {
 		MockContainer container = new MockContainer();
 		return managedClass(container, descriptor);
 	}
 
-	private static ManagedClassSPI managedClass(MockContainer container, String descriptor) throws Throwable {
+	private static IManagedClass managedClass(MockContainer container, String descriptor) throws Throwable {
 		String xml = Strings.concat("<?xml version='1.0' encoding='UTF-8' ?><managed-classes>", descriptor, "</managed-classes>");
 		ConfigBuilder builder = new ConfigBuilder(xml);
 		try {
@@ -279,7 +279,7 @@ public class RemoteUnitTest {
 		return list;
 	}
 
-	private static boolean isPublic(ManagedMethodSPI managedMethod) {
+	private static boolean isPublic(IManagedMethod managedMethod) {
 		return Classes.getFieldValue(managedMethod, "unchecked");
 	}
 

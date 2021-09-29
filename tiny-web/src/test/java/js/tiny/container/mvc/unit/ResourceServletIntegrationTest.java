@@ -37,7 +37,6 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import js.tiny.container.ContainerSPI;
 import js.tiny.container.core.App;
 import js.tiny.container.core.AppContext;
 import js.tiny.container.core.Factory;
@@ -53,6 +52,7 @@ import js.tiny.container.mvc.ResourceServlet;
 import js.tiny.container.mvc.View;
 import js.tiny.container.servlet.RequestContext;
 import js.tiny.container.servlet.TinyContainer;
+import js.tiny.container.spi.IContainer;
 import js.tiny.container.unit.HttpServletRequestStub;
 import js.tiny.container.unit.HttpServletResponseStub;
 import js.tiny.container.unit.HttpSessionStub;
@@ -80,7 +80,7 @@ public class ResourceServletIntegrationTest {
 		System.setProperty("catalina.base", "fixture/server/tomcat");
 	}
 
-	private ContainerSPI container;
+	private IContainer container;
 	private MockApp app;
 	private MockServletContext servletContext;
 	private MockServletConfig servletConfig;
@@ -90,7 +90,7 @@ public class ResourceServletIntegrationTest {
 
 	@Before
 	public void beforeTest() throws Exception {
-		container = (ContainerSPI) TestContext.start(DESCRIPTOR);
+		container = (IContainer) TestContext.start(DESCRIPTOR);
 
 		app = (MockApp) Factory.getInstance(App.class);
 

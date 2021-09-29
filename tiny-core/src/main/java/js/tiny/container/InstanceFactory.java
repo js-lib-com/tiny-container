@@ -3,6 +3,7 @@ package js.tiny.container;
 import js.lang.BugError;
 import js.lang.InvocationException;
 import js.lang.NoProviderException;
+import js.tiny.container.spi.IManagedClass;
 
 /**
  * Managed instances factory deals with the actual instances creation. Instance creation process may depend on managed class
@@ -45,5 +46,5 @@ public interface InstanceFactory {
 	 * @throws InvocationException if implementation is local and constructor execution fails.
 	 * @throws NoProviderException if interface is a service and no provider found on run-time.
 	 */
-	<T> T newInstance(ManagedClassSPI managedClass, Object... args);
+	<T> T newInstance(IManagedClass managedClass, Object... args);
 }

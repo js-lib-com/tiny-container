@@ -10,11 +10,11 @@ import java.util.regex.Pattern;
 
 import org.junit.Test;
 
-import js.tiny.container.ContainerSPI;
-import js.tiny.container.ManagedClassSPI;
-import js.tiny.container.ManagedMethodSPI;
 import js.tiny.container.http.Resource;
 import js.tiny.container.net.HttpRmiServlet;
+import js.tiny.container.spi.IContainer;
+import js.tiny.container.spi.IManagedClass;
+import js.tiny.container.spi.IManagedMethod;
 import js.tiny.container.stub.ContainerStub;
 import js.tiny.container.stub.ManagedClassSpiStub;
 import js.tiny.container.stub.ManagedMethodSpiStub;
@@ -61,7 +61,7 @@ public class HttpRmiServletUnitTest {
 	@Test
 	public void getManagedClass() throws Exception {
 		MockContainer container = new MockContainer();
-		ManagedClassSPI managedClass = getManagedClass(container, "java.lang.Object", "/java/lang/Object/toString");
+		IManagedClass managedClass = getManagedClass(container, "java.lang.Object", "/java/lang/Object/toString");
 		assertTrue(managedClass instanceof MockManagedClass);
 	}
 
@@ -88,7 +88,7 @@ public class HttpRmiServletUnitTest {
 	@Test
 	public void getManagedMethod() throws Exception {
 		MockManagedClass managedClass = new MockManagedClass();
-		ManagedMethodSPI managedMethod = getManagedMethod(managedClass, "toString", "/java/lang/Object/toString");
+		IManagedMethod managedMethod = getManagedMethod(managedClass, "toString", "/java/lang/Object/toString");
 		assertTrue(managedMethod instanceof MockManagedMethod);
 	}
 
@@ -120,11 +120,11 @@ public class HttpRmiServletUnitTest {
 		return Classes.invoke(HttpRmiServlet.class, "className", classPath);
 	}
 
-	private static ManagedClassSPI getManagedClass(ContainerSPI container, String interfaceName, String requestURI) throws Exception {
+	private static IManagedClass getManagedClass(IContainer container, String interfaceName, String requestURI) throws Exception {
 		return Classes.invoke(HttpRmiServlet.class, "getManagedClass", container, interfaceName, requestURI);
 	}
 
-	private static ManagedMethodSPI getManagedMethod(ManagedClassSPI managedClass, String methodName, String requestURI) throws Exception {
+	private static IManagedMethod getManagedMethod(IManagedClass managedClass, String methodName, String requestURI) throws Exception {
 		return Classes.invoke(HttpRmiServlet.class, "getManagedMethod", managedClass, methodName, requestURI);
 	}
 
@@ -135,7 +135,7 @@ public class HttpRmiServletUnitTest {
 		private MockManagedClass managedClass = new MockManagedClass();
 
 		@Override
-		public ManagedClassSPI getManagedClass(Class<?> interfaceClass) {
+		public IManagedClass getManagedClass(Class<?> interfaceClass) {
 			return managedClass;
 		}
 	}
@@ -155,7 +155,7 @@ public class HttpRmiServletUnitTest {
 		}
 
 		@Override
-		public ManagedMethodSPI getNetMethod(String methodName) {
+		public IManagedMethod getNetMethod(String methodName) {
 			return managedMethod;
 		}
 	}

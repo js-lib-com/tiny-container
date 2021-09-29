@@ -1,15 +1,11 @@
-package js.tiny.container.core;
+package js.tiny.container.spi;
 
 import js.lang.BugError;
-import js.tiny.container.InstanceFactory;
-import js.tiny.container.ManagedClassSPI;
-import js.tiny.container.ScopeFactory;
 
 /**
- * Post processor for instances created by {@link InstanceFactory}. Instance processors are responsible for services provided by
+ * Post processor for instances created by {@link IContainer}. Instance processors are responsible for services provided by
  * container at instance level. Instance processors are registered to container and enacted by instance retrieval logic. Note
- * that post processing is executed only on newly created instances but not if managed instance is reused from
- * {@link ScopeFactory}.
+ * that post processing is executed only on newly created instances but not if managed instance is reused from scope factory.
  * <p>
  * Instance processor may have side effects on given instance, depending on specific implementation. For example
  * {@link LoggerInstanceProcessor} does not alter given instance whereas {@link InstanceFieldsInjectionProcessor} does inject
@@ -32,5 +28,5 @@ public interface IInstancePostProcessor extends IJoinPointProcessor {
 	 * @param instance instance of given managed class.
 	 * @throws BugError for every abnormal condition that prevent post-processing.
 	 */
-	void postProcessInstance(ManagedClassSPI managedClass, Object instance);
+	void postProcessInstance(IManagedClass managedClass, Object instance);
 }

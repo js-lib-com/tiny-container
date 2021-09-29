@@ -1,4 +1,4 @@
-package js.tiny.container;
+package js.tiny.container.spi;
 
 /**
  * Attempt to access private resource without proper authorization. Thrown by authorization logic when there is an attempt to

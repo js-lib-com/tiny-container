@@ -8,6 +8,7 @@ import js.lang.BugError;
 import js.lang.InvocationException;
 import js.log.Log;
 import js.log.LogFactory;
+import js.tiny.container.spi.IManagedClass;
 import js.util.Classes;
 import js.util.Strings;
 
@@ -16,7 +17,7 @@ import js.util.Strings;
  * {@link InstanceType#POJO} and {@link InstanceType#PROXY} managed classes. They are both created by invoking constructor with
  * provided arguments, that should be in the order and of types requested by constructor signature. There is no attempt to
  * discover constructor at runtime based on given arguments; this factory uses constructor provided by managed class, see
- * {@link ManagedClassSPI#getConstructor()}.
+ * {@link IManagedClass#getConstructor()}.
  * 
  * @author Iulian Rotaru
  * @version final
@@ -48,7 +49,7 @@ final class LocalInstanceFactory implements InstanceFactory {
 	 */
 	@SuppressWarnings("unchecked")
 	@Override
-	public <T> T newInstance(ManagedClassSPI managedClass, Object... args) {
+	public <T> T newInstance(IManagedClass managedClass, Object... args) {
 		Constructor<?> constructor = managedClass.getConstructor();
 		if (constructor == null) {
 			throw new BugError("Local instance factory cannot instantiate |%s|. Missing constructor.", managedClass);

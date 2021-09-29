@@ -1,4 +1,4 @@
-package js.tiny.container.core;
+package js.tiny.container.spi;
 
 /**
  * A join point is a location in a program where the control flow can arrive via multiple paths: in our case container services

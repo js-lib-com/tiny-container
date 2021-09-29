@@ -10,10 +10,6 @@ import javax.servlet.http.HttpServletResponse;
 
 import js.log.Log;
 import js.log.LogFactory;
-import js.tiny.container.AuthorizationException;
-import js.tiny.container.ContainerSPI;
-import js.tiny.container.ManagedClassSPI;
-import js.tiny.container.ManagedMethodSPI;
 import js.tiny.container.http.ContentType;
 import js.tiny.container.http.Resource;
 import js.tiny.container.http.encoder.ArgumentsReader;
@@ -23,6 +19,10 @@ import js.tiny.container.http.encoder.ValueWriter;
 import js.tiny.container.http.encoder.ValueWriterFactory;
 import js.tiny.container.servlet.AppServlet;
 import js.tiny.container.servlet.RequestContext;
+import js.tiny.container.spi.AuthorizationException;
+import js.tiny.container.spi.IContainer;
+import js.tiny.container.spi.IManagedClass;
+import js.tiny.container.spi.IManagedMethod;
 import js.util.Classes;
 import js.util.Types;
 
@@ -146,12 +146,12 @@ public final class HttpRmiServlet extends AppServlet {
 		String interfaceName = className(matcher.group(1));
 		String methodName = matcher.group(2);
 
-		ManagedMethodSPI managedMethod = null;
+		IManagedMethod managedMethod = null;
 		ArgumentsReader argumentsReader = null;
 		Object value = null;
 
 		try {
-			ManagedClassSPI managedClass = getManagedClass(container, interfaceName, httpRequest.getRequestURI());
+			IManagedClass managedClass = getManagedClass(container, interfaceName, httpRequest.getRequestURI());
 			managedMethod = getManagedMethod(managedClass, methodName, httpRequest.getRequestURI());
 
 			final Type[] formalParameters = managedMethod.getParameterTypes();
@@ -200,13 +200,13 @@ public final class HttpRmiServlet extends AppServlet {
 	 * @throws ClassNotFoundException if interface class not found on run-time class path, managed class not defined or is not
 	 *             remotely accessible.
 	 */
-	private static ManagedClassSPI getManagedClass(ContainerSPI container, String interfaceName, String requestURI) throws ClassNotFoundException {
+	private static IManagedClass getManagedClass(IContainer container, String interfaceName, String requestURI) throws ClassNotFoundException {
 		Class<?> interfaceClass = Classes.forOptionalName(interfaceName);
 		if (interfaceClass == null) {
 			log.error("HTTP-RMI request for not existing class |%s|.", interfaceName);
 			throw new ClassNotFoundException(requestURI);
 		}
-		ManagedClassSPI managedClass = container.getManagedClass(interfaceClass);
+		IManagedClass managedClass = container.getManagedClass(interfaceClass);
 		if (managedClass == null) {
 			log.error("HTTP-RMI request for not existing managed class |%s|.", interfaceName);
 			throw new ClassNotFoundException(requestURI);
@@ -228,8 +228,8 @@ public final class HttpRmiServlet extends AppServlet {
 	 * @throws NoSuchMethodException if managed class has not any method with requested name, managed method was found but is
 	 *             not remotely accessible or it returns a {@link Resource}.
 	 */
-	private static ManagedMethodSPI getManagedMethod(ManagedClassSPI managedClass, String methodName, String requestURI) throws NoSuchMethodException {
-		ManagedMethodSPI managedMethod = managedClass.getNetMethod(methodName);
+	private static IManagedMethod getManagedMethod(IManagedClass managedClass, String methodName, String requestURI) throws NoSuchMethodException {
+		IManagedMethod managedMethod = managedClass.getNetMethod(methodName);
 		if (managedMethod == null) {
 			log.error("HTTP-RMI request for not existing managed method |%s#%s|.", managedClass.getInterfaceClass().getName(), methodName);
 			throw new NoSuchMethodException(requestURI);

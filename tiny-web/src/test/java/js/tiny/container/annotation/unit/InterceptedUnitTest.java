@@ -16,8 +16,8 @@ import js.lang.ConfigException;
 import js.tiny.container.Container;
 import js.tiny.container.Interceptor;
 import js.tiny.container.ManagedClass;
-import js.tiny.container.ManagedClassSPI;
-import js.tiny.container.ManagedMethodSPI;
+import js.tiny.container.spi.IManagedClass;
+import js.tiny.container.spi.IManagedMethod;
 import js.tiny.container.stub.ContainerStub;
 import js.util.Classes;
 import js.util.Strings;
@@ -28,123 +28,123 @@ public class InterceptedUnitTest {
 	@Test
 	public void interceptedProxyClass() throws Throwable {
 		String descriptor = "<test interface='js.tiny.container.annotation.unit.InterceptedUnitTest$MockInterface'  class='js.tiny.container.annotation.unit.InterceptedUnitTest$MockClass01' type='PROXY' />";
-		ManagedClassSPI managedClass = managedClass(descriptor);
+		IManagedClass managedClass = managedClass(descriptor);
 
-		List<ManagedMethodSPI> managedMethods = list(managedClass.getManagedMethods());
+		List<IManagedMethod> managedMethods = list(managedClass.getManagedMethods());
 		assertEquals(1, managedMethods.size());
 		assertEquals("publicMethod01", managedMethods.get(0).getMethod().getName());
 
-		ManagedMethodSPI managedMethod = managedMethods.get(0);
+		IManagedMethod managedMethod = managedMethods.get(0);
 		assertEquals("InterceptedInvoker", Classes.getFieldValue(managedMethod, "invoker").getClass().getSimpleName());
 	}
 
 	@Test
 	public void interceptedProxyMethod() throws Throwable {
 		String descriptor = "<test interface='js.tiny.container.annotation.unit.InterceptedUnitTest$MockInterface' class='js.tiny.container.annotation.unit.InterceptedUnitTest$MockClass02' type='PROXY' />";
-		ManagedClassSPI managedClass = managedClass(descriptor);
+		IManagedClass managedClass = managedClass(descriptor);
 
-		List<ManagedMethodSPI> managedMethods = list(managedClass.getManagedMethods());
+		List<IManagedMethod> managedMethods = list(managedClass.getManagedMethods());
 		assertEquals(1, managedMethods.size());
 		assertEquals("method02", managedMethods.get(0).getMethod().getName());
 
-		ManagedMethodSPI managedMethod = managedMethods.get(0);
+		IManagedMethod managedMethod = managedMethods.get(0);
 		assertEquals("InterceptedInvoker", Classes.getFieldValue(managedMethod, "invoker").getClass().getSimpleName());
 	}
 
 	@Test
 	public void interceptedRemoteAccessibleClass() throws Throwable {
 		String descriptor = "<test class='js.tiny.container.annotation.unit.InterceptedUnitTest$MockClass03' />";
-		ManagedClassSPI managedClass = managedClass(descriptor);
+		IManagedClass managedClass = managedClass(descriptor);
 
-		List<ManagedMethodSPI> managedMethods = list(managedClass.getManagedMethods());
+		List<IManagedMethod> managedMethods = list(managedClass.getManagedMethods());
 		assertEquals(1, managedMethods.size());
 		assertEquals("publicMethod03", managedMethods.get(0).getMethod().getName());
 
-		ManagedMethodSPI managedMethod = managedMethods.get(0);
+		IManagedMethod managedMethod = managedMethods.get(0);
 		assertEquals("InterceptedInvoker", Classes.getFieldValue(managedMethod, "invoker").getClass().getSimpleName());
 	}
 
 	@Test
 	public void interceptedControlerClass() throws Throwable {
 		String descriptor = "<test class='js.tiny.container.annotation.unit.InterceptedUnitTest$MockClass04' />";
-		ManagedClassSPI managedClass = managedClass(descriptor);
+		IManagedClass managedClass = managedClass(descriptor);
 
-		List<ManagedMethodSPI> managedMethods = list(managedClass.getManagedMethods());
+		List<IManagedMethod> managedMethods = list(managedClass.getManagedMethods());
 		assertEquals(1, managedMethods.size());
 		assertEquals("publicMethod04", managedMethods.get(0).getMethod().getName());
 
-		ManagedMethodSPI managedMethod = managedMethods.get(0);
+		IManagedMethod managedMethod = managedMethods.get(0);
 		assertEquals("InterceptedInvoker", Classes.getFieldValue(managedMethod, "invoker").getClass().getSimpleName());
 	}
 
 	@Test
 	public void interceptedServiceClass() throws Throwable {
 		String descriptor = "<test class='js.tiny.container.annotation.unit.InterceptedUnitTest$MockClass05' />";
-		ManagedClassSPI managedClass = managedClass(descriptor);
+		IManagedClass managedClass = managedClass(descriptor);
 
-		List<ManagedMethodSPI> managedMethods = list(managedClass.getManagedMethods());
+		List<IManagedMethod> managedMethods = list(managedClass.getManagedMethods());
 		assertEquals(1, managedMethods.size());
 		assertEquals("publicMethod05", managedMethods.get(0).getMethod().getName());
 
-		ManagedMethodSPI managedMethod = managedMethods.get(0);
+		IManagedMethod managedMethod = managedMethods.get(0);
 		assertEquals("InterceptedInvoker", Classes.getFieldValue(managedMethod, "invoker").getClass().getSimpleName());
 	}
 
 	@Test
 	public void interceptedRemoteAccessibleMethod() throws Throwable {
 		String descriptor = "<test class='js.tiny.container.annotation.unit.InterceptedUnitTest$MockClass06' />";
-		ManagedClassSPI managedClass = managedClass(descriptor);
+		IManagedClass managedClass = managedClass(descriptor);
 
-		List<ManagedMethodSPI> managedMethods = list(managedClass.getManagedMethods());
+		List<IManagedMethod> managedMethods = list(managedClass.getManagedMethods());
 		assertEquals(1, managedMethods.size());
 		assertEquals("method06", managedMethods.get(0).getMethod().getName());
 
-		ManagedMethodSPI managedMethod = managedMethods.get(0);
+		IManagedMethod managedMethod = managedMethods.get(0);
 		assertEquals("InterceptedInvoker", Classes.getFieldValue(managedMethod, "invoker").getClass().getSimpleName());
 	}
 
 	@Test
 	public void interceptedControllerMethod() throws Throwable {
 		String descriptor = "<test class='js.tiny.container.annotation.unit.InterceptedUnitTest$MockClass07' />";
-		ManagedClassSPI managedClass = managedClass(descriptor);
+		IManagedClass managedClass = managedClass(descriptor);
 
-		List<ManagedMethodSPI> managedMethods = list(managedClass.getManagedMethods());
+		List<IManagedMethod> managedMethods = list(managedClass.getManagedMethods());
 		assertEquals(1, managedMethods.size());
 		assertEquals("method07", managedMethods.get(0).getMethod().getName());
 
-		ManagedMethodSPI managedMethod = managedMethods.get(0);
+		IManagedMethod managedMethod = managedMethods.get(0);
 		assertEquals("InterceptedInvoker", Classes.getFieldValue(managedMethod, "invoker").getClass().getSimpleName());
 	}
 
 	@Test
 	public void interceptedServiceMethod() throws Throwable {
 		String descriptor = "<test class='js.tiny.container.annotation.unit.InterceptedUnitTest$MockClass08' />";
-		ManagedClassSPI managedClass = managedClass(descriptor);
+		IManagedClass managedClass = managedClass(descriptor);
 
-		List<ManagedMethodSPI> managedMethods = list(managedClass.getManagedMethods());
+		List<IManagedMethod> managedMethods = list(managedClass.getManagedMethods());
 		assertEquals(1, managedMethods.size());
 		assertEquals("method08", managedMethods.get(0).getMethod().getName());
 
-		ManagedMethodSPI managedMethod = managedMethods.get(0);
+		IManagedMethod managedMethod = managedMethods.get(0);
 		assertEquals("InterceptedInvoker", Classes.getFieldValue(managedMethod, "invoker").getClass().getSimpleName());
 	}
 
 	@Test(expected = BugError.class)
 	public void interceptedPojoClass() throws Throwable {
 		String descriptor = "<test class='js.tiny.container.annotation.unit.InterceptedUnitTest$MockClass01' />";
-		ManagedClassSPI managedClass = managedClass(descriptor);
+		IManagedClass managedClass = managedClass(descriptor);
 	}
 
 	@Test(expected = ConfigException.class)
 	public void interceptedPojoMethod() throws Throwable {
 		String descriptor = "<test class='	InterceptedUnitTest$MockClass02' />";
-		ManagedClassSPI managedClass = managedClass(descriptor);
+		IManagedClass managedClass = managedClass(descriptor);
 	}
 
 	// --------------------------------------------------------------------------------------------
 	// UTILITY METHODS
 
-	private static ManagedClassSPI managedClass(String descriptor) throws Throwable {
+	private static IManagedClass managedClass(String descriptor) throws Throwable {
 		Container container = new ContainerStub();
 		String xml = Strings.concat("<?xml version='1.0' encoding='UTF-8' ?><managed-classes>", descriptor, "</managed-classes>");
 		ConfigBuilder builder = new ConfigBuilder(xml);

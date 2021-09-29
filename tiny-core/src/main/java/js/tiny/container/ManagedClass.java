@@ -46,8 +46,11 @@ import js.lang.NoSuchBeingException;
 import js.log.Log;
 import js.log.LogFactory;
 import js.tiny.container.core.AppFactory;
-import js.tiny.container.core.IContainerService;
-import js.tiny.container.core.IServiceMeta;
+import js.tiny.container.spi.IContainer;
+import js.tiny.container.spi.IContainerService;
+import js.tiny.container.spi.IManagedClass;
+import js.tiny.container.spi.IManagedMethod;
+import js.tiny.container.spi.IServiceMeta;
 import js.transaction.Immutable;
 import js.transaction.Mutable;
 import js.transaction.Transactional;
@@ -274,7 +277,7 @@ import js.util.Types;
  * @author Iulian Rotaru
  * @version final
  */
-public final class ManagedClass implements ManagedClassSPI {
+public final class ManagedClass implements IManagedClass {
 	/** Class logger. */
 	private static final Log log = LogFactory.getLog(ManagedClass.class);
 
@@ -336,10 +339,10 @@ public final class ManagedClass implements ManagedClassSPI {
 	 * Managed methods pool for managed classes of type {@link InstanceType#PROXY}. Used by {@link ManagedProxyHandler} to find
 	 * out managed method bound to interface method.
 	 */
-	private final Map<Method, ManagedMethodSPI> methodsPool = new HashMap<>();
+	private final Map<Method, IManagedMethod> methodsPool = new HashMap<>();
 
 	/** Pool of net methods, that is, methods remotely accessible. */
-	private final Map<String, ManagedMethodSPI> netMethodsPool = new HashMap<>();
+	private final Map<String, IManagedMethod> netMethodsPool = new HashMap<>();
 
 	/**
 	 * Map of fields annotated with {@link ContextParam} annotation. Map key is the context parameter name. This fields will be
@@ -348,9 +351,9 @@ public final class ManagedClass implements ManagedClassSPI {
 	 */
 	private final Map<String, Field> contextParamFields = new HashMap<>();
 
-	private ManagedMethodSPI postConstructor;
+	private IManagedMethod postConstructor;
 
-	private ManagedMethodSPI preDestructor;
+	private IManagedMethod preDestructor;
 
 	/** Cached value of managed class string representation, merely for logging. */
 	private final String string;
@@ -752,7 +755,7 @@ public final class ManagedClass implements ManagedClassSPI {
 	// MANAGED CLASS SPI
 
 	@Override
-	public ContainerSPI getContainer() {
+	public IContainer getContainer() {
 		return container;
 	}
 
@@ -795,31 +798,31 @@ public final class ManagedClass implements ManagedClassSPI {
 	}
 
 	@Override
-	public Iterable<ManagedMethodSPI> getManagedMethods() {
+	public Iterable<IManagedMethod> getManagedMethods() {
 		return methodsPool.values();
 	}
 
 	@Override
-	public Iterable<ManagedMethodSPI> getNetMethods() {
+	public Iterable<IManagedMethod> getNetMethods() {
 		return netMethodsPool.values();
 	}
 
 	@Override
-	public ManagedMethodSPI getPostConstructMethod() {
+	public IManagedMethod getPostConstructMethod() {
 		return postConstructor;
 	}
 
 	@Override
-	public ManagedMethodSPI getPreDestroyMethod() {
+	public IManagedMethod getPreDestroyMethod() {
 		return preDestructor;
 	}
 
 	@Override
-	public ManagedMethodSPI getManagedMethod(Method method) throws NoSuchMethodException {
+	public IManagedMethod getManagedMethod(Method method) throws NoSuchMethodException {
 		if (!instanceType.equals(InstanceType.PROXY)) {
 			throw new BugError("Managed method getter can be used only on |%s| types.", InstanceType.PROXY);
 		}
-		ManagedMethodSPI managedMethod = methodsPool.get(method);
+		IManagedMethod managedMethod = methodsPool.get(method);
 		if (managedMethod == null) {
 			throw new NoSuchMethodException(String.format("Missing managed method |%s#%s|.", implementationClass.getName(), method.getName()));
 		}
@@ -827,8 +830,8 @@ public final class ManagedClass implements ManagedClassSPI {
 	}
 
 	@Override
-	public ManagedMethodSPI getNetMethod(String methodName) {
-		ManagedMethodSPI managedMethod = netMethodsPool.get(methodName);
+	public IManagedMethod getNetMethod(String methodName) {
+		IManagedMethod managedMethod = netMethodsPool.get(methodName);
 		if (managedMethod == null) {
 			log.error("Missing remote method |%s| from |%s|.", methodName, implementationClass);
 			return null;

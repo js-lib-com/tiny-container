@@ -31,9 +31,9 @@ import js.tiny.container.Container;
 import js.tiny.container.InstanceScope;
 import js.tiny.container.InstanceType;
 import js.tiny.container.ManagedClass;
-import js.tiny.container.ManagedClassSPI;
-import js.tiny.container.ManagedMethodSPI;
 import js.tiny.container.servlet.TinyConfigBuilder;
+import js.tiny.container.spi.IManagedClass;
+import js.tiny.container.spi.IManagedMethod;
 import js.tiny.container.stub.ContainerStub;
 import js.transaction.Transactional;
 import js.util.Classes;
@@ -76,7 +76,7 @@ public class ManagedClassSpiConformanceTest {
 				"	</test>" + //
 				"</config>";
 
-		ManagedClassSPI managedClass = getManagedClass(descriptor);
+		IManagedClass managedClass = getManagedClass(descriptor);
 		Config config = managedClass.getConfig();
 
 		assertNotNull(config);
@@ -160,7 +160,7 @@ public class ManagedClassSpiConformanceTest {
 	public void getManagedMethods_PROXY() throws Exception {
 		String config = "<test interface='js.tiny.container.unit.ManagedClassSpiConformanceTest$Car' class='js.tiny.container.unit.ManagedClassSpiConformanceTest$CarImpl' type='PROXY' />";
 		List<String> methodNames = new ArrayList<>();
-		for (ManagedMethodSPI method : getManagedClass(config(config)).getManagedMethods()) {
+		for (IManagedMethod method : getManagedClass(config(config)).getManagedMethods()) {
 			methodNames.add(method.getMethod().getName());
 		}
 
@@ -181,7 +181,7 @@ public class ManagedClassSpiConformanceTest {
 	public void getManagedMethod() throws Exception {
 		String config = "<test interface='js.tiny.container.unit.ManagedClassSpiConformanceTest$Car' class='js.tiny.container.unit.ManagedClassSpiConformanceTest$CarImpl' type='PROXY' />";
 		Method method = Car.class.getDeclaredMethod("getModel");
-		ManagedMethodSPI managedMethod = getManagedClass(config(config)).getManagedMethod(method);
+		IManagedMethod managedMethod = getManagedClass(config(config)).getManagedMethod(method);
 
 		assertNotNull(managedMethod);
 		assertEquals(method, managedMethod.getMethod());
@@ -204,7 +204,7 @@ public class ManagedClassSpiConformanceTest {
 	@Test
 	public void getNetMethod() throws Exception {
 		String config = "<test class='js.tiny.container.unit.ManagedClassSpiConformanceTest$NetCar' />";
-		ManagedMethodSPI netMethod = getManagedClass(config(config)).getNetMethod("getModel");
+		IManagedMethod netMethod = getManagedClass(config(config)).getNetMethod("getModel");
 		assertNotNull(netMethod);
 		assertEquals("getModel", netMethod.getMethod().getName());
 	}
@@ -260,7 +260,7 @@ public class ManagedClassSpiConformanceTest {
 	// --------------------------------------------------------------------------------------------
 	// UTILITY METHODS
 
-	private static ManagedClassSPI getManagedClass(String config) throws Exception {
+	private static IManagedClass getManagedClass(String config) throws Exception {
 		TinyConfigBuilder builder = new TestConfigBuilder(config);
 		Config appDescriptor = builder.build();
 		Container container = new MockContainer();

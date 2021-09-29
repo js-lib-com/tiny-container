@@ -4,7 +4,9 @@ import js.lang.BugError;
 import js.lang.ManagedPostConstruct;
 import js.log.Log;
 import js.log.LogFactory;
-import js.tiny.container.core.IInstancePostProcessor;
+import js.tiny.container.spi.IInstancePostProcessor;
+import js.tiny.container.spi.IManagedClass;
+import js.tiny.container.spi.IManagedMethod;
 
 /**
  * Execute {@link ManagedPostConstruct#postConstruct()} on managed instance. Instance post-construction is executed after
@@ -26,8 +28,8 @@ final class PostConstructInstanceProcessor implements IInstancePostProcessor {
 	 * @throws BugError if instance post-construction fails due to exception of user defined logic.
 	 */
 	@Override
-	public void postProcessInstance(ManagedClassSPI managedClass, Object instance) {
-		ManagedMethodSPI method = managedClass.getPostConstructMethod();
+	public void postProcessInstance(IManagedClass managedClass, Object instance) {
+		IManagedMethod method = managedClass.getPostConstructMethod();
 		if (method == null) {
 			return;
 		}

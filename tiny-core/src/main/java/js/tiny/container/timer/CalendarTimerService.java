@@ -15,9 +15,9 @@ import js.lang.BugError;
 import js.log.Log;
 import js.log.LogFactory;
 import js.tiny.container.InstanceScope;
-import js.tiny.container.ManagedClassSPI;
-import js.tiny.container.ManagedMethodSPI;
-import js.tiny.container.core.IServiceMeta;
+import js.tiny.container.spi.IManagedClass;
+import js.tiny.container.spi.IManagedMethod;
+import js.tiny.container.spi.IServiceMeta;
 import js.util.Params;
 import js.util.Types;
 
@@ -38,13 +38,13 @@ public class CalendarTimerService implements ICalendarTimerService {
 	}
 
 	@Override
-	public List<IServiceMeta> scan(ManagedClassSPI managedClass) {
+	public List<IServiceMeta> scan(IManagedClass managedClass) {
 		// TODO Auto-generated method stub
 		return Collections.emptyList();
 	}
 
 	@Override
-	public List<IServiceMeta> scan(ManagedMethodSPI managedMethod) {
+	public List<IServiceMeta> scan(IManagedMethod managedMethod) {
 		List<IServiceMeta> serviceMetas = new ArrayList<>();
 
 		Schedule schedule = managedMethod.getAnnotation(Schedule.class);
@@ -62,11 +62,11 @@ public class CalendarTimerService implements ICalendarTimerService {
 	}
 
 	@Override
-	public void postProcessInstance(ManagedClassSPI managedClass, Object instance) {
+	public void postProcessInstance(IManagedClass managedClass, Object instance) {
 		// TODO: core should invoke this hook only for instances with timer service
 		// for now core hit this point for every managed instance
 
-		for (ManagedMethodSPI managedMethod : managedClass.getManagedMethods()) {
+		for (IManagedMethod managedMethod : managedClass.getManagedMethods()) {
 			ScheduleMeta schedule = managedMethod.getServiceMeta(ScheduleMeta.class);
 			if (schedule != null) {
 				createTimer(instance, managedMethod);
@@ -75,7 +75,7 @@ public class CalendarTimerService implements ICalendarTimerService {
 	}
 
 	@Override
-	public void createTimer(Object instance, ManagedMethodSPI managedMethod) {
+	public void createTimer(Object instance, IManagedMethod managedMethod) {
 		log.debug("Create timer for method |%s|.", managedMethod);
 
 		ScheduleMeta schedule = managedMethod.getServiceMeta(ScheduleMeta.class);

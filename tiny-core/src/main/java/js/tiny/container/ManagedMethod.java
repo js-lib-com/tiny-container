@@ -22,8 +22,12 @@ import js.lang.InvocationException;
 import js.lang.SyntaxException;
 import js.log.Log;
 import js.log.LogFactory;
-import js.tiny.container.core.IServiceMeta;
 import js.tiny.container.core.SecurityContext;
+import js.tiny.container.spi.AuthorizationException;
+import js.tiny.container.spi.IContainer;
+import js.tiny.container.spi.IManagedClass;
+import js.tiny.container.spi.IManagedMethod;
+import js.tiny.container.spi.IServiceMeta;
 import js.util.Classes;
 import js.util.Params;
 import js.util.Strings;
@@ -38,9 +42,9 @@ import js.util.Types;
  * @author Iulian Rotaru
  * @version final
  */
-public final class ManagedMethod implements ManagedMethodSPI {
+public final class ManagedMethod implements IManagedMethod {
 	/** Class logger. */
-	private static final Log log = LogFactory.getLog(ManagedMethodSPI.class);
+	private static final Log log = LogFactory.getLog(IManagedMethod.class);
 
 	/** Format string for managed method simple name, without class name. */
 	private static final String SIMPLE_NAME_FORMAT = "%s(%s)";
@@ -49,14 +53,14 @@ public final class ManagedMethod implements ManagedMethodSPI {
 	private static final String QUALIFIED_NAME_FORMAT = "%s#" + SIMPLE_NAME_FORMAT;
 
 	/** Back reference to parent container. */
-	private final ContainerSPI container;
+	private final IContainer container;
 
 	/** The managed class declaring this managed method. */
-	private final ManagedClassSPI declaringClass;
+	private final IManagedClass declaringClass;
 
 	/**
 	 * Wrapped Java reflective method. This method instance reflects the method declared by managed class interface, see
-	 * {@link ManagedClassSPI#getInterfaceClass()}.
+	 * {@link IManagedClass#getInterfaceClass()}.
 	 */
 	private final Method method;
 
@@ -126,12 +130,12 @@ public final class ManagedMethod implements ManagedMethodSPI {
 
 	/**
 	 * Construct a managed method. This is a convenient constructor that just delegates
-	 * {@link #ManagedMethod(ManagedClassSPI, Class, Method)} with null interceptor class.
+	 * {@link #ManagedMethod(IManagedClass, Class, Method)} with null interceptor class.
 	 * 
 	 * @param declaringClass declaring managed class,
 	 * @param method Java reflective method wrapped by this managed method.
 	 */
-	public ManagedMethod(ManagedClassSPI declaringClass, Method method) {
+	public ManagedMethod(IManagedClass declaringClass, Method method) {
 		this(declaringClass, null, method);
 	}
 
@@ -146,7 +150,7 @@ public final class ManagedMethod implements ManagedMethodSPI {
 	 * @param methodInterceptor optional method invocation interceptor, possible null,
 	 * @param method Java reflective method wrapped by this managed method.
 	 */
-	public ManagedMethod(ManagedClassSPI declaringClass, Class<? extends Interceptor> methodInterceptor, Method method) {
+	public ManagedMethod(IManagedClass declaringClass, Class<? extends Interceptor> methodInterceptor, Method method) {
 		this.container = declaringClass.getContainer();
 		this.declaringClass = declaringClass;
 		this.method = method;
@@ -306,7 +310,7 @@ public final class ManagedMethod implements ManagedMethodSPI {
 	// MANAGED METHOD SPI
 
 	@Override
-	public ManagedClassSPI getDeclaringClass() {
+	public IManagedClass getDeclaringClass() {
 		return declaringClass;
 	}
 
@@ -547,7 +551,7 @@ public final class ManagedMethod implements ManagedMethodSPI {
 		 */
 		@Override
 		public Object invoke(Object object, Object[] args) throws IllegalArgumentException, IllegalAccessException, InvocationTargetException {
-			final ManagedMethodSPI managedMethod = ManagedMethod.this;
+			final IManagedMethod managedMethod = ManagedMethod.this;
 
 			if (interceptor instanceof PreInvokeInterceptor) {
 				log.debug("Execute pre-invoke interceptor for method |%s|.", managedMethod);

@@ -1,4 +1,4 @@
-package js.tiny.container;
+package js.tiny.container.spi;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
@@ -12,7 +12,7 @@ import javax.ws.rs.Produces;
 
 import js.lang.BugError;
 import js.lang.InvocationException;
-import js.tiny.container.core.IServiceMeta;
+import js.tiny.container.InvocationMeter;
 import js.tiny.container.core.SecurityContext;
 import js.transaction.Immutable;
 import js.transaction.Mutable;
@@ -28,13 +28,13 @@ import js.util.Strings;
  * @author Iulian Rotaru
  * @version final
  */
-public interface ManagedMethodSPI {
+public interface IManagedMethod {
 	/**
 	 * Get managed class that declares this managed method.
 	 * 
 	 * @return parent managed class.
 	 */
-	ManagedClassSPI getDeclaringClass();
+	IManagedClass getDeclaringClass();
 
 	/**
 	 * Get wrapped Java method.

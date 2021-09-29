@@ -2,6 +2,8 @@ package js.tiny.container;
 
 import javax.interceptor.Interceptors;
 
+import js.tiny.container.spi.IManagedMethod;
+
 /**
  * Invocation interceptor executed just after managed method invocation. Post-invoke interceptor interface works closely with
  * {@link Interceptors} annotation, see below.
@@ -35,5 +37,5 @@ public interface PostInvokeInterceptor extends Interceptor {
 	 * @param returnValue value returned by managed method after execution.
 	 * @throws Exception any exception thrown by hook logic.
 	 */
-	void postInvoke(ManagedMethodSPI managedMethod, Object[] args, Object returnValue) throws Exception;
+	void postInvoke(IManagedMethod managedMethod, Object[] args, Object returnValue) throws Exception;
 }

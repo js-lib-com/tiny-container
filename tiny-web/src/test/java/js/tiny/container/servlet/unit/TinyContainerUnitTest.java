@@ -32,13 +32,13 @@ import js.lang.Config;
 import js.lang.ConfigBuilder;
 import js.lang.ConfigException;
 import js.tiny.container.Container;
-import js.tiny.container.ContainerSPI;
 import js.tiny.container.InstanceScope;
-import js.tiny.container.ManagedClassSPI;
 import js.tiny.container.ScopeFactory;
 import js.tiny.container.servlet.NonceUser;
 import js.tiny.container.servlet.RequestContext;
 import js.tiny.container.servlet.TinyContainer;
+import js.tiny.container.spi.IContainer;
+import js.tiny.container.spi.IManagedClass;
 import js.tiny.container.unit.HttpServletRequestStub;
 import js.tiny.container.unit.HttpServletResponseStub;
 import js.tiny.container.unit.HttpSessionStub;
@@ -71,7 +71,7 @@ public class TinyContainerUnitTest {
 		assertClass("SessionScopeFactory", scopeFactories.get(InstanceScope.SESSION));
 		assertNull(scopeFactories.get(InstanceScope.LOCAL));
 
-		Map<Class<?>, ManagedClassSPI> classesPool = Classes.getFieldValue(container, Container.class, "classesPool");
+		Map<Class<?>, IManagedClass> classesPool = Classes.getFieldValue(container, Container.class, "classesPool");
 		assertNotNull(classesPool);
 		assertTrue(classesPool.isEmpty());
 	}
@@ -700,7 +700,7 @@ public class TinyContainerUnitTest {
 		private MockHttpServletRequest request = new MockHttpServletRequest();
 		private MockHttpServletResponse response = new MockHttpServletResponse();
 
-		public MockRequestContext(ContainerSPI container) {
+		public MockRequestContext(IContainer container) {
 			super(container);
 		}
 

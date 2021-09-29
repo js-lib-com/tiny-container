@@ -5,12 +5,12 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 
 import js.lang.InvocationException;
-import js.tiny.container.AuthorizationException;
-import js.tiny.container.ManagedClassSPI;
-import js.tiny.container.ManagedMethodSPI;
-import js.tiny.container.core.IServiceMeta;
+import js.tiny.container.spi.AuthorizationException;
+import js.tiny.container.spi.IManagedClass;
+import js.tiny.container.spi.IManagedMethod;
+import js.tiny.container.spi.IServiceMeta;
 
-public class ManagedMethodSpiStub implements ManagedMethodSPI {
+public class ManagedMethodSpiStub implements IManagedMethod {
 	@Override
 	public Method getMethod() {
 		throw new UnsupportedOperationException("getMethod()");
@@ -72,7 +72,7 @@ public class ManagedMethodSpiStub implements ManagedMethodSPI {
 	}
 
 	@Override
-	public ManagedClassSPI getDeclaringClass() {
+	public IManagedClass getDeclaringClass() {
 		throw new UnsupportedOperationException("getDeclaringClass()");
 	}
 

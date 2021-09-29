@@ -7,6 +7,8 @@ import js.lang.InstanceInvocationHandler;
 import js.lang.InvocationException;
 import js.log.Log;
 import js.log.LogFactory;
+import js.tiny.container.spi.IManagedClass;
+import js.tiny.container.spi.IManagedMethod;
 import js.transaction.Transaction;
 import js.transaction.TransactionManager;
 import js.util.Params;
@@ -93,7 +95,7 @@ public final class ManagedProxyHandler implements InstanceInvocationHandler<Obje
 	private final String transactionalSchema;
 
 	/** Wrapped managed class. */
-	private final ManagedClassSPI managedClass;
+	private final IManagedClass managedClass;
 
 	/** Managed instance. */
 	private final Object managedInstance;
@@ -105,7 +107,7 @@ public final class ManagedProxyHandler implements InstanceInvocationHandler<Obje
 	 * @param managedInstance instance of managed class.
 	 * @throws IllegalArgumentException if <code>managedClass</code> or <code>managedInstance</code> argument is null.
 	 */
-	public ManagedProxyHandler(ManagedClassSPI managedClass, Object managedInstance) {
+	public ManagedProxyHandler(IManagedClass managedClass, Object managedInstance) {
 		this(null, managedClass, managedInstance);
 	}
 
@@ -118,7 +120,7 @@ public final class ManagedProxyHandler implements InstanceInvocationHandler<Obje
 	 * @throws IllegalArgumentException if <code>managedClass</code> is null or not transactional or
 	 *             <code>managedInstance</code> is null.
 	 */
-	public ManagedProxyHandler(TransactionalResource transactionalResource, ManagedClassSPI managedClass, Object managedInstance) {
+	public ManagedProxyHandler(TransactionalResource transactionalResource, IManagedClass managedClass, Object managedInstance) {
 		Params.notNull(managedClass, "Managed class");
 		if (transactionalResource != null) {
 			Params.isTrue(managedClass.isTransactional(), "Managed class is not transactional");
@@ -154,7 +156,7 @@ public final class ManagedProxyHandler implements InstanceInvocationHandler<Obje
 	 */
 	@Override
 	public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-		final ManagedMethodSPI managedMethod = managedClass.getManagedMethod(method);
+		final IManagedMethod managedMethod = managedClass.getManagedMethod(method);
 		log.trace("Invoke |%s|.", managedMethod);
 
 		if (!managedMethod.isTransactional()) {
@@ -180,7 +182,7 @@ public final class ManagedProxyHandler implements InstanceInvocationHandler<Obje
 	 * @return value returned by managed method.
 	 * @throws Throwable forward any error rose by method execution.
 	 */
-	private Object executeMutableTransaction(ManagedMethodSPI managedMethod, Object[] args) throws Throwable {
+	private Object executeMutableTransaction(IManagedMethod managedMethod, Object[] args) throws Throwable {
 		// store transaction session on current thread via transactional resource utility
 		// it may happen to have multiple nested transaction on current thread
 		// since all are created by the same transactional resource, all are part of the same session
@@ -218,7 +220,7 @@ public final class ManagedProxyHandler implements InstanceInvocationHandler<Obje
 	 * @return value returned by managed method.
 	 * @throws Throwable forward any error rose by method execution.
 	 */
-	private Object executeImmutableTransaction(ManagedMethodSPI managedMethod, Object[] args) throws Throwable {
+	private Object executeImmutableTransaction(IManagedMethod managedMethod, Object[] args) throws Throwable {
 		Transaction transaction = transactionalResource.createReadOnlyTransaction(transactionalSchema);
 		// see mutable transaction comment
 		transactionalResource.storeSession(transaction.getResourceManager());

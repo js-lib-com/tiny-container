@@ -21,11 +21,11 @@ import js.log.LogContext;
 import js.log.LogFactory;
 import js.rmi.BusinessException;
 import js.rmi.RemoteException;
-import js.tiny.container.AuthorizationException;
-import js.tiny.container.ContainerSPI;
 import js.tiny.container.core.Factory;
 import js.tiny.container.http.ContentType;
 import js.tiny.container.http.HttpHeader;
+import js.tiny.container.spi.AuthorizationException;
+import js.tiny.container.spi.IContainer;
 import js.util.Strings;
 
 /**
@@ -46,7 +46,7 @@ import js.util.Strings;
  * XHR specification mandates for client agent to handle transparently unauthorized access. This results into browser login
  * form, that is not always the desired solution. This framework choose to send 200 OK with {@link HttpHeader#X_HEADER_LOCATION}
  * custom header. Client script can redirect now to sent location. Anyway, for this solution to work application should have
- * login support, see {@link ContainerSPI#getLoginPage()}. If application login page is not configured unauthorized XHR is still
+ * login support, see {@link IContainer#getLoginPage()}. If application login page is not configured unauthorized XHR is still
  * handled by client agent form.
  * <p>
  * Also this base class takes care to initialize logger context, {@link #logContext} with context path, remote address and
@@ -96,7 +96,7 @@ public abstract class AppServlet extends HttpServlet {
 	 * Container of the application on behalf of which this servlet instance is acquired. From servlet instance perspective
 	 * container is a singleton and its reference can be safely stored.
 	 */
-	protected transient ContainerSPI container;
+	protected transient IContainer container;
 
 	private String previewContextPath;
 
@@ -118,7 +118,7 @@ public abstract class AppServlet extends HttpServlet {
 
 		final ServletContext context = config.getServletContext();
 		previewContextPath = context.getInitParameter(PARAMETER_PREVIEW_CONTEXT);
-		container = (ContainerSPI) context.getAttribute(TinyContainer.ATTR_INSTANCE);
+		container = (IContainer) context.getAttribute(TinyContainer.ATTR_INSTANCE);
 		if (container == null) {
 			log.fatal("Tiny container instance not properly created, probably misconfigured. Servlet |%s| permanently unvailable.", config.getServletName());
 			throw new UnavailableException("Tiny container instance not properly created, probably misconfigured.");
@@ -234,14 +234,14 @@ public abstract class AppServlet extends HttpServlet {
 	/**
 	 * Send unauthorized access response. This method send back a response with status code
 	 * {@link HttpServletResponse#SC_UNAUTHORIZED} and response header {@link HttpHeader#WWW_AUTHENTICATE} set to basic
-	 * authentication method and {@link ContainerSPI#getLoginRealm()} authentication realm.
+	 * authentication method and {@link IContainer#getLoginRealm()} authentication realm.
 	 * <p>
 	 * If request is from an agent using XHR this method behaves a little different. XHR specification mandates that
 	 * unauthorized access to be handled transparently by client agent that usually displays client agent login form, not very
 	 * well integrated with application. Below is a snippet from this framework script library.
 	 * <p>
 	 * For not authorized XHR requests this method sends {@link HttpServletResponse#SC_OK} and custom response header
-	 * {@link HttpHeader#X_HEADER_LOCATION} set to application login page, see {@link ContainerSPI#getLoginPage()}. Client
+	 * {@link HttpHeader#X_HEADER_LOCATION} set to application login page, see {@link IContainer#getLoginPage()}. Client
 	 * script can handle this response and redirect to given login page.
 	 * 
 	 * <pre>
@@ -257,7 +257,7 @@ public abstract class AppServlet extends HttpServlet {
 	 * @param context current request context.
 	 */
 	protected static void sendUnauthorized(RequestContext context) {
-		final ContainerSPI container = context.getContainer();
+		final IContainer container = context.getContainer();
 		final HttpServletResponse httpResponse = context.getResponse();
 
 		if (httpResponse.isCommitted()) {

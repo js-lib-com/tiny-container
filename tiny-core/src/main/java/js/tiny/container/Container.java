@@ -37,9 +37,12 @@ import js.rmi.RemoteFactory;
 import js.tiny.container.core.App;
 import js.tiny.container.core.AppContext;
 import js.tiny.container.core.AppFactory;
-import js.tiny.container.core.IClassPostProcessor;
-import js.tiny.container.core.IContainerService;
-import js.tiny.container.core.IInstancePostProcessor;
+import js.tiny.container.spi.IClassPostProcessor;
+import js.tiny.container.spi.IContainer;
+import js.tiny.container.spi.IContainerService;
+import js.tiny.container.spi.IInstancePostProcessor;
+import js.tiny.container.spi.IManagedClass;
+import js.tiny.container.spi.IManagedMethod;
 //import js.tiny.container.timer.CalendarTimerService;
 import js.transaction.Transaction;
 import js.util.Classes;
@@ -204,7 +207,7 @@ import js.util.Types;
  * <h3 id="instance-retrieval">Instance Retrieval Algorithm</h3> Instance retrieval is the process of obtaining a managed
  * instance, be it from scope factories caches or fresh created by specialized instance factories.
  * <ol>
- * <li>obtain an instance key based on {@link ManagedClassSPI#getKey()} or instance name,
+ * <li>obtain an instance key based on {@link IManagedClass#getKey()} or instance name,
  * <li>use interface class to retrieve managed class from container classes pool,
  * <li>if managed class not found exit with bug error; if {@link #getOptionalInstance(Class, Object...)} returns null,
  * <li>get scope and instance factories for managed class instance scope and type; if managed class instance scope is local
@@ -223,7 +226,7 @@ import js.util.Types;
  * @author Iulian Rotaru
  * @version draft
  */
-public abstract class Container implements ContainerSPI, Configurable {
+public abstract class Container implements IContainer, Configurable {
 	/** Class logger. */
 	private static final Log log = LogFactory.getLog(Container.class);
 
@@ -282,7 +285,7 @@ public abstract class Container implements ContainerSPI, Configurable {
 	 * Master cache for all managed classes registered to container. Since an application has one and only one container
 	 * instance, managed classes pool is unique per application. This pool is initialized by {@link #config(Config)} method.
 	 */
-	private final Map<Class<?>, ManagedClassSPI> classesPool = new HashMap<>();
+	private final Map<Class<?>, IManagedClass> classesPool = new HashMap<>();
 
 	private final List<IContainerService> containerServices = new ArrayList<>();
 
@@ -487,10 +490,10 @@ public abstract class Container implements ContainerSPI, Configurable {
 
 		// special handling for this container instance accessed via application context
 		// need to ensure this container instance is reused and not to create a new one
-		ManagedClassSPI appContext = classesPool.get(AppContext.class);
+		IManagedClass appContext = classesPool.get(AppContext.class);
 		// application context can be null on tests
 		// also on tests application context interface can be implemented by mock class not in container hierarchy
-		if (appContext != null && Types.isKindOf(appContext.getImplementationClass(), ContainerSPI.class)) {
+		if (appContext != null && Types.isKindOf(appContext.getImplementationClass(), IContainer.class)) {
 			log.debug("Persist container instance on application scope.");
 			// managed class key cannot be null
 			scopeFactories.get(InstanceScope.APPLICATION).persistInstance(new InstanceKey(appContext.getKey().toString()), this);
@@ -499,7 +502,7 @@ public abstract class Container implements ContainerSPI, Configurable {
 
 	/**
 	 * Ensure all managed classes marked with 'auto-creation' are instantiated. Invoked at a final stage of container
-	 * initialization, this method checks every managed class that has {@link ManagedClassSPI#isAutoInstanceCreation()} flag set
+	 * initialization, this method checks every managed class that has {@link IManagedClass#isAutoInstanceCreation()} flag set
 	 * and ensure is instantiated.
 	 * <p>
 	 * Takes care to instantiate, configure if the case, and execute post-construct in the order from application descriptor.
@@ -519,22 +522,22 @@ public abstract class Container implements ContainerSPI, Configurable {
 
 		// comparison is based on managed class key that is created incrementally
 
-		Set<ManagedClassSPI> sortedClasses = new TreeSet<>(new Comparator<ManagedClassSPI>() {
+		Set<IManagedClass> sortedClasses = new TreeSet<>(new Comparator<IManagedClass>() {
 			@Override
-			public int compare(ManagedClassSPI o1, ManagedClassSPI o2) {
+			public int compare(IManagedClass o1, IManagedClass o2) {
 				// compare first with second to ensure ascending sorting
 				return o1.getKey().compareTo(o2.getKey());
 			}
 		});
 
-		for (ManagedClassSPI managedClass : classesPool.values()) {
+		for (IManagedClass managedClass : classesPool.values()) {
 			// process only implementations of managed life cycle interface
 			if (managedClass.isAutoInstanceCreation()) {
 				sortedClasses.add(managedClass);
 			}
 		}
 
-		for (ManagedClassSPI managedClass : sortedClasses) {
+		for (IManagedClass managedClass : sortedClasses) {
 			// call getInstance to ensure managed instance with managed life cycle is started
 			// if there are more than one single interface peek one, no matter which; the simple way is to peek the first
 			// getInstance() will create instance only if not already exist; returned value is ignored
@@ -567,23 +570,23 @@ public abstract class Container implements ContainerSPI, Configurable {
 		// bellow sorted set is used to ensure reverse order on managed classes destruction
 		// comparison is based on managed class key that is created incrementally
 
-		Set<ManagedClassSPI> sortedClasses = new TreeSet<>(new Comparator<ManagedClassSPI>() {
+		Set<IManagedClass> sortedClasses = new TreeSet<>(new Comparator<IManagedClass>() {
 			@Override
-			public int compare(ManagedClassSPI o1, ManagedClassSPI o2) {
+			public int compare(IManagedClass o1, IManagedClass o2) {
 				// compare second with first to ensure descending sorting
 				return o2.getKey().compareTo(o1.getKey());
 			}
 		});
 
-		for (ManagedClassSPI managedClass : classesPool.values()) {
+		for (IManagedClass managedClass : classesPool.values()) {
 			// process only managed classes with pre-destroy hook
 			if (managedClass.getPreDestroyMethod() != null) {
 				sortedClasses.add(managedClass);
 			}
 		}
 
-		for (ManagedClassSPI managedClass : sortedClasses) {
-			ManagedMethodSPI preDestroyMethod = managedClass.getPreDestroyMethod();
+		for (IManagedClass managedClass : sortedClasses) {
+			IManagedMethod preDestroyMethod = managedClass.getPreDestroyMethod();
 
 			ScopeFactory scopeFactory = scopeFactories.get(managedClass.getInstanceScope());
 			// managed class key cannot be null
@@ -627,7 +630,7 @@ public abstract class Container implements ContainerSPI, Configurable {
 	public <T> T getInstance(Class<? super T> interfaceClass, Object... args) {
 		Params.notNull(interfaceClass, "Interface class");
 
-		ManagedClassSPI managedClass = classesPool.get(interfaceClass);
+		IManagedClass managedClass = classesPool.get(interfaceClass);
 		if (managedClass == null) {
 			throw new BugError("No managed class associated with interface class |%s|.", interfaceClass);
 		}
@@ -642,7 +645,7 @@ public abstract class Container implements ContainerSPI, Configurable {
 		Params.notNullOrEmpty(instanceName, "Instance name");
 		Params.notNull(interfaceClass, "Interface class");
 
-		ManagedClassSPI managedClass = classesPool.get(interfaceClass);
+		IManagedClass managedClass = classesPool.get(interfaceClass);
 		if (managedClass == null) {
 			throw new BugError("No managed class associated with interface class |%s|.", interfaceClass);
 		}
@@ -656,7 +659,7 @@ public abstract class Container implements ContainerSPI, Configurable {
 	public <T> T getOptionalInstance(Class<? super T> interfaceClass, Object... args) {
 		Params.notNull(interfaceClass, "Interface class");
 
-		ManagedClassSPI managedClass = classesPool.get(interfaceClass);
+		IManagedClass managedClass = classesPool.get(interfaceClass);
 		if (managedClass == null) {
 			return null;
 		}
@@ -677,7 +680,7 @@ public abstract class Container implements ContainerSPI, Configurable {
 	}
 
 	@Override
-	public <T> T getInstance(ManagedClassSPI managedClass, Object... args) {
+	public <T> T getInstance(IManagedClass managedClass, Object... args) {
 		// managed class key cannot be null
 		InstanceKey instanceKey = new InstanceKey(managedClass.getKey().toString());
 		return getInstance(managedClass, instanceKey, args);
@@ -719,7 +722,7 @@ public abstract class Container implements ContainerSPI, Configurable {
 	 * @throws BugError if attempt to assign field to not POJO type.
 	 */
 	@SuppressWarnings("unchecked")
-	private <T> T getInstance(ManagedClassSPI managedClass, InstanceKey instanceKey, Object... args) {
+	private <T> T getInstance(IManagedClass managedClass, InstanceKey instanceKey, Object... args) {
 		// if(managedClass.getInstanceType().isREMOTE()) {
 		// return getRemoteInstance(new URL(managedClass.getImplementationURL()), (Class<? super T>)
 		// managedClass.getInterfaceClass());
@@ -798,25 +801,25 @@ public abstract class Container implements ContainerSPI, Configurable {
 	// CONTAINER SPI
 
 	@Override
-	public Iterable<ManagedClassSPI> getManagedClasses() {
+	public Iterable<IManagedClass> getManagedClasses() {
 		return classesPool.values();
 	}
 
 	@Override
-	public Iterable<ManagedMethodSPI> getManagedMethods() {
-		return new Iterable<ManagedMethodSPI>() {
+	public Iterable<IManagedMethod> getManagedMethods() {
+		return new Iterable<IManagedMethod>() {
 			@Override
-			public Iterator<ManagedMethodSPI> iterator() {
+			public Iterator<IManagedMethod> iterator() {
 				return new ManagedMethodsIterator(ManagedMethodsIterator.ALL_METHODS);
 			}
 		};
 	}
 
 	@Override
-	public Iterable<ManagedMethodSPI> getNetMethods() {
-		return new Iterable<ManagedMethodSPI>() {
+	public Iterable<IManagedMethod> getNetMethods() {
+		return new Iterable<IManagedMethod>() {
 			@Override
-			public Iterator<ManagedMethodSPI> iterator() {
+			public Iterator<IManagedMethod> iterator() {
 				return new ManagedMethodsIterator(ManagedMethodsIterator.NET_METHODS);
 			}
 		};
@@ -828,7 +831,7 @@ public abstract class Container implements ContainerSPI, Configurable {
 	}
 
 	@Override
-	public ManagedClassSPI getManagedClass(Class<?> interfaceClass) {
+	public IManagedClass getManagedClass(Class<?> interfaceClass) {
 		return classesPool.get(interfaceClass);
 	}
 
@@ -878,17 +881,17 @@ public abstract class Container implements ContainerSPI, Configurable {
 	 * @author Iulian Rotaru
 	 * @version final
 	 */
-	private class ManagedMethodsIterator implements Iterator<ManagedMethodSPI> {
+	private class ManagedMethodsIterator implements Iterator<IManagedMethod> {
 		public static final boolean ALL_METHODS = false;
 		public static final boolean NET_METHODS = true;
 
 		/** Managed classes iterator. */
-		private final Iterator<ManagedClassSPI> classesIterator;
+		private final Iterator<IManagedClass> classesIterator;
 
 		private final boolean netMethod;
 
 		/** Iterator on managed methods from current managed class. */
-		private Iterator<ManagedMethodSPI> currentMethodsIterator;
+		private Iterator<IManagedMethod> currentMethodsIterator;
 
 		/**
 		 * Initialize iterators for managed classes and current class methods.
@@ -914,11 +917,11 @@ public abstract class Container implements ContainerSPI, Configurable {
 		}
 
 		@Override
-		public ManagedMethodSPI next() {
+		public IManagedMethod next() {
 			return currentMethodsIterator.next();
 		}
 
-		private Iterator<ManagedMethodSPI> nextMethodIterator() {
+		private Iterator<IManagedMethod> nextMethodIterator() {
 			if (netMethod) {
 				return classesIterator.next().getNetMethods().iterator();
 			}

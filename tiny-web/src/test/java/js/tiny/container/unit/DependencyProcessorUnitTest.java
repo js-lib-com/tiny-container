@@ -21,11 +21,11 @@ import org.junit.Test;
 import js.lang.BugError;
 import js.lang.InvocationException;
 import js.tiny.container.Container;
-import js.tiny.container.ContainerSPI;
 import js.tiny.container.InstanceScope;
-import js.tiny.container.ManagedClassSPI;
 import js.tiny.container.core.AppContext;
 import js.tiny.container.core.AppFactory;
+import js.tiny.container.spi.IContainer;
+import js.tiny.container.spi.IManagedClass;
 import js.tiny.container.stub.AppFactoryStub;
 import js.tiny.container.stub.ContainerStub;
 import js.tiny.container.stub.ManagedClassSpiStub;
@@ -48,7 +48,7 @@ public class DependencyProcessorUnitTest {
 	public void getDependencyValue_AppFactory() throws Exception {
 		MockManagedClassSPI managedClass = new MockManagedClassSPI(Person.class);
 
-		for (Class<?> clazz : new Class<?>[] { AppFactory.class, AppContext.class, ContainerSPI.class, Container.class }) {
+		for (Class<?> clazz : new Class<?>[] { AppFactory.class, AppContext.class, IContainer.class, Container.class }) {
 			Object value = Classes.invoke(processorClass(), "getDependencyValue", managedClass, clazz);
 			assertNotNull(value);
 			assertTrue(value instanceof AppFactory);
@@ -234,15 +234,15 @@ public class DependencyProcessorUnitTest {
 	}
 
 	private static class MockContainer extends ContainerStub {
-		private Map<Class<?>, ManagedClassSPI> classesPool = new HashMap<>();
+		private Map<Class<?>, IManagedClass> classesPool = new HashMap<>();
 
-		private void registerManagedClass(Class<?> interfaceClass, ManagedClassSPI managedClass) {
+		private void registerManagedClass(Class<?> interfaceClass, IManagedClass managedClass) {
 			classesPool.put(interfaceClass, managedClass);
 		}
 
 		@Override
 		public <T> T getOptionalInstance(Class<? super T> interfaceClass, Object... args) {
-			ManagedClassSPI managedClass = classesPool.get(interfaceClass);
+			IManagedClass managedClass = classesPool.get(interfaceClass);
 			if (managedClass == null) {
 				return null;
 			}
@@ -261,7 +261,7 @@ public class DependencyProcessorUnitTest {
 		}
 
 		@Override
-		public ContainerSPI getContainer() {
+		public IContainer getContainer() {
 			return container;
 		}
 

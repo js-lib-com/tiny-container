@@ -18,13 +18,13 @@ import js.lang.Config;
 import js.lang.InstanceInvocationHandler;
 import js.lang.InvocationException;
 import js.lang.VarArgs;
-import js.tiny.container.AuthorizationException;
-import js.tiny.container.ManagedClassSPI;
-import js.tiny.container.ManagedMethodSPI;
 import js.tiny.container.ManagedProxyHandler;
 import js.tiny.container.TransactionalResource;
 import js.tiny.container.core.AppFactory;
 import js.tiny.container.core.Factory;
+import js.tiny.container.spi.AuthorizationException;
+import js.tiny.container.spi.IManagedClass;
+import js.tiny.container.spi.IManagedMethod;
 import js.tiny.container.stub.ManagedClassSpiStub;
 import js.tiny.container.stub.ManagedMethodSpiStub;
 import js.tiny.container.stub.TransactionManagerStub;
@@ -279,7 +279,7 @@ public class ManagedProxyHandlerUnitTest {
 		return (TransactionalResource) factory.getInstance(TransactionalResource.class);
 	}
 
-	private InstanceInvocationHandler<Object> getProxyHandler(ManagedClassSPI managedClass, Object instance) {
+	private InstanceInvocationHandler<Object> getProxyHandler(IManagedClass managedClass, Object instance) {
 		return new ManagedProxyHandler(getTransactionalResource(), managedClass, instance);
 	}
 
@@ -311,7 +311,7 @@ public class ManagedProxyHandlerUnitTest {
 		private boolean immutable;
 
 		@Override
-		public ManagedMethodSPI getManagedMethod(Method method) throws NoSuchMethodException {
+		public IManagedMethod getManagedMethod(Method method) throws NoSuchMethodException {
 			MockManagedMethodSPI managedMethod = new MockManagedMethodSPI(method, transactional, immutable);
 			return managedMethod;
 		}

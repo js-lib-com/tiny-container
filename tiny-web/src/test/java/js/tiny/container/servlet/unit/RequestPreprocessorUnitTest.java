@@ -25,9 +25,9 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import js.tiny.container.ContainerSPI;
 import js.tiny.container.servlet.RequestContext;
 import js.tiny.container.servlet.RequestPreprocessor;
+import js.tiny.container.spi.IContainer;
 import js.tiny.container.unit.FilterConfigStub;
 import js.tiny.container.unit.HttpServletRequestStub;
 import js.tiny.container.unit.HttpServletResponseStub;
@@ -42,11 +42,11 @@ public class RequestPreprocessorUnitTest {
 		System.setProperty("catalina.base", "fixture/server/tomcat");
 	}
 
-	private ContainerSPI container;
+	private IContainer container;
 
 	@Before
 	public void beforeTest() throws Exception {
-		container = (ContainerSPI) TestContext.start();
+		container = (IContainer) TestContext.start();
 	}
 
 	/** Loads internal lists from initial parameters. */
@@ -332,7 +332,7 @@ public class RequestPreprocessorUnitTest {
 	}
 
 	private class MockServletContext extends ServletContextStub {
-		private ContainerSPI container;
+		private IContainer container;
 
 		@Override
 		public Object getAttribute(String name) {
