@@ -1,4 +1,4 @@
-package js.tiny.container;
+package js.tiny.container.timer;
 
 /**
  * Task executed periodically. This interface is designed to work in conjunction with {@link Timer} like in snippet below.
@@ -12,7 +12,6 @@ package js.tiny.container;
  * </pre>
  * 
  * @author Iulian Rotaru
- * @version draft
  */
 public interface PeriodicTask {
 	/**

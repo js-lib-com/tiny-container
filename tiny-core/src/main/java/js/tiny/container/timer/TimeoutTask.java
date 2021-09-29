@@ -1,4 +1,4 @@
-package js.tiny.container;
+package js.tiny.container.timer;
 
 /**
  * Task executed when given timeout expires. This interface is designed to work in conjunction with {@link Timer} like in
@@ -14,7 +14,6 @@ package js.tiny.container;
  * 
  * 
  * @author Iulian Rotaru
- * @version draft
  */
 public interface TimeoutTask {
 	/**

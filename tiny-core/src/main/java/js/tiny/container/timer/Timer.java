@@ -1,4 +1,4 @@
-package js.tiny.container;
+package js.tiny.container.timer;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -26,7 +26,6 @@ import js.tiny.container.core.Factory;
  * </pre>
  * 
  * @author Iulian Rotaru
- * @version draft
  */
 public final class Timer implements ManagedLifeCycle {
 	/** Class logger. */
