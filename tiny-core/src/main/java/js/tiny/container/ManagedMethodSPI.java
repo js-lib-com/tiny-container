@@ -1,17 +1,18 @@
 package js.tiny.container;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 
 import javax.annotation.security.PermitAll;
 import javax.ejb.Asynchronous;
 import javax.ejb.Remote;
-import javax.ejb.Schedule;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 
 import js.lang.BugError;
 import js.lang.InvocationException;
+import js.tiny.container.core.IServiceMeta;
 import js.tiny.container.core.SecurityContext;
 import js.transaction.Immutable;
 import js.transaction.Mutable;
@@ -156,5 +157,7 @@ public interface ManagedMethodSPI {
 	 */
 	boolean isAsynchronous();
 
-	Schedule getSchedule();
+	<T extends IServiceMeta> T getServiceMeta(Class<T> type);
+	
+	<T extends Annotation> T getAnnotation(Class<T> type);
 }

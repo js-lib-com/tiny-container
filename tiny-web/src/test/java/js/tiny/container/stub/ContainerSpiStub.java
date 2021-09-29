@@ -1,12 +1,19 @@
 package js.tiny.container.stub;
 
 import java.security.Principal;
+import java.util.List;
 
 import js.tiny.container.ContainerSPI;
 import js.tiny.container.ManagedClassSPI;
 import js.tiny.container.ManagedMethodSPI;
+import js.tiny.container.core.IContainerService;
 
 public class ContainerSpiStub implements ContainerSPI {
+	@Override
+	public List<IContainerService> getServices() {
+		throw new UnsupportedOperationException("getPlugins()");
+	}
+
 	@Override
 	public <T> T getInstance(Class<? super T> interfaceClass, Object... args) {
 		throw new UnsupportedOperationException("getInstance(Class<? super T> interfaceClass, Object... args)");

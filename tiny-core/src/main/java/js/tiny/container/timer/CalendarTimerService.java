@@ -1,5 +1,7 @@
 package js.tiny.container.timer;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.concurrent.Executors;
@@ -9,14 +11,19 @@ import java.util.concurrent.TimeUnit;
 import javax.ejb.Schedule;
 import javax.inject.Inject;
 
+import js.lang.BugError;
 import js.log.Log;
 import js.log.LogFactory;
+import js.tiny.container.InstanceScope;
+import js.tiny.container.ManagedClassSPI;
 import js.tiny.container.ManagedMethodSPI;
+import js.tiny.container.core.IServiceMeta;
 import js.util.Params;
+import js.util.Types;
 
 public class CalendarTimerService implements ICalendarTimerService {
 	private static final Log log = LogFactory.getLog(CalendarTimerService.class);
-	
+
 	private static final int SCHEDULERS_THREAD_POLL = 2;
 	private final ScheduledExecutorService scheduler;
 
@@ -31,10 +38,47 @@ public class CalendarTimerService implements ICalendarTimerService {
 	}
 
 	@Override
+	public List<IServiceMeta> scan(ManagedClassSPI managedClass) {
+		// TODO Auto-generated method stub
+		return Collections.emptyList();
+	}
+
+	@Override
+	public List<IServiceMeta> scan(ManagedMethodSPI managedMethod) {
+		List<IServiceMeta> serviceMetas = new ArrayList<>();
+
+		Schedule schedule = managedMethod.getAnnotation(Schedule.class);
+		if (schedule != null) {
+			if (!managedMethod.getDeclaringClass().getInstanceScope().equals(InstanceScope.APPLICATION)) {
+				throw new BugError("Crom method requires %s instance scope.", InstanceScope.APPLICATION);
+			}
+			if (!Types.isVoid(managedMethod.getReturnType())) {
+				throw new BugError("Cron method |%s| must be void.", managedMethod);
+			}
+			serviceMetas.add(new ScheduleMeta(schedule));
+		}
+
+		return serviceMetas;
+	}
+
+	@Override
+	public void postProcessInstance(ManagedClassSPI managedClass, Object instance) {
+		// TODO: core should invoke this hook only for instances with timer service
+		// for now core hit this point for every managed instance
+
+		for (ManagedMethodSPI managedMethod : managedClass.getManagedMethods()) {
+			ScheduleMeta schedule = managedMethod.getServiceMeta(ScheduleMeta.class);
+			if (schedule != null) {
+				createTimer(instance, managedMethod);
+			}
+		}
+	}
+
+	@Override
 	public void createTimer(Object instance, ManagedMethodSPI managedMethod) {
 		log.debug("Create timer for method |%s|.", managedMethod);
 
-		Schedule schedule = managedMethod.getSchedule();
+		ScheduleMeta schedule = managedMethod.getServiceMeta(ScheduleMeta.class);
 		Params.notNull(schedule, "Managed method schedule");
 
 		// computed remaining time can be zero in which case managed method is executed instantly
@@ -59,7 +103,7 @@ public class CalendarTimerService implements ICalendarTimerService {
 	 * @param schedule method configured schedule.
 	 * @return delay to the next scheduler timeout, in milliseconds, or zero if no schedule passed.
 	 */
-	public long computeDelay(Schedule schedule) {
+	public long computeDelay(ScheduleMeta schedule) {
 		final Date now = new Date();
 		Date next = getNextTimeout(now, schedule);
 		if (next == null) {
@@ -80,7 +124,7 @@ public class CalendarTimerService implements ICalendarTimerService {
 	 * @param schedule method configured schedule.
 	 * @return next scheduler event or null if configured schedule is passed.
 	 */
-	Date getNextTimeout(Date now, Schedule schedule) {
+	Date getNextTimeout(Date now, ScheduleMeta schedule) {
 		CalendarEx evaluationMoment = new CalendarEx(now);
 		// next scheduler timeout should be at least one second after the evaluation moment
 		evaluationMoment.increment(CalendarUnit.SECOND);

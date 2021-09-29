@@ -1,10 +1,8 @@
 package js.tiny.container.timer;
 
-import static org.hamcrest.MatcherAssert.*;
-import static org.hamcrest.Matchers.*;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.nullValue;
 import static org.mockito.Mockito.when;
-
-import javax.ejb.Schedule;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -15,7 +13,7 @@ import org.mockito.junit.MockitoJUnitRunner;
 @RunWith(MockitoJUnitRunner.class)
 public class YearExpressionParserTest {
 	@Mock
-	private Schedule schedule;
+	private ScheduleMeta schedule;
 
 	private CalendarEx now;
 

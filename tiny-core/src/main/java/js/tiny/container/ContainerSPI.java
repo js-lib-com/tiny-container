@@ -1,5 +1,7 @@
 package js.tiny.container;
 
+import java.util.List;
+
 import js.converter.Converter;
 import js.converter.ConverterException;
 import js.lang.BugError;
@@ -7,6 +9,7 @@ import js.lang.InvocationException;
 import js.lang.NoProviderException;
 import js.tiny.container.core.AppContext;
 import js.tiny.container.core.AppFactory;
+import js.tiny.container.core.IContainerService;
 import js.tiny.container.core.SecurityContext;
 
 /**
@@ -19,6 +22,8 @@ import js.tiny.container.core.SecurityContext;
  * @version final
  */
 public interface ContainerSPI extends AppFactory, SecurityContext {
+	List<IContainerService> getServices();
+	
 	/**
 	 * Retrieve instance of requested managed class. Depending on managed class scope a new managed instance can be created or
 	 * it can be reused from caches. Optional constructor arguments are used only if a new local managed instance is created.

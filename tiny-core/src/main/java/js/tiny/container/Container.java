@@ -37,9 +37,10 @@ import js.rmi.RemoteFactory;
 import js.tiny.container.core.App;
 import js.tiny.container.core.AppContext;
 import js.tiny.container.core.AppFactory;
-import js.tiny.container.timer.CalendarTimerService;
-import js.tiny.container.timer.ICalendarTimerService;
-import js.tiny.container.timer.TimerMethodsProcessor;
+import js.tiny.container.core.IClassPostProcessor;
+import js.tiny.container.core.IContainerService;
+import js.tiny.container.core.IInstancePostProcessor;
+//import js.tiny.container.timer.CalendarTimerService;
 import js.transaction.Transaction;
 import js.util.Classes;
 import js.util.Params;
@@ -257,19 +258,19 @@ public abstract class Container implements ContainerSPI, Configurable {
 	 * Class post-processors are executed after {@link ManagedClass} creation and generally deals with managed implementation
 	 * static fields initialization, but is not limited to.
 	 * <p>
-	 * These processors are registered by {@link #registerClassProcessor(ClassProcessor)}. Note that these processors are global
+	 * These processors are registered by {@link #registerClassProcessor(IClassPostProcessor)}. Note that these processors are global
 	 * and executed for ALL managed classes.
 	 */
-	private final List<ClassProcessor> classProcessors = new ArrayList<>();
+	private final List<IClassPostProcessor> classProcessors = new ArrayList<>();
 
 	/**
 	 * Instance post-processors are executed only on newly created managed instances. If instance is reused from scope cache
 	 * this processors are not executed. They add instance specific services. This list contains processors in execution order.
 	 * <p>
 	 * There are a number of built-in processor created by constructor but subclass may register new ones via
-	 * {@link #registerInstanceProcessor(InstanceProcessor)}.
+	 * {@link #registerInstanceProcessor(IInstancePostProcessor)}.
 	 */
-	private final List<InstanceProcessor> instanceProcessors = new ArrayList<>();
+	private final List<IInstancePostProcessor> instanceProcessors = new ArrayList<>();
 
 	/**
 	 * Processor for managed constructor and method invocation arguments. Takes care of dependency injection on arguments and
@@ -283,7 +284,7 @@ public abstract class Container implements ContainerSPI, Configurable {
 	 */
 	private final Map<Class<?>, ManagedClassSPI> classesPool = new HashMap<>();
 
-	private final ICalendarTimerService timerService;
+	private final List<IContainerService> containerServices = new ArrayList<>();
 
 	// --------------------------------------------------------------------------------------------
 	// CONTAINER LIFE CYCLE
@@ -295,7 +296,9 @@ public abstract class Container implements ContainerSPI, Configurable {
 	public Container() {
 		log.trace("Container()");
 
-		timerService = new CalendarTimerService();
+		for (IContainerService containerService : ServiceLoader.load(IContainerService.class)) {
+			containerServices.add(containerService);
+		}
 
 		// first register plug-in scope factories in order to avoid overriding built-in factories
 		for (ScopeFactory scopeFactory : ServiceLoader.load(ScopeFactory.class)) {
@@ -318,8 +321,19 @@ public abstract class Container implements ContainerSPI, Configurable {
 		registerInstanceFactory(InstanceType.SERVICE, new ServiceInstanceFactory());
 		registerInstanceFactory(InstanceType.REMOTE, new RemoteInstanceFactory());
 
+		for (IContainerService containerService : containerServices) {
+			if (containerService instanceof IInstancePostProcessor) {
+				registerInstanceProcessor((IInstancePostProcessor) containerService);
+			}
+		}
+
 		registerInstanceProcessor();
 		registerClassProcessor();
+	}
+
+	@Override
+	public List<IContainerService> getServices() {
+		return containerServices;
 	}
 
 	/**
@@ -330,8 +344,8 @@ public abstract class Container implements ContainerSPI, Configurable {
 		registerInstanceProcessor(new InstanceFieldsInitializationProcessor());
 		registerInstanceProcessor(new ConfigurableInstanceProcessor());
 		registerInstanceProcessor(new PostConstructInstanceProcessor());
-		registerInstanceProcessor(new TimerMethodsProcessor(timerService));
 		registerInstanceProcessor(new LoggerInstanceProcessor());
+
 	}
 
 	/**
@@ -381,8 +395,8 @@ public abstract class Container implements ContainerSPI, Configurable {
 	 * @throws BugError if instance processor class is already registered.
 	 * @see #instanceProcessors
 	 */
-	protected void registerInstanceProcessor(InstanceProcessor instanceProcessor) {
-		for (InstanceProcessor existingInstanceProcessoor : instanceProcessors) {
+	protected void registerInstanceProcessor(IInstancePostProcessor instanceProcessor) {
+		for (IInstancePostProcessor existingInstanceProcessoor : instanceProcessors) {
 			if (existingInstanceProcessoor.getClass().equals(instanceProcessor.getClass())) {
 				throw new BugError("Attempt to override instance processor |%s|.", instanceProcessor.getClass());
 			}
@@ -399,8 +413,8 @@ public abstract class Container implements ContainerSPI, Configurable {
 	 * @throws BugError if class processor class is already registered.
 	 * @see #classProcessors
 	 */
-	protected void registerClassProcessor(ClassProcessor classProcessor) {
-		for (ClassProcessor existingClassProcessoor : classProcessors) {
+	protected void registerClassProcessor(IClassPostProcessor classProcessor) {
+		for (IClassPostProcessor existingClassProcessoor : classProcessors) {
 			if (existingClassProcessoor.getClass().equals(classProcessor.getClass())) {
 				throw new BugError("Attempt to override class processor |%s|.", classProcessor.getClass());
 			}
@@ -463,7 +477,7 @@ public abstract class Container implements ContainerSPI, Configurable {
 				classesPool.put(interfaceClass, managedClass);
 			}
 
-			for (ClassProcessor classProcessor : classProcessors) {
+			for (IClassPostProcessor classProcessor : classProcessors) {
 				classProcessor.postProcessClass(managedClass);
 			}
 		}
@@ -543,8 +557,10 @@ public abstract class Container implements ContainerSPI, Configurable {
 	public void destroy() {
 		log.trace("destroy()");
 
-		// timer service should be destroyed first to avoid invoking timer methods on cleaned managed instance
-		timerService.destroy();
+		// !!! timer service should be destroyed first to avoid invoking timer methods on cleaned managed instance
+		for (IContainerService containerService : containerServices) {
+			containerService.destroy();
+		}
 
 		// classes pool is not sorted; it is a hash map for performance reasons
 		// also, a managed class may appear multiple times if have multiple interfaces
@@ -749,7 +765,7 @@ public abstract class Container implements ContainerSPI, Configurable {
 		}
 
 		if (pojoInstance != null) {
-			for (InstanceProcessor instanceProcessor : instanceProcessors) {
+			for (IInstancePostProcessor instanceProcessor : instanceProcessors) {
 				instanceProcessor.postProcessInstance(managedClass, pojoInstance);
 			}
 		}

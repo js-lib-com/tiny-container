@@ -136,6 +136,11 @@ public class InstanceAlgorithmUnitTest {
 		}
 
 		@Override
+		public Iterable<ManagedMethodSPI> getManagedMethods() {
+			return Collections.emptyList();
+		}
+
+		@Override
 		public Integer getKey() {
 			return 1;
 		}
@@ -172,11 +177,6 @@ public class InstanceAlgorithmUnitTest {
 
 		@Override
 		public Iterable<Field> getDependencies() {
-			return Collections.emptyList();
-		}
-
-		@Override
-		public Iterable<ManagedMethodSPI> getCronMethods() {
 			return Collections.emptyList();
 		}
 

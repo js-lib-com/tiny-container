@@ -4,6 +4,7 @@ import js.lang.BugError;
 import js.lang.ManagedPostConstruct;
 import js.log.Log;
 import js.log.LogFactory;
+import js.tiny.container.core.IInstancePostProcessor;
 
 /**
  * Execute {@link ManagedPostConstruct#postConstruct()} on managed instance. Instance post-construction is executed after
@@ -12,7 +13,7 @@ import js.log.LogFactory;
  * @author Iulian Rotaru
  * @version final
  */
-final class PostConstructInstanceProcessor implements InstanceProcessor {
+final class PostConstructInstanceProcessor implements IInstancePostProcessor {
 	/** Class logger. */
 	private static final Log log = LogFactory.getLog(PostConstructInstanceProcessor.class);
 

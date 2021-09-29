@@ -1,6 +1,9 @@
-package js.tiny.container;
+package js.tiny.container.core;
 
 import js.lang.BugError;
+import js.tiny.container.InstanceFactory;
+import js.tiny.container.ManagedClassSPI;
+import js.tiny.container.ScopeFactory;
 
 /**
  * Post processor for instances created by {@link InstanceFactory}. Instance processors are responsible for services provided by
@@ -17,9 +20,8 @@ import js.lang.BugError;
  * treat all erroneous conditions as bugs and throw {@link BugError}.
  * 
  * @author Iulian Rotaru
- * @version final
  */
-public interface InstanceProcessor {
+public interface IInstancePostProcessor extends IJoinPointProcessor {
 	/**
 	 * Execute specific post processing on instance of a given managed class. Implementation may or may not alter instance
 	 * state, depending on specific kind of processing. For example {@link LoggerInstanceProcessor} does not alter instance

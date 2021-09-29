@@ -1,14 +1,17 @@
 package js.tiny.container;
 
+
+import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.ejb.Remote;
-import javax.ejb.Schedule;
 import javax.interceptor.Interceptors;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
@@ -19,6 +22,7 @@ import js.lang.InvocationException;
 import js.lang.SyntaxException;
 import js.log.Log;
 import js.log.LogFactory;
+import js.tiny.container.core.IServiceMeta;
 import js.tiny.container.core.SecurityContext;
 import js.util.Classes;
 import js.util.Params;
@@ -109,7 +113,7 @@ public final class ManagedMethod implements ManagedMethodSPI {
 	 */
 	private Meter meter;
 
-	private Schedule schedule;
+	private final Map<Class<? extends IServiceMeta>, IServiceMeta> serviceMetas = new HashMap<>();
 
 	/**
 	 * Roles allowed to invoke this managed method. If empty and if this method is private all authenticated users are
@@ -161,6 +165,12 @@ public final class ManagedMethod implements ManagedMethodSPI {
 
 	// --------------------------------------------------------------------------------------------
 	// PACKAGE METHODS
+
+	@SuppressWarnings("unchecked")
+	@Override
+	public <T extends IServiceMeta> T getServiceMeta(Class<T> type) {
+		return (T) serviceMetas.get(type);
+	}
 
 	/**
 	 * Set this method request URI path, that is, the path component by which this method is referred into request URI. If given
@@ -216,9 +226,45 @@ public final class ManagedMethod implements ManagedMethodSPI {
 		}
 	}
 
-	void setSchedule(Schedule schedule) {
-		this.schedule = schedule;
-		this.remotelyAccessible = false;
+//	void setSchedule(Schedule schedule) {
+//		ScheduleMeta scheduleMeta = new ScheduleMeta();
+//		scheduleMeta.second(schedule.second());
+//		scheduleMeta.minute(schedule.minute());
+//		scheduleMeta.hour(schedule.hour());
+//		scheduleMeta.dayOfMonth(schedule.dayOfMonth());
+//		scheduleMeta.dayOfWeek(schedule.dayOfWeek());
+//		scheduleMeta.month(schedule.month());
+//		scheduleMeta.year(schedule.year());
+//
+//		serviceMetas.put(ScheduleMeta.class, scheduleMeta);
+//		this.remotelyAccessible = false;
+//	}
+
+	@Override
+	public <T extends Annotation> T getAnnotation(Class<T> type) {
+		T annotation = method.getAnnotation(type);
+		if (annotation == null) {
+			try {
+				annotation = declaringClass.getImplementationClass().getMethod(method.getName(), method.getParameterTypes()).getAnnotation(type);
+			} catch (NoSuchMethodException | SecurityException e) {
+			}
+			if (annotation == null) {
+				for (Class<?> interfaceClass : declaringClass.getInterfaceClasses()) {
+					try {
+						annotation = interfaceClass.getMethod(method.getName(), method.getParameterTypes()).getAnnotation(type);
+						if (annotation != null) {
+							return annotation;
+						}
+					} catch (NoSuchMethodException unused) {
+					}
+				}
+			}
+		}
+		return annotation;
+	}
+
+	void addServiceMeta(IServiceMeta serviceMeta) {
+		serviceMetas.put(serviceMeta.getClass(), serviceMeta);
 	}
 
 	void setRoles(String[] roles) {
@@ -390,11 +436,6 @@ public final class ManagedMethod implements ManagedMethodSPI {
 	@Override
 	public boolean isAsynchronous() {
 		return asynchronous;
-	}
-
-	@Override
-	public Schedule getSchedule() {
-		return schedule;
 	}
 
 	/**

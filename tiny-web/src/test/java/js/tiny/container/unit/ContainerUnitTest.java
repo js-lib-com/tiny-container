@@ -39,7 +39,6 @@ import js.tiny.container.Container;
 import js.tiny.container.ContainerSPI;
 import js.tiny.container.InstanceFactory;
 import js.tiny.container.InstanceKey;
-import js.tiny.container.InstanceProcessor;
 import js.tiny.container.InstanceScope;
 import js.tiny.container.InstanceType;
 import js.tiny.container.ManagedClass;
@@ -49,6 +48,7 @@ import js.tiny.container.ScopeFactory;
 import js.tiny.container.TransactionalResource;
 import js.tiny.container.core.App;
 import js.tiny.container.core.AppContext;
+import js.tiny.container.core.IInstancePostProcessor;
 import js.tiny.container.mvc.ViewManager;
 import js.tiny.container.net.EventStream;
 import js.tiny.container.net.EventStreamManager;
@@ -89,14 +89,14 @@ public class ContainerUnitTest {
 		assertClass("ServiceInstanceFactory", instanceFactories.get(InstanceType.SERVICE));
 		assertClass("RemoteInstanceFactory", instanceFactories.get(InstanceType.REMOTE));
 
-		List<InstanceProcessor> instanceProcessors = Classes.getFieldValue(container, Container.class, "instanceProcessors");
+		List<IInstancePostProcessor> instanceProcessors = Classes.getFieldValue(container, Container.class, "instanceProcessors");
 		assertNotNull(instanceProcessors);
 		assertEquals(6, instanceProcessors.size());
-		assertClass("InstanceFieldsInjectionProcessor", instanceProcessors.get(0));
-		assertClass("InstanceFieldsInitializationProcessor", instanceProcessors.get(1));
-		assertClass("ConfigurableInstanceProcessor", instanceProcessors.get(2));
-		assertClass("PostConstructInstanceProcessor", instanceProcessors.get(3));
-		assertClass("TimerMethodsProcessor", instanceProcessors.get(4));
+		assertClass("CalendarTimerService", instanceProcessors.get(0));
+		assertClass("InstanceFieldsInjectionProcessor", instanceProcessors.get(1));
+		assertClass("InstanceFieldsInitializationProcessor", instanceProcessors.get(2));
+		assertClass("ConfigurableInstanceProcessor", instanceProcessors.get(3));
+		assertClass("PostConstructInstanceProcessor", instanceProcessors.get(4));
 		assertClass("LoggerInstanceProcessor", instanceProcessors.get(5));
 
 		assertNotNull(Classes.getFieldValue(container, Container.class, "argumentsProcessor"));
@@ -460,7 +460,7 @@ public class ContainerUnitTest {
 	/** Successful and overriding instance processor registration. */
 	@Test
 	public void registerInstanceProcessor() {
-		class MockInstanceProcessor implements InstanceProcessor {
+		class MockInstanceProcessor implements IInstancePostProcessor {
 			@Override
 			public void postProcessInstance(ManagedClassSPI managedClass, Object instance) {
 			}
@@ -468,13 +468,13 @@ public class ContainerUnitTest {
 
 		class MockContainer extends ContainerStub {
 			@Override
-			public void registerInstanceProcessor(InstanceProcessor instanceProcessor) {
+			public void registerInstanceProcessor(IInstancePostProcessor instanceProcessor) {
 				super.registerInstanceProcessor(instanceProcessor);
 			}
 		}
 
 		MockContainer container = new MockContainer();
-		List<InstanceProcessor> instanceProcessors = Classes.getFieldValue(container, Container.class, "instanceProcessors");
+		List<IInstancePostProcessor> instanceProcessors = Classes.getFieldValue(container, Container.class, "instanceProcessors");
 		assertEquals(6, instanceProcessors.size());
 		container.registerInstanceProcessor(new MockInstanceProcessor());
 

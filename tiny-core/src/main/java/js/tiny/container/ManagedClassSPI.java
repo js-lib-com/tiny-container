@@ -116,13 +116,6 @@ public interface ManagedClassSPI {
 
 	Iterable<ManagedMethodSPI> getNetMethods();
 
-	/**
-	 * Return this managed class methods annotated with {@link Schedule} annotation.
-	 * 
-	 * @return this managed class cron methods.
-	 */
-	Iterable<ManagedMethodSPI> getCronMethods();
-
 	ManagedMethodSPI getPostConstructMethod();
 
 	ManagedMethodSPI getPreDestroyMethod();

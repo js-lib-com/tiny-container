@@ -46,6 +46,8 @@ import js.lang.NoSuchBeingException;
 import js.log.Log;
 import js.log.LogFactory;
 import js.tiny.container.core.AppFactory;
+import js.tiny.container.core.IContainerService;
+import js.tiny.container.core.IServiceMeta;
 import js.transaction.Immutable;
 import js.transaction.Mutable;
 import js.transaction.Transactional;
@@ -346,9 +348,6 @@ public final class ManagedClass implements ManagedClassSPI {
 	 */
 	private final Map<String, Field> contextParamFields = new HashMap<>();
 
-	/** Collection of managed methods annotated with {@link Cron} annotation. */
-	private final List<ManagedMethodSPI> cronMethodsPool = new ArrayList<>();
-
 	private ManagedMethodSPI postConstructor;
 
 	private ManagedMethodSPI preDestructor;
@@ -496,6 +495,11 @@ public final class ManagedClass implements ManagedClassSPI {
 	 * @throws BugError for insane conditions.
 	 */
 	private void scanAnnotations() {
+
+		for (IContainerService plugin : container.getServices()) {
+			plugin.scan(this);
+		}
+
 		// startup annotation works only on singletons, that is, managed instances with application scope
 		if (hasAnnotation(implementationClass, Startup.class) && instanceScope == InstanceScope.APPLICATION) {
 			autoInstanceCreation = true;
@@ -550,6 +554,7 @@ public final class ManagedClass implements ManagedClassSPI {
 
 		// managed classes does not support public inheritance
 		for (Method method : implementationClass.getDeclaredMethods()) {
+
 			final int modifiers = method.getModifiers();
 			if (Modifier.isStatic(modifiers)) {
 				continue;
@@ -575,7 +580,6 @@ public final class ManagedClass implements ManagedClassSPI {
 				// continue scanning only public methods
 				continue;
 			}
-			ManagedMethod managedMethod = null;
 
 			boolean remoteMethod = hasAnnotation(method, Remote.class);
 			if (!remoteMethod) {
@@ -593,6 +597,8 @@ public final class ManagedClass implements ManagedClassSPI {
 				// if at least one owned managed method is remote this managed class become remote too
 				remotelyAccessible = true;
 			}
+
+			ManagedMethod managedMethod = null;
 
 			// load method interceptor annotation and if missing uses class annotation; is legal for both to be null
 			Class<? extends Interceptor> methodInterceptor = getInterceptorClass(method);
@@ -691,18 +697,17 @@ public final class ManagedClass implements ManagedClassSPI {
 				managedMethod.setAsynchronous(asynchronousMethod);
 			}
 
-			Schedule scheduleMethod = getAnnotation(method, Schedule.class);
-			if (scheduleMethod != null) {
-				if (!Types.isVoid(method.getReturnType())) {
-					throw new BugError("Cron method |%s| must be void.", method);
+			for (IContainerService containerService : container.getServices()) {
+				ManagedMethod tempManagedMethod = new ManagedMethod(this, interfaceMethod);
+				for (IServiceMeta serviceMeta : containerService.scan(tempManagedMethod)) {
+					if (managedMethod == null) {
+						managedMethod = tempManagedMethod;
+					}
+					managedMethod.addServiceMeta(serviceMeta);
+					// if(serviceMeta.requiresInstanceCreation()) {
+					autoInstanceCreation = true;
+					// }
 				}
-
-				if (managedMethod == null) {
-					managedMethod = new ManagedMethod(this, interfaceMethod);
-				}
-				managedMethod.setSchedule(scheduleMethod);
-				cronMethodsPool.add(managedMethod);
-				autoInstanceCreation = true;
 			}
 
 			// set security roles after security unchecked state - PermitAll annotation, processed
@@ -797,11 +802,6 @@ public final class ManagedClass implements ManagedClassSPI {
 	@Override
 	public Iterable<ManagedMethodSPI> getNetMethods() {
 		return netMethodsPool.values();
-	}
-
-	@Override
-	public Iterable<ManagedMethodSPI> getCronMethods() {
-		return cronMethodsPool;
 	}
 
 	@Override

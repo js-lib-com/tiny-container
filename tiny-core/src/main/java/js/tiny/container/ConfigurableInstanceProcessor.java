@@ -6,6 +6,7 @@ import js.lang.ConfigException;
 import js.lang.Configurable;
 import js.log.Log;
 import js.log.LogFactory;
+import js.tiny.container.core.IInstancePostProcessor;
 
 /**
  * Configure instance with configuration object provided by instance managed class. The actual instance configuration is
@@ -18,7 +19,7 @@ import js.log.LogFactory;
  * @author Iulian Rotaru
  * @version final
  */
-final class ConfigurableInstanceProcessor implements InstanceProcessor {
+final class ConfigurableInstanceProcessor implements IInstancePostProcessor {
 	private static final Log log = LogFactory.getLog(ConfigurableInstanceProcessor.class);
 
 	/**

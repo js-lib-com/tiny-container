@@ -11,8 +11,6 @@ import static org.mockito.Mockito.when;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
-import javax.ejb.Schedule;
-
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -31,13 +29,13 @@ public class CalendarTimerServiceTest {
 	@Mock
 	private ManagedMethodSPI managedMethod;
 	@Mock
-	private Schedule schedule;
+	private ScheduleMeta schedule;
 
 	private CalendarTimerService service;
 
 	@Before
 	public void beforeTest() {
-		when(managedMethod.getSchedule()).thenReturn(schedule);
+		when(managedMethod.getServiceMeta(ScheduleMeta.class)).thenReturn(schedule);
 
 		when(schedule.second()).thenReturn("0");
 		when(schedule.minute()).thenReturn("0");

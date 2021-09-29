@@ -8,10 +8,10 @@ import js.annotation.ContextParam;
 import js.lang.BugError;
 import js.log.Log;
 import js.log.LogFactory;
-import js.tiny.container.ClassProcessor;
-import js.tiny.container.InstanceProcessor;
 import js.tiny.container.ManagedClassSPI;
 import js.tiny.container.core.AppContext;
+import js.tiny.container.core.IClassPostProcessor;
+import js.tiny.container.core.IInstancePostProcessor;
 
 /**
  * Initialize fields depending on context parameters, both class and instance.
@@ -19,7 +19,7 @@ import js.tiny.container.core.AppContext;
  * @author Iulian Rotaru
  * @version final
  */
-public class ContextParamProcessor implements ClassProcessor, InstanceProcessor {
+public class ContextParamProcessor implements IClassPostProcessor, IInstancePostProcessor {
 	/** Class logger. */
 	private static final Log log = LogFactory.getLog(ContextParamProcessor.class);
 

@@ -1,15 +1,14 @@
 package js.tiny.container.stub;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
-
-import javax.ejb.Schedule;
 
 import js.lang.InvocationException;
 import js.tiny.container.AuthorizationException;
 import js.tiny.container.ManagedClassSPI;
 import js.tiny.container.ManagedMethodSPI;
-import js.tiny.container.http.ContentType;
+import js.tiny.container.core.IServiceMeta;
 
 public class ManagedMethodSpiStub implements ManagedMethodSPI {
 	@Override
@@ -78,7 +77,12 @@ public class ManagedMethodSpiStub implements ManagedMethodSPI {
 	}
 
 	@Override
-	public Schedule getSchedule() {
-		throw new UnsupportedOperationException("getSchedule()");
+	public <T extends IServiceMeta> T getServiceMeta(Class<T> type) {
+		throw new UnsupportedOperationException("getServiceMeta(Class<T> type)");
+	}
+
+	@Override
+	public <T extends Annotation> T getAnnotation(Class<T> type) {
+		throw new UnsupportedOperationException("getAnnotation(Class<T> type)");
 	}
 }

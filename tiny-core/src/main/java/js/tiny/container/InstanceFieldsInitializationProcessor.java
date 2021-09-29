@@ -6,6 +6,7 @@ import js.converter.Converter;
 import js.converter.ConverterException;
 import js.lang.BugError;
 import js.lang.Config;
+import js.tiny.container.core.IInstancePostProcessor;
 import js.util.Classes;
 
 /**
@@ -42,7 +43,7 @@ import js.util.Classes;
  * @author Iulian Rotaru
  * @version final
  */
-final class InstanceFieldsInitializationProcessor implements InstanceProcessor {
+final class InstanceFieldsInitializationProcessor implements IInstancePostProcessor {
 	/**
 	 * Initialize instance fields from managed class configuration object.
 	 * 

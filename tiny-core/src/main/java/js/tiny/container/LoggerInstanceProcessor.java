@@ -2,6 +2,7 @@ package js.tiny.container;
 
 import js.log.Log;
 import js.log.LogFactory;
+import js.tiny.container.core.IInstancePostProcessor;
 
 /**
  * Dump managed instance to {@link Container} class logger. This processor dumps instance managed class to container logger but
@@ -13,7 +14,7 @@ import js.log.LogFactory;
  * @author Iulian Rotaru
  * @version final
  */
-final class LoggerInstanceProcessor implements InstanceProcessor {
+final class LoggerInstanceProcessor implements IInstancePostProcessor {
 	/** Class logger. */
 	private static final Log log = LogFactory.getLog(LoggerInstanceProcessor.class);
 

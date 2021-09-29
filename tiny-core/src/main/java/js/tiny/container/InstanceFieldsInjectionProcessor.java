@@ -11,6 +11,7 @@ import javax.naming.NamingException;
 import js.lang.BugError;
 import js.log.Log;
 import js.log.LogFactory;
+import js.tiny.container.core.IInstancePostProcessor;
 import js.util.Classes;
 import js.util.Strings;
 
@@ -25,7 +26,7 @@ import js.util.Strings;
  * @author Iulian Rotaru
  * @version final
  */
-final class InstanceFieldsInjectionProcessor extends DependencyProcessor implements InstanceProcessor {
+final class InstanceFieldsInjectionProcessor extends DependencyProcessor implements IInstancePostProcessor {
 	private static final Log log = LogFactory.getLog(InstanceFieldsInitializationProcessor.class);
 
 	private final Context globalEnvironment;

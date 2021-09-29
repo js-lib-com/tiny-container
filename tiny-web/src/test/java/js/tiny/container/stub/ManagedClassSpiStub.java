@@ -49,11 +49,6 @@ public class ManagedClassSpiStub implements ManagedClassSPI {
 	}
 
 	@Override
-	public Iterable<ManagedMethodSPI> getCronMethods() {
-		throw new UnsupportedOperationException("getCronMethods()");
-	}
-
-	@Override
 	public ManagedMethodSPI getPostConstructMethod() {
 		throw new UnsupportedOperationException("getPostConstructMethod()");
 	}

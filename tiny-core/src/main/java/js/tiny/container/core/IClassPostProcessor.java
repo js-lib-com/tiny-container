@@ -1,4 +1,8 @@
-package js.tiny.container;
+package js.tiny.container.core;
+
+import js.tiny.container.Container;
+import js.tiny.container.ManagedClass;
+import js.tiny.container.ManagedClassSPI;
 
 /**
  * Post processor executed on managed class. These hooks are executed by {@link Container} after {@link ManagedClass} creation
@@ -8,7 +12,7 @@ package js.tiny.container;
  * 
  * @author Iulian Rotaru
  */
-public interface ClassProcessor {
+public interface IClassPostProcessor extends IJoinPointProcessor {
 	/**
 	 * Execute post-processing after managed class creation.
 	 * 

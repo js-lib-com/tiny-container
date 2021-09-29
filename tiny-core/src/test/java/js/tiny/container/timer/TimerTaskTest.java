@@ -6,8 +6,6 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import javax.ejb.Schedule;
-
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -27,13 +25,13 @@ public class TimerTaskTest {
 	@Mock
 	private ManagedMethodSPI managedMethod;
 	@Mock
-	private Schedule schedule;
+	private ScheduleMeta schedule;
 
 	private TimerTask task;
 
 	@Before
 	public void beforeTest() {
-		when(managedMethod.getSchedule()).thenReturn(schedule);
+		when(managedMethod.getServiceMeta(ScheduleMeta.class)).thenReturn(schedule);
 
 		task = new TimerTask(service, instance, managedMethod);
 	}
