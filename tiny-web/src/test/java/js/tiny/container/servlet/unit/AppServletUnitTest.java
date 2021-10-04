@@ -43,6 +43,7 @@ import js.lang.InvocationException;
 import js.rmi.BusinessException;
 import js.tiny.container.core.Factory;
 import js.tiny.container.servlet.AppServlet;
+import js.tiny.container.servlet.ITinyContainer;
 import js.tiny.container.servlet.RequestContext;
 import js.tiny.container.servlet.TinyContainer;
 import js.tiny.container.spi.IContainer;
@@ -75,7 +76,7 @@ public class AppServletUnitTest {
 	}
 	
 	@Mock
-	private IContainer container;
+	private ITinyContainer container;
 	@Mock
 	private RequestContext context;
 	@Mock
@@ -631,7 +632,7 @@ public class AppServletUnitTest {
 		private int detachProbe;
 		private int dumpProbe;
 
-		public MockRequestContext(IContainer container) {
+		public MockRequestContext(ITinyContainer container) {
 			super(container);
 		}
 

@@ -335,7 +335,6 @@ public abstract class Container implements IContainer, Configurable {
 		registerClassProcessor();
 	}
 
-	@Override
 	public List<IContainerService> getServices() {
 		return containerServices;
 	}
@@ -811,17 +810,7 @@ public abstract class Container implements IContainer, Configurable {
 		return new Iterable<IManagedMethod>() {
 			@Override
 			public Iterator<IManagedMethod> iterator() {
-				return new ManagedMethodsIterator(ManagedMethodsIterator.ALL_METHODS);
-			}
-		};
-	}
-
-	@Override
-	public Iterable<IManagedMethod> getNetMethods() {
-		return new Iterable<IManagedMethod>() {
-			@Override
-			public Iterator<IManagedMethod> iterator() {
-				return new ManagedMethodsIterator(ManagedMethodsIterator.NET_METHODS);
+				return new ManagedMethodsIterator();
 			}
 		};
 	}
@@ -883,13 +872,8 @@ public abstract class Container implements IContainer, Configurable {
 	 * @version final
 	 */
 	private class ManagedMethodsIterator implements Iterator<IManagedMethod> {
-		public static final boolean ALL_METHODS = false;
-		public static final boolean NET_METHODS = true;
-
 		/** Managed classes iterator. */
 		private final Iterator<IManagedClass> classesIterator;
-
-		private final boolean netMethod;
 
 		/** Iterator on managed methods from current managed class. */
 		private Iterator<IManagedMethod> currentMethodsIterator;
@@ -897,12 +881,11 @@ public abstract class Container implements IContainer, Configurable {
 		/**
 		 * Initialize iterators for managed classes and current class methods.
 		 */
-		public ManagedMethodsIterator(boolean... netMethod) {
+		public ManagedMethodsIterator() {
 			classesIterator = classesPool.values().iterator();
 			if (!classesIterator.hasNext()) {
 				throw new BugError("Empty classes pool.");
 			}
-			this.netMethod = netMethod.length == 1 ? netMethod[0] : false;
 			currentMethodsIterator = nextMethodIterator();
 		}
 
@@ -923,9 +906,6 @@ public abstract class Container implements IContainer, Configurable {
 		}
 
 		private Iterator<IManagedMethod> nextMethodIterator() {
-			if (netMethod) {
-				return classesIterator.next().getNetMethods().iterator();
-			}
 			return classesIterator.next().getManagedMethods().iterator();
 		}
 	}

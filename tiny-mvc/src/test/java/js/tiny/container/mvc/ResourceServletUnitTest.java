@@ -19,8 +19,8 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
 import js.tiny.container.http.Resource;
+import js.tiny.container.servlet.ITinyContainer;
 import js.tiny.container.servlet.TinyContainer;
-import js.tiny.container.spi.IContainer;
 import js.tiny.container.spi.IManagedClass;
 import js.tiny.container.spi.IManagedMethod;
 import js.util.Classes;
@@ -33,7 +33,7 @@ public class ResourceServletUnitTest {
 	private ServletContext servletContext;
 
 	@Mock
-	private IContainer container;
+	private ITinyContainer container;
 	@Mock
 	private IManagedClass managedClass;
 	@Mock

@@ -20,9 +20,9 @@ import js.tiny.container.InstanceKey;
 import js.tiny.container.InstanceScope;
 import js.tiny.container.ScopeFactory;
 import js.tiny.container.core.AppFactory;
+import js.tiny.container.servlet.ITinyContainer;
 import js.tiny.container.servlet.RequestContext;
 import js.tiny.container.servlet.TinyContainer;
-import js.tiny.container.spi.IContainer;
 import js.tiny.container.stub.AppFactoryStub;
 import js.tiny.container.stub.ManagedClassSpiStub;
 import js.tiny.container.unit.HttpServletRequestStub;
@@ -142,7 +142,7 @@ public class SessionScopeFactoryUnitTest {
 	private static class MockRequestContext extends RequestContext {
 		private MockHttpServletRequest request = new MockHttpServletRequest();
 
-		public MockRequestContext(IContainer container) {
+		public MockRequestContext(ITinyContainer container) {
 			super(container);
 		}
 

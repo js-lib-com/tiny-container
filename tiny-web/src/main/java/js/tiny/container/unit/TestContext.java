@@ -29,11 +29,6 @@ public final class TestContext {
 	public static AppContext start(InputStream config) throws Exception {
 		return init(new TestConfigBuilder(config).build());
 	}
-
-	public static void setProperty(String name, Object value) {
-		TinyContainer container = (TinyContainer) Factory.getInstance(AppContext.class);
-		container.setProperty(name, value);
-	}
 	
 	private static AppContext init(Config config) throws Exception {
 		String catalinaBase = "fixture/tomcat";

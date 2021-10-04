@@ -25,9 +25,9 @@ import js.tiny.container.servlet.RequestContext;
 import js.tiny.container.spi.AuthorizationException;
 import js.tiny.container.spi.IManagedClass;
 import js.tiny.container.spi.IManagedMethod;
-import js.tiny.container.stub.ContainerSpiStub;
 import js.tiny.container.stub.ManagedClassSpiStub;
 import js.tiny.container.stub.ManagedMethodSpiStub;
+import js.tiny.container.stub.TinyContainerStub;
 import js.tiny.container.unit.HttpServletRequestStub;
 import js.tiny.container.unit.HttpServletResponseStub;
 import js.util.Classes;
@@ -123,7 +123,7 @@ public class HttpRmiServletHandlerUnitTest {
 	// --------------------------------------------------------------------------------------------
 	// FIXTURE
 
-	private static class MockContainer extends ContainerSpiStub {
+	private static class MockContainer extends TinyContainerStub {
 		private MockManagedClass managedClass = new MockManagedClass();
 
 		@Override

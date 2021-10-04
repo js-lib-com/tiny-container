@@ -26,17 +26,7 @@ public class ContainerStub extends Container {
 	}
 
 	@Override
-	public String getLoginRealm() {
-		throw new UnsupportedOperationException("getLoginRealm()");
-	}
-
-	@Override
-	public String getLoginPage() {
-		throw new UnsupportedOperationException("getLoginPage()");
-	}
-
-	@Override
-	public void setProperty(String name, Object value) {
-		throw new UnsupportedOperationException("setProperty(String name, Object value)");
+	public <T> T getProperty(String name, Class<T> type) {
+		throw new UnsupportedOperationException("getProperty(String name, Class<T> type)");
 	}
 }

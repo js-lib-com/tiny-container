@@ -96,7 +96,7 @@ public abstract class AppServlet extends HttpServlet {
 	 * Container of the application on behalf of which this servlet instance is acquired. From servlet instance perspective
 	 * container is a singleton and its reference can be safely stored.
 	 */
-	protected transient IContainer container;
+	protected transient ITinyContainer container;
 
 	private String previewContextPath;
 
@@ -118,7 +118,7 @@ public abstract class AppServlet extends HttpServlet {
 
 		final ServletContext context = config.getServletContext();
 		previewContextPath = context.getInitParameter(PARAMETER_PREVIEW_CONTEXT);
-		container = (IContainer) context.getAttribute(TinyContainer.ATTR_INSTANCE);
+		container = (ITinyContainer) context.getAttribute(TinyContainer.ATTR_INSTANCE);
 		if (container == null) {
 			log.fatal("Tiny container instance not properly created, probably misconfigured. Servlet |%s| permanently unvailable.", config.getServletName());
 			throw new UnavailableException("Tiny container instance not properly created, probably misconfigured.");
@@ -257,7 +257,7 @@ public abstract class AppServlet extends HttpServlet {
 	 * @param context current request context.
 	 */
 	protected static void sendUnauthorized(RequestContext context) {
-		final IContainer container = context.getContainer();
+		final ITinyContainer container = context.getContainer();
 		final HttpServletResponse httpResponse = context.getResponse();
 
 		if (httpResponse.isCommitted()) {

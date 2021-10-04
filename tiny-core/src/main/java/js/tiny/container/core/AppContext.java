@@ -32,15 +32,8 @@ public interface AppContext extends AppFactory, SecurityContext {
 	File getAppFile(String path);
 
 	/**
-	 * Get context property. A context property is defined by means external to application, on run-time environment.
-	 * 
-	 * @param name context property name.
-	 * @return context property value, null if not defined.
-	 */
-	String getProperty(String name);
-
-	/**
-	 * Alternative of {@link #getProperty(String)} that convert string property to requested type.
+	 * Get context property converted to requested type. A context property is defined by means external to application, on
+	 * run-time environment.
 	 * 
 	 * @param name context property name,
 	 * @param type requested type.

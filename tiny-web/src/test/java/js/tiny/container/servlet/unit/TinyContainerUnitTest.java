@@ -34,10 +34,10 @@ import js.lang.ConfigException;
 import js.tiny.container.Container;
 import js.tiny.container.InstanceScope;
 import js.tiny.container.ScopeFactory;
+import js.tiny.container.servlet.ITinyContainer;
 import js.tiny.container.servlet.NonceUser;
 import js.tiny.container.servlet.RequestContext;
 import js.tiny.container.servlet.TinyContainer;
-import js.tiny.container.spi.IContainer;
 import js.tiny.container.spi.IManagedClass;
 import js.tiny.container.unit.HttpServletRequestStub;
 import js.tiny.container.unit.HttpServletResponseStub;
@@ -321,14 +321,14 @@ public class TinyContainerUnitTest {
 	public void getProperty() throws ConfigException {
 		TinyContainer container = new TinyContainer();
 		container.contextInitialized(new ServletContextEvent(new MockServletContext()));
-		assertEquals("/server/base/dir", container.getProperty("server.base.dir"));
+		assertEquals("/server/base/dir", container.getProperty("server.base.dir", String.class));
 	}
 
 	@Test
 	public void getProperty_NotDefined() throws ConfigException {
 		TinyContainer container = new TinyContainer();
 		container.contextInitialized(new ServletContextEvent(new MockServletContext()));
-		assertNull(container.getProperty("not.defined"));
+		assertNull(container.getProperty("not.defined", String.class));
 	}
 
 	@Test
@@ -700,7 +700,7 @@ public class TinyContainerUnitTest {
 		private MockHttpServletRequest request = new MockHttpServletRequest();
 		private MockHttpServletResponse response = new MockHttpServletResponse();
 
-		public MockRequestContext(IContainer container) {
+		public MockRequestContext(ITinyContainer container) {
 			super(container);
 		}
 

@@ -94,7 +94,7 @@ import js.tiny.container.core.SecurityContext;
  * @author Iulian Rotaru
  * @version final
  */
-public class TinyContainer extends Container implements ServletContextListener, HttpSessionListener, AppContext {
+public class TinyContainer extends Container implements ServletContextListener, HttpSessionListener, ITinyContainer, AppContext {
 	/** Server global state and applications logger initialization. */
 	private static final Server server = new Server();
 
@@ -358,11 +358,6 @@ public class TinyContainer extends Container implements ServletContextListener, 
 	}
 
 	@Override
-	public String getProperty(String name) {
-		return contextParameters.getProperty(name);
-	}
-
-	@Override
 	public <T> T getProperty(String name, Class<T> type) {
 		return ConverterRegistry.getConverter().asObject(contextParameters.getProperty(name), type);
 	}
@@ -429,13 +424,5 @@ public class TinyContainer extends Container implements ServletContextListener, 
 	@Override
 	public String getLoginPage() {
 		return loginPage;
-	}
-
-	@Override
-	public void setProperty(String name, Object value) {
-		if (!(value instanceof String)) {
-			value = ConverterRegistry.getConverter().asString(value);
-		}
-		contextParameters.put(name, value);
 	}
 }

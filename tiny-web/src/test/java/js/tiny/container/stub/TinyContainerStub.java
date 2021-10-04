@@ -2,11 +2,11 @@ package js.tiny.container.stub;
 
 import java.security.Principal;
 
-import js.tiny.container.spi.IContainer;
+import js.tiny.container.servlet.ITinyContainer;
 import js.tiny.container.spi.IManagedClass;
 import js.tiny.container.spi.IManagedMethod;
 
-public class ContainerSpiStub implements IContainer {
+public class TinyContainerStub implements ITinyContainer {
 	@Override
 	public <T> T getInstance(Class<? super T> interfaceClass, Object... args) {
 		throw new UnsupportedOperationException("getInstance(Class<? super T> interfaceClass, Object... args)");
@@ -90,5 +90,15 @@ public class ContainerSpiStub implements IContainer {
 	@Override
 	public <T> T getProperty(String name, Class<T> type) {
 		throw new UnsupportedOperationException("getProperty(String name, Class<T> type)");
+	}
+
+	@Override
+	public String getLoginRealm() {
+		throw new UnsupportedOperationException("getLoginRealm()");
+	}
+
+	@Override
+	public String getLoginPage() {
+		throw new UnsupportedOperationException("getLoginPage()");
 	}
 }

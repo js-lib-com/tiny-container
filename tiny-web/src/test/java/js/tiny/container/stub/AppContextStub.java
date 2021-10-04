@@ -73,11 +73,6 @@ public class AppContextStub implements AppContext {
 	}
 
 	@Override
-	public String getProperty(String name) {
-		throw new UnsupportedOperationException("getProperty(String name)");
-	}
-
-	@Override
 	public <T> T getProperty(String name, Class<T> type) {
 		throw new UnsupportedOperationException("getProperty(String name, Class<T> type)");
 	}

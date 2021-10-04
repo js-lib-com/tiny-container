@@ -36,15 +36,15 @@ import js.tiny.container.net.EventStreamManager;
 import js.tiny.container.net.EventStreamManagerImpl;
 import js.tiny.container.net.EventStreamServlet;
 import js.tiny.container.servlet.AppServlet;
+import js.tiny.container.servlet.ITinyContainer;
 import js.tiny.container.servlet.RequestContext;
 import js.tiny.container.servlet.TinyContainer;
-import js.tiny.container.spi.IContainer;
 import js.util.Classes;
 
 @RunWith(MockitoJUnitRunner.class)
 public class EventStreamServletTest {
 	@Mock
-	private IContainer container;
+	private ITinyContainer container;
 	@Mock
 	private RequestContext requestContext;
 	@Mock

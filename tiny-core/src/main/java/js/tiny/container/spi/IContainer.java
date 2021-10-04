@@ -1,13 +1,9 @@
 package js.tiny.container.spi;
 
-import java.util.List;
-
-import js.converter.Converter;
 import js.converter.ConverterException;
 import js.lang.BugError;
 import js.lang.InvocationException;
 import js.lang.NoProviderException;
-import js.tiny.container.core.AppContext;
 import js.tiny.container.core.AppFactory;
 import js.tiny.container.core.SecurityContext;
 
@@ -21,8 +17,6 @@ import js.tiny.container.core.SecurityContext;
  * @version final
  */
 public interface IContainer extends AppFactory, SecurityContext {
-	List<IContainerService> getServices();
-	
 	/**
 	 * Retrieve instance of requested managed class. Depending on managed class scope a new managed instance can be created or
 	 * it can be reused from caches. Optional constructor arguments are used only if a new local managed instance is created.
@@ -79,47 +73,15 @@ public interface IContainer extends AppFactory, SecurityContext {
 	 */
 	Iterable<IManagedMethod> getManagedMethods();
 
-	Iterable<IManagedMethod> getNetMethods();
-
 	/**
-	 * Get basic authentication realm. If realm is not defined into application descriptor uses context name.
-	 * <p>
-	 * Basic authentication realm is loaded from application descriptor, <code>login</code> section.
+	 * Get context property converted to requested type. A context property is defined by means external to application, on
+	 * run-time environment.
 	 * 
-	 * <pre>
-	 * &lt;login&gt;
-	 * 	&lt;property name="realm" value="Fax2e-mail" /&gt;
-	 * 	...
-	 * &lt;/login&gt;
-	 * </pre>
-	 * 
-	 * @return basic authentication realm
+	 * @param name context property name,
+	 * @param type requested type.
+	 * @param <T> context property type.
+	 * @return context property value converted to requested type or null if property not defined.
+	 * @throws ConverterException if property exist but cannot be converted to requested type.
 	 */
-	String getLoginRealm();
-
-	/**
-	 * Get location for application login page, relative or absolute to servlet container root.
-	 * <p>
-	 * Login page location is loaded from application descriptor, <code>login</code> section.
-	 * 
-	 * <pre>
-	 * &lt;login&gt;
-	 * 	...
-	 * 	&lt;property name="page" value="index.htm" /&gt;
-	 * &lt;/login&gt;
-	 * </pre>
-	 * 
-	 * @return login page location or null if not login page declared.
-	 */
-	String getLoginPage();
-
-	/**
-	 * Set context property, mainly for testing purposes. If given value is not already a string it is converter using
-	 * {@link Converter#asString(Object)}. Set value is retrievable via {@link AppContext}.
-	 * 
-	 * @param name property name,
-	 * @param value property value.
-	 * @throws ConverterException if <code>value</code> object cannot be converter to string.
-	 */
-	void setProperty(String name, Object value);
+	<T> T getProperty(String name, Class<T> type);
 }

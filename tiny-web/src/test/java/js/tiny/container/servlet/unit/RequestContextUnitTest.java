@@ -19,7 +19,7 @@ import org.junit.Test;
 import js.lang.BugError;
 import js.tiny.container.servlet.Cookies;
 import js.tiny.container.servlet.RequestContext;
-import js.tiny.container.stub.ContainerStub;
+import js.tiny.container.stub.TinyContainerStub;
 import js.tiny.container.unit.HttpServletRequestStub;
 import js.tiny.container.unit.HttpServletResponseStub;
 import js.tiny.container.unit.HttpSessionStub;
@@ -258,7 +258,7 @@ public class RequestContextUnitTest {
 	// --------------------------------------------------------------------------------------------
 	// FIXTURE
 
-	class MockContainer extends ContainerStub {
+	class MockContainer extends TinyContainerStub {
 
 	}
 

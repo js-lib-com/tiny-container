@@ -27,15 +27,15 @@ public class ContextParamProcessor implements IClassPostProcessor, IInstancePost
 	 * Application context used to supply named context parameter, see {@link AppContext#getProperty(String)} and related
 	 * {@link AppContext#getProperty(String, Class)}.
 	 */
-	private final AppContext context;
+	private final ITinyContainer container;
 
 	/**
 	 * Initialize processor instance.
 	 * 
-	 * @param context application context.
+	 * @param container application context.
 	 */
-	public ContextParamProcessor(AppContext context) {
-		this.context = context;
+	public ContextParamProcessor(ITinyContainer container) {
+		this.container = container;
 	}
 
 	@Override
@@ -70,7 +70,7 @@ public class ContextParamProcessor implements IClassPostProcessor, IInstancePost
 	 * @param instance optional instance, null for class fields.
 	 */
 	private void setField(Field field, String parameterName, Object instance) {
-		final Object value = context.getProperty(parameterName, field.getType());
+		final Object value = container.getProperty(parameterName, field.getType());
 		if (value == null) {
 			ContextParam contextParam = field.getAnnotation(ContextParam.class);
 			if (contextParam == null) {
