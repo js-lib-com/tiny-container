@@ -28,6 +28,7 @@ import js.tiny.container.spi.AuthorizationException;
 import js.tiny.container.spi.IContainer;
 import js.tiny.container.spi.IManagedClass;
 import js.tiny.container.spi.IManagedMethod;
+import js.util.Strings;
 import js.util.Types;
 
 /**
@@ -128,7 +129,7 @@ public class ResourceServlet extends AppServlet {
 	@Override
 	public void init(ServletConfig config) throws ServletException {
 		super.init(config);
-		for (IManagedMethod method : container.getNetMethods()) {
+		for (IManagedMethod method : container.getManagedMethods()) {
 			if (Types.isKindOf(method.getReturnType(), Resource.class)) {
 				resourceMethods.put(key(method), method);
 			}
@@ -168,6 +169,11 @@ public class ResourceServlet extends AppServlet {
 			resource = method.invoke(controller, arguments);
 			if (resource == null) {
 				throw new BugError("Null resource |%s|.", httpRequest.getRequestURI());
+			}
+
+			ResponseContentTypeMeta responseContentTypeMeta = method.getServiceMeta(ResponseContentTypeMeta.class);
+			if (responseContentTypeMeta != null) {
+				httpResponse.setContentType(responseContentTypeMeta.value());
 			}
 		} catch (AuthorizationException e) {
 			// at this point, resource is private and need to redirect to a login page
@@ -242,13 +248,25 @@ public class ResourceServlet extends AppServlet {
 	 */
 	private static String key(IManagedMethod resourceMethod) {
 		StringBuilder key = new StringBuilder();
-		if (resourceMethod.getDeclaringClass().getRequestPath() != null) {
+		String classPath = path(resourceMethod.getDeclaringClass());
+		if (classPath != null) {
 			key.append('/');
-			key.append(resourceMethod.getDeclaringClass().getRequestPath());
+			key.append(classPath);
 		}
 		key.append('/');
-		key.append(resourceMethod.getRequestPath());
+		key.append(path(resourceMethod));
 		return key.toString();
+	}
+
+	private static String path(IManagedClass managedClass) {
+		ControllerMeta controllerMeta = managedClass.getServiceMeta(ControllerMeta.class);
+		String value = controllerMeta != null ? controllerMeta.value() : null;
+		return value != null && !value.isEmpty() ? value : null;
+	}
+
+	private static String path(IManagedMethod managedMethod) {
+		RequestPathMeta requestPathMeta = managedMethod.getServiceMeta(RequestPathMeta.class);
+		return requestPathMeta != null ? requestPathMeta.value() : Strings.memberToDashCase(managedMethod.getMethod().getName());
 	}
 
 	/**

@@ -74,23 +74,6 @@ public class ManagedMethodUnitTest {
 	}
 
 	@Test
-	public void getRequestPath() throws Exception {
-		IManagedMethod managedMethod = getManagedMethod();
-		Classes.setFieldValue(managedMethod, "remotelyAccessible", true);
-
-		assertNull(managedMethod.getRequestPath());
-		Classes.invoke(managedMethod, "setRequestPath", (String) null);
-		assertEquals("set-name", managedMethod.getRequestPath());
-		Classes.invoke(managedMethod, "setRequestPath", "method/path");
-		assertEquals("method/path", managedMethod.getRequestPath());
-	}
-
-	@Test(expected = BugError.class)
-	public void getRequestPath_OnLocal() throws Exception {
-		assertNull(getManagedMethod().getRequestPath());
-	}
-
-	@Test
 	public void getParameterTypes() {
 		class Params {
 			public void method1() {
@@ -297,7 +280,7 @@ public class ManagedMethodUnitTest {
 	public void invokeObject_NoAuthorization() throws Exception {
 		IManagedMethod managedMethod = getManagedMethod();
 		container.authenticated = false;
-		Classes.invoke(managedMethod, "setRemotelyAccessible", true);
+		Classes.invoke(managedMethod, "setSecurityEnabled", true);
 
 		managedMethod.invoke(new Person(), "John Doe");
 	}

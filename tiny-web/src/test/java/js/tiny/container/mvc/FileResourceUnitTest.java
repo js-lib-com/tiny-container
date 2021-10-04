@@ -1,4 +1,4 @@
-package js.tiny.container.mvc.unit;
+package js.tiny.container.mvc;
 
 import static org.junit.Assert.assertEquals;
 
@@ -17,7 +17,6 @@ import javax.servlet.WriteListener;
 import org.junit.Test;
 
 import js.tiny.container.http.ContentType;
-import js.tiny.container.mvc.FileResource;
 import js.tiny.container.unit.HttpServletResponseStub;
 import js.util.Classes;
 import js.util.Strings;

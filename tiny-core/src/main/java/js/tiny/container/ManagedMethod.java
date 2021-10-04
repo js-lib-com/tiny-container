@@ -1,6 +1,5 @@
 package js.tiny.container;
 
-
 import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -13,13 +12,10 @@ import java.util.Map;
 
 import javax.ejb.Remote;
 import javax.interceptor.Interceptors;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
 
 import js.lang.AsyncTask;
 import js.lang.BugError;
 import js.lang.InvocationException;
-import js.lang.SyntaxException;
 import js.log.Log;
 import js.log.LogFactory;
 import js.tiny.container.core.SecurityContext;
@@ -64,13 +60,6 @@ public final class ManagedMethod implements IManagedMethod {
 	 */
 	private final Method method;
 
-	/**
-	 * Request URI path for this managed method configured by {@link Path} annotation. If annotation is missing this request
-	 * path is initialized with method name converted to dashed case. Initialization is performed by
-	 * {@link #setRequestPath(String)}.
-	 */
-	private String requestPath;
-
 	/** Flag indicating if method should be executed into transactional context. */
 	private boolean transactional;
 
@@ -96,6 +85,9 @@ public final class ManagedMethod implements IManagedMethod {
 	 * roles are permitted.
 	 */
 	private boolean unchecked;
+
+	/** There is at least one metadata attribute related to security. */
+	private boolean securityEnabled;
 
 	/**
 	 * Invoker strategy, initialized at this managed method construction. If managed method is created without interceptor
@@ -124,9 +116,6 @@ public final class ManagedMethod implements IManagedMethod {
 	 * authorized.
 	 */
 	private String[] roles = new String[0];
-
-	/** Returned content type initialized from {@link Produces} annotation. */
-	private String returnContentType;
 
 	/**
 	 * Construct a managed method. This is a convenient constructor that just delegates
@@ -177,21 +166,11 @@ public final class ManagedMethod implements IManagedMethod {
 	}
 
 	/**
-	 * Set this method request URI path, that is, the path component by which this method is referred into request URI. If given
-	 * request URI path is null uses method name converted to dashed case.
-	 * 
-	 * @param requestPath request URI path for this method, possible null.
-	 */
-	void setRequestPath(String requestPath) {
-		this.requestPath = requestPath != null ? requestPath : Strings.memberToDashCase(method.getName());
-	}
-
-	/**
 	 * Set remote accessibility flag.
 	 * 
 	 * @param remotelyAccessible remote accessibility flag.
 	 */
-	void setRemotelyAccessible(boolean remotelyAccessible) {
+	public void setRemotelyAccessible(boolean remotelyAccessible) {
 		this.remotelyAccessible = remotelyAccessible;
 	}
 
@@ -230,20 +209,6 @@ public final class ManagedMethod implements IManagedMethod {
 		}
 	}
 
-//	void setSchedule(Schedule schedule) {
-//		ScheduleMeta scheduleMeta = new ScheduleMeta();
-//		scheduleMeta.second(schedule.second());
-//		scheduleMeta.minute(schedule.minute());
-//		scheduleMeta.hour(schedule.hour());
-//		scheduleMeta.dayOfMonth(schedule.dayOfMonth());
-//		scheduleMeta.dayOfWeek(schedule.dayOfWeek());
-//		scheduleMeta.month(schedule.month());
-//		scheduleMeta.year(schedule.year());
-//
-//		serviceMetas.put(ScheduleMeta.class, scheduleMeta);
-//		this.remotelyAccessible = false;
-//	}
-
 	@Override
 	public <T extends Annotation> T getAnnotation(Class<T> type) {
 		T annotation = method.getAnnotation(type);
@@ -268,6 +233,7 @@ public final class ManagedMethod implements IManagedMethod {
 	}
 
 	void addServiceMeta(IServiceMeta serviceMeta) {
+		log.debug("Add service meta |%s| to managed method |%s|", serviceMeta.getClass(), this);
 		serviceMetas.put(serviceMeta.getClass(), serviceMeta);
 	}
 
@@ -277,16 +243,8 @@ public final class ManagedMethod implements IManagedMethod {
 		this.roles = roles;
 	}
 
-	/**
-	 * Set method returned content type from {@link Produces} annotation. Given content type value should be accepted by
-	 * {@link ContentType#valueOf(String)}.
-	 * 
-	 * @param contentType content type to be used on HTTP response.
-	 * @throws SyntaxException if <code>value</code> is not a valid content type.
-	 * @see ContentType
-	 */
-	void setReturnContentType(String contentType) throws SyntaxException {
-		this.returnContentType = contentType;
+	void setSecurityEnabled(boolean securityEnabled) {
+		this.securityEnabled = securityEnabled;
 	}
 
 	/**
@@ -335,11 +293,6 @@ public final class ManagedMethod implements IManagedMethod {
 		return method.getGenericReturnType();
 	}
 
-	@Override
-	public String getReturnContentType() {
-		return returnContentType;
-	}
-
 	/**
 	 * Invoke managed method and applies method level services. Delegates this managed method {@link #invoker}; accordingly
 	 * selected strategy invoker can be {@link DefaultInvoker} or {@link InterceptedInvoker}, if this managed method is
@@ -356,7 +309,7 @@ public final class ManagedMethod implements IManagedMethod {
 	@SuppressWarnings("unchecked")
 	@Override
 	public <T> T invoke(Object object, Object... args) throws AuthorizationException, IllegalArgumentException, InvocationException {
-		if (remotelyAccessible && !unchecked && !container.isAuthorized(roles)) {
+		if (securityEnabled && !unchecked && !container.isAuthorized(roles)) {
 			log.info("Reject not authenticated access to |%s|.", method);
 			throw new AuthorizationException();
 		}
@@ -402,14 +355,6 @@ public final class ManagedMethod implements IManagedMethod {
 		}
 		meter.stopProcessing();
 		return returnValue;
-	}
-
-	@Override
-	public String getRequestPath() {
-		if (!remotelyAccessible) {
-			throw new BugError("Attempt to retrieve request URI path from local managed method |%s|.", this);
-		}
-		return requestPath;
 	}
 
 	@Override

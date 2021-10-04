@@ -7,17 +7,15 @@ import java.lang.reflect.Type;
 import javax.annotation.security.PermitAll;
 import javax.ejb.Asynchronous;
 import javax.ejb.Remote;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
 
 import js.lang.BugError;
 import js.lang.InvocationException;
+import js.tiny.container.Interceptor;
 import js.tiny.container.InvocationMeter;
 import js.tiny.container.core.SecurityContext;
 import js.transaction.Immutable;
 import js.transaction.Mutable;
 import js.transaction.Transactional;
-import js.util.Strings;
 
 /**
  * Managed method service provider interface. Although public, this interface is designed for library internal usage. User space
@@ -59,14 +57,6 @@ public interface IManagedMethod {
 	Type getReturnType();
 
 	/**
-	 * Get content type used when serialize method return value to HTTP response. This value is initialized from
-	 * {@link Produces} annotation. Return null if annotation is not declared.
-	 * 
-	 * @return content type used for returned value serialization.
-	 */
-	String getReturnContentType();
-
-	/**
 	 * Invoke managed method. Just delegate wrapped Java reflective method but takes care to execute {@link Interceptor}, if any
 	 * configured, and to update internal {@link InvocationMeter}.
 	 * 
@@ -79,21 +69,6 @@ public interface IManagedMethod {
 	 * @throws InvocationException if method execution fails for whatever reason.
 	 */
 	<T> T invoke(Object object, Object... args) throws AuthorizationException, IllegalArgumentException, InvocationException;
-
-	/**
-	 * Get request URI path of this net method, that is, the path component by which net method is referred into request URI. A
-	 * net method is a managed method marked as remote accessible via {@link Remote} annotation. A net method can have a name by
-	 * which is publicly known, set via {@link Path} annotation.
-	 * <p>
-	 * A net method is not mandatory to have {@link Path} annotation. If annotation is missing implementation should use this
-	 * method name converted to dash case, see {@link Strings#toDashCase(String)}.
-	 * <p>
-	 * Attempting to retrieve request URI path for a local managed method is considered a bug.
-	 * 
-	 * @return request URI path of this net method, never null.
-	 * @throws BugError if attempt to use this getter on a local managed method.
-	 */
-	String getRequestPath();
 
 	/**
 	 * Test if this managed method return type is void.
@@ -158,6 +133,6 @@ public interface IManagedMethod {
 	boolean isAsynchronous();
 
 	<T extends IServiceMeta> T getServiceMeta(Class<T> type);
-	
+
 	<T extends Annotation> T getAnnotation(Class<T> type);
 }

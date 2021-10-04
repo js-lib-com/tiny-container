@@ -1,4 +1,4 @@
-package js.tiny.container.mvc.unit;
+package js.tiny.container.mvc;
 
 import static org.junit.Assert.assertEquals;
 
@@ -6,7 +6,6 @@ import java.io.IOException;
 
 import org.junit.Test;
 
-import js.tiny.container.mvc.Redirect;
 import js.tiny.container.unit.HttpServletResponseStub;
 
 public class RedirectUnitTest {

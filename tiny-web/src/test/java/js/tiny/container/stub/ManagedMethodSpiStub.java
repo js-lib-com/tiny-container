@@ -32,16 +32,6 @@ public class ManagedMethodSpiStub implements IManagedMethod {
 	}
 
 	@Override
-	public String getReturnContentType() {
-		throw new UnsupportedOperationException("getReturnContentType()");
-	}
-
-	@Override
-	public String getRequestPath() {
-		throw new UnsupportedOperationException("getRequestPath()");
-	}
-
-	@Override
 	public boolean isVoid() {
 		throw new UnsupportedOperationException("isVoid()");
 	}

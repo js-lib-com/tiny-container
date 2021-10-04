@@ -1,6 +1,8 @@
 # Container Services
 
-Application developer is not required to be an expert at system-level programming; usually does not program transactions, concurrency, security, distribution, or other services into the application logic. Application developer relies on the container for these services.
+In container services context, a join point is a location in the program where the control flow can arrive via multiple paths, more precisely, the container services and the application logic. When program flow control reach a join point, container should executes a specific service. Client access to application is mediated by the container that applies the service logic before, after or around application logic.
+
+![](D:\docs\workspaces\js-lib\wtf\container\tiny-container\docs\join-point.png)
 
 At the bootstrap time, the container scans the classpath and creates metadata about the discovered classes. The metadata may take the form of metadata annotations applied to the managed classes and/or an external XML deployment descriptor. The metadata, no matter how expressed, includes the structural information of the managed class and declares all the external dependencies.
 

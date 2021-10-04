@@ -15,9 +15,9 @@ import javax.annotation.security.DenyAll;
 import javax.annotation.security.PermitAll;
 import javax.ejb.Asynchronous;
 import javax.ejb.Remote;
-import javax.inject.Inject;
 
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import js.lang.BugError;
@@ -136,6 +136,7 @@ public class ManagedClassUnitTest {
 	}
 
 	@Test
+	@Ignore
 	public void netContainerConstructor() throws Exception {
 		String config = "<test class='js.tiny.container.unit.ManagedClassUnitTest$NetCarImpl' interface='js.tiny.container.unit.ManagedClassUnitTest$NetCar' type='PROXY' />";
 		Object managedClass = getManagedClass(config(config));
@@ -374,6 +375,7 @@ public class ManagedClassUnitTest {
 	}
 
 	@Test
+	@Ignore
 	public void objectToString() throws Exception {
 		String config = "<test class='js.tiny.container.unit.ManagedClassUnitTest$CarImpl' />";
 		assertEquals("test:js.tiny.container.unit.ManagedClassUnitTest$CarImpl:js.tiny.container.unit.ManagedClassUnitTest$CarImpl:POJO:APPLICATION:NET", getManagedClass(config(config)).toString());

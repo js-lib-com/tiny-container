@@ -1,4 +1,4 @@
-package js.tiny.container.mvc.unit;
+package js.tiny.container.mvc;
 
 import static org.junit.Assert.assertEquals;
 
@@ -28,12 +28,12 @@ import js.tiny.container.http.Resource;
 import js.tiny.container.http.encoder.ArgumentPartReader;
 import js.tiny.container.http.encoder.ArgumentsReader;
 import js.tiny.container.http.encoder.ArgumentsReaderFactory;
-import js.tiny.container.mvc.ResourceServlet;
 import js.tiny.container.servlet.RequestContext;
 import js.tiny.container.servlet.TinyContainer;
 import js.tiny.container.spi.AuthorizationException;
 import js.tiny.container.spi.IManagedClass;
 import js.tiny.container.spi.IManagedMethod;
+import js.tiny.container.spi.IServiceMeta;
 import js.tiny.container.stub.ContainerStub;
 import js.tiny.container.stub.ManagedClassSpiStub;
 import js.tiny.container.stub.ManagedMethodSpiStub;
@@ -189,7 +189,7 @@ public class ResourceServletHandlerUnitTest {
 		private String loginPage;
 
 		@Override
-		public Iterable<IManagedMethod> getNetMethods() {
+		public Iterable<IManagedMethod> getManagedMethods() {
 			return methods;
 		}
 
@@ -208,8 +208,8 @@ public class ResourceServletHandlerUnitTest {
 		private String requestPath = "controller";
 
 		@Override
-		public String getRequestPath() {
-			return requestPath;
+		public <T extends IServiceMeta> T getServiceMeta(Class<T> type) {
+			return (T) new ControllerMeta(requestPath);
 		}
 	}
 
@@ -239,8 +239,11 @@ public class ResourceServletHandlerUnitTest {
 		}
 
 		@Override
-		public String getRequestPath() {
-			return requestPath;
+		public <T extends IServiceMeta> T getServiceMeta(Class<T> type) {
+			if (type.equals(RequestPathMeta.class)) {
+				return (T) new RequestPathMeta(requestPath);
+			}
+			return null;
 		}
 
 		@Override

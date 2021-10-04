@@ -1,5 +1,6 @@
 package js.tiny.container.spi;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -190,21 +191,6 @@ public interface IManagedClass {
 	boolean isRemotelyAccessible();
 
 	/**
-	 * Get request URI path of this net class, that is, the path component by which net class is referred into request URI. A
-	 * net class is a managed class marked as remote accessible via {@link Remote} annotation. A net class can have a name by
-	 * which is publicly known; it is the optional argument of {@link Remote} annotation.
-	 * <p>
-	 * A net class is not mandatory to have request URI path. It can be null in which case net class is deemed as
-	 * <code>default</code>.
-	 * <p>
-	 * Attempting to retrieve request URI path for a local managed class is considered a bug.
-	 * 
-	 * @return request URI path of this net class, possible null.
-	 * @throws BugError if attempt to use this getter on a local managed class.
-	 */
-	String getRequestPath();
-
-	/**
 	 * Remote class implementation URL as declared into managed class descriptor. This value has meaning only if managed class
 	 * is of {@link InstanceType#REMOTE} type.
 	 * 
@@ -234,4 +220,8 @@ public interface IManagedClass {
 	 * @return managed class fields that should be initialized from container runtime context.
 	 */
 	Map<String, Field> getContextParamFields();
+
+	<T extends IServiceMeta> T getServiceMeta(Class<T> type);
+	
+	<T extends Annotation> T getAnnotation(Class<T> type);
 }

@@ -1,5 +1,6 @@
 package js.tiny.container.stub;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -11,6 +12,7 @@ import js.tiny.container.InstanceType;
 import js.tiny.container.spi.IContainer;
 import js.tiny.container.spi.IManagedClass;
 import js.tiny.container.spi.IManagedMethod;
+import js.tiny.container.spi.IServiceMeta;
 
 public class ManagedClassSpiStub implements IManagedClass {
 	@Override
@@ -56,11 +58,6 @@ public class ManagedClassSpiStub implements IManagedClass {
 	@Override
 	public IManagedMethod getPreDestroyMethod() {
 		throw new UnsupportedOperationException("getPreDestroyMethod()");
-	}
-
-	@Override
-	public String getRequestPath() {
-		throw new UnsupportedOperationException("getRequestPath()");
 	}
 
 	@Override
@@ -126,5 +123,15 @@ public class ManagedClassSpiStub implements IManagedClass {
 	@Override
 	public Map<String, Field> getContextParamFields() {
 		throw new UnsupportedOperationException("getContextParamFields()");
+	}
+
+	@Override
+	public <T extends IServiceMeta> T getServiceMeta(Class<T> type) {
+		throw new UnsupportedOperationException("getServiceMeta(Class<T> type)");
+	}
+
+	@Override
+	public <T extends Annotation> T getAnnotation(Class<T> type) {
+		throw new UnsupportedOperationException("getAnnotation(Class<T> type)");
 	}
 }

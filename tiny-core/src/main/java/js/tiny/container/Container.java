@@ -300,6 +300,7 @@ public abstract class Container implements IContainer, Configurable {
 		log.trace("Container()");
 
 		for (IContainerService containerService : ServiceLoader.load(IContainerService.class)) {
+			log.debug("Load container service |%s|.", containerService.getClass());
 			containerServices.add(containerService);
 		}
 

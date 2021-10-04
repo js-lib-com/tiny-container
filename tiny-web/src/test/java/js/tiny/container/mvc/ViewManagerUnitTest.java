@@ -1,4 +1,4 @@
-package js.tiny.container.mvc.unit;
+package js.tiny.container.mvc;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -23,10 +23,6 @@ import js.lang.ConfigBuilder;
 import js.lang.ConfigException;
 import js.lang.Configurable;
 import js.tiny.container.core.AppFactory;
-import js.tiny.container.mvc.View;
-import js.tiny.container.mvc.ViewManagerImpl;
-import js.tiny.container.mvc.ViewMeta;
-import js.tiny.container.mvc.XspView;
 import js.tiny.container.servlet.RequestContext;
 import js.tiny.container.unit.TestContext;
 import js.util.Classes;

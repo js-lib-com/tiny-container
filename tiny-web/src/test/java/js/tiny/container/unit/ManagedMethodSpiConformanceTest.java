@@ -66,13 +66,6 @@ public class ManagedMethodSpiConformanceTest {
 	}
 
 	@Test
-	public void getRequestPath() throws Exception {
-		Classes.invoke(getterManagedMethod, "setRemotelyAccessible", true);
-		Classes.invoke(getterManagedMethod, "setRequestPath", "method/path");
-		assertEquals("method/path", getterManagedMethod.getRequestPath());
-	}
-
-	@Test
 	public void isVoid() {
 		assertFalse(getterManagedMethod.isVoid());
 		assertTrue(setterManagedMethod.isVoid());

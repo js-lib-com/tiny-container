@@ -240,18 +240,6 @@ public class ManagedClassSpiConformanceTest {
 	}
 
 	@Test
-	public void getRequestPath() throws Exception {
-		String config = "<test class='js.tiny.container.unit.ManagedClassSpiConformanceTest$NetCar' />";
-		assertEquals("net/car", getManagedClass(config(config)).getRequestPath());
-	}
-
-	@Test(expected = BugError.class)
-	public void getRequestPath_NotRemote() throws Exception {
-		String config = "<test class='js.tiny.container.unit.ManagedClassSpiConformanceTest$CarImpl' />";
-		getManagedClass(config(config)).getRequestPath();
-	}
-
-	@Test
 	public void getImplementationURL() throws Exception {
 		String config = "<test interface='js.tiny.container.unit.ManagedClassSpiConformanceTest$Car' type='REMOTE' url='http://server/' />";
 		assertEquals("http://server/", getManagedClass(config(config)).getImplementationURL());

@@ -29,8 +29,6 @@ import javax.ejb.Stateful;
 import javax.ejb.Stateless;
 import javax.inject.Inject;
 import javax.interceptor.Interceptors;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
 
 import js.annotation.ContextParam;
 import js.converter.Converter;
@@ -377,11 +375,6 @@ public final class ManagedClass implements IManagedClass {
 	private String transactionalSchema;
 
 	/**
-	 * Request URI path for this managed class configured by {@link Path} annotation.
-	 */
-	private String requestPath;
-
-	/**
 	 * Flag indicating that this managed class should be instantiated automatically by container, see {@link Container#start()}.
 	 * Note that created instance is a singleton and managed instance scope should be {@link InstanceScope#APPLICATION}.
 	 * <p>
@@ -392,6 +385,8 @@ public final class ManagedClass implements IManagedClass {
 	 * </ul>
 	 */
 	private boolean autoInstanceCreation;
+
+	private final Map<Class<? extends IServiceMeta>, IServiceMeta> serviceMetas = new HashMap<>();
 
 	/**
 	 * Loads this managed class state from class descriptor then delegates {@link #scanAnnotations()}. Annotations scanning is
@@ -412,6 +407,9 @@ public final class ManagedClass implements IManagedClass {
 		this.implementationClass = loadImplementationClass(descriptor);
 		this.interfaceClasses = loadInterfaceClasses(descriptor);
 		this.implementationURL = loadImplementationURL(descriptor);
+
+		this.key = KEY_SEED.getAndIncrement();
+		this.string = buildStringRepresentation(descriptor);
 
 		// startup attribute is enable only on singletons, that is, managed instances with application scope
 		if (this.instanceScope == InstanceScope.APPLICATION && descriptor.hasAttribute("startup")) {
@@ -447,9 +445,6 @@ public final class ManagedClass implements IManagedClass {
 				}
 			}
 		}
-
-		this.key = KEY_SEED.getAndIncrement();
-		this.string = buildStringRepresentation(descriptor);
 	}
 
 	private static boolean hasLifeCycleInterface(Class<?> implementationClass, Class<?> interfaceClass) {
@@ -499,8 +494,11 @@ public final class ManagedClass implements IManagedClass {
 	 */
 	private void scanAnnotations() {
 
-		for (IContainerService plugin : container.getServices()) {
-			plugin.scan(this);
+		for (IContainerService containerService : container.getServices()) {
+			for (IServiceMeta serviceMeta : containerService.scan(this)) {
+				log.debug("Add service meta |%s| to managed class |%s|", serviceMeta.getClass(), this);
+				serviceMetas.put(serviceMeta.getClass(), serviceMeta);
+			}
 		}
 
 		// startup annotation works only on singletons, that is, managed instances with application scope
@@ -513,14 +511,6 @@ public final class ManagedClass implements IManagedClass {
 		Remote remoteAnnotation = getAnnotation(implementationClass, Remote.class);
 		if (remoteAnnotation != null) {
 			remoteType = true;
-		}
-		Path requestPathAnnotation = getAnnotation(implementationClass, Path.class);
-		if (requestPathAnnotation != null) {
-			requestPath = requestPathAnnotation.value();
-		}
-
-		if (requestPath != null && requestPath.isEmpty()) {
-			requestPath = null;
 		}
 		if (remoteType) {
 			remotelyAccessible = true;
@@ -619,22 +609,14 @@ public final class ManagedClass implements IManagedClass {
 			// handle remote accessible methods
 
 			boolean uncheckedMethod = hasAnnotation(method, PermitAll.class);
-			if (uncheckedMethod && !remotelyAccessible) {
-				throw new BugError("@Public annotation on not remote method |%s|.", method);
-			}
 			if (!uncheckedMethod) {
 				uncheckedMethod = uncheckedType;
 			}
 
-			Path methodPath = getAnnotation(method, Path.class);
-			if (!remotelyAccessible && methodPath != null) {
-				throw new BugError("@MethodPath annotation on not remote method |%s|.", method);
-			}
 			if (remoteMethod) {
 				if (managedMethod == null) {
 					managedMethod = new ManagedMethod(this, interfaceMethod);
 				}
-				managedMethod.setRequestPath(methodPath != null ? methodPath.value() : null);
 				managedMethod.setRemotelyAccessible(remoteMethod);
 				managedMethod.setUnchecked(uncheckedMethod);
 			}
@@ -713,26 +695,24 @@ public final class ManagedClass implements IManagedClass {
 				}
 			}
 
-			// set security roles after security unchecked state - PermitAll annotation, processed
-			rolesAllowed = getAnnotation(method, RolesAllowed.class);
-			if (rolesAllowed != null && !remotelyAccessible) {
-				throw new BugError("@RolesAllowed annotation on not remote method |%s|.", method);
-			}
-
 			if (managedMethod == null) {
 				continue;
 			}
 
+			managedMethod.setUnchecked(uncheckedMethod);
+
+			// enable security service if any security annotation is used on class
+			managedMethod.setSecurityEnabled(typeRoles != null || uncheckedType || denyAllType);
+
+			// set security roles after security unchecked state - PermitAll annotation, processed
+			rolesAllowed = getAnnotation(method, RolesAllowed.class);
 			String[] methodRoles = rolesAllowed != null ? rolesAllowed.value() : typeRoles;
 			if (methodRoles != null) {
+				// force security service enabled if any security annotation is used on method
+				managedMethod.setSecurityEnabled(true);
 				if (!hasAnnotation(method, PermitAll.class)) {
 					managedMethod.setRoles(methodRoles);
 				}
-			}
-
-			Produces producesMethod = getAnnotation(method, Produces.class);
-			if (producesMethod != null) {
-				managedMethod.setReturnContentType(producesMethod.value()[0]);
 			}
 
 			// store managed method, if created, to managed methods pool
@@ -862,14 +842,6 @@ public final class ManagedClass implements IManagedClass {
 	@Override
 	public boolean isRemotelyAccessible() {
 		return remotelyAccessible;
-	}
-
-	@Override
-	public String getRequestPath() {
-		if (!remotelyAccessible) {
-			throw new BugError("Attempt to retrive request URI path for local managed class |%s|.", this);
-		}
-		return requestPath;
 	}
 
 	@Override
@@ -1237,6 +1209,26 @@ public final class ManagedClass implements IManagedClass {
 
 	// --------------------------------------------------------------------------------------------
 	// ANNOTATIONS SCANNER UTILITY METHODS
+
+	@SuppressWarnings("unchecked")
+	@Override
+	public <T extends IServiceMeta> T getServiceMeta(Class<T> type) {
+		return (T) serviceMetas.get(type);
+	}
+
+	@Override
+	public <T extends Annotation> T getAnnotation(Class<T> type) {
+		T annotation = implementationClass.getAnnotation(type);
+		if (annotation == null) {
+			for (Class<?> interfaceClass : implementationClass.getInterfaces()) {
+				annotation = interfaceClass.getAnnotation(type);
+				if (annotation != null) {
+					break;
+				}
+			}
+		}
+		return annotation;
+	}
 
 	/**
 	 * Get class annotation or null if none found. This getter uses extended annotation searching scope: it searches first on
