@@ -31,6 +31,7 @@
 		<module>tiny-core</module>
 		<module>tiny-web</module>
 		<module>tiny-rest</module>
+		<module>tiny-mvc</module>
 	</modules>
 
 	<properties>

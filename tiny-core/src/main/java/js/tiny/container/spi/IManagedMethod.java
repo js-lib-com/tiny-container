@@ -27,6 +27,8 @@ import js.transaction.Transactional;
  * @version final
  */
 public interface IManagedMethod {
+	String getName();
+	
 	/**
 	 * Get managed class that declares this managed method.
 	 * 

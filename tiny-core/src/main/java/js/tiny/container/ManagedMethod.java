@@ -157,119 +157,16 @@ public final class ManagedMethod implements IManagedMethod {
 	}
 
 	// --------------------------------------------------------------------------------------------
-	// PACKAGE METHODS
-
-	@SuppressWarnings("unchecked")
-	@Override
-	public <T extends IServiceMeta> T getServiceMeta(Class<T> type) {
-		return (T) serviceMetas.get(type);
-	}
-
-	/**
-	 * Set remote accessibility flag.
-	 * 
-	 * @param remotelyAccessible remote accessibility flag.
-	 */
-	public void setRemotelyAccessible(boolean remotelyAccessible) {
-		this.remotelyAccessible = remotelyAccessible;
-	}
-
-	void setUnchecked(boolean unchecked) {
-		this.unchecked = unchecked;
-	}
-
-	/**
-	 * Set this managed method transactional state.
-	 * 
-	 * @param transactional transactional flag.
-	 */
-	void setTransactional(boolean transactional) {
-		this.transactional = transactional;
-	}
-
-	/**
-	 * Set transaction immutable state.
-	 * 
-	 * @param immutable immutable flag.
-	 */
-	void setImmutable(boolean immutable) {
-		this.immutable = immutable;
-	}
-
-	/**
-	 * Set asynchronous mode. If <code>asynchronous</code> arguments is true, internal {@link #invoker} is decorated with
-	 * {@link AsyncInvoker}; this process is irreversible.
-	 * 
-	 * @param asynchronous asynchronous mode flag.
-	 */
-	void setAsynchronous(boolean asynchronous) {
-		this.asynchronous = asynchronous;
-		if (asynchronous) {
-			invoker = new AsyncInvoker(invoker);
-		}
-	}
-
-	@Override
-	public <T extends Annotation> T getAnnotation(Class<T> type) {
-		T annotation = method.getAnnotation(type);
-		if (annotation == null) {
-			try {
-				annotation = declaringClass.getImplementationClass().getMethod(method.getName(), method.getParameterTypes()).getAnnotation(type);
-			} catch (NoSuchMethodException | SecurityException e) {
-			}
-			if (annotation == null) {
-				for (Class<?> interfaceClass : declaringClass.getInterfaceClasses()) {
-					try {
-						annotation = interfaceClass.getMethod(method.getName(), method.getParameterTypes()).getAnnotation(type);
-						if (annotation != null) {
-							return annotation;
-						}
-					} catch (NoSuchMethodException unused) {
-					}
-				}
-			}
-		}
-		return annotation;
-	}
-
-	void addServiceMeta(IServiceMeta serviceMeta) {
-		log.debug("Add service meta |%s| to managed method |%s|", serviceMeta.getClass(), this);
-		serviceMetas.put(serviceMeta.getClass(), serviceMeta);
-	}
-
-	void setRoles(String[] roles) {
-		Params.notNullOrEmpty(roles, "Roles");
-		this.unchecked = false;
-		this.roles = roles;
-	}
-
-	void setSecurityEnabled(boolean securityEnabled) {
-		this.securityEnabled = securityEnabled;
-	}
-
-	/**
-	 * Enable instrumentation on the fly and return this method invocation meter.
-	 * 
-	 * @return this method invocation meter.
-	 * @see meter
-	 */
-	Meter getMeter() {
-		// creating meter on the fly is not dangerous and need not be synchronized
-		// this assumption is related to #invoke(Object, Object...) method logic
-		// if change invoke logic it may need to add synchronization here too
-
-		if (meter == null) {
-			meter = new Meter(method);
-		}
-		return meter;
-	}
-
-	// --------------------------------------------------------------------------------------------
-	// MANAGED METHOD SPI
+	// MANAGED METHOD INTERFACE
 
 	@Override
 	public IManagedClass getDeclaringClass() {
 		return declaringClass;
+	}
+
+	@Override
+	public String getName() {
+		return method.getName();
 	}
 
 	@Override
@@ -393,6 +290,12 @@ public final class ManagedMethod implements IManagedMethod {
 	@Override
 	public String toString() {
 		return signature;
+	}
+
+	@SuppressWarnings("unchecked")
+	@Override
+	public <T extends IServiceMeta> T getServiceMeta(Class<T> type) {
+		return (T) serviceMetas.get(type);
 	}
 
 	// --------------------------------------------------------------------------------------------
@@ -718,5 +621,107 @@ public final class ManagedMethod implements IManagedMethod {
 				maxProcessingTime = processingTime;
 			}
 		}
+	}
+
+	// --------------------------------------------------------------------------------------------
+	// PACKAGE METHODS
+
+	/**
+	 * Set remote accessibility flag.
+	 * 
+	 * @param remotelyAccessible remote accessibility flag.
+	 */
+	void setRemotelyAccessible(boolean remotelyAccessible) {
+		this.remotelyAccessible = remotelyAccessible;
+	}
+
+	void setUnchecked(boolean unchecked) {
+		this.unchecked = unchecked;
+	}
+
+	/**
+	 * Set this managed method transactional state.
+	 * 
+	 * @param transactional transactional flag.
+	 */
+	void setTransactional(boolean transactional) {
+		this.transactional = transactional;
+	}
+
+	/**
+	 * Set transaction immutable state.
+	 * 
+	 * @param immutable immutable flag.
+	 */
+	void setImmutable(boolean immutable) {
+		this.immutable = immutable;
+	}
+
+	/**
+	 * Set asynchronous mode. If <code>asynchronous</code> arguments is true, internal {@link #invoker} is decorated with
+	 * {@link AsyncInvoker}; this process is irreversible.
+	 * 
+	 * @param asynchronous asynchronous mode flag.
+	 */
+	void setAsynchronous(boolean asynchronous) {
+		this.asynchronous = asynchronous;
+		if (asynchronous) {
+			invoker = new AsyncInvoker(invoker);
+		}
+	}
+
+	@Override
+	public <T extends Annotation> T getAnnotation(Class<T> type) {
+		T annotation = method.getAnnotation(type);
+		if (annotation == null) {
+			try {
+				annotation = declaringClass.getImplementationClass().getMethod(method.getName(), method.getParameterTypes()).getAnnotation(type);
+			} catch (NoSuchMethodException | SecurityException e) {
+			}
+			if (annotation == null) {
+				for (Class<?> interfaceClass : declaringClass.getInterfaceClasses()) {
+					try {
+						annotation = interfaceClass.getMethod(method.getName(), method.getParameterTypes()).getAnnotation(type);
+						if (annotation != null) {
+							return annotation;
+						}
+					} catch (NoSuchMethodException unused) {
+					}
+				}
+			}
+		}
+		return annotation;
+	}
+
+	void addServiceMeta(IServiceMeta serviceMeta) {
+		log.debug("Add service meta |%s| to managed method |%s|", serviceMeta.getClass(), this);
+		serviceMetas.put(serviceMeta.getClass(), serviceMeta);
+	}
+
+	void setRoles(String[] roles) {
+		Params.notNullOrEmpty(roles, "Roles");
+		this.unchecked = false;
+		this.roles = roles;
+	}
+
+	void setSecurityEnabled(boolean securityEnabled) {
+		this.securityEnabled = securityEnabled;
+	}
+
+	/**
+	 * Enable instrumentation on the fly and return this method invocation meter.
+	 * 
+	 * @return this method invocation meter.
+	 * @see meter
+	 */
+	Meter getMeter() {
+		// creating meter on the fly is not dangerous and need not be synchronized
+		// this assumption is related to #invoke(Object, Object...) method logic
+		// if change invoke logic it may need to add synchronization here too
+
+		if (meter == null) {
+			meter = new Meter(method);
+		}
+		return meter;
 	}
 }

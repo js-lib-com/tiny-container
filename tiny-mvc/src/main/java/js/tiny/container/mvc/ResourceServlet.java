@@ -168,7 +168,7 @@ public class ResourceServlet extends AppServlet {
 			Object controller = container.getInstance(method.getDeclaringClass());
 			resource = method.invoke(controller, arguments);
 			if (resource == null) {
-				throw new BugError("Null resource |%s|.", httpRequest.getRequestURI());
+				throw new BugError("Null resource for request |%s| returned by method |%s|.", httpRequest.getRequestURI(), method);
 			}
 
 			ResponseContentTypeMeta responseContentTypeMeta = method.getServiceMeta(ResponseContentTypeMeta.class);
@@ -266,7 +266,7 @@ public class ResourceServlet extends AppServlet {
 
 	private static String path(IManagedMethod managedMethod) {
 		RequestPathMeta requestPathMeta = managedMethod.getServiceMeta(RequestPathMeta.class);
-		return requestPathMeta != null ? requestPathMeta.value() : Strings.memberToDashCase(managedMethod.getMethod().getName());
+		return requestPathMeta != null ? requestPathMeta.value() : Strings.memberToDashCase(managedMethod.getName());
 	}
 
 	/**

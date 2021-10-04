@@ -62,7 +62,7 @@ public class ViewManagerUnitTest {
 	public void config() throws Exception {
 		String config = "" + //
 				"<views>" + //
-				"	<repository path='fixture/mvc' files-pattern='*.html' />" + //
+				"	<repository path='src/test/resources/' files-pattern='*.html' />" + //
 				"</views>";
 		ConfigBuilder builder = new ConfigBuilder(config);
 		Configurable viewManager = new ViewManagerImpl();
@@ -73,8 +73,8 @@ public class ViewManagerUnitTest {
 	public void config_MultipleRepositories() throws Exception {
 		String config = "" + //
 				"<views>" + //
-				"	<repository path='fixture/mvc' files-pattern='*.html' />" + //
-				"	<repository path='fixture/mvc' files-pattern='*.fo' />" + //
+				"	<repository path='src/test/resources/' files-pattern='*.html' />" + //
+				"	<repository path='src/test/resources/' files-pattern='*.fo' />" + //
 				"</views>";
 		ConfigBuilder builder = new ConfigBuilder(config);
 		Configurable viewManager = new ViewManagerImpl();
@@ -96,7 +96,7 @@ public class ViewManagerUnitTest {
 
 		String config = "" + //
 				"<views>" + //
-				"	<repository path='fixture/mvc' files-pattern='*.html' />" + //
+				"	<repository path='src/test/resources/' files-pattern='*.html' />" + //
 				"</views>";
 		ConfigBuilder builder = new ConfigBuilder(config);
 		ViewManagerImpl viewManager = new ViewManagerImpl();
@@ -122,7 +122,7 @@ public class ViewManagerUnitTest {
 
 		String config = "" + //
 				"<views>" + //
-				"	<repository path='fixture/mvc' files-pattern='*.html' />" + //
+				"	<repository path='src/test/resources/' files-pattern='*.html' />" + //
 				"</views>";
 		ConfigBuilder builder = new ConfigBuilder(config);
 		ViewManagerImpl viewManager = new ViewManagerImpl();

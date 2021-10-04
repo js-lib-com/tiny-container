@@ -45,7 +45,6 @@ import js.tiny.container.ScopeFactory;
 import js.tiny.container.TransactionalResource;
 import js.tiny.container.core.App;
 import js.tiny.container.core.AppContext;
-import js.tiny.container.mvc.ViewManager;
 import js.tiny.container.net.EventStream;
 import js.tiny.container.net.EventStreamManager;
 import js.tiny.container.servlet.RequestContext;
@@ -192,7 +191,7 @@ public class ContainerUnitTest {
 
 		// order depends on lib-descriptor; keep this test case and lib-descriptor in sync
 
-		Class<?>[] expectedOrder = new Class<?>[] { App.class, AppContext.class, RequestContext.class, TransactionManager.class, TransactionalResource.class, ViewManager.class, EventStreamManager.class, EventStream.class, NetCar.class };
+		Class<?>[] expectedOrder = new Class<?>[] { App.class, AppContext.class, RequestContext.class, TransactionManager.class, TransactionalResource.class, EventStreamManager.class, EventStream.class, NetCar.class };
 		for (int i = 1; i < expectedOrder.length; ++i) {
 			Integer previousKey = classesPool.get(expectedOrder[i - 1]).getKey();
 			Integer currentKey = classesPool.get(expectedOrder[i]).getKey();
@@ -668,7 +667,7 @@ public class ContainerUnitTest {
 			++classesCount;
 		}
 		// this hard coded value depends on lib-descriptor.xml
-		assertEquals(13, classesCount);
+		assertEquals(11, classesCount);
 	}
 
 	@Test
@@ -685,7 +684,7 @@ public class ContainerUnitTest {
 		// js.tiny.container.http.captcha.Captcha#verifyResponse(int,String)
 		// js.tiny.container.http.captcha.Captcha#getChallenge(int)
 		// js.tiny.container.http.captcha.Captcha#getChallenges()
-		assertEquals(3, methodsCount);
+		assertEquals(0, methodsCount);
 	}
 
 	@Test(expected = BugError.class)

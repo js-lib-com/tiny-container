@@ -1,100 +1,123 @@
 package js.tiny.container.mvc;
 
-import static org.junit.Assert.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import java.io.IOException;
-import java.lang.reflect.Type;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
+import java.util.Arrays;
 
+import javax.servlet.ServletConfig;
 import javax.servlet.ServletContext;
-import javax.servlet.ServletException;
+import javax.servlet.ServletOutputStream;
 import javax.servlet.UnavailableException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.Mock;
+import org.mockito.junit.MockitoJUnitRunner;
 
-import js.lang.BugError;
+import js.json.Json;
 import js.lang.InvocationException;
-import js.tiny.container.http.NoSuchResourceException;
 import js.tiny.container.http.Resource;
-import js.tiny.container.http.encoder.ArgumentPartReader;
 import js.tiny.container.http.encoder.ArgumentsReader;
 import js.tiny.container.http.encoder.ArgumentsReaderFactory;
 import js.tiny.container.servlet.RequestContext;
 import js.tiny.container.servlet.TinyContainer;
 import js.tiny.container.spi.AuthorizationException;
+import js.tiny.container.spi.IContainer;
 import js.tiny.container.spi.IManagedClass;
 import js.tiny.container.spi.IManagedMethod;
-import js.tiny.container.spi.IServiceMeta;
-import js.tiny.container.stub.ContainerStub;
-import js.tiny.container.stub.ManagedClassSpiStub;
-import js.tiny.container.stub.ManagedMethodSpiStub;
-import js.tiny.container.unit.HttpServletRequestStub;
-import js.tiny.container.unit.HttpServletResponseStub;
-import js.tiny.container.unit.ServletConfigStub;
-import js.tiny.container.unit.ServletContextStub;
 import js.util.Classes;
 
-@SuppressWarnings({ "unchecked", "rawtypes" })
+@RunWith(MockitoJUnitRunner.class)
 public class ResourceServletHandlerUnitTest {
-	private MockContainer container;
-	private MockManagedMethod method;
+	@Mock
+	private ServletConfig servletConfig;
+	@Mock
+	private ServletContext servletContext;
+	@Mock
+	private HttpServletRequest httpRequest;
+	@Mock
+	private HttpServletResponse httpResponse;
+	@Mock
+	private ServletOutputStream responseStream;
 
-	private MockHttpServletRequest httpRequest;
-	private MockHttpServletResponse httpResponse;
-	private MockServletConfig config;
+	@Mock
+	private Json json;
+
+	@Mock
+	private IContainer container;
+	@Mock
+	private IManagedClass managedClass;
+	@Mock
+	private IManagedMethod managedMethod;
+	
+	@Mock
+	private ArgumentsReaderFactory argumentsFactory;
+	@Mock
+	private ArgumentsReader argumentsReader;
+
+	@Mock
+	private Resource resource;
+	
 	private RequestContext context;
 	private ResourceServlet servlet;
 
 	@Before
-	public void beforeTest() throws UnavailableException {
-		method = new MockManagedMethod("index", Resource.class);
-		container = new MockContainer();
-		container.methods.add(method);
+	public void beforeTest() throws UnavailableException, IllegalArgumentException, IOException, InvocationException, AuthorizationException {
+		when(servletConfig.getServletName()).thenReturn("resource-servlet");
+		when(servletConfig.getServletContext()).thenReturn(servletContext);
+		when(servletContext.getServletContextName()).thenReturn("test-app");
+		when(servletContext.getAttribute(TinyContainer.ATTR_INSTANCE)).thenReturn(container);
 
-		httpRequest = new MockHttpServletRequest();
-		httpResponse = new MockHttpServletResponse();
+		when(httpRequest.getRequestURI()).thenReturn("/test-app/controller/index");
+		when(httpRequest.getContextPath()).thenReturn("/test-app");
 
-		config = new MockServletConfig();
-		config.context.attributes.put(TinyContainer.ATTR_INSTANCE, container);
+		when(container.getManagedMethods()).thenReturn(Arrays.asList(managedMethod));
+		//when(container.getLoginPage()).thenReturn("login");
+		when(container.getInstance(managedClass)).thenReturn(new Object());
+		
+		when(managedClass.getServiceMeta(ControllerMeta.class)).thenReturn(new ControllerMeta("controller"));
+		when(managedMethod.getDeclaringClass()).thenReturn(managedClass);
 
+		when(managedMethod.getServiceMeta(RequestPathMeta.class)).thenReturn(new RequestPathMeta("index"));
+		when(managedMethod.getParameterTypes()).thenReturn(new Class[] { String.class });
+		when(managedMethod.getReturnType()).thenReturn(Resource.class);
+		when(managedMethod.invoke(any(), any())).thenReturn(resource);
+
+		when(argumentsFactory.getArgumentsReader(httpRequest, managedMethod.getParameterTypes())).thenReturn(argumentsReader);
+		when(argumentsReader.read(httpRequest, managedMethod.getParameterTypes())).thenReturn(new Object[] { "value" });
+		
 		context = new RequestContext(container);
 		context.attach(httpRequest, httpResponse);
 
-		servlet = new ResourceServlet(new MockArgumentsReaderFactory());
+		servlet = new ResourceServlet(argumentsFactory);
 	}
 
 	/**
 	 * Create resource servlet instance and add a method to cache, mapped to <code>/controller/index</code>. Create request
 	 * context for <code>/test-app/controller/index</code> request URI and request path <code>/controller/index</code>. Invoke
-	 * method and test invocation probe.
+	 * method and test 'invoke' was called.
 	 */
 	@Test
-	public void handleRequest() throws Exception {
-		class MockResource implements Resource {
-			private int serializeProbe;
-
-			@Override
-			public void serialize(HttpServletResponse httpResponse) throws IOException {
-				++serializeProbe;
-			}
-		}
-		method.resource = new MockResource();
+	public void GivenDefaults_WhenInvoke_Then200() throws Exception {
+		// given
+		
+		// when
 		executeRequestHandler();
 
-		assertEquals(1, method.invokeProbe);
-		assertEquals(1, ((MockResource) method.resource).serializeProbe);
-		assertEquals(200, httpResponse.statusCode);
+		// then
+		verify(managedMethod, times(1)).invoke(any(), any());
+		verify(httpResponse, times(1)).setStatus(200);
+		verify(resource, times(1)).serialize(httpResponse);
 	}
 
+	/*
 	@Test
 	public void arguments() throws Exception {
 		method.parameterTypes = new Type[] { String.class };
@@ -105,8 +128,10 @@ public class ResourceServletHandlerUnitTest {
 		assertEquals("value", method.arguments[0]);
 		assertEquals(200, httpResponse.statusCode);
 	}
-
+*/
+	
 	/** If method throws authorization exception and there is no login page uses servlet container authentication. */
+	/*
 	@Test
 	public void authenticate() throws Exception {
 		container.loginPage = null;
@@ -115,8 +140,10 @@ public class ResourceServletHandlerUnitTest {
 
 		assertEquals(1, httpRequest.authenticateProbe);
 	}
-
+*/
+	
 	/** If method throws authorization exception and there is login page redirect to it. */
+	/*
 	@Test
 	public void redirectLoginPage() throws Exception {
 		container.loginPage = "login-form.htm";
@@ -135,8 +162,9 @@ public class ResourceServletHandlerUnitTest {
 		assertEquals(500, httpResponse.statusCode);
 		assertEquals("exception", httpResponse.errorMessage);
 	}
-
+*/
 	/** Illegal argument generated by method invocation is processed as method not found, that is, with status code 404. */
+	/*
 	@Test
 	public void illegalArgument() throws Exception {
 		method.exception = new IllegalArgumentException("exception");
@@ -164,55 +192,29 @@ public class ResourceServletHandlerUnitTest {
 		assertEquals(404, httpResponse.statusCode);
 		assertEquals("/test-app/controller/index", httpResponse.errorMessage);
 	}
-
+*/
 	/** It is a bug if invoked resource method returns null. */
+	/*
 	@Test(expected = BugError.class)
 	public void nullResource() throws Exception {
 		// method returns null resource
 		method.resource = null;
 		executeRequestHandler();
 	}
-
+*/
+	
 	// --------------------------------------------------------------------------------------------
 	// UTILITY METHODS
 
 	private void executeRequestHandler() throws Exception {
-		servlet.init(config);
+		servlet.init(servletConfig);
 		Classes.invoke(servlet, "handleRequest", context);
 	}
 
 	// --------------------------------------------------------------------------------------------
 	// FIXTURE
 
-	private static class MockContainer extends ContainerStub {
-		private List<IManagedMethod> methods = new ArrayList<>();
-		private String loginPage;
-
-		@Override
-		public Iterable<IManagedMethod> getManagedMethods() {
-			return methods;
-		}
-
-		@Override
-		public <T> T getInstance(IManagedClass managedClass, Object... args) {
-			return (T) new Object();
-		}
-
-		@Override
-		public String getLoginPage() {
-			return loginPage;
-		}
-	}
-
-	private static class MockManagedClass extends ManagedClassSpiStub {
-		private String requestPath = "controller";
-
-		@Override
-		public <T extends IServiceMeta> T getServiceMeta(Class<T> type) {
-			return (T) new ControllerMeta(requestPath);
-		}
-	}
-
+	/*
 	private static class MockManagedMethod extends ManagedMethodSpiStub {
 		private MockManagedClass declaringClass = new MockManagedClass();
 		private String requestPath;
@@ -234,29 +236,6 @@ public class ResourceServletHandlerUnitTest {
 		}
 
 		@Override
-		public IManagedClass getDeclaringClass() {
-			return declaringClass;
-		}
-
-		@Override
-		public <T extends IServiceMeta> T getServiceMeta(Class<T> type) {
-			if (type.equals(RequestPathMeta.class)) {
-				return (T) new RequestPathMeta(requestPath);
-			}
-			return null;
-		}
-
-		@Override
-		public Type[] getParameterTypes() {
-			return parameterTypes;
-		}
-
-		@Override
-		public Type getReturnType() {
-			return returnType;
-		}
-
-		@Override
 		public <T> T invoke(Object object, Object... arguments) throws IllegalArgumentException, InvocationException, AuthorizationException {
 			if (exception instanceof IllegalArgumentException) {
 				throw (IllegalArgumentException) exception;
@@ -270,25 +249,6 @@ public class ResourceServletHandlerUnitTest {
 			++invokeProbe;
 			this.arguments = arguments;
 			return (T) resource;
-		}
-	}
-
-	private static class MockArgumentsReaderFactory implements ArgumentsReaderFactory {
-		@Override
-		public ArgumentsReader getArgumentsReader(HttpServletRequest httpRequest, Type[] formalParameters) {
-			return new ArgumentsReader() {
-				public Object[] read(HttpServletRequest httpRequest, Type[] formalParameters) {
-					return new Object[] { "value" };
-				}
-
-				public void clean() {
-				}
-			};
-		}
-
-		@Override
-		public ArgumentPartReader getArgumentPartReader(String contentType, Type parameterType) {
-			throw new UnsupportedOperationException();
 		}
 	}
 
@@ -361,42 +321,5 @@ public class ResourceServletHandlerUnitTest {
 			this.location = location;
 		}
 	}
-
-	private static class MockServletConfig extends ServletConfigStub {
-		private MockServletContext context = new MockServletContext();
-
-		@Override
-		public String getServletName() {
-			return "resource-servlet";
-		}
-
-		@Override
-		public ServletContext getServletContext() {
-			return context;
-		}
-
-		@Override
-		public String getInitParameter(String name) {
-			return null;
-		}
-	}
-
-	private static class MockServletContext extends ServletContextStub {
-		private Map<String, Object> attributes = new HashMap<>();
-
-		@Override
-		public String getServletContextName() {
-			return "test-app";
-		}
-
-		@Override
-		public Object getAttribute(String name) {
-			return attributes.get(name);
-		}
-
-		@Override
-		public String getInitParameter(String name) {
-			return null;
-		}
-	}
+	*/
 }

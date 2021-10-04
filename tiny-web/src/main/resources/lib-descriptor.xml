@@ -13,8 +13,8 @@
 			<interface name="js.tiny.container.TransactionalResource" />
 		</data-source>
 
-		<views interface="js.tiny.container.mvc.ViewManager" class="js.tiny.container.mvc.ViewManagerImpl" />
-		<captcha class="js.tiny.container.http.captcha.Captcha" />
+		<!--<views interface="js.tiny.container.mvc.ViewManager" class="js.tiny.container.mvc.ViewManagerImpl" />-->
+		<!--<captcha class="js.tiny.container.http.captcha.Captcha" />-->
 
 		<event-stream-manager class="js.tiny.container.net.EventStreamManagerImpl">
 			<interface name="js.tiny.container.net.EventStreamManager" />

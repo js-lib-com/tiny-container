@@ -12,6 +12,11 @@ import js.tiny.container.spi.IServiceMeta;
 
 public class ManagedMethodSpiStub implements IManagedMethod {
 	@Override
+	public String getName() {
+		throw new UnsupportedOperationException("getName()");
+	}
+
+	@Override
 	public Method getMethod() {
 		throw new UnsupportedOperationException("getMethod()");
 	}

@@ -112,7 +112,7 @@ public class ResourceServletIntegrationTest {
 		assertEquals("text/html;charset=UTF-8", response.headers.get("Content-Type"));
 		assertEquals("no-cache, no-store", response.headers.get("Cache-Control"));
 		assertEquals("no-cache", response.headers.get("Pragma"));
-		assertTrue(response.getBody().startsWith("<!DOCTYPE html"));
+		assertTrue(response.getBody().startsWith("<html"));
 	}
 
 	@Test
@@ -135,7 +135,7 @@ public class ResourceServletIntegrationTest {
 
 		assertEquals(200, response.status);
 		assertEquals("text/html;charset=UTF-8", response.headers.get("Content-Type"));
-		assertTrue(response.getBody().startsWith("<!DOCTYPE html"));
+		assertTrue(response.getBody().startsWith("<html"));
 		Person p = (Person) app.content;
 		assertEquals("John Doe", p.name);
 		assertEquals("freelancer", p.profession);
@@ -150,7 +150,7 @@ public class ResourceServletIntegrationTest {
 
 		assertEquals(200, response.status);
 		assertEquals("text/html;charset=UTF-8", response.headers.get("Content-Type"));
-		assertTrue(response.getBody().startsWith("<!DOCTYPE html"));
+		assertTrue(response.getBody().startsWith("<html"));
 		Person p = (Person) app.content;
 		assertEquals("John Doe", p.name);
 		assertEquals("freelancer", p.profession);
@@ -179,7 +179,7 @@ public class ResourceServletIntegrationTest {
 
 		assertEquals(200, response.status);
 		assertEquals("text/html;charset=UTF-8", response.headers.get("Content-Type"));
-		assertTrue(response.getBody().startsWith("<!DOCTYPE html"));
+		assertTrue(response.getBody().startsWith("<html"));
 		Person p = (Person) app.content;
 		assertEquals("John Doe", p.name);
 		assertEquals("freelancer", p.profession);
@@ -208,7 +208,7 @@ public class ResourceServletIntegrationTest {
 
 		assertEquals(200, response.status);
 		assertEquals("text/html;charset=UTF-8", response.headers.get("Content-Type"));
-		assertTrue(response.getBody().startsWith("<!DOCTYPE html"));
+		assertTrue(response.getBody().startsWith("<html"));
 		Person p = (Person) app.content;
 		assertEquals("John Doe", p.name);
 		assertEquals("freelancer", p.profession);
@@ -556,7 +556,7 @@ public class ResourceServletIntegrationTest {
 
 		@Override
 		public void serialize(java.io.OutputStream stream) throws IOException {
-			Files.copy(new FileInputStream("fixture/mvc/page.html"), stream);
+			Files.copy(new FileInputStream("src/test/resources/page.html"), stream);
 		}
 	}
 

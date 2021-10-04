@@ -2,14 +2,14 @@ package js.tiny.container.mvc;
 
 import js.tiny.container.spi.IServiceMeta;
 
-public class ControllerMeta implements IServiceMeta {
+class RequestPathMeta implements IServiceMeta {
 	private final String value;
 
-	public ControllerMeta(Controller controller) {
-		this.value = controller.value();
+	public RequestPathMeta(RequestPath requestPath) {
+		this.value = requestPath.value();
 	}
 
-	public ControllerMeta(String value) {
+	public RequestPathMeta(String value) {
 		this.value = value;
 	}
 

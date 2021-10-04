@@ -49,7 +49,7 @@ public class CaptchaTest {
 	/** Config method should initialize captcha manager state from configuration object. */
 	@Test
 	public void captcha_config() throws Exception {
-		String REPOSITORY_DIR = new File("fixture/captcha").getAbsolutePath();
+		String REPOSITORY_DIR = new File("src/test/resources/captcha").getAbsolutePath();
 		Object captcha = config(REPOSITORY_DIR, 5);
 		assertNotNull(captcha);
 		assertEquals(REPOSITORY_DIR, ((File) Classes.getFieldValue(captcha, "imagesRepositoryDir")).getPath());
@@ -72,22 +72,22 @@ public class CaptchaTest {
 
 	@Test(expected = ConfigException.class)
 	public void captcha_config_RepositoryNotDriectory() throws Exception {
-		config("fixture/captcha/apple.png");
+		config("src/test/resources/captcha/apple.png");
 	}
 
 	@Test(expected = ConfigException.class)
 	public void captcha_config_RepositoryNotAbsolute() throws Exception {
-		config("fixture/captcha");
+		config("src/test/resources/captcha");
 	}
 
 	@Test(expected = ConfigException.class)
 	public void captcha_config_EmptyRepository() throws Exception {
-		config(new File("fixture/captcha/empty"));
+		config(new File("src/test/resources/captcha/empty"));
 	}
 
 	@Test(expected = ConfigException.class)
 	public void captcha_config_SetSizeTooLarge() throws Exception {
-		config(new File("fixture/captcha"), 10);
+		config(new File("src/test/resources/captcha"), 10);
 	}
 
 	/** CAPTCHA challenge getter should create a new challenge and store on HTTP session challenges store. */
@@ -97,7 +97,7 @@ public class CaptchaTest {
 		when(request.getSession(true)).thenReturn(session);
 		when(session.getAttribute("challenges-key")).thenReturn(new HashMap<Integer, Challenge>());
 
-		Object captcha = config(new File("fixture/captcha"), 5, context);
+		Object captcha = config(new File("src/test/resources/captcha"), 5, context);
 		Object challenge = Classes.invoke(captcha, "getChallenge", 0);
 		assertNotNull(challenge);
 
@@ -122,7 +122,7 @@ public class CaptchaTest {
 		when(request.getSession(true)).thenReturn(session);
 		when(session.getAttribute("challenges-key")).thenReturn(new HashMap<Integer, Challenge>());
 
-		Object captcha = config(new File("fixture/captcha"), 5, context);
+		Object captcha = config(new File("src/test/resources/captcha"), 5, context);
 		Object challenge = Classes.invoke(captcha, "getChallenge", 0);
 		assertNotNull(challenge);
 
@@ -140,7 +140,7 @@ public class CaptchaTest {
 		when(request.getSession(true)).thenReturn(session);
 		when(session.getAttribute("challenges-key")).thenReturn(new HashMap<Integer, Challenge>());
 
-		Object captcha = config(new File("fixture/captcha"), 5, context);
+		Object captcha = config(new File("src/test/resources/captcha"), 5, context);
 
 		List<String> tokens = new ArrayList<>();
 		for (int i = 0; i < 100; ++i) {
@@ -165,7 +165,7 @@ public class CaptchaTest {
 		when(context.getInstance(RequestContext.class)).thenReturn(request);
 		when(request.getSession(true)).thenReturn(session);
 
-		Object captcha = config(new File("fixture/captcha"), 5, context);
+		Object captcha = config(new File("src/test/resources/captcha"), 5, context);
 		Classes.invoke(captcha, "getImage", Strings.UUID());
 	}
 
@@ -174,7 +174,7 @@ public class CaptchaTest {
 		when(context.getInstance(RequestContext.class)).thenReturn(request);
 		when(request.getSession(true)).thenReturn(session);
 
-		Object captcha = config(new File("fixture/captcha"), 1, context);
+		Object captcha = config(new File("src/test/resources/captcha"), 1, context);
 		// getChallenge(int) should be called in order to generate challenge internal images set
 		Classes.invoke(captcha, "getChallenge", 0);
 		Classes.invoke(captcha, "getImage", Strings.UUID());
@@ -188,7 +188,7 @@ public class CaptchaTest {
 		when(request.getSession(true)).thenReturn(session);
 		when(session.getAttribute("challenges-key")).thenReturn(new HashMap<Integer, Challenge>());
 
-		Object captcha = config(new File("fixture/captcha"), 5, context);
+		Object captcha = config(new File("src/test/resources/captcha"), 5, context);
 		Object challenge = Classes.invoke(captcha, "getChallenge", instanceIndex);
 		assertNotNull(challenge);
 
@@ -212,7 +212,7 @@ public class CaptchaTest {
 		when(request.getSession(true)).thenReturn(session);
 		when(session.getAttribute("challenges-key")).thenReturn(new HashMap<Integer, Challenge>());
 
-		Object captcha = config(new File("fixture/captcha"), 5, context);
+		Object captcha = config(new File("src/test/resources/captcha"), 5, context);
 
 		for (int i = 0; i < 100; ++i) {
 			Object challenge = Classes.invoke(captcha, "getChallenge", i);
@@ -239,7 +239,7 @@ public class CaptchaTest {
 		when(context.getInstance(RequestContext.class)).thenReturn(request);
 		when(request.getSession(true)).thenReturn(session);
 
-		Object captcha = config(new File("fixture/captcha"), 5, context);
+		Object captcha = config(new File("src/test/resources/captcha"), 5, context);
 		Classes.invoke(captcha, "verifyResponse", 0, Strings.UUID());
 	}
 
@@ -261,7 +261,7 @@ public class CaptchaTest {
 	 */
 	@Test
 	public void challenge_Constructor() {
-		File repository = new File("fixture/captcha");
+		File repository = new File("src/test/resources/captcha");
 		int setSize = 3;
 		Object challenge = Classes.newInstance(CHALLENGE, repository, setSize);
 		assertNotNull(challenge);
@@ -288,7 +288,7 @@ public class CaptchaTest {
 
 	@Test
 	public void challenge_captchaImage() throws Exception {
-		File repository = new File("fixture/captcha");
+		File repository = new File("src/test/resources/captcha");
 		Object challenge = Classes.newInstance(CHALLENGE, repository, 3);
 
 		Map<String, File> tokenedImageFiles = Classes.getFieldValue(challenge, "tokenedImageFiles");
@@ -302,7 +302,7 @@ public class CaptchaTest {
 
 	@Test
 	public void challenge_verifyResponse() throws Exception {
-		File repository = new File("fixture/captcha");
+		File repository = new File("src/test/resources/captcha");
 		Object challenge = Classes.newInstance(CHALLENGE, repository, 1);
 
 		Map<String, File> tokenedImageFiles = Classes.getFieldValue(challenge, "tokenedImageFiles");
