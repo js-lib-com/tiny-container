@@ -10,6 +10,7 @@ import javax.servlet.ServletException;
 import javax.servlet.UnavailableException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.ws.rs.Path;
 
 import js.lang.InvocationException;
 import js.log.Log;
@@ -221,7 +222,10 @@ public class RestServlet extends AppServlet {
 		// JSON but with limited capacity; if capacity is not exceeded set response content length; if capacity is exceeded
 		// switch to chunked transfer
 
-		ContentType contentType = ContentType.valueOf(method.getReturnContentType());
+		ProducesMeta producesMeta = method.getServiceMeta(ProducesMeta.class);
+		String produces = producesMeta != null ? producesMeta.value() : null;
+
+		ContentType contentType = ContentType.valueOf(produces);
 		if (contentType == null) {
 			contentType = valueWriterFactory.getContentTypeForValue(value);
 		}
@@ -241,8 +245,8 @@ public class RestServlet extends AppServlet {
 	 * invocation.
 	 * <p>
 	 * Here is storage key syntax that should be identical with retrieval key. Key has optional resource path and sub-resource
-	 * path. Resource path is the declaring class request path, {@link IManagedClass#getRequestPath()} and sub-resource path
-	 * is managed method request path, {@link IManagedMethod#getRequestPath()}.
+	 * path. Resource path is the declaring class request path, {@link IManagedClass#getRequestPath()} and sub-resource path is
+	 * managed method request path, {@link IManagedMethod#getRequestPath()}.
 	 * 
 	 * <pre>
 	 * key = ["/" resource ] "/" sub-resource
@@ -255,13 +259,24 @@ public class RestServlet extends AppServlet {
 	 */
 	private static String key(IManagedMethod restMethod) {
 		StringBuilder key = new StringBuilder();
-		if (restMethod.getDeclaringClass().getRequestPath() != null) {
+		String classPath = path(restMethod.getDeclaringClass());
+		if (classPath != null) {
 			key.append('/');
-			key.append(restMethod.getDeclaringClass().getRequestPath());
+			key.append(classPath);
 		}
 		key.append('/');
-		key.append(restMethod.getRequestPath());
+		key.append(path(restMethod));
 		return key.toString();
+	}
+
+	private static String path(IManagedClass managedClass) {
+		PathMeta pathMeta = managedClass.getServiceMeta(PathMeta.class);
+		return pathMeta != null ? pathMeta.value() : null;
+	}
+
+	private static String path(IManagedMethod managedMethod) {
+		PathMeta pathMeta = managedMethod.getServiceMeta(PathMeta.class);
+		return pathMeta != null ? pathMeta.value() : null;
 	}
 
 	/**

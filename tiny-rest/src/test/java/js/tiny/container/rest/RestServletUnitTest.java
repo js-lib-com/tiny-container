@@ -1,4 +1,4 @@
-package js.tiny.container.rest.unit;
+package js.tiny.container.rest;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
@@ -34,7 +34,6 @@ import org.mockito.junit.MockitoJUnitRunner;
 import js.json.Json;
 import js.lang.InvocationException;
 import js.tiny.container.http.Resource;
-import js.tiny.container.rest.RestServlet;
 import js.tiny.container.servlet.AppServlet;
 import js.tiny.container.servlet.RequestContext;
 import js.tiny.container.servlet.TinyContainer;
@@ -77,7 +76,7 @@ public class RestServletUnitTest {
 		when(servletConfig.getServletContext()).thenReturn(servletContext);
 		when(servletContext.getAttribute(TinyContainer.ATTR_INSTANCE)).thenReturn(container);
 
-		when(managedClass.getRequestPath()).thenReturn("resource");
+		when(managedClass.getServiceMeta(PathMeta.class)).thenReturn(new PathMeta("resource"));
 		when(managedMethod.getDeclaringClass()).thenReturn(managedClass);
 
 		when(httpRequest.getRequestURI()).thenReturn("/test-app/rest/sub-resource");
@@ -103,7 +102,7 @@ public class RestServletUnitTest {
 	public void GivenRemoteMethod_WhenServletInit_ThenMethodRegistered() throws ServletException {
 		// given
 		when(container.getManagedMethods()).thenReturn(Arrays.asList(managedMethod));
-		when(managedMethod.getRequestPath()).thenReturn("user");
+		when(managedMethod.getServiceMeta(PathMeta.class)).thenReturn(new PathMeta("user"));
 		when(managedMethod.getReturnType()).thenReturn(void.class);
 		when(managedMethod.isRemotelyAccessible()).thenReturn(true);
 
@@ -116,7 +115,7 @@ public class RestServletUnitTest {
 		assertNotNull(methods);
 		assertEquals(1, methods.size());
 		assertNotNull(methods.get("/resource/user"));
-		assertEquals("user", methods.get("/resource/user").getRequestPath());
+		assertEquals("user", methods.get("/resource/user").getServiceMeta(PathMeta.class).value());
 	}
 
 	@Test
@@ -167,7 +166,7 @@ public class RestServletUnitTest {
 	@Test
 	public void GivenAppContext_WhenCreateStorageKey_ThenIncludeAppContext() throws Exception {
 		// given
-		when(managedMethod.getRequestPath()).thenReturn("sub-resource");
+		when(managedMethod.getServiceMeta(PathMeta.class)).thenReturn(new PathMeta("sub-resource"));
 
 		// when
 		String key = key(managedMethod);
@@ -179,8 +178,8 @@ public class RestServletUnitTest {
 	@Test
 	public void GivenRootContext_WhenCreateStorageKey_ThenNoAppContext() throws Exception {
 		// given
-		when(managedClass.getRequestPath()).thenReturn(null);
-		when(managedMethod.getRequestPath()).thenReturn("sub-resource");
+		when(managedClass.getServiceMeta(PathMeta.class)).thenReturn(null);
+		when(managedMethod.getServiceMeta(PathMeta.class)).thenReturn(new PathMeta("sub-resource"));
 
 		// when
 		String key = key(managedMethod);
@@ -207,7 +206,7 @@ public class RestServletUnitTest {
 		// given
 		when(container.getManagedMethods()).thenReturn(Arrays.asList(managedMethod));
 		when(managedMethod.isRemotelyAccessible()).thenReturn(true);
-		when(managedMethod.getRequestPath()).thenReturn("rest/sub-resource");
+		when(managedMethod.getServiceMeta(PathMeta.class)).thenReturn(new PathMeta("rest/sub-resource"));
 		when(managedMethod.getParameterTypes()).thenReturn(new Class[0]);
 		when(managedMethod.getReturnType()).thenReturn(String.class);
 		when(managedMethod.invoke(null)).thenReturn("string value");
@@ -231,7 +230,7 @@ public class RestServletUnitTest {
 		// given
 		when(container.getManagedMethods()).thenReturn(Arrays.asList(managedMethod));
 		when(managedMethod.isRemotelyAccessible()).thenReturn(true);
-		when(managedMethod.getRequestPath()).thenReturn("rest/sub-resource");
+		when(managedMethod.getServiceMeta(PathMeta.class)).thenReturn(new PathMeta("rest/sub-resource"));
 		when(managedMethod.getParameterTypes()).thenReturn(new Class[0]);
 		when(managedMethod.isVoid()).thenReturn(true);
 
@@ -250,7 +249,7 @@ public class RestServletUnitTest {
 		when(container.getLoginRealm()).thenReturn("Test App");
 		when(container.getManagedMethods()).thenReturn(Arrays.asList(managedMethod));
 		when(managedMethod.isRemotelyAccessible()).thenReturn(true);
-		when(managedMethod.getRequestPath()).thenReturn("rest/sub-resource");
+		when(managedMethod.getServiceMeta(PathMeta.class)).thenReturn(new PathMeta("rest/sub-resource"));
 		when(managedMethod.getParameterTypes()).thenReturn(new Class[0]);
 		when(managedMethod.invoke(null, new Object[0])).thenThrow(AuthorizationException.class);
 
@@ -272,7 +271,7 @@ public class RestServletUnitTest {
 		when(json.stringify(any())).thenReturn(error);
 
 		when(managedMethod.isRemotelyAccessible()).thenReturn(true);
-		when(managedMethod.getRequestPath()).thenReturn("rest/missing-method");
+		when(managedMethod.getServiceMeta(PathMeta.class)).thenReturn(new PathMeta("rest/missing-method"));
 
 		// when
 		executeRequestHandler();
@@ -291,7 +290,7 @@ public class RestServletUnitTest {
 		when(container.getManagedMethods()).thenReturn(Arrays.asList(managedMethod));
 
 		when(managedMethod.isRemotelyAccessible()).thenReturn(true);
-		when(managedMethod.getRequestPath()).thenReturn("rest/sub-resource");
+		when(managedMethod.getServiceMeta(PathMeta.class)).thenReturn(new PathMeta("rest/sub-resource"));
 		when(managedMethod.getParameterTypes()).thenReturn(new Class[0]);
 		when(managedMethod.invoke(null, new Object[0])).thenThrow(IllegalArgumentException.class);
 
@@ -314,7 +313,7 @@ public class RestServletUnitTest {
 		when(json.stringify(any())).thenReturn(error);
 
 		when(managedMethod.isRemotelyAccessible()).thenReturn(true);
-		when(managedMethod.getRequestPath()).thenReturn("rest/sub-resource");
+		when(managedMethod.getServiceMeta(PathMeta.class)).thenReturn(new PathMeta("rest/sub-resource"));
 		when(managedMethod.getParameterTypes()).thenReturn(new Class[0]);
 		when(managedMethod.invoke(null, new Object[0])).thenThrow(new InvocationException(new Exception("exception")));
 
@@ -336,7 +335,7 @@ public class RestServletUnitTest {
 		when(container.getManagedMethods()).thenReturn(Arrays.asList(managedMethod));
 
 		when(managedMethod.isRemotelyAccessible()).thenReturn(true);
-		when(managedMethod.getRequestPath()).thenReturn("rest/sub-resource");
+		when(managedMethod.getServiceMeta(PathMeta.class)).thenReturn(new PathMeta("rest/sub-resource"));
 		when(managedMethod.getParameterTypes()).thenReturn(new Class[0]);
 		when(managedMethod.invoke(null, new Object[0])).thenThrow(RuntimeException.class);
 
