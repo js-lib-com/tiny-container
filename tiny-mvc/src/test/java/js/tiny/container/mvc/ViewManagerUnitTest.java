@@ -13,9 +13,11 @@ import java.util.Properties;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
 import js.lang.BugError;
@@ -24,6 +26,7 @@ import js.lang.ConfigException;
 import js.lang.Configurable;
 import js.tiny.container.core.AppFactory;
 import js.tiny.container.servlet.RequestContext;
+import js.tiny.container.spi.IContainer;
 import js.tiny.container.unit.TestContext;
 import js.util.Classes;
 import js.util.Strings;
@@ -31,9 +34,19 @@ import js.util.Strings;
 @SuppressWarnings({ "rawtypes", "unchecked" })
 @RunWith(MockitoJUnitRunner.class)
 public class ViewManagerUnitTest {
+	@Mock
+	private IContainer container;
+	@Mock
+	private RequestContext requestContext;
+
 	@BeforeClass
 	public static void beforeClass() {
 		System.setProperty("catalina.base", "fixture/server/tomcat");
+	}
+
+	@Before
+	public void beforeTest() {
+		when(container.getInstance(RequestContext.class)).thenReturn(requestContext);
 	}
 
 	@Test
@@ -65,7 +78,7 @@ public class ViewManagerUnitTest {
 				"	<repository path='src/test/resources/' files-pattern='*.html' />" + //
 				"</views>";
 		ConfigBuilder builder = new ConfigBuilder(config);
-		Configurable viewManager = new ViewManagerImpl();
+		Configurable viewManager = new ViewManagerImpl(container);
 		viewManager.config(builder.build());
 	}
 
@@ -77,7 +90,7 @@ public class ViewManagerUnitTest {
 				"	<repository path='src/test/resources/' files-pattern='*.fo' />" + //
 				"</views>";
 		ConfigBuilder builder = new ConfigBuilder(config);
-		Configurable viewManager = new ViewManagerImpl();
+		Configurable viewManager = new ViewManagerImpl(container);
 		viewManager.config(builder.build());
 	}
 
@@ -99,7 +112,7 @@ public class ViewManagerUnitTest {
 				"	<repository path='src/test/resources/' files-pattern='*.html' />" + //
 				"</views>";
 		ConfigBuilder builder = new ConfigBuilder(config);
-		ViewManagerImpl viewManager = new ViewManagerImpl();
+		ViewManagerImpl viewManager = new ViewManagerImpl(container);
 		viewManager.config(builder.build());
 
 		View view = viewManager.getView("page");
@@ -125,7 +138,7 @@ public class ViewManagerUnitTest {
 				"	<repository path='src/test/resources/' files-pattern='*.html' />" + //
 				"</views>";
 		ConfigBuilder builder = new ConfigBuilder(config);
-		ViewManagerImpl viewManager = new ViewManagerImpl();
+		ViewManagerImpl viewManager = new ViewManagerImpl(container);
 		viewManager.config(builder.build());
 
 		viewManager.getView("fake-page");
@@ -159,10 +172,10 @@ public class ViewManagerUnitTest {
 	// --------------------------------------------------------------------------------------------
 	// UTILITY METHODS
 
-	private static void configException(String repository) throws Exception {
+	private void configException(String repository) throws Exception {
 		String config = Strings.concat("<views>", repository, "</views>");
 		ConfigBuilder builder = new ConfigBuilder(config);
-		Configurable viewManager = new ViewManagerImpl();
+		Configurable viewManager = new ViewManagerImpl(container);
 		viewManager.config(builder.build());
 	}
 }

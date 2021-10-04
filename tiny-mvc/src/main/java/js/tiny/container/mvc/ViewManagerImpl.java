@@ -10,8 +10,8 @@ import js.lang.ConfigException;
 import js.lang.Configurable;
 import js.log.Log;
 import js.log.LogFactory;
-import js.tiny.container.core.Factory;
 import js.tiny.container.servlet.RequestContext;
+import js.tiny.container.spi.IContainer;
 import js.util.Classes;
 import js.util.I18nFile;
 import js.util.I18nPool;
@@ -47,12 +47,18 @@ public final class ViewManagerImpl implements ViewManager, Configurable {
 	/** Default view implementation is {@link XspView}. */
 	private static final String DEF_IMPLEMENTATION = XspView.class.getName();
 
+	private final IContainer container;
+	
 	/**
 	 * Application global repository for views meta. Because all application views meta are stored in the same repository, view
 	 * name should be unique across application. For example, a HTML view cannot have the same name with a PDF view, even
 	 * templates are stored into different directories.
 	 */
 	private I18nPool<ViewMeta> viewsMetaPool;
+
+	public ViewManagerImpl(IContainer container) {
+		this.container = container;
+	}
 
 	/**
 	 * Create views meta pool from given managed view configuration object. Configuration object is described on class
@@ -126,7 +132,7 @@ public final class ViewManagerImpl implements ViewManager, Configurable {
 	 */
 	@Override
 	public View getView(String viewName) {
-		RequestContext context = Factory.getInstance(RequestContext.class);
+		RequestContext context = container.getInstance(RequestContext.class);
 		ViewMeta meta = viewsMetaPool.get(viewName, context.getLocale());
 		if (meta == null) {
 			throw new BugError("View |%s| not found. View name may be misspelled, forgot to add template file or template name doesn't match views files pattern.", viewName);
