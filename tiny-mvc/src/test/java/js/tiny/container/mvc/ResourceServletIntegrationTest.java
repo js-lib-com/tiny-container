@@ -46,6 +46,7 @@ import js.tiny.container.http.form.FormIterator;
 import js.tiny.container.http.form.Part;
 import js.tiny.container.http.form.UploadStream;
 import js.tiny.container.http.form.UploadedFile;
+import js.tiny.container.mvc.annotation.Controller;
 import js.tiny.container.servlet.RequestContext;
 import js.tiny.container.servlet.TinyContainer;
 import js.tiny.container.spi.IContainer;

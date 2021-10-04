@@ -1,4 +1,4 @@
-package js.tiny.container.mvc;
+package js.tiny.container.mvc.annotation;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

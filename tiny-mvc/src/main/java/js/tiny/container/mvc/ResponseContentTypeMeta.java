@@ -1,5 +1,6 @@
 package js.tiny.container.mvc;
 
+import js.tiny.container.mvc.annotation.ResponseContentType;
 import js.tiny.container.spi.IServiceMeta;
 
 class ResponseContentTypeMeta implements IServiceMeta {

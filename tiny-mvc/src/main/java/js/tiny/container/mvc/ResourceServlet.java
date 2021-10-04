@@ -21,6 +21,7 @@ import js.tiny.container.http.Resource;
 import js.tiny.container.http.encoder.ArgumentsReader;
 import js.tiny.container.http.encoder.ArgumentsReaderFactory;
 import js.tiny.container.http.encoder.ServerEncoders;
+import js.tiny.container.mvc.annotation.Controller;
 import js.tiny.container.servlet.AppServlet;
 import js.tiny.container.servlet.RequestContext;
 import js.tiny.container.servlet.RequestPreprocessor;
