@@ -1,4 +1,4 @@
-package js.tiny.container.http.captcha;
+package js.tiny.container.mvc.captcha;
 
 import java.io.File;
 import java.io.FileFilter;

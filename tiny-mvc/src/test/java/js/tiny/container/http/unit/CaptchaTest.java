@@ -26,7 +26,7 @@ import js.lang.ConfigException;
 import js.lang.Configurable;
 import js.tiny.container.core.AppContext;
 import js.tiny.container.http.NoSuchResourceException;
-import js.tiny.container.http.captcha.Challenge;
+import js.tiny.container.mvc.captcha.Challenge;
 import js.tiny.container.servlet.RequestContext;
 import js.util.Classes;
 import js.util.Files;
@@ -34,8 +34,8 @@ import js.util.Strings;
 
 @RunWith(MockitoJUnitRunner.class)
 public class CaptchaTest {
-	private static final String CAPTCHA = "js.tiny.container.http.captcha.Captcha";
-	private static final String CHALLENGE = "js.tiny.container.http.captcha.Challenge";
+	private static final String CAPTCHA = "js.tiny.container.mvc.captcha.Captcha";
+	private static final String CHALLENGE = "js.tiny.container.mvc.captcha.Challenge";
 
 	@Mock
 	private AppContext context;

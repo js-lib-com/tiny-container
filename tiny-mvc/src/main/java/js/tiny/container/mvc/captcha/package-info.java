@@ -11,5 +11,5 @@
  * @author Iulian Rotaru
  * @version final
  */
-package js.tiny.container.http.captcha;
+package js.tiny.container.mvc.captcha;
 
