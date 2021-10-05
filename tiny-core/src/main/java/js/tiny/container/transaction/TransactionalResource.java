@@ -1,4 +1,4 @@
-package js.tiny.container;
+package js.tiny.container.transaction;
 
 import js.transaction.Transaction;
 import js.transaction.TransactionContext;

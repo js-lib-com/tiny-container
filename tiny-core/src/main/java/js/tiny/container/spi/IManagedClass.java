@@ -17,7 +17,6 @@ import js.lang.Config;
 import js.lang.ManagedLifeCycle;
 import js.tiny.container.InstanceScope;
 import js.tiny.container.InstanceType;
-import js.transaction.Transactional;
 
 /**
  * Service provider interface for managed class. Although public, this interface is designed for library internal usage.
@@ -162,25 +161,6 @@ public interface IManagedClass {
 	 * @return managed class type.
 	 */
 	InstanceType getInstanceType();
-
-	/**
-	 * Test is this managed class is transactional. A managed class is transactional if it is tagged so with
-	 * {@link Transactional} annotation or has at least one transactional method.
-	 * 
-	 * @return true only if this managed class is transactional.
-	 */
-	boolean isTransactional();
-
-	/**
-	 * If a managed class is transactional it can support optional transactional schema. This schema allows to limit the scope
-	 * of resource objects accessible from transaction boundaries. It is optional with default to null.
-	 * <p>
-	 * Schema value is set by {@link js.transaction.Transactional#schema()} annotation but only when applied to class. On
-	 * methods schema value is ignored.
-	 * 
-	 * @return transactional schema annotated to this managed class, possible null.
-	 */
-	String getTransactionalSchema();
 
 	/**
 	 * Test if this managed class is remotely accessible, that is, is a net class. A managed class is remotely accessible if it

@@ -74,20 +74,11 @@ final class LocalInstanceFactory implements InstanceFactory {
 			throw new InvocationException(e);
 		}
 
+		// TODO: is quite possible to get rid of proxy from container core
 		if (managedClass.getInstanceType().equals(InstanceType.PROXY)) {
-			// there are two proxy handlers: one transactional and one not
-			// the difference is that transactional proxy handler gets a reference to an external transactional resource
-
-			ManagedProxyHandler handler = null;
-			if (managedClass.isTransactional()) {
-				TransactionalResource transactionalResource = managedClass.getContainer().getInstance(TransactionalResource.class);
-				handler = new ManagedProxyHandler(transactionalResource, managedClass, instance);
-			} else {
-				handler = new ManagedProxyHandler(managedClass, instance);
-			}
-
 			final ClassLoader classLoader = managedClass.getImplementationClass().getClassLoader();
 			final Class<?>[] interfaceClasses = managedClass.getInterfaceClasses();
+			final ManagedProxyHandler handler = new ManagedProxyHandler(managedClass, instance);
 			return (T) Proxy.newProxyInstance(classLoader, interfaceClasses, handler);
 		}
 

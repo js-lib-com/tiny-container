@@ -32,11 +32,6 @@ public class ManagedMethodSpiStub implements IManagedMethod {
 	}
 
 	@Override
-	public Object proxyInvoke(Object object, Object... args) throws IllegalArgumentException, InvocationException, AuthorizationException {
-		throw new UnsupportedOperationException("proxyInvoke(Object object, Object... arguments)");
-	}
-
-	@Override
 	public Type getReturnType() {
 		throw new UnsupportedOperationException("getReturnType()");
 	}
@@ -54,16 +49,6 @@ public class ManagedMethodSpiStub implements IManagedMethod {
 	@Override
 	public boolean isUnchecked() {
 		throw new UnsupportedOperationException("isUnchecked()");
-	}
-
-	@Override
-	public boolean isTransactional() {
-		throw new UnsupportedOperationException("isTransactional()");
-	}
-
-	@Override
-	public boolean isImmutable() {
-		throw new UnsupportedOperationException("isImmutable()");
 	}
 
 	@Override

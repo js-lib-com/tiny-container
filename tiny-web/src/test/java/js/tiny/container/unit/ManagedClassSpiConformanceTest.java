@@ -228,12 +228,6 @@ public class ManagedClassSpiConformanceTest {
 	}
 
 	@Test
-	public void isTransactional() throws Exception {
-		String config = "<test interface='js.tiny.container.unit.ManagedClassSpiConformanceTest$Car' class='js.tiny.container.unit.ManagedClassSpiConformanceTest$TransactionalCar' type='PROXY' />";
-		assertTrue(getManagedClass(config(config)).isTransactional());
-	}
-
-	@Test
 	public void isRemote() throws Exception {
 		String config = "<test class='js.tiny.container.unit.ManagedClassSpiConformanceTest$NetCar' />";
 		assertTrue(getManagedClass(config(config)).isRemotelyAccessible());

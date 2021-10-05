@@ -66,15 +66,6 @@ public final class ManagedMethod implements IManagedMethod, IMethodInvocationPro
 	 */
 	private final Method method;
 
-	/** Flag indicating if method should be executed into transactional context. */
-	private boolean transactional;
-
-	/**
-	 * Transactional method marked as immutable, that is, read-only. By default method is mutable till explicitly set by
-	 * {@link #setImmutable(boolean)}.
-	 */
-	private boolean immutable;
-
 	/**
 	 * A managed method is remotely accessible, also known as net method, if is annotated with {@link Remote} or declaring class
 	 * is remotely accessible.
@@ -221,12 +212,6 @@ public final class ManagedMethod implements IManagedMethod, IMethodInvocationPro
 	}
 
 	@Override
-	public Object proxyInvoke(Object object, Object... args) throws IllegalArgumentException, InvocationException, AuthorizationException {
-		MethodInvocationProcessorsChain processorsChain = new MethodInvocationProcessorsChain();
-		return invoke(processorsChain, processorsChain.createMethodInvocation(this, object, args));
-	}
-
-	@Override
 	public Priority getPriority() {
 		return Priority.NONE;
 	}
@@ -294,16 +279,6 @@ public final class ManagedMethod implements IManagedMethod, IMethodInvocationPro
 	@Override
 	public boolean isUnchecked() {
 		return unchecked;
-	}
-
-	@Override
-	public boolean isTransactional() {
-		return transactional;
-	}
-
-	@Override
-	public boolean isImmutable() {
-		return immutable;
 	}
 
 	@Override
@@ -588,24 +563,6 @@ public final class ManagedMethod implements IManagedMethod, IMethodInvocationPro
 
 	void setUnchecked(boolean unchecked) {
 		this.unchecked = unchecked;
-	}
-
-	/**
-	 * Set this managed method transactional state.
-	 * 
-	 * @param transactional transactional flag.
-	 */
-	void setTransactional(boolean transactional) {
-		this.transactional = transactional;
-	}
-
-	/**
-	 * Set transaction immutable state.
-	 * 
-	 * @param immutable immutable flag.
-	 */
-	void setImmutable(boolean immutable) {
-		this.immutable = immutable;
 	}
 
 	/**

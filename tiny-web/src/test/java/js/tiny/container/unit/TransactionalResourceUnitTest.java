@@ -11,11 +11,11 @@ import org.junit.Test;
 import js.lang.BugError;
 import js.lang.Config;
 import js.lang.InvocationException;
-import js.tiny.container.TransactionalResource;
 import js.tiny.container.core.AppFactory;
 import js.tiny.container.stub.AppFactoryStub;
 import js.tiny.container.stub.TransactionManagerStub;
 import js.tiny.container.stub.TransactionStub;
+import js.tiny.container.transaction.TransactionalResource;
 import js.transaction.Transaction;
 import js.transaction.TransactionManager;
 import js.util.Classes;
@@ -199,7 +199,7 @@ public class TransactionalResourceUnitTest {
 
 	private static TransactionalResource createTransactionalResource(AppFactory factory) {
 		try {
-			return Classes.newInstance("js.tiny.container.TransactionalResourceImpl", factory);
+			return Classes.newInstance("js.tiny.container.transaction.TransactionalResourceImpl", factory);
 		} catch (InvocationException e) {
 			if (e.getCause() instanceof BugError) {
 				throw (BugError) e.getCause();

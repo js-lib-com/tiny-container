@@ -1,4 +1,5 @@
 # Transactional Resource
+
 External resource that provides a transactional API. A transactional resource has two kinds of APIs: one exposed by resource manager that deals with specific services and one for managing transactions, accessible via {@link Transaction} interface.
 
 A resource is a program object that provides connections to such systems as database servers and messaging systems. A resource manager facilitates interaction with a resource. For example, on Hibernate resource manager is the `org.hibernate.Session` interface whereas on JPA is the `javax.persistence.EntityManager` interface. Both interfaces offer methods for database CRUD tasks and a method to retrieve a transaction instance - `org.hibernate.Transaction`, respective `javax.persistence.EntityTransaction`. 

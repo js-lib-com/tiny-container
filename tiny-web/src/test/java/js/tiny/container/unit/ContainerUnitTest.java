@@ -42,7 +42,6 @@ import js.tiny.container.InstanceScope;
 import js.tiny.container.InstanceType;
 import js.tiny.container.ManagedClass;
 import js.tiny.container.ScopeFactory;
-import js.tiny.container.TransactionalResource;
 import js.tiny.container.core.App;
 import js.tiny.container.core.AppContext;
 import js.tiny.container.net.EventStream;
@@ -667,7 +666,7 @@ public class ContainerUnitTest {
 			++classesCount;
 		}
 		// this hard coded value depends on lib-descriptor.xml
-		assertEquals(11, classesCount);
+		assertEquals(12, classesCount);
 	}
 
 	@Test

@@ -9,8 +9,9 @@
 		<request-context class="js.tiny.container.servlet.RequestContext" scope="THREAD" />
 
 		<transaction-manager interface="js.transaction.TransactionManager" type="SERVICE" />
-		<data-source class="js.tiny.container.TransactionalResourceImpl">
-			<interface name="js.tiny.container.TransactionalResource" />
+		<data-source class="js.tiny.container.transaction.TransactionalResourceImpl">
+			<interface name="js.tiny.container.transaction.TransactionalResource" />
+			<interface name="js.transaction.TransactionContext" />
 		</data-source>
 		
 		<!--<views interface="js.tiny.container.mvc.ViewManager" class="js.tiny.container.mvc.ViewManagerImpl" />-->

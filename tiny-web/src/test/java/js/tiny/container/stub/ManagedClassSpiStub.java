@@ -103,16 +103,6 @@ public class ManagedClassSpiStub implements IManagedClass {
 	}
 
 	@Override
-	public boolean isTransactional() {
-		throw new UnsupportedOperationException("isTransactional()");
-	}
-
-	@Override
-	public String getTransactionalSchema() {
-		throw new UnsupportedOperationException("getTransactionalSchema()");
-	}
-
-	@Override
 	public Config getConfig() {
 		throw new UnsupportedOperationException("getConfig()");
 	}

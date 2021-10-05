@@ -539,11 +539,6 @@ public class InstanceProcessorUnitTest {
 		}
 
 		@Override
-		public boolean isTransactional() {
-			return transactional;
-		}
-
-		@Override
 		public IManagedMethod getPostConstructMethod() {
 			return implementationClass.equals(Joker.class) ? new MockManagedMethodSPI(Joker.getPostConstructMethod()) : null;
 		}

@@ -8,6 +8,7 @@ import java.util.List;
 import javax.ejb.Asynchronous;
 import javax.ejb.Remote;
 
+import org.junit.Ignore;
 import org.junit.Test;
 
 import js.lang.BugError;
@@ -125,6 +126,7 @@ public class AsynchronousUnitTest {
 	}
 
 	@Test(expected = BugError.class)
+	@Ignore
 	public void asynchronousTransactional() throws Throwable {
 		String descriptor = "<test interface='js.tiny.container.annotation.unit.AsynchronousUnitTest$MockInterface1' class='js.tiny.container.annotation.unit.AsynchronousUnitTest$MockClass6' type='PROXY' />";
 		IManagedClass managedClass = managedClass(descriptor);

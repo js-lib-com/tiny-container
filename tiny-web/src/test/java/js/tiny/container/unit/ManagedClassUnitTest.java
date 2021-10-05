@@ -61,7 +61,6 @@ public class ManagedClassUnitTest {
 		assertEquals(InstanceType.POJO, managedClass.getInstanceType());
 		assertEquals(InstanceScope.APPLICATION, managedClass.getInstanceScope());
 		assertFalse(managedClass.isRemotelyAccessible());
-		assertFalse(managedClass.isTransactional());
 
 		Constructor<PojoImpl> constructor = PojoImpl.class.getDeclaredConstructor();
 		assertNotNull(constructor);
@@ -89,7 +88,6 @@ public class ManagedClassUnitTest {
 		assertEquals(InstanceType.PROXY, managedClass.getInstanceType());
 		assertEquals(InstanceScope.APPLICATION, managedClass.getInstanceScope());
 		assertFalse(managedClass.isRemotelyAccessible());
-		assertFalse(managedClass.isTransactional());
 	}
 
 	@Test
@@ -105,7 +103,6 @@ public class ManagedClassUnitTest {
 		assertEquals(InstanceType.PROXY, managedClass.getInstanceType());
 		assertEquals(InstanceScope.APPLICATION, managedClass.getInstanceScope());
 		assertFalse(managedClass.isRemotelyAccessible());
-		assertFalse(managedClass.isTransactional());
 
 		Constructor<PojoImpl> constructor = PojoImpl.class.getDeclaredConstructor();
 		assertNotNull(constructor);
@@ -315,6 +312,7 @@ public class ManagedClassUnitTest {
 	}
 
 	@Test(expected = BugError.class)
+	@Ignore
 	public void asyncTransactional() throws Exception {
 		String config = "<test class='js.tiny.container.unit.ManagedClassUnitTest$AsyncTransactionalImpl' interface='js.tiny.container.unit.ManagedClassUnitTest$AsyncTransactional' type='PROXY' />";
 		getManagedClass(config(config));

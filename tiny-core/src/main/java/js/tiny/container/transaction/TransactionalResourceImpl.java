@@ -1,4 +1,4 @@
-package js.tiny.container;
+package js.tiny.container.transaction;
 
 import js.lang.BugError;
 import js.lang.Config;
@@ -6,6 +6,8 @@ import js.lang.ConfigException;
 import js.lang.ManagedPreDestroy;
 import js.log.Log;
 import js.log.LogFactory;
+import js.tiny.container.ManagedProxyHandler;
+import js.tiny.container.OptionalConfigurable;
 import js.tiny.container.core.AppFactory;
 import js.transaction.Transaction;
 import js.transaction.TransactionManager;

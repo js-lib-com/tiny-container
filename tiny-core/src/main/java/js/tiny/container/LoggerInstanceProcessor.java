@@ -47,7 +47,6 @@ final class LoggerInstanceProcessor implements IInstancePostProcessor {
 				"\t- interface(s): %s\r\n" + //
 				"\t- scope: %s\r\n" + //
 				"\t- type: %s\r\n" + //
-				"\t- transactional: %s\r\n" + //
-				"\t- remote: %s", managedClass.getImplementationClass(), interfaceNames.toString(), managedClass.getInstanceScope(), managedClass.getInstanceType(), managedClass.isTransactional(), managedClass.isRemotelyAccessible());
+				"\t- remote: %s", managedClass.getImplementationClass(), interfaceNames.toString(), managedClass.getInstanceScope(), managedClass.getInstanceType(), managedClass.isRemotelyAccessible());
 	}
 }

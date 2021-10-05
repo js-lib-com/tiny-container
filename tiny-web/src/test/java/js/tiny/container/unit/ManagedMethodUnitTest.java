@@ -70,8 +70,6 @@ public class ManagedMethodUnitTest {
 		assertFalse(managedMethod.isVoid());
 		assertFalse(managedMethod.isRemotelyAccessible());
 		assertFalse(managedMethod.isUnchecked());
-		assertFalse(managedMethod.isTransactional());
-		assertFalse(managedMethod.isImmutable());
 		assertFalse(managedMethod.isAsynchronous());
 		assertEquals("js.tiny.container.unit.ManagedMethodUnitTest$Person#setName(String)", managedMethod.toString());
 	}

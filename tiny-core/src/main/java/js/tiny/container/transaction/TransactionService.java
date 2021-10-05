@@ -1,0 +1,232 @@
+package js.tiny.container.transaction;
+
+import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
+import java.util.List;
+
+import js.lang.InvocationException;
+import js.log.Log;
+import js.log.LogFactory;
+import js.tiny.container.spi.AuthorizationException;
+import js.tiny.container.spi.IContainer;
+import js.tiny.container.spi.IContainerService;
+import js.tiny.container.spi.IContainerServiceMeta;
+import js.tiny.container.spi.IManagedClass;
+import js.tiny.container.spi.IManagedMethod;
+import js.tiny.container.spi.IMethodInvocation;
+import js.tiny.container.spi.IMethodInvocationProcessor;
+import js.tiny.container.spi.IMethodInvocationProcessorsChain;
+import js.transaction.Immutable;
+import js.transaction.Mutable;
+import js.transaction.Transaction;
+import js.transaction.Transactional;
+
+final class TransactionService implements IContainerService, IMethodInvocationProcessor {
+	private static final Log log = LogFactory.getLog(TransactionService.class);
+
+	private final IContainer container;
+
+	public TransactionService(IContainer container) {
+		log.trace("TransactionService(IContainer)");
+		this.container = container;
+	}
+
+	@Override
+	public Priority getPriority() {
+		return Priority.LAST;
+	}
+
+	@Override
+	public List<IContainerServiceMeta> scan(IManagedClass managedClass) {
+		List<IContainerServiceMeta> servicesMeta = new ArrayList<>();
+
+		Transactional transactional = managedClass.getAnnotation(Transactional.class);
+		if (transactional != null) {
+			servicesMeta.add(new TransactionalMeta(transactional));
+		}
+
+		Immutable immutable = managedClass.getAnnotation(Immutable.class);
+		if (immutable != null) {
+			servicesMeta.add(new ImmutableMeta());
+		}
+
+		return servicesMeta;
+	}
+
+	@Override
+	public List<IContainerServiceMeta> scan(IManagedMethod managedMethod) {
+		List<IContainerServiceMeta> servicesMeta = new ArrayList<>();
+
+		Transactional transactional = managedMethod.getAnnotation(Transactional.class);
+		if (transactional != null) {
+			servicesMeta.add(new TransactionalMeta(transactional));
+		}
+
+		Immutable immutable = managedMethod.getAnnotation(Immutable.class);
+		if (immutable != null) {
+			servicesMeta.add(new ImmutableMeta());
+		}
+
+		Mutable mutable = managedMethod.getAnnotation(Mutable.class);
+		if (mutable != null) {
+			servicesMeta.add(new MutableMeta());
+		}
+
+		return servicesMeta;
+	}
+
+	@Override
+	public Object invoke(IMethodInvocationProcessorsChain serviceChain, IMethodInvocation methodInvocation) throws AuthorizationException, IllegalArgumentException, InvocationException {
+		final IManagedMethod managedMethod = methodInvocation.method();
+		if (!isTransactional(managedMethod)) {
+			return serviceChain.invokeNextProcessor(methodInvocation);
+		}
+
+		TransactionalResource transactionalResource = container.getInstance(TransactionalResource.class);
+		if (isMutable(managedMethod)) {
+			return executeMutableTransaction(transactionalResource, serviceChain, methodInvocation);
+		}
+		return executeImmutableTransaction(transactionalResource, serviceChain, methodInvocation);
+	}
+
+	/**
+	 * Helper method for mutable transaction execution.
+	 * 
+	 * @param managedMethod managed method to be executed into transactional scope,
+	 * @param args managed method arguments.
+	 * @return value returned by managed method.
+	 * @throws Throwable forward any error rose by method execution.
+	 */
+	private Object executeMutableTransaction(TransactionalResource transactionalResource, IMethodInvocationProcessorsChain serviceChain, IMethodInvocation methodInvocation) throws InvocationException {
+		// store transaction session on current thread via transactional resource utility
+		// it may happen to have multiple nested transaction on current thread
+		// since all are created by the same transactional resource, all are part of the same session
+		// and there is no harm if storeSession is invoked multiple times
+		// also performance penalty is comparable with the effort to prevent this multiple write
+
+		final IManagedMethod managedMethod = methodInvocation.method();
+		final Transaction transaction = transactionalResource.createTransaction(getScheme(managedMethod));
+		transactionalResource.storeSession(transaction.getResourceManager());
+
+		try {
+
+			Object result = serviceChain.invokeNextProcessor(methodInvocation);
+
+			transaction.commit();
+			if (transaction.unused()) {
+				log.debug("Method |%s| superfluously declared transactional.", managedMethod);
+			}
+			return result;
+		} catch (Throwable throwable) {
+			transaction.rollback();
+			throw throwable(throwable, "Mutable transactional method |%s| invocation fail.", managedMethod);
+		} finally {
+			if (transaction.close()) {
+				// it may happen to have multiple nested transaction on this thread
+				// if this is the case, remove session from current thread only if outermost transaction is closed
+				// of course if not nested transactions, remove at once
+				transactionalResource.releaseSession();
+			}
+		}
+	}
+
+	/**
+	 * Helper method for immutable transaction execution.
+	 * 
+	 * @param managedMethod managed method to be executed into transactional scope,
+	 * @param args managed method arguments.
+	 * @return value returned by managed method.
+	 * @throws Throwable forward any error rose by method execution.
+	 */
+	private Object executeImmutableTransaction(TransactionalResource transactionalResource, IMethodInvocationProcessorsChain serviceChain, IMethodInvocation methodInvocation) throws InvocationException {
+		final IManagedMethod managedMethod = methodInvocation.method();
+		final String schema = managedMethod.getServiceMeta(TransactionalMeta.class).schema();
+
+		Transaction transaction = transactionalResource.createReadOnlyTransaction(schema);
+		// see mutable transaction comment
+		transactionalResource.storeSession(transaction.getResourceManager());
+
+		try {
+
+			Object result = serviceChain.invokeNextProcessor(methodInvocation);
+
+			if (transaction.unused()) {
+				log.debug("Method |%s| superfluously declared transactional.", managedMethod);
+			}
+			return result;
+		} catch (Throwable throwable) {
+			throw throwable(throwable, "Immutable transactional method |%s| invocation fail.", managedMethod);
+		} finally {
+			if (transaction.close()) {
+				// see mutable transaction comment
+				transactionalResource.releaseSession();
+			}
+		}
+	}
+
+	/**
+	 * Prepare given throwable and dump it to logger with formatted message. Return prepared throwable. If throwable is
+	 * {@link InvocationTargetException} or its unchecked related version, {@link InvocationException} replace it with root
+	 * cause.
+	 * 
+	 * @param throwable throwable instance,
+	 * @param message formatted error message,
+	 * @param args optional formatted message arguments.
+	 * @return prepared throwable.
+	 */
+	private static InvocationException throwable(Throwable throwable, String message, Object... args) {
+		Throwable t = throwable;
+		if (t instanceof InvocationException && t.getCause() != null) {
+			t = t.getCause();
+		}
+		if (t instanceof InvocationTargetException && ((InvocationTargetException) t).getTargetException() != null) {
+			t = ((InvocationTargetException) t).getTargetException();
+		}
+		message = String.format(message, args);
+		log.dump(message, t);
+		return new InvocationException(t);
+	}
+
+	private static boolean isTransactional(IManagedMethod managedMethod) {
+		if (managedMethod.getServiceMeta(TransactionalMeta.class) != null) {
+			return true;
+		}
+		if (managedMethod.getDeclaringClass().getServiceMeta(TransactionalMeta.class) != null) {
+			return true;
+		}
+		return false;
+	}
+
+	private static boolean isMutable(IManagedMethod managedMethod) {
+		if (managedMethod.getServiceMeta(MutableMeta.class) != null) {
+			return true;
+		}
+		if (managedMethod.getServiceMeta(ImmutableMeta.class) != null) {
+			return false;
+		}
+		// at this point business method has no transaction related annotations
+		if (managedMethod.getDeclaringClass().getServiceMeta(MutableMeta.class) != null) {
+			return true;
+		}
+		// by default transactional class is immutable
+		return false;
+	}
+
+	private static String getScheme(IManagedMethod managedMethod) {
+		TransactionalMeta transactional = managedMethod.getServiceMeta(TransactionalMeta.class);
+		if (transactional == null) {
+			transactional = managedMethod.getDeclaringClass().getServiceMeta(TransactionalMeta.class);
+		}
+		if (transactional == null) {
+			return null;
+		}
+		return transactional.schema();
+	}
+
+	@Override
+	public void destroy() {
+		// TODO Auto-generated method stub
+
+	}
+
+}

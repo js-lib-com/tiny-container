@@ -13,9 +13,6 @@ import js.lang.InvocationException;
 import js.tiny.container.InvocationMeter;
 import js.tiny.container.core.SecurityContext;
 import js.tiny.container.interceptor.Interceptor;
-import js.transaction.Immutable;
-import js.transaction.Mutable;
-import js.transaction.Transactional;
 
 /**
  * Managed method service provider interface. Although public, this interface is designed for library internal usage. User space
@@ -71,8 +68,6 @@ public interface IManagedMethod {
 	 * @throws InvocationException if method execution fails for whatever reason.
 	 */
 	<T> T invoke(Object object, Object... args) throws AuthorizationException, IllegalArgumentException, InvocationException;
-
-	Object proxyInvoke(Object object, Object... args) throws IllegalArgumentException, InvocationException, AuthorizationException;
 	
 	/**
 	 * Test if this managed method return type is void.
@@ -108,23 +103,6 @@ public interface IManagedMethod {
 	 * @return true if this managed method is unchecked, that is, can be accessed remotely without authorization.
 	 */
 	boolean isUnchecked();
-
-	/**
-	 * Test if this managed method should be executed into a transactional context. A managed method is transactional if it has
-	 * {@link Transactional} annotation or if its declaring class is transactional.
-	 * 
-	 * @return true if this managed method is transactional.
-	 */
-	boolean isTransactional();
-
-	/**
-	 * Test if this transactional managed method is immutable. This predicate has meaning only if {@link #isTransactional()} is
-	 * true. A managed method is immutable it is tagged so using {@link Immutable} annotation. Also is immutable if its
-	 * declaring class is immutable and has no {@link Mutable} annotation.
-	 * 
-	 * @return true if this transactional managed method is immutable.
-	 */
-	boolean isImmutable();
 
 	/**
 	 * Test if this managed method is asynchronous. A managed method is asynchronous if is tagged so using {@link Asynchronous}

@@ -20,7 +20,6 @@ import js.lang.InstanceInvocationHandler;
 import js.lang.InvocationException;
 import js.lang.VarArgs;
 import js.tiny.container.ManagedProxyHandler;
-import js.tiny.container.TransactionalResource;
 import js.tiny.container.core.AppFactory;
 import js.tiny.container.core.Factory;
 import js.tiny.container.spi.AuthorizationException;
@@ -61,19 +60,6 @@ public class ManagedProxyHandlerUnitTest {
 	@Test
 	public void nonTrasactionalConstructor() {
 		Object handler = new ManagedProxyHandler(managedClass, new Object());
-
-		assertNull(Classes.getFieldValue(handler, "transactionalResource"));
-		assertNotNull(Classes.getFieldValue(handler, "managedClass"));
-		assertNotNull(Classes.getFieldValue(handler, "managedInstance"));
-	}
-
-	@Test
-	public void trasactionalConstructor() {
-		managedClass.transactional = true;
-		Object instance = new Object();
-		Object handler = new ManagedProxyHandler(getTransactionalResource(), managedClass, instance);
-
-		assertNotNull(Classes.getFieldValue(handler, "transactionalResource"));
 		assertNotNull(Classes.getFieldValue(handler, "managedClass"));
 		assertNotNull(Classes.getFieldValue(handler, "managedInstance"));
 	}
@@ -97,6 +83,7 @@ public class ManagedProxyHandlerUnitTest {
 	}
 
 	@Test(expected = IllegalArgumentException.class)
+	@Ignore
 	public void constructorNonTransactionalResource() throws Throwable {
 		try {
 			getProxyHandler(managedClass, new Object());
@@ -276,12 +263,8 @@ public class ManagedProxyHandlerUnitTest {
 	// --------------------------------------------------------------------------------------------
 	// UTILITY
 
-	private TransactionalResource getTransactionalResource() {
-		return (TransactionalResource) factory.getInstance(TransactionalResource.class);
-	}
-
 	private InstanceInvocationHandler<Object> getProxyHandler(IManagedClass managedClass, Object instance) {
-		return new ManagedProxyHandler(getTransactionalResource(), managedClass, instance);
+		return new ManagedProxyHandler(managedClass, instance);
 	}
 
 	// --------------------------------------------------------------------------------------------
@@ -316,16 +299,6 @@ public class ManagedProxyHandlerUnitTest {
 			MockManagedMethodSPI managedMethod = new MockManagedMethodSPI(method, transactional, immutable);
 			return managedMethod;
 		}
-
-		@Override
-		public boolean isTransactional() {
-			return transactional;
-		}
-
-		@Override
-		public String getTransactionalSchema() {
-			return null;
-		}
 	}
 
 	private static class MockManagedMethodSPI extends ManagedMethodSpiStub {
@@ -339,20 +312,11 @@ public class ManagedProxyHandlerUnitTest {
 			this.immutable = immutable;
 		}
 
+		@SuppressWarnings("unchecked")
 		@Override
-		public boolean isTransactional() {
-			return transactional;
-		}
-
-		@Override
-		public boolean isImmutable() {
-			return immutable;
-		}
-
-		@Override
-		public Object proxyInvoke(Object object, Object... args) throws IllegalArgumentException, InvocationException, AuthorizationException {
+		public <T> T invoke(Object object, Object... args) throws IllegalArgumentException, InvocationException, AuthorizationException {
 			try {
-				return method.invoke(object, args);
+				return (T) method.invoke(object, args);
 			} catch (IllegalAccessException e) {
 			} catch (InvocationTargetException e) {
 				throw new InvocationException(e.getTargetException());

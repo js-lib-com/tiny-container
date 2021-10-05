@@ -123,7 +123,6 @@ public class InstanceAlgorithmUnitTest {
 		private Class<?> implementationClass;
 		private InstanceScope scope;
 		private InstanceType type;
-		private boolean transactional;
 		private boolean remote;
 
 		public MockManagedClassSPI(IContainer container) {
@@ -198,16 +197,6 @@ public class InstanceAlgorithmUnitTest {
 		@Override
 		public InstanceType getInstanceType() {
 			return type;
-		}
-
-		@Override
-		public boolean isTransactional() {
-			return transactional;
-		}
-
-		@Override
-		public String getTransactionalSchema() {
-			return null;
 		}
 
 		@Override

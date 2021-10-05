@@ -89,20 +89,6 @@ public class ManagedMethodSpiConformanceTest {
 	}
 
 	@Test
-	public void isTransactional() throws Exception {
-		assertFalse(getterManagedMethod.isTransactional());
-		Classes.invoke(getterManagedMethod, "setTransactional", true);
-		assertTrue(getterManagedMethod.isTransactional());
-	}
-
-	@Test
-	public void isImmutable() throws Exception {
-		assertFalse(getterManagedMethod.isImmutable());
-		Classes.invoke(getterManagedMethod, "setImmutable", true);
-		assertTrue(getterManagedMethod.isImmutable());
-	}
-
-	@Test
 	public void isAsynchronous() throws Exception {
 		assertFalse(getterManagedMethod.isAsynchronous());
 		assertEquals("DefaultInvoker", Classes.getFieldValue(getterManagedMethod, "invoker").getClass().getSimpleName());

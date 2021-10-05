@@ -7,6 +7,7 @@ import javax.inject.Inject;
 
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import js.lang.Config;
@@ -24,6 +25,7 @@ import js.transaction.Transactional;
  * {@link ManagedProxyHandlerTransactionUnitTest} but instead of directly invoking managed proxy handler let factory creating
  * Java Proxy instance. Also uses mock transaction manager instead of mock transactional resource.
  */
+@Ignore
 public class TransactionProxyUnitTest {
 	private static final String DESCRIPTOR = "<?xml version='1.0' encoding='UTF-8'?>" + //
 			"<test-config>" + //

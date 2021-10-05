@@ -51,9 +51,6 @@ import js.tiny.container.spi.IContainerService;
 import js.tiny.container.spi.IContainerServiceMeta;
 import js.tiny.container.spi.IManagedClass;
 import js.tiny.container.spi.IManagedMethod;
-import js.transaction.Immutable;
-import js.transaction.Mutable;
-import js.transaction.Transactional;
 import js.util.Classes;
 import js.util.Types;
 
@@ -364,18 +361,6 @@ public final class ManagedClass implements IManagedClass {
 	 */
 	private boolean remotelyAccessible;
 
-	/** A managed class is transactional if is annotated with {@link Transactional} or has at least one transactional method. */
-	private boolean transactional;
-
-	/**
-	 * Transactional resource may support multiple schemas. This allows to limit the scope of resource objects accessible within
-	 * transaction boundaries. This field store the name of the schema as set by {@link js.transaction.Transactional#schema()}
-	 * annotation. Note that annotation should be applied to class; on managed methods schema value is ignored.
-	 * <p>
-	 * Transactional schema is optional with default to null.
-	 */
-	private String transactionalSchema;
-
 	/**
 	 * Flag indicating that this managed class should be instantiated automatically by container, see {@link Container#start()}.
 	 * Note that created instance is a singleton and managed instance scope should be {@link InstanceScope#APPLICATION}.
@@ -528,23 +513,6 @@ public final class ManagedClass implements IManagedClass {
 
 		boolean denyAllType = hasAnnotation(implementationClass, DenyAll.class);
 
-		// set transactional annotation, optional schema and immutable type
-		Transactional transactionalType = getAnnotation(implementationClass, Transactional.class);
-		if (transactionalType != null) {
-			transactionalSchema = transactionalType.schema();
-			// transactional annotation schema() returns empty string if schema not set; it should be null
-			if (transactionalSchema.isEmpty()) {
-				transactionalSchema = null;
-			}
-		}
-		boolean immutableType = hasAnnotation(implementationClass, Immutable.class);
-		if (transactionalType == null && immutableType) {
-			throw new BugError("@Immutable annotation without @Transactional on class |%s|.", implementationClass);
-		}
-		if (transactionalType != null && !instanceType.isPROXY()) {
-			throw new BugError("@Transactional requires |%s| type but found |%s| on |%s|.", InstanceType.PROXY, instanceType, implementationClass);
-		}
-
 		// security unchecked class has all method remotely accessible without authentication
 		boolean uncheckedType = hasAnnotation(implementationClass, PermitAll.class);
 
@@ -616,42 +584,8 @@ public final class ManagedClass implements IManagedClass {
 				managedMethod.setUnchecked(uncheckedMethod);
 			}
 
-			// handle declarative transaction
-			// 1. allow transactional only on PROXY
-			// 2. do not allow immutable on method if not transactional
-			// 3. do not allow mutable on method if not transactional
-			// 4. if PROXY create managed method if not already created from above remote method logic
-
-			if (transactionalType == null) {
-				transactionalType = getAnnotation(method, Transactional.class);
-			}
-			if (transactionalType != null) {
-				transactional = true;
-				if (!instanceType.isPROXY()) {
-					throw new BugError("@Transactional requires |%s| type but found |%s|.", InstanceType.PROXY, instanceType);
-				}
-			}
-
-			boolean immutable = hasAnnotation(method, Immutable.class);
-			if (immutable && !transactional) {
-				log.debug("@Immutable annotation without @Transactional on method |%s|.", method);
-			}
-			if (!immutable) {
-				immutable = immutableType;
-			}
-			if (hasAnnotation(method, Mutable.class)) {
-				if (!transactional) {
-					log.debug("@Mutable annotation without @Transactional on method |%s|.", method);
-				}
-				immutable = false;
-			}
-
 			if (instanceType.isPROXY() && managedMethod == null) {
 				managedMethod = new ManagedMethod(this, interfaceMethod);
-			}
-			if (transactional) {
-				managedMethod.setTransactional(true);
-				managedMethod.setImmutable(immutable);
 			}
 
 			// handle asynchronous mode
@@ -663,9 +597,6 @@ public final class ManagedClass implements IManagedClass {
 			if (asynchronousMethod) {
 				if (!instanceType.isPROXY() && !remotelyAccessible) {
 					throw new BugError("Not supported instance type |%s| for asynchronous method |%s|.", instanceType, method);
-				}
-				if (transactional) {
-					throw new BugError("Transactional method |%s| cannot be executed asynchronous.", method);
 				}
 				if (!Types.isVoid(method.getReturnType())) {
 					throw new BugError("Asynchronous method |%s| must be void.", method);
@@ -822,16 +753,6 @@ public final class ManagedClass implements IManagedClass {
 	@Override
 	public InstanceType getInstanceType() {
 		return instanceType;
-	}
-
-	@Override
-	public boolean isTransactional() {
-		return transactional;
-	}
-
-	@Override
-	public String getTransactionalSchema() {
-		return transactionalSchema;
 	}
 
 	@Override
