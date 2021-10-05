@@ -2,9 +2,9 @@ package js.tiny.container.rest;
 
 import javax.ws.rs.Path;
 
-import js.tiny.container.spi.IServiceMeta;
+import js.tiny.container.spi.IContainerServiceMeta;
 
-class PathMeta implements IServiceMeta {
+class PathMeta implements IContainerServiceMeta {
 	private final String value;
 
 	public PathMeta(Path path) {

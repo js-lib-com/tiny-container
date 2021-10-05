@@ -5,12 +5,15 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import java.lang.reflect.Method;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
 
 import org.junit.Before;
 import org.junit.Test;
 
 import js.tiny.container.spi.IContainer;
+import js.tiny.container.spi.IContainerService;
 import js.tiny.container.spi.IManagedMethod;
 import js.tiny.container.stub.ManagedClassSpiStub;
 import js.util.Classes;
@@ -128,6 +131,11 @@ public class ManagedMethodSpiConformanceTest {
 		@Override
 		public IContainer getContainer() {
 			return null;
+		}
+
+		@Override
+		public Collection<IContainerService> getServices() {
+			return Collections.emptySet();
 		}
 
 		@Override

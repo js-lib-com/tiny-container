@@ -7,8 +7,10 @@ import java.lang.reflect.Proxy;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.ejb.Remote;
 import javax.interceptor.Interceptors;
@@ -19,12 +21,16 @@ import js.lang.InvocationException;
 import js.log.Log;
 import js.log.LogFactory;
 import js.tiny.container.core.SecurityContext;
+import js.tiny.container.interceptor.Interceptor;
 import js.tiny.container.spi.AuthorizationException;
 import js.tiny.container.spi.IContainer;
+import js.tiny.container.spi.IContainerService;
+import js.tiny.container.spi.IContainerServiceMeta;
 import js.tiny.container.spi.IManagedClass;
 import js.tiny.container.spi.IManagedMethod;
-import js.tiny.container.spi.IServiceMeta;
-import js.util.Classes;
+import js.tiny.container.spi.IMethodInvocation;
+import js.tiny.container.spi.IMethodInvocationProcessor;
+import js.tiny.container.spi.IMethodInvocationProcessorsChain;
 import js.util.Params;
 import js.util.Strings;
 import js.util.Types;
@@ -38,7 +44,7 @@ import js.util.Types;
  * @author Iulian Rotaru
  * @version final
  */
-public final class ManagedMethod implements IManagedMethod {
+public final class ManagedMethod implements IManagedMethod, IMethodInvocationProcessor {
 	/** Class logger. */
 	private static final Log log = LogFactory.getLog(IManagedMethod.class);
 
@@ -109,24 +115,15 @@ public final class ManagedMethod implements IManagedMethod {
 	 */
 	private Meter meter;
 
-	private final Map<Class<? extends IServiceMeta>, IServiceMeta> serviceMetas = new HashMap<>();
+	private final Map<Class<? extends IContainerServiceMeta>, IContainerServiceMeta> serviceMetas = new HashMap<>();
+
+	private final Set<IMethodInvocationProcessor> invocationProcessors = new HashSet<>();
 
 	/**
 	 * Roles allowed to invoke this managed method. If empty and if this method is private all authenticated users are
 	 * authorized.
 	 */
 	private String[] roles = new String[0];
-
-	/**
-	 * Construct a managed method. This is a convenient constructor that just delegates
-	 * {@link #ManagedMethod(IManagedClass, Class, Method)} with null interceptor class.
-	 * 
-	 * @param declaringClass declaring managed class,
-	 * @param method Java reflective method wrapped by this managed method.
-	 */
-	public ManagedMethod(IManagedClass declaringClass, Method method) {
-		this(declaringClass, null, method);
-	}
 
 	/**
 	 * Construct a managed method with optional invocation interceptor. Store declaring class and Java reflective method,
@@ -139,13 +136,13 @@ public final class ManagedMethod implements IManagedMethod {
 	 * @param methodInterceptor optional method invocation interceptor, possible null,
 	 * @param method Java reflective method wrapped by this managed method.
 	 */
-	public ManagedMethod(IManagedClass declaringClass, Class<? extends Interceptor> methodInterceptor, Method method) {
+	public ManagedMethod(IManagedClass declaringClass, Method method) {
 		this.container = declaringClass.getContainer();
 		this.declaringClass = declaringClass;
 		this.method = method;
 		this.method.setAccessible(true);
 
-		invoker = methodInterceptor == null ? new DefaultInvoker() : new InterceptedInvoker(methodInterceptor);
+		invoker = new DefaultInvoker();
 
 		List<String> formalParameters = new ArrayList<String>();
 		for (Class<?> formalParameter : method.getParameterTypes()) {
@@ -154,6 +151,12 @@ public final class ManagedMethod implements IManagedMethod {
 		signature = String.format(QUALIFIED_NAME_FORMAT, method.getDeclaringClass().getName(), method.getName(), Strings.join(formalParameters, ','));
 
 		argumentsProcessor = new ArgumentsProcessor();
+
+		declaringClass.getServices().forEach(service -> {
+			if (service instanceof IMethodInvocationProcessor) {
+				invocationProcessors.add((IMethodInvocationProcessor) service);
+			}
+		});
 	}
 
 	// --------------------------------------------------------------------------------------------
@@ -206,6 +209,30 @@ public final class ManagedMethod implements IManagedMethod {
 	@SuppressWarnings("unchecked")
 	@Override
 	public <T> T invoke(Object object, Object... args) throws AuthorizationException, IllegalArgumentException, InvocationException {
+		MethodInvocationProcessorsChain processorsChain = new MethodInvocationProcessorsChain();
+		processorsChain.addProcessors(invocationProcessors);
+		// this managed method is a method invocation processor too
+		// its priority ensures that it is executed at the end, after all other processors
+		processorsChain.addProcessor(this);
+
+		processorsChain.createIterator();
+		IMethodInvocation methodInvocation = processorsChain.createMethodInvocation(this, object, args);
+		return (T) processorsChain.invokeNextProcessor(methodInvocation);
+	}
+
+	@Override
+	public Object proxyInvoke(Object object, Object... args) throws IllegalArgumentException, InvocationException, AuthorizationException {
+		MethodInvocationProcessorsChain processorsChain = new MethodInvocationProcessorsChain();
+		return invoke(processorsChain, processorsChain.createMethodInvocation(this, object, args));
+	}
+
+	@Override
+	public Priority getPriority() {
+		return Priority.NONE;
+	}
+
+	@Override
+	public Object invoke(IMethodInvocationProcessorsChain unused, IMethodInvocation methodInvocation) throws AuthorizationException, IllegalArgumentException, InvocationException {
 		if (securityEnabled && !unchecked && !container.isAuthorized(roles)) {
 			log.info("Reject not authenticated access to |%s|.", method);
 			throw new AuthorizationException();
@@ -213,14 +240,14 @@ public final class ManagedMethod implements IManagedMethod {
 
 		// arguments processor converts <args> to empty array if it is null
 		// it can be null if on invocation chain there is Proxy invoked with no arguments
-		args = argumentsProcessor.preProcessArguments(this, args);
+		Object[] arguments = argumentsProcessor.preProcessArguments(this, methodInvocation.arguments());
 
-		if (object instanceof Proxy) {
+		if (methodInvocation.instance() instanceof Proxy) {
 			// if object is a Java Proxy does not apply method services implemented by below block
 			// instead directly invoke Java method on the Proxy instance
 			// container will call again this method but with the real object instance, in which case executes the next logic
 			try {
-				return (T) method.invoke(object, args);
+				return method.invoke(methodInvocation.instance(), arguments);
 			} catch (InvocationTargetException e) {
 				throw new InvocationException(e.getTargetException());
 			} catch (IllegalAccessException e) {
@@ -230,7 +257,7 @@ public final class ManagedMethod implements IManagedMethod {
 
 		if (meter == null) {
 			try {
-				return (T) invoker.invoke(object, args);
+				return invoker.invoke(methodInvocation.instance(), arguments);
 			} catch (InvocationTargetException e) {
 				throw new InvocationException(e.getTargetException());
 			} catch (IllegalAccessException e) {
@@ -240,9 +267,9 @@ public final class ManagedMethod implements IManagedMethod {
 
 		meter.incrementInvocationsCount();
 		meter.startProcessing();
-		T returnValue = null;
+		Object returnValue = null;
 		try {
-			returnValue = (T) invoker.invoke(object, args);
+			returnValue = invoker.invoke(methodInvocation.instance(), arguments);
 		} catch (InvocationTargetException e) {
 			meter.incrementExceptionsCount();
 			throw new InvocationException(e.getTargetException());
@@ -294,7 +321,7 @@ public final class ManagedMethod implements IManagedMethod {
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public <T extends IServiceMeta> T getServiceMeta(Class<T> type) {
+	public <T extends IContainerServiceMeta> T getServiceMeta(Class<T> type) {
 		return (T) serviceMetas.get(type);
 	}
 
@@ -351,82 +378,6 @@ public final class ManagedMethod implements IManagedMethod {
 			return ManagedMethod.this.method.invoke(object, args);
 		}
 	};
-
-	/**
-	 * Intercepted invoker used for managed method tagged as intercepted. This invoker constructor has an interceptor class as
-	 * argument that is used to initialize interceptor instance, {@link #interceptor}. Interceptor instance can be fresh created
-	 * or reused, if interceptor is a managed class with non local scope.
-	 * <p>
-	 * Interceptor execution occurs on {@link #invoke(Object, Object[])} execution either before or after actual method
-	 * invocation, depending on interface interceptor is implementing. It is legal for interceptor to implement both
-	 * {@link PreInvokeInterceptor} and {@link PostInvokeInterceptor} interfaces.
-	 * 
-	 * @version final
-	 */
-	private final class InterceptedInvoker implements Invoker {
-		/**
-		 * Interceptor instance. If interceptor class is managed this instance can be reused depending on managed class scope.
-		 * Otherwise it is created at every invoker construction.
-		 */
-		private final Interceptor interceptor;
-
-		/**
-		 * Initialize internal interceptor instance for given interceptor class. If interceptor class is managed, instance can
-		 * be reused if instance scope is not {@link InstanceScope#LOCAL}. Otherwise a new interceptor instance is created.
-		 * 
-		 * @param interceptorClass interceptor class, managed or plain Java class.
-		 */
-		@SuppressWarnings("unchecked")
-		public InterceptedInvoker(Class<? extends Interceptor> interceptorClass) {
-			if (container.isManagedClass(interceptorClass)) {
-				interceptor = container.getInstance((Class<? super Interceptor>) interceptorClass);
-			} else {
-				interceptor = Classes.newInstance(interceptorClass);
-			}
-		}
-
-		/**
-		 * Invoke outer managed method and returns execution value. Takes care to execute interceptor instance before, after or
-		 * both before and after method execution, depending on interceptor implemented interfaces.
-		 * 
-		 * @param object instance on which method is invoked,
-		 * @param args invocation arguments.
-		 * @return value returned by method execution.
-		 * @throws IllegalArgumentException if invocation arguments does not match method formal parameters,
-		 * @throws IllegalAccessException never happen but needed by Java method signature,
-		 * @throws InvocationTargetException if method invocation or interceptor execution fails. Exception target value is
-		 *             execution fail root cause.
-		 */
-		@Override
-		public Object invoke(Object object, Object[] args) throws IllegalArgumentException, IllegalAccessException, InvocationTargetException {
-			final IManagedMethod managedMethod = ManagedMethod.this;
-
-			if (interceptor instanceof PreInvokeInterceptor) {
-				log.debug("Execute pre-invoke interceptor for method |%s|.", managedMethod);
-				PreInvokeInterceptor preInvokeInterceptor = (PreInvokeInterceptor) interceptor;
-				try {
-					preInvokeInterceptor.preInvoke(managedMethod, args);
-				} catch (Exception e) {
-					log.error("Exception on pre-invoke interceptor for method |%s|: %s", managedMethod, e);
-					throw new InvocationTargetException(e);
-				}
-			}
-
-			Object returnValue = ManagedMethod.this.method.invoke(object, args);
-
-			if (interceptor instanceof PostInvokeInterceptor) {
-				log.debug("Execute post-invoke interceptor for method |%s|.", managedMethod);
-				PostInvokeInterceptor postInvokeInterceptor = (PostInvokeInterceptor) interceptor;
-				try {
-					postInvokeInterceptor.postInvoke(managedMethod, args, returnValue);
-				} catch (Exception e) {
-					log.error("Exception on post-invoke interceptor for method |%s|: %s", managedMethod, e);
-					throw new InvocationTargetException(e);
-				}
-			}
-			return returnValue;
-		}
-	}
 
 	/**
 	 * Execute {@link Invoker} instance in a separated thread of execution. This invoker implementation is a decorator; it gets
@@ -693,9 +644,12 @@ public final class ManagedMethod implements IManagedMethod {
 		return annotation;
 	}
 
-	void addServiceMeta(IServiceMeta serviceMeta) {
+	void addServiceMeta(IContainerService service, IContainerServiceMeta serviceMeta) {
 		log.debug("Add service meta |%s| to managed method |%s|", serviceMeta.getClass(), this);
 		serviceMetas.put(serviceMeta.getClass(), serviceMeta);
+		if (service instanceof IMethodInvocationProcessor) {
+			invocationProcessors.add((IMethodInvocationProcessor) service);
+		}
 	}
 
 	void setRoles(String[] roles) {

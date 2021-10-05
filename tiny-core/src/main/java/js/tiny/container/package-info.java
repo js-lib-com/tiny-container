@@ -43,7 +43,7 @@
  * <ul>
  * <li>Authenticated remote access to {@link js.tiny.container.annotation.Remote remote} managed methods; authentication occurs at method invocation.
  * <li>Declarative {@link js.tiny.container.annotation.Asynchronous asynchronous} execution mode for long running logic, executed in separated thread.
- * <li>Method invocation listener. There are {@link js.tiny.container.Interceptor interceptors} for before, after and around method invocation.
+ * <li>Method invocation listener. There are {@link js.tiny.container.interceptor.Interceptor interceptors} for before, after and around method invocation.
  * <li>Method instrumentation. Uses {@link js.tiny.container.InvocationMeter} to monitor method invocations.
  * </ul>
  * <li>Container level services:

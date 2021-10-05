@@ -3,11 +3,10 @@ package js.tiny.container.spi;
 import java.util.List;
 
 public interface IContainerService {
+	
+	List<IContainerServiceMeta> scan(IManagedClass managedClass);
 
-	List<IServiceMeta> scan(IManagedClass managedClass);
-
-	List<IServiceMeta> scan(IManagedMethod managedMethod);
+	List<IContainerServiceMeta> scan(IManagedMethod managedMethod);
 
 	void destroy();
-	
 }

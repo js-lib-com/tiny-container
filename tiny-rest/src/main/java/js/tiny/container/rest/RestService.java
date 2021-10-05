@@ -11,7 +11,7 @@ import js.log.LogFactory;
 import js.tiny.container.spi.IContainerService;
 import js.tiny.container.spi.IManagedClass;
 import js.tiny.container.spi.IManagedMethod;
-import js.tiny.container.spi.IServiceMeta;
+import js.tiny.container.spi.IContainerServiceMeta;
 
 public class RestService implements IContainerService {
 	private static final Log log = LogFactory.getLog(RestService.class);
@@ -21,10 +21,8 @@ public class RestService implements IContainerService {
 	}
 
 	@Override
-	public List<IServiceMeta> scan(IManagedClass managedClass) {
-		log.trace("scan(IManagedClass)");
-
-		List<IServiceMeta> serviceMetas = new ArrayList<>();
+	public List<IContainerServiceMeta> scan(IManagedClass managedClass) {
+		List<IContainerServiceMeta> serviceMetas = new ArrayList<>();
 
 		Path path = managedClass.getAnnotation(Path.class);
 		if (path != null) {
@@ -35,10 +33,8 @@ public class RestService implements IContainerService {
 	}
 
 	@Override
-	public List<IServiceMeta> scan(IManagedMethod managedMethod) {
-		log.trace("scan(IManagedMethod)");
-
-		List<IServiceMeta> serviceMetas = new ArrayList<>();
+	public List<IContainerServiceMeta> scan(IManagedMethod managedMethod) {
+		List<IContainerServiceMeta> serviceMetas = new ArrayList<>();
 
 		Path path = managedMethod.getAnnotation(Path.class);
 		if (path != null) {

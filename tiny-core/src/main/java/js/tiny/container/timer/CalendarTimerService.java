@@ -9,7 +9,6 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 import javax.ejb.Schedule;
-import javax.inject.Inject;
 
 import js.lang.BugError;
 import js.log.Log;
@@ -17,17 +16,16 @@ import js.log.LogFactory;
 import js.tiny.container.InstanceScope;
 import js.tiny.container.spi.IManagedClass;
 import js.tiny.container.spi.IManagedMethod;
-import js.tiny.container.spi.IServiceMeta;
+import js.tiny.container.spi.IContainerServiceMeta;
 import js.util.Params;
 import js.util.Types;
 
-public class CalendarTimerService implements ICalendarTimerService {
+class CalendarTimerService implements ICalendarTimerService {
 	private static final Log log = LogFactory.getLog(CalendarTimerService.class);
 
 	private static final int SCHEDULERS_THREAD_POLL = 2;
 	private final ScheduledExecutorService scheduler;
 
-	@Inject
 	public CalendarTimerService() {
 		log.trace("CalendarTimerService()");
 		scheduler = Executors.newScheduledThreadPool(SCHEDULERS_THREAD_POLL);
@@ -38,14 +36,14 @@ public class CalendarTimerService implements ICalendarTimerService {
 	}
 
 	@Override
-	public List<IServiceMeta> scan(IManagedClass managedClass) {
+	public List<IContainerServiceMeta> scan(IManagedClass managedClass) {
 		// TODO Auto-generated method stub
 		return Collections.emptyList();
 	}
 
 	@Override
-	public List<IServiceMeta> scan(IManagedMethod managedMethod) {
-		List<IServiceMeta> serviceMetas = new ArrayList<>();
+	public List<IContainerServiceMeta> scan(IManagedMethod managedMethod) {
+		List<IContainerServiceMeta> serviceMetas = new ArrayList<>();
 
 		Schedule schedule = managedMethod.getAnnotation(Schedule.class);
 		if (schedule != null) {

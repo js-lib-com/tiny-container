@@ -1,9 +1,9 @@
 package js.tiny.container.mvc;
 
 import js.tiny.container.mvc.annotation.Controller;
-import js.tiny.container.spi.IServiceMeta;
+import js.tiny.container.spi.IContainerServiceMeta;
 
-class ControllerMeta implements IServiceMeta {
+class ControllerMeta implements IContainerServiceMeta {
 	private final String value;
 
 	public ControllerMeta(Controller controller) {

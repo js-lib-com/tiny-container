@@ -1,7 +1,11 @@
 package js.tiny.container.spi;
 
-public interface IMethodInvocation extends IJoinPointProcessor {
+public interface IMethodInvocation {
+	
+	IManagedMethod method();
 
-	Object invoke(IServiceChain serviceChain, IManagedMethod managedMethod, Object instance, Object[] arguments) throws Throwable;
+	Object instance();
 
+	Object[] arguments();
+	
 }

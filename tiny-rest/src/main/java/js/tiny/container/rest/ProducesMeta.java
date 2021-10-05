@@ -2,9 +2,9 @@ package js.tiny.container.rest;
 
 import javax.ws.rs.Produces;
 
-import js.tiny.container.spi.IServiceMeta;
+import js.tiny.container.spi.IContainerServiceMeta;
 
-class ProducesMeta implements IServiceMeta {
+class ProducesMeta implements IContainerServiceMeta {
 	private final String value;
 
 	public ProducesMeta(Produces produces) {

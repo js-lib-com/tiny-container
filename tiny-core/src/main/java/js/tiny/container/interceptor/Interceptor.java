@@ -1,4 +1,4 @@
-package js.tiny.container;
+package js.tiny.container.interceptor;
 
 import javax.interceptor.Interceptors;
 

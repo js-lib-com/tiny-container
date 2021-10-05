@@ -11,9 +11,9 @@ import js.tiny.container.mvc.annotation.ResponseContentType;
 import js.tiny.container.spi.IContainerService;
 import js.tiny.container.spi.IManagedClass;
 import js.tiny.container.spi.IManagedMethod;
-import js.tiny.container.spi.IServiceMeta;
+import js.tiny.container.spi.IContainerServiceMeta;
 
-public class ResourceService implements IContainerService {
+final class ResourceService implements IContainerService {
 	private static final Log log = LogFactory.getLog(ResourceService.class);
 
 	public ResourceService() {
@@ -21,8 +21,8 @@ public class ResourceService implements IContainerService {
 	}
 
 	@Override
-	public List<IServiceMeta> scan(IManagedClass managedClass) {
-		List<IServiceMeta> serviceMetas = new ArrayList<>();
+	public List<IContainerServiceMeta> scan(IManagedClass managedClass) {
+		List<IContainerServiceMeta> serviceMetas = new ArrayList<>();
 
 		Controller controller = managedClass.getAnnotation(Controller.class);
 		if (controller != null) {
@@ -33,8 +33,8 @@ public class ResourceService implements IContainerService {
 	}
 
 	@Override
-	public List<IServiceMeta> scan(IManagedMethod managedMethod) {
-		List<IServiceMeta> serviceMetas = new ArrayList<>();
+	public List<IContainerServiceMeta> scan(IManagedMethod managedMethod) {
+		List<IContainerServiceMeta> serviceMetas = new ArrayList<>();
 
 		RequestPath requestPath = managedMethod.getAnnotation(RequestPath.class);
 		if (requestPath != null) {

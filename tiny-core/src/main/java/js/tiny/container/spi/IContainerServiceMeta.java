@@ -12,6 +12,6 @@ package js.tiny.container.spi;
  * 
  * @author Iulian Rotaru
  */
-public interface IServiceMeta {
+public interface IContainerServiceMeta {
 
 }

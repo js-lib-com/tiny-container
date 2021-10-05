@@ -162,7 +162,7 @@ public final class ManagedProxyHandler implements InstanceInvocationHandler<Obje
 		if (!managedMethod.isTransactional()) {
 			// execute managed method that is not included within transactional boundaries
 			try {
-				return managedMethod.invoke(managedInstance, args);
+				return managedMethod.proxyInvoke(managedInstance, args);
 			} catch (Throwable t) {
 				throw throwable(t, "Non transactional method |%s| invocation fails.", managedMethod);
 			}
@@ -193,7 +193,7 @@ public final class ManagedProxyHandler implements InstanceInvocationHandler<Obje
 		transactionalResource.storeSession(transaction.getResourceManager());
 
 		try {
-			Object result = managedMethod.invoke(managedInstance, args);
+			Object result = managedMethod.proxyInvoke(managedInstance, args);
 			transaction.commit();
 			if (transaction.unused()) {
 				log.debug("Method |%s| superfluously declared transactional.", managedMethod);
@@ -226,7 +226,7 @@ public final class ManagedProxyHandler implements InstanceInvocationHandler<Obje
 		transactionalResource.storeSession(transaction.getResourceManager());
 
 		try {
-			Object result = managedMethod.invoke(managedInstance, args);
+			Object result = managedMethod.proxyInvoke(managedInstance, args);
 			if (transaction.unused()) {
 				log.debug("Method |%s| superfluously declared transactional.", managedMethod);
 			}

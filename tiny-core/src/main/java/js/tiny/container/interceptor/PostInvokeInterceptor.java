@@ -1,4 +1,4 @@
-package js.tiny.container;
+package js.tiny.container.interceptor;
 
 import javax.interceptor.Interceptors;
 
@@ -14,18 +14,17 @@ import js.tiny.container.spi.IManagedMethod;
  * <pre>
  * class ManagedClass {
  * 	&#064;Intercepted(Audit.class)
- * 	Object managedMethod(Object... args) {
+ * 	Object managedMethod(Object... arguments) {
  * 	}
  * }
  * 
  * class Audit implements PostInvokeInterceptor {
- * 	void postInvoke(ManagedMethodSPI managedMethod, Object[] args, Object returnValue) throws Exception {
+ * 	void postInvoke(ManagedMethodSPI managedMethod, Object[] arguments, Object returnValue) throws Exception {
  * 	}
  * }
  * </pre>
  * 
  * @author Iulian Rotaru
- * @version final
  */
 public interface PostInvokeInterceptor extends Interceptor {
 	/**
@@ -33,9 +32,9 @@ public interface PostInvokeInterceptor extends Interceptor {
 	 * managed method invocation.
 	 * 
 	 * @param managedMethod managed method about to be invoked,
-	 * @param args method actual call arguments.
+	 * @param arguments method actual call arguments.
 	 * @param returnValue value returned by managed method after execution.
 	 * @throws Exception any exception thrown by hook logic.
 	 */
-	void postInvoke(IManagedMethod managedMethod, Object[] args, Object returnValue) throws Exception;
+	void postInvoke(IManagedMethod managedMethod, Object[] arguments, Object returnValue) throws Exception;
 }

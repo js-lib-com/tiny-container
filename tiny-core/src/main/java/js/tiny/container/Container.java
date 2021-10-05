@@ -4,8 +4,10 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.Proxy;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -37,9 +39,11 @@ import js.rmi.RemoteFactory;
 import js.tiny.container.core.App;
 import js.tiny.container.core.AppContext;
 import js.tiny.container.core.AppFactory;
+import js.tiny.container.interceptor.Interceptor;
 import js.tiny.container.spi.IClassPostProcessor;
 import js.tiny.container.spi.IContainer;
 import js.tiny.container.spi.IContainerService;
+import js.tiny.container.spi.IContainerServiceProvider;
 import js.tiny.container.spi.IInstancePostProcessor;
 import js.tiny.container.spi.IManagedClass;
 import js.tiny.container.spi.IManagedMethod;
@@ -261,8 +265,8 @@ public abstract class Container implements IContainer, Configurable {
 	 * Class post-processors are executed after {@link ManagedClass} creation and generally deals with managed implementation
 	 * static fields initialization, but is not limited to.
 	 * <p>
-	 * These processors are registered by {@link #registerClassProcessor(IClassPostProcessor)}. Note that these processors are global
-	 * and executed for ALL managed classes.
+	 * These processors are registered by {@link #registerClassProcessor(IClassPostProcessor)}. Note that these processors are
+	 * global and executed for ALL managed classes.
 	 */
 	private final List<IClassPostProcessor> classProcessors = new ArrayList<>();
 
@@ -287,7 +291,7 @@ public abstract class Container implements IContainer, Configurable {
 	 */
 	private final Map<Class<?>, IManagedClass> classesPool = new HashMap<>();
 
-	private final List<IContainerService> containerServices = new ArrayList<>();
+	private final Set<IContainerService> containerServices = new HashSet<>();
 
 	// --------------------------------------------------------------------------------------------
 	// CONTAINER LIFE CYCLE
@@ -299,9 +303,10 @@ public abstract class Container implements IContainer, Configurable {
 	public Container() {
 		log.trace("Container()");
 
-		for (IContainerService containerService : ServiceLoader.load(IContainerService.class)) {
-			log.debug("Load container service |%s|.", containerService.getClass());
-			containerServices.add(containerService);
+		for (IContainerServiceProvider provider : ServiceLoader.load(IContainerServiceProvider.class)) {
+			IContainerService service = provider.createService(this);
+			log.debug("Load container service |%s|.", service.getClass());
+			containerServices.add(service);
 		}
 
 		// first register plug-in scope factories in order to avoid overriding built-in factories
@@ -335,7 +340,7 @@ public abstract class Container implements IContainer, Configurable {
 		registerClassProcessor();
 	}
 
-	public List<IContainerService> getServices() {
+	public Collection<IContainerService> getServices() {
 		return containerServices;
 	}
 

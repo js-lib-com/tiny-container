@@ -8,7 +8,7 @@ import js.lang.InvocationException;
 import js.tiny.container.spi.AuthorizationException;
 import js.tiny.container.spi.IManagedClass;
 import js.tiny.container.spi.IManagedMethod;
-import js.tiny.container.spi.IServiceMeta;
+import js.tiny.container.spi.IContainerServiceMeta;
 
 public class ManagedMethodSpiStub implements IManagedMethod {
 	@Override
@@ -29,6 +29,11 @@ public class ManagedMethodSpiStub implements IManagedMethod {
 	@Override
 	public <T> T invoke(Object object, Object... arguments) throws IllegalArgumentException, InvocationException, AuthorizationException {
 		throw new UnsupportedOperationException("invoke(Object object, Object... arguments)");
+	}
+
+	@Override
+	public Object proxyInvoke(Object object, Object... args) throws IllegalArgumentException, InvocationException, AuthorizationException {
+		throw new UnsupportedOperationException("proxyInvoke(Object object, Object... arguments)");
 	}
 
 	@Override
@@ -72,7 +77,7 @@ public class ManagedMethodSpiStub implements IManagedMethod {
 	}
 
 	@Override
-	public <T extends IServiceMeta> T getServiceMeta(Class<T> type) {
+	public <T extends IContainerServiceMeta> T getServiceMeta(Class<T> type) {
 		throw new UnsupportedOperationException("getServiceMeta(Class<T> type)");
 	}
 

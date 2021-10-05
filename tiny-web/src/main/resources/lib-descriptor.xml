@@ -12,7 +12,7 @@
 		<data-source class="js.tiny.container.TransactionalResourceImpl">
 			<interface name="js.tiny.container.TransactionalResource" />
 		</data-source>
-
+		
 		<!--<views interface="js.tiny.container.mvc.ViewManager" class="js.tiny.container.mvc.ViewManagerImpl" />-->
 		<!--<captcha class="js.tiny.container.http.captcha.Captcha" />-->
 

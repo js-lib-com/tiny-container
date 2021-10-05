@@ -5,7 +5,6 @@ import static org.junit.Assert.fail;
 
 import javax.inject.Inject;
 
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -240,8 +239,5 @@ public class TransactionProxyUnitTest {
 	}
 
 	private static class MockDatabaseSession {
-		public String query() {
-			return "query";
-		}
 	}
 }

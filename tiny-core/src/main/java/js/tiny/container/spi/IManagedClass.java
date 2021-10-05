@@ -4,6 +4,7 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.util.Collection;
 import java.util.Map;
 
 import javax.ejb.Remote;
@@ -36,6 +37,8 @@ public interface IManagedClass {
 	 */
 	IContainer getContainer();
 
+	Collection<IContainerService> getServices();
+	
 	/**
 	 * Get the key uniquely identifying this managed class. Returned key is created incrementally, but not necessarily in
 	 * sequence, and can be used to sort managed classes in creation order; creation order is the order of class descriptor
@@ -221,7 +224,7 @@ public interface IManagedClass {
 	 */
 	Map<String, Field> getContextParamFields();
 
-	<T extends IServiceMeta> T getServiceMeta(Class<T> type);
+	<T extends IContainerServiceMeta> T getServiceMeta(Class<T> type);
 	
 	<T extends Annotation> T getAnnotation(Class<T> type);
 }

@@ -2,9 +2,9 @@ package js.tiny.container.timer;
 
 import javax.ejb.Schedule;
 
-import js.tiny.container.spi.IServiceMeta;
+import js.tiny.container.spi.IContainerServiceMeta;
 
-class ScheduleMeta implements IServiceMeta {
+class ScheduleMeta implements IContainerServiceMeta {
 	private final String second;
 	private final String minute;
 	private final String hour;

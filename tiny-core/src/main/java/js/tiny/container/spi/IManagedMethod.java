@@ -10,9 +10,9 @@ import javax.ejb.Remote;
 
 import js.lang.BugError;
 import js.lang.InvocationException;
-import js.tiny.container.Interceptor;
 import js.tiny.container.InvocationMeter;
 import js.tiny.container.core.SecurityContext;
+import js.tiny.container.interceptor.Interceptor;
 import js.transaction.Immutable;
 import js.transaction.Mutable;
 import js.transaction.Transactional;
@@ -72,6 +72,8 @@ public interface IManagedMethod {
 	 */
 	<T> T invoke(Object object, Object... args) throws AuthorizationException, IllegalArgumentException, InvocationException;
 
+	Object proxyInvoke(Object object, Object... args) throws IllegalArgumentException, InvocationException, AuthorizationException;
+	
 	/**
 	 * Test if this managed method return type is void.
 	 * 
@@ -134,7 +136,7 @@ public interface IManagedMethod {
 	 */
 	boolean isAsynchronous();
 
-	<T extends IServiceMeta> T getServiceMeta(Class<T> type);
+	<T extends IContainerServiceMeta> T getServiceMeta(Class<T> type);
 
 	<T extends Annotation> T getAnnotation(Class<T> type);
 }

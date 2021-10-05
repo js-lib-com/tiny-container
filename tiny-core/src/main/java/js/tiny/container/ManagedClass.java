@@ -10,8 +10,10 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.annotation.PostConstruct;
@@ -46,9 +48,9 @@ import js.log.LogFactory;
 import js.tiny.container.core.AppFactory;
 import js.tiny.container.spi.IContainer;
 import js.tiny.container.spi.IContainerService;
+import js.tiny.container.spi.IContainerServiceMeta;
 import js.tiny.container.spi.IManagedClass;
 import js.tiny.container.spi.IManagedMethod;
-import js.tiny.container.spi.IServiceMeta;
 import js.transaction.Immutable;
 import js.transaction.Mutable;
 import js.transaction.Transactional;
@@ -386,8 +388,10 @@ public final class ManagedClass implements IManagedClass {
 	 */
 	private boolean autoInstanceCreation;
 
-	private final Map<Class<? extends IServiceMeta>, IServiceMeta> serviceMetas = new HashMap<>();
+	private final Map<Class<? extends IContainerServiceMeta>, IContainerServiceMeta> serviceMetas = new HashMap<>();
 
+	private final Set<IContainerService> services = new HashSet<>();
+	
 	/**
 	 * Loads this managed class state from class descriptor then delegates {@link #scanAnnotations()}. Annotations scanning is
 	 * performed only if this managed class type requires implementation, see {@link InstanceType#requiresImplementation()}.
@@ -484,6 +488,11 @@ public final class ManagedClass implements IManagedClass {
 		return string;
 	}
 
+	@Override
+	public Collection<IContainerService> getServices() {
+		return services;
+	}
+
 	/**
 	 * Scan annotations for managed classes that requires implementation. Annotations are processed only for managed classes
 	 * that have {@link #implementationClass} that is primary source scanned for annotation. If an annotation is not present
@@ -494,9 +503,10 @@ public final class ManagedClass implements IManagedClass {
 	 */
 	private void scanAnnotations() {
 
-		for (IContainerService containerService : container.getServices()) {
-			for (IServiceMeta serviceMeta : containerService.scan(this)) {
+		for (IContainerService service : container.getServices()) {
+			for (IContainerServiceMeta serviceMeta : service.scan(this)) {
 				log.debug("Add service meta |%s| to managed class |%s|", serviceMeta.getClass(), this);
+				services.add(service);
 				serviceMetas.put(serviceMeta.getClass(), serviceMeta);
 			}
 		}
@@ -535,7 +545,6 @@ public final class ManagedClass implements IManagedClass {
 			throw new BugError("@Transactional requires |%s| type but found |%s| on |%s|.", InstanceType.PROXY, instanceType, implementationClass);
 		}
 
-		Class<? extends Interceptor> classInterceptor = getInterceptorClass(implementationClass);
 		// security unchecked class has all method remotely accessible without authentication
 		boolean uncheckedType = hasAnnotation(implementationClass, PermitAll.class);
 
@@ -592,20 +601,6 @@ public final class ManagedClass implements IManagedClass {
 			}
 
 			ManagedMethod managedMethod = null;
-
-			// load method interceptor annotation and if missing uses class annotation; is legal for both to be null
-			Class<? extends Interceptor> methodInterceptor = getInterceptorClass(method);
-			if (methodInterceptor == null) {
-				methodInterceptor = classInterceptor;
-			}
-			// if method is intercepted, either by method or class annotation, create intercepted managed method
-			if (methodInterceptor != null) {
-				if (!instanceType.isPROXY() && !remotelyAccessible) {
-					throw new BugError("@Intercepted method |%s| supported only on PROXY type or remote accessible classes.", method);
-				}
-				managedMethod = new ManagedMethod(this, methodInterceptor, interfaceMethod);
-			}
-
 			// handle remote accessible methods
 
 			boolean uncheckedMethod = hasAnnotation(method, PermitAll.class);
@@ -682,13 +677,13 @@ public final class ManagedClass implements IManagedClass {
 				managedMethod.setAsynchronous(asynchronousMethod);
 			}
 
-			for (IContainerService containerService : container.getServices()) {
+			for (IContainerService service : container.getServices()) {
 				ManagedMethod tempManagedMethod = new ManagedMethod(this, interfaceMethod);
-				for (IServiceMeta serviceMeta : containerService.scan(tempManagedMethod)) {
+				for (IContainerServiceMeta serviceMeta : service.scan(tempManagedMethod)) {
 					if (managedMethod == null) {
 						managedMethod = tempManagedMethod;
 					}
-					managedMethod.addServiceMeta(serviceMeta);
+					managedMethod.addServiceMeta(service, serviceMeta);
 					// if(serviceMeta.requiresInstanceCreation()) {
 					autoInstanceCreation = true;
 					// }
@@ -1212,7 +1207,7 @@ public final class ManagedClass implements IManagedClass {
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public <T extends IServiceMeta> T getServiceMeta(Class<T> type) {
+	public <T extends IContainerServiceMeta> T getServiceMeta(Class<T> type) {
 		return (T) serviceMetas.get(type);
 	}
 
@@ -1353,41 +1348,5 @@ public final class ManagedClass implements IManagedClass {
 			}
 		}
 		return method;
-	}
-
-	/**
-	 * Get class value of intercepted annotation of a given class. Returns null if given class has no {@link Interceptors}
-	 * annotation.
-	 * 
-	 * @param clazz annotated class.
-	 * @return interceptor class or null if intercepted annotation is missing.
-	 */
-	private static Class<? extends Interceptor> getInterceptorClass(Class<?> clazz) {
-		return getInterceptorClass(getAnnotation(clazz, Interceptors.class));
-	}
-
-	/**
-	 * Get class value of intercepted annotation of a given method. Returns null if given method has no {@link Interceptors}
-	 * annotation.
-	 * 
-	 * @param method annotated method.
-	 * @return interceptor class or null if intercepted annotation is missing.
-	 */
-	private static Class<? extends Interceptor> getInterceptorClass(Method method) {
-		return getInterceptorClass(getAnnotation(method, Interceptors.class));
-	}
-
-	@SuppressWarnings("unchecked")
-	private static Class<? extends Interceptor> getInterceptorClass(Interceptors interceptors) {
-		if (interceptors == null) {
-			return null;
-		}
-
-		Class<?> interceptorClass = interceptors.value()[0];
-		if (!Types.isKindOf(interceptorClass, Interceptor.class)) {
-			throw new IllegalArgumentException("Interceptor should implement " + Interceptor.class.getCanonicalName());
-		}
-
-		return (Class<? extends Interceptor>) interceptorClass;
 	}
 }

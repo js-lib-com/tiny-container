@@ -191,7 +191,7 @@ public class ContainerUnitTest {
 
 		// order depends on lib-descriptor; keep this test case and lib-descriptor in sync
 
-		Class<?>[] expectedOrder = new Class<?>[] { App.class, AppContext.class, RequestContext.class, TransactionManager.class, TransactionalResource.class, EventStreamManager.class, EventStream.class, NetCar.class };
+		Class<?>[] expectedOrder = new Class<?>[] { App.class, AppContext.class, RequestContext.class, EventStreamManager.class, EventStream.class, NetCar.class };
 		for (int i = 1; i < expectedOrder.length; ++i) {
 			Integer previousKey = classesPool.get(expectedOrder[i - 1]).getKey();
 			Integer currentKey = classesPool.get(expectedOrder[i]).getKey();

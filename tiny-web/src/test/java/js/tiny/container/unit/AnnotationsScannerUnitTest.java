@@ -16,7 +16,7 @@ import javax.interceptor.Interceptors;
 import org.junit.Test;
 
 import js.tiny.container.ManagedClass;
-import js.tiny.container.PreInvokeInterceptor;
+import js.tiny.container.interceptor.PreInvokeInterceptor;
 import js.tiny.container.spi.IManagedMethod;
 import js.transaction.Transactional;
 import js.util.Classes;
@@ -93,32 +93,6 @@ public class AnnotationsScannerUnitTest {
 		method = (Method) invokeStatic("getInterfaceMethod", method);
 		assertNotNull(method);
 		assertEquals(AnnotatedInterface.class, method.getDeclaringClass());
-	}
-
-	@Test
-	public void getInterceptorClass() throws Exception {
-		Class<?> interceptor = (Class<?>) invokeStatic("getInterceptorClass", AnnotatedClass.class);
-		assertNotNull(interceptor);
-		assertEquals(InterceptorClass.class, interceptor);
-	}
-
-	@Test
-	public void getInterceptorClass_MissingAnnotation() throws Exception {
-		assertNull(invokeStatic("getInterceptorClass", AnnotatedMethod.class));
-	}
-
-	@Test
-	public void getInterceptorMethod() throws Exception {
-		Method method = AnnotatedMethod.class.getDeclaredMethod("exec");
-		Class<?> interceptor = (Class<?>) invokeStatic("getInterceptorClass", method);
-		assertNotNull(interceptor);
-		assertEquals(InterceptorClass.class, interceptor);
-	}
-
-	@Test
-	public void getInterceptorMethod_MissingAnnotation() throws Exception {
-		Method method = AnnotatedInterface.class.getDeclaredMethod("getModel");
-		assertNull(invokeStatic("getInterceptorClass", method));
 	}
 
 	// --------------------------------------------------------------------------------------------

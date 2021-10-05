@@ -12,6 +12,7 @@ import java.lang.reflect.Method;
 
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import js.lang.Config;
@@ -348,11 +349,10 @@ public class ManagedProxyHandlerUnitTest {
 			return immutable;
 		}
 
-		@SuppressWarnings("unchecked")
 		@Override
-		public <T> T invoke(Object object, Object... args) throws IllegalArgumentException, InvocationException, AuthorizationException {
+		public Object proxyInvoke(Object object, Object... args) throws IllegalArgumentException, InvocationException, AuthorizationException {
 			try {
-				return (T) method.invoke(object, args);
+				return method.invoke(object, args);
 			} catch (IllegalAccessException e) {
 			} catch (InvocationTargetException e) {
 				throw new InvocationException(e.getTargetException());

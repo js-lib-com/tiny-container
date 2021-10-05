@@ -1,9 +1,9 @@
 package js.tiny.container.mvc;
 
 import js.tiny.container.mvc.annotation.RequestPath;
-import js.tiny.container.spi.IServiceMeta;
+import js.tiny.container.spi.IContainerServiceMeta;
 
-class RequestPathMeta implements IServiceMeta {
+class RequestPathMeta implements IContainerServiceMeta {
 	private final String value;
 
 	public RequestPathMeta(RequestPath requestPath) {

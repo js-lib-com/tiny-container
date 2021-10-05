@@ -8,14 +8,15 @@ import java.util.List;
 import javax.ejb.Remote;
 import javax.interceptor.Interceptors;
 
+import org.junit.Ignore;
 import org.junit.Test;
 
 import js.lang.BugError;
 import js.lang.ConfigBuilder;
 import js.lang.ConfigException;
 import js.tiny.container.Container;
-import js.tiny.container.Interceptor;
 import js.tiny.container.ManagedClass;
+import js.tiny.container.interceptor.Interceptor;
 import js.tiny.container.spi.IManagedClass;
 import js.tiny.container.spi.IManagedMethod;
 import js.tiny.container.stub.ContainerStub;
@@ -23,6 +24,7 @@ import js.util.Classes;
 import js.util.Strings;
 
 @SuppressWarnings("unused")
+@Ignore
 public class InterceptedUnitTest {
 	/** Using {@link Interceptors} annotation on class should be applied only on public method but not on private. */
 	@Test

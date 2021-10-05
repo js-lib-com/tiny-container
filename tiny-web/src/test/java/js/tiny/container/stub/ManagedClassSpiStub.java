@@ -4,15 +4,17 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.util.Collection;
 import java.util.Map;
 
 import js.lang.Config;
 import js.tiny.container.InstanceScope;
 import js.tiny.container.InstanceType;
 import js.tiny.container.spi.IContainer;
+import js.tiny.container.spi.IContainerService;
 import js.tiny.container.spi.IManagedClass;
 import js.tiny.container.spi.IManagedMethod;
-import js.tiny.container.spi.IServiceMeta;
+import js.tiny.container.spi.IContainerServiceMeta;
 
 public class ManagedClassSpiStub implements IManagedClass {
 	@Override
@@ -126,8 +128,13 @@ public class ManagedClassSpiStub implements IManagedClass {
 	}
 
 	@Override
-	public <T extends IServiceMeta> T getServiceMeta(Class<T> type) {
+	public <T extends IContainerServiceMeta> T getServiceMeta(Class<T> type) {
 		throw new UnsupportedOperationException("getServiceMeta(Class<T> type)");
+	}
+
+	@Override
+	public Collection<IContainerService> getServices() {
+		throw new UnsupportedOperationException("getServices()");
 	}
 
 	@Override

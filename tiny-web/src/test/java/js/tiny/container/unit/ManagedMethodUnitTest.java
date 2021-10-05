@@ -14,6 +14,8 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -29,12 +31,13 @@ import js.lang.InvocationException;
 import js.tiny.container.Container;
 import js.tiny.container.InvocationMeter;
 import js.tiny.container.ManagedMethod;
-import js.tiny.container.PostInvokeInterceptor;
-import js.tiny.container.PreInvokeInterceptor;
 import js.tiny.container.core.AppFactory;
 import js.tiny.container.core.Factory;
+import js.tiny.container.interceptor.PostInvokeInterceptor;
+import js.tiny.container.interceptor.PreInvokeInterceptor;
 import js.tiny.container.spi.AuthorizationException;
 import js.tiny.container.spi.IContainer;
+import js.tiny.container.spi.IContainerService;
 import js.tiny.container.spi.IManagedClass;
 import js.tiny.container.spi.IManagedMethod;
 import js.tiny.container.stub.ContainerStub;
@@ -152,100 +155,6 @@ public class ManagedMethodUnitTest {
 		Person person = new Person();
 		assertEquals("John Doe", managedMethod.invoke(person, "John Doe"));
 		assertEquals("John Doe", person.name);
-	}
-
-	@Test
-	public void interceptedInvoker_PojoConstructor() throws Exception {
-		IManagedMethod methodInstance = getManagedMethod();
-		Class<?> invokerClass = Class.forName("js.tiny.container.ManagedMethod$InterceptedInvoker");
-		Constructor<?> constructor = invokerClass.getConstructor(methodInstance.getClass(), Class.class);
-		constructor.setAccessible(true);
-
-		Object invoker = constructor.newInstance(methodInstance, MockInterceptor.class);
-		assertNotNull(Classes.getFieldValue(invoker, "interceptor"));
-	}
-
-	@Test
-	public void interceptedInvoker_ManagedConstructor() throws Exception {
-		IManagedMethod methodInstance = getManagedMethod();
-		Class<?> invokerClass = Class.forName("js.tiny.container.ManagedMethod$InterceptedInvoker");
-		Constructor<?> constructor = invokerClass.getConstructor(methodInstance.getClass(), Class.class);
-		constructor.setAccessible(true);
-
-		container.managedInstance = new MockInterceptor();
-		Object invoker = constructor.newInstance(methodInstance, container.managedInstance.getClass());
-		assertNotNull(Classes.getFieldValue(invoker, "interceptor"));
-	}
-
-	@Test
-	public void interceptedInvoker_Invoke() throws Exception {
-		Method method = Person.class.getDeclaredMethod("setName", String.class);
-		IManagedMethod managedMethod = new ManagedMethod(managedClass, MockInterceptor.class, method);
-		assertEquals("InterceptedInvoker", Classes.getFieldValue(managedMethod, "invoker").getClass().getSimpleName());
-
-		MockInterceptor.preInvokeProbe = 0;
-		MockInterceptor.postInvokeProbe = 0;
-
-		Person person = new Person();
-		assertEquals("John Doe", managedMethod.invoke(person, "John Doe"));
-		assertEquals("John Doe", person.name);
-
-		assertEquals(1, MockInterceptor.preInvokeProbe);
-		assertEquals(1, MockInterceptor.postInvokeProbe);
-	}
-
-	@Test
-	public void interceptedInvoker_PreInvoke() throws Exception {
-		Method method = Person.class.getDeclaredMethod("setName", String.class);
-		IManagedMethod managedMethod = new ManagedMethod(managedClass, MockPreInvoker.class, method);
-		assertEquals("InterceptedInvoker", Classes.getFieldValue(managedMethod, "invoker").getClass().getSimpleName());
-
-		MockPreInvoker.exception = false;
-		MockPreInvoker.invokeProbe = 0;
-
-		Person person = new Person();
-		assertEquals("John Doe", managedMethod.invoke(person, "John Doe"));
-		assertEquals("John Doe", person.name);
-
-		assertEquals(1, MockPreInvoker.invokeProbe);
-	}
-
-	@Test
-	public void interceptedInvoker_PostInvoke() throws Exception {
-		Method method = Person.class.getDeclaredMethod("setName", String.class);
-		IManagedMethod managedMethod = new ManagedMethod(managedClass, MockPostInvoker.class, method);
-		assertEquals("InterceptedInvoker", Classes.getFieldValue(managedMethod, "invoker").getClass().getSimpleName());
-
-		MockPostInvoker.exception = false;
-		MockPostInvoker.invokeProbe = 0;
-
-		Person person = new Person();
-		assertEquals("John Doe", managedMethod.invoke(person, "John Doe"));
-		assertEquals("John Doe", person.name);
-
-		assertEquals(1, MockPostInvoker.invokeProbe);
-	}
-
-	@Test(expected = InvocationException.class)
-	public void interceptedInvoker_PreInvokeException() throws Exception {
-		Method method = Person.class.getDeclaredMethod("setName", String.class);
-		IManagedMethod managedMethod = new ManagedMethod(managedClass, MockPreInvoker.class, method);
-		assertEquals("InterceptedInvoker", Classes.getFieldValue(managedMethod, "invoker").getClass().getSimpleName());
-
-		MockPreInvoker.exception = true;
-		MockPreInvoker.invokeProbe = 0;
-		managedMethod.invoke(new Person(), "John Doe");
-	}
-
-	@Test(expected = InvocationException.class)
-	public void interceptedInvoker_PostInvokeException() throws Exception {
-		Method method = Person.class.getDeclaredMethod("setName", String.class);
-		IManagedMethod managedMethod = new ManagedMethod(managedClass, MockPostInvoker.class, method);
-		assertEquals("InterceptedInvoker", Classes.getFieldValue(managedMethod, "invoker").getClass().getSimpleName());
-
-		MockPostInvoker.exception = true;
-		MockPostInvoker.invokeProbe = 0;
-		managedMethod.invoke(new Person(), "John Doe");
 	}
 
 	@Test
@@ -577,6 +486,11 @@ public class ManagedMethodUnitTest {
 		@Override
 		public IContainer getContainer() {
 			return container;
+		}
+
+		@Override
+		public Collection<IContainerService> getServices() {
+			return Collections.emptySet();
 		}
 
 		@Override
