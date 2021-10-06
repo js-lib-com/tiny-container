@@ -22,7 +22,6 @@ import javax.annotation.Resource;
 import javax.annotation.security.DenyAll;
 import javax.annotation.security.PermitAll;
 import javax.annotation.security.RolesAllowed;
-import javax.ejb.Asynchronous;
 import javax.ejb.Remote;
 import javax.ejb.Schedule;
 import javax.ejb.Singleton;
@@ -586,26 +585,6 @@ public final class ManagedClass implements IManagedClass {
 
 			if (instanceType.isPROXY() && managedMethod == null) {
 				managedMethod = new ManagedMethod(this, interfaceMethod);
-			}
-
-			// handle asynchronous mode
-			// 1. instance type should be PROXY or managed class should be flagged for remote access
-			// 2. transactional method cannot be executed asynchronously
-			// 3. asynchronous method should be void
-
-			boolean asynchronousMethod = hasAnnotation(method, Asynchronous.class);
-			if (asynchronousMethod) {
-				if (!instanceType.isPROXY() && !remotelyAccessible) {
-					throw new BugError("Not supported instance type |%s| for asynchronous method |%s|.", instanceType, method);
-				}
-				if (!Types.isVoid(method.getReturnType())) {
-					throw new BugError("Asynchronous method |%s| must be void.", method);
-				}
-
-				// at this point either instance type is PROXY or remote flag is true; checked by above bug error
-				// both conditions has been already processed with managed method creation
-				// so managed method must be already created
-				managedMethod.setAsynchronous(asynchronousMethod);
 			}
 
 			for (IContainerService service : container.getServices()) {

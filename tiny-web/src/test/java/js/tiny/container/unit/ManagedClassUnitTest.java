@@ -318,18 +318,6 @@ public class ManagedClassUnitTest {
 		getManagedClass(config(config));
 	}
 
-	@Test(expected = BugError.class)
-	public void asyncReturn() throws Exception {
-		String config = "<test class='js.tiny.container.unit.ManagedClassUnitTest$AsyncReturn' />";
-		getManagedClass(config(config));
-	}
-
-	@Test(expected = BugError.class)
-	public void asyncPOJO() throws Exception {
-		String config = "<test class='js.tiny.container.unit.ManagedClassUnitTest$AsyncPOJO' />";
-		getManagedClass(config(config));
-	}
-
 	@Test(expected = ConfigException.class)
 	public void managedLifeCycleWithBadScope() throws Exception {
 		String config = "<test class='js.tiny.container.unit.ManagedClassUnitTest$CarImpl' interface='js.tiny.container.unit.ManagedClassUnitTest$Car' scope='THREAD' />";

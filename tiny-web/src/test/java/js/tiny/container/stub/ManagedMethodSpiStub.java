@@ -52,11 +52,6 @@ public class ManagedMethodSpiStub implements IManagedMethod {
 	}
 
 	@Override
-	public boolean isAsynchronous() {
-		throw new UnsupportedOperationException("isAsynchronous()");
-	}
-
-	@Override
 	public IManagedClass getDeclaringClass() {
 		throw new UnsupportedOperationException("getDeclaringClass()");
 	}

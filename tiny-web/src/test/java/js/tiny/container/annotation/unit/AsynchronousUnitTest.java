@@ -25,6 +25,7 @@ import js.util.Classes;
 import js.util.Strings;
 
 @SuppressWarnings("unused")
+@Ignore
 public class AsynchronousUnitTest {
 	/** Valid asynchronous method on managed class of {@link InstanceType#PROXY} type. */
 	@Test

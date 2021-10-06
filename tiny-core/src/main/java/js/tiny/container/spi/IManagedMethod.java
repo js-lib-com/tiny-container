@@ -5,10 +5,8 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 
 import javax.annotation.security.PermitAll;
-import javax.ejb.Asynchronous;
 import javax.ejb.Remote;
 
-import js.lang.BugError;
 import js.lang.InvocationException;
 import js.tiny.container.InvocationMeter;
 import js.tiny.container.core.SecurityContext;
@@ -103,16 +101,6 @@ public interface IManagedMethod {
 	 * @return true if this managed method is unchecked, that is, can be accessed remotely without authorization.
 	 */
 	boolean isUnchecked();
-
-	/**
-	 * Test if this managed method is asynchronous. A managed method is asynchronous if is tagged so using {@link Asynchronous}
-	 * annotation. An asynchronous managed method is executed in a separated execution thread. It is considered a flaw in logic
-	 * if an asynchronous managed method has a return type, i.e. different from void. Implementation should rise
-	 * {@link BugError} if encounter such condition.
-	 * 
-	 * @return true if this managed method is asynchronous.
-	 */
-	boolean isAsynchronous();
 
 	<T extends IContainerServiceMeta> T getServiceMeta(Class<T> type);
 

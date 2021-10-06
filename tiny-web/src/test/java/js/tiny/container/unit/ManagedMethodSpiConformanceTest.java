@@ -88,15 +88,6 @@ public class ManagedMethodSpiConformanceTest {
 		assertTrue(getterManagedMethod.isUnchecked());
 	}
 
-	@Test
-	public void isAsynchronous() throws Exception {
-		assertFalse(getterManagedMethod.isAsynchronous());
-		assertEquals("DefaultInvoker", Classes.getFieldValue(getterManagedMethod, "invoker").getClass().getSimpleName());
-		Classes.invoke(getterManagedMethod, "setAsynchronous", true);
-		assertTrue(getterManagedMethod.isAsynchronous());
-		assertEquals("AsyncInvoker", Classes.getFieldValue(getterManagedMethod, "invoker").getClass().getSimpleName());
-	}
-
 	// --------------------------------------------------------------------------------------------
 	// FIXTURE
 

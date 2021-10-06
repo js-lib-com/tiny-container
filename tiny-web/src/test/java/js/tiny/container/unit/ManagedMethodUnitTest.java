@@ -70,7 +70,6 @@ public class ManagedMethodUnitTest {
 		assertFalse(managedMethod.isVoid());
 		assertFalse(managedMethod.isRemotelyAccessible());
 		assertFalse(managedMethod.isUnchecked());
-		assertFalse(managedMethod.isAsynchronous());
 		assertEquals("js.tiny.container.unit.ManagedMethodUnitTest$Person#setName(String)", managedMethod.toString());
 	}
 
@@ -119,56 +118,11 @@ public class ManagedMethodUnitTest {
 	}
 
 	@Test
-	public void setAsynchronous() throws Exception {
-		IManagedMethod managedMethod = getManagedMethod();
-
-		assertFalse(managedMethod.isAsynchronous());
-		assertEquals("DefaultInvoker", Classes.getFieldValue(managedMethod, "invoker").getClass().getSimpleName());
-
-		Classes.invoke(managedMethod, "setAsynchronous", false);
-		assertFalse(managedMethod.isAsynchronous());
-		assertEquals("DefaultInvoker", Classes.getFieldValue(managedMethod, "invoker").getClass().getSimpleName());
-
-		Classes.invoke(managedMethod, "setAsynchronous", true);
-		assertTrue(managedMethod.isAsynchronous());
-		assertEquals("AsyncInvoker", Classes.getFieldValue(managedMethod, "invoker").getClass().getSimpleName());
-	}
-
-	@Test
 	public void getMeter() throws Exception {
 		IManagedMethod managedMethod = getManagedMethod();
 		assertNull(Classes.getFieldValue(managedMethod, "meter"));
 		assertNotNull(Classes.invoke(managedMethod, "getMeter"));
 		assertNotNull(Classes.getFieldValue(managedMethod, "meter"));
-	}
-
-	// --------------------------------------------------------------------------------------------
-	// INVOKERS
-
-	@Test
-	public void defaultInvoker() throws Exception {
-		IManagedMethod managedMethod = getManagedMethod();
-		assertEquals("DefaultInvoker", Classes.getFieldValue(managedMethod, "invoker").getClass().getSimpleName());
-
-		Person person = new Person();
-		assertEquals("John Doe", managedMethod.invoke(person, "John Doe"));
-		assertEquals("John Doe", person.name);
-	}
-
-	@Test
-	public void asyncInvoker() throws Exception {
-		IManagedMethod managedMethod = getManagedMethod();
-		Classes.invoke(managedMethod, "setAsynchronous", true);
-		assertTrue(managedMethod.isAsynchronous());
-		assertEquals("AsyncInvoker", Classes.getFieldValue(managedMethod, "invoker").getClass().getSimpleName());
-
-		Person person = new Person();
-		assertNull(managedMethod.invoke(person, "John Doe"));
-		// wait for asynchronous invoker to finish; there is no way to join asynchronous invoker
-		// next hard coded value is critical and depends on system performance and loading
-		// hopefully 500 is the right value; at least is a round number
-		sleep(500);
-		assertEquals("John Doe", person.name);
 	}
 
 	// --------------------------------------------------------------------------------------------

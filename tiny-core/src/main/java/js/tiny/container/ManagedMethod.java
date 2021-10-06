@@ -13,9 +13,7 @@ import java.util.Map;
 import java.util.Set;
 
 import javax.ejb.Remote;
-import javax.interceptor.Interceptors;
 
-import js.lang.AsyncTask;
 import js.lang.BugError;
 import js.lang.InvocationException;
 import js.log.Log;
@@ -72,9 +70,6 @@ public final class ManagedMethod implements IManagedMethod, IMethodInvocationPro
 	 */
 	private boolean remotelyAccessible;
 
-	/** Flag for asynchronous method execution. If true, method invocation is delegated to {@link AsyncInvoker}. */
-	private boolean asynchronous;
-
 	/**
 	 * EJB3.1 17.3.2.2 - The Bean Provider or Application Assembler can indicate that all roles are permitted to execute one or
 	 * more specified methods (i.e., the methods should not be “checked” for authorization prior to invocation by the
@@ -85,13 +80,6 @@ public final class ManagedMethod implements IManagedMethod, IMethodInvocationPro
 
 	/** There is at least one metadata attribute related to security. */
 	private boolean securityEnabled;
-
-	/**
-	 * Invoker strategy, initialized at this managed method construction. If managed method is created without interceptor
-	 * class, which is the commons case, this invoker is initialized to {@link DefaultInvoker}; if managed method is created
-	 * with interceptor class uses {@link InterceptedInvoker}.
-	 */
-	private Invoker invoker;
 
 	/** Managed method signature, mainly for debugging. */
 	private final String signature;
@@ -132,8 +120,6 @@ public final class ManagedMethod implements IManagedMethod, IMethodInvocationPro
 		this.declaringClass = declaringClass;
 		this.method = method;
 		this.method.setAccessible(true);
-
-		invoker = new DefaultInvoker();
 
 		List<String> formalParameters = new ArrayList<String>();
 		for (Class<?> formalParameter : method.getParameterTypes()) {
@@ -242,7 +228,7 @@ public final class ManagedMethod implements IManagedMethod, IMethodInvocationPro
 
 		if (meter == null) {
 			try {
-				return invoker.invoke(methodInvocation.instance(), arguments);
+				return method.invoke(methodInvocation.instance(), arguments);
 			} catch (InvocationTargetException e) {
 				throw new InvocationException(e.getTargetException());
 			} catch (IllegalAccessException e) {
@@ -254,7 +240,7 @@ public final class ManagedMethod implements IManagedMethod, IMethodInvocationPro
 		meter.startProcessing();
 		Object returnValue = null;
 		try {
-			returnValue = invoker.invoke(methodInvocation.instance(), arguments);
+			returnValue = method.invoke(methodInvocation.instance(), arguments);
 		} catch (InvocationTargetException e) {
 			meter.incrementExceptionsCount();
 			throw new InvocationException(e.getTargetException());
@@ -281,11 +267,6 @@ public final class ManagedMethod implements IManagedMethod, IMethodInvocationPro
 		return unchecked;
 	}
 
-	@Override
-	public boolean isAsynchronous() {
-		return asynchronous;
-	}
-
 	/**
 	 * Returns a string describing this managed method.
 	 */
@@ -298,105 +279,6 @@ public final class ManagedMethod implements IManagedMethod, IMethodInvocationPro
 	@Override
 	public <T extends IContainerServiceMeta> T getServiceMeta(Class<T> type) {
 		return (T) serviceMetas.get(type);
-	}
-
-	// --------------------------------------------------------------------------------------------
-	// INVOKER CLASSES
-
-	/**
-	 * Nested utility interface used to invoke outer managed method while adding method level services. This interface follows a
-	 * strategy pattern and is used to define behaviors implemented by inner classes:
-	 * <ol>
-	 * <li>{@link DefaultInvoker} default implementation used when no additional services are defined,
-	 * <li>{@link InterceptedInvoker} implements the actual intercepted invocation for managed methods tagged with
-	 * {@link Interceptors} annotation,
-	 * <li>{@link AsyncInvoker} execute method in a separated thread of execution.
-	 * </ol>
-	 * 
-	 * @author Iulian Rotaru
-	 * @version final
-	 */
-	private static interface Invoker {
-		/**
-		 * Invoke managed method adding specific services. Services are implementation specific.
-		 * 
-		 * @param object instance on which managed method is invoked,
-		 * @param arguments invocation arguments.
-		 * @return value returned by managed method execution.
-		 * @throws IllegalArgumentException if invocation arguments does not match method formal parameters,
-		 * @throws IllegalAccessException never happen but needed by Java method signature,
-		 * @throws InvocationTargetException if method invocation fails.
-		 */
-		Object invoke(Object object, Object[] arguments) throws IllegalArgumentException, IllegalAccessException, InvocationTargetException;
-	}
-
-	/**
-	 * Default invoker used when no additional services are defined on outer managed method. This is the default {@link Invoker}
-	 * implementation.
-	 * 
-	 * @author Iulian Rotaru
-	 * @version final
-	 */
-	private final class DefaultInvoker implements Invoker {
-		/**
-		 * Invoke Java reflective method from outer managed method without any fuss.
-		 * 
-		 * @param object instance on which method is invoked,
-		 * @param args invocation arguments.
-		 * @return value returned by method execution.
-		 * @throws IllegalArgumentException if invocation arguments does not match method formal parameters,
-		 * @throws IllegalAccessException never happen but needed by Java method signature,
-		 * @throws InvocationTargetException if method invocation fails.
-		 */
-		@Override
-		public Object invoke(Object object, Object[] args) throws IllegalArgumentException, IllegalAccessException, InvocationTargetException {
-			return ManagedMethod.this.method.invoke(object, args);
-		}
-	};
-
-	/**
-	 * Execute {@link Invoker} instance in a separated thread of execution. This invoker implementation is a decorator; it gets
-	 * an externally created invoker and adds asynchronous execution.
-	 * <p>
-	 * Current implementation is based on {@link AsyncTask} and has no means to <code>join</code> after starting asynchronous
-	 * tasks. If invoker executed asynchronously fails the only option to be notified is application logger.
-	 * 
-	 * @version final
-	 */
-	private final class AsyncInvoker implements Invoker {
-		/** Reference to externally created invoker to be executed asynchronously. */
-		private Invoker invoker;
-
-		/**
-		 * Create asynchronous invoker for given invoker instance.
-		 * 
-		 * @param invoker invoker instance to be executed asynchronously.
-		 */
-		public AsyncInvoker(Invoker invoker) {
-			this.invoker = invoker;
-		}
-
-		/**
-		 * Create and start a new asynchronous task to execute {@link #invoker}. This method returns immediately whit always
-		 * null value and does not throw any exception. If underlying invoker execution fail for any reason the only option to
-		 * be notified is application logger.
-		 * 
-		 * @param object instance on which method is invoked,
-		 * @param args invocation arguments.
-		 * @return always returns null.
-		 */
-		@Override
-		public Object invoke(final Object object, final Object[] args) {
-			AsyncTask<Void> asyncTask = new AsyncTask<Void>() {
-				@Override
-				protected Void execute() throws Throwable {
-					AsyncInvoker.this.invoker.invoke(object, args);
-					return null;
-				}
-			};
-			asyncTask.start();
-			return null;
-		}
 	}
 
 	// --------------------------------------------------------------------------------------------
@@ -563,19 +445,6 @@ public final class ManagedMethod implements IManagedMethod, IMethodInvocationPro
 
 	void setUnchecked(boolean unchecked) {
 		this.unchecked = unchecked;
-	}
-
-	/**
-	 * Set asynchronous mode. If <code>asynchronous</code> arguments is true, internal {@link #invoker} is decorated with
-	 * {@link AsyncInvoker}; this process is irreversible.
-	 * 
-	 * @param asynchronous asynchronous mode flag.
-	 */
-	void setAsynchronous(boolean asynchronous) {
-		this.asynchronous = asynchronous;
-		if (asynchronous) {
-			invoker = new AsyncInvoker(invoker);
-		}
 	}
 
 	@Override
