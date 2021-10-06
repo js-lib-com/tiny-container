@@ -1,8 +1,7 @@
-package js.tiny.container;
+package js.tiny.container.perfmon;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 
 import js.lang.Config;
@@ -10,8 +9,6 @@ import js.lang.Configurable;
 import js.lang.ManagedLifeCycle;
 import js.log.Log;
 import js.log.LogFactory;
-import js.tiny.container.core.AppContext;
-import js.tiny.container.core.Factory;
 import js.tiny.container.spi.IContainer;
 import js.tiny.container.spi.IManagedMethod;
 
@@ -48,17 +45,18 @@ import js.tiny.container.spi.IManagedMethod;
  * </pre>
  * 
  * @author Iulian Rotaru
- * @version draft
  */
-final class Observer implements Configurable, ManagedLifeCycle, Runnable {
+class Observer implements Configurable, ManagedLifeCycle, Runnable {
 	/** Class logger. */
 	private static final Log log = LogFactory.getLog(Observer.class);
 
-	/** Meters logger. Into log configuration this logger can be retrieved via {@link Meter} class. */
-	private static final Log meterLog = LogFactory.getLog(Meter.class);
+	/** Meters logger. Into log configuration this logger can be retrieved via {@link IMeter} class. */
+	private static final Log meterLog = LogFactory.getLog(IMeter.class);
 
 	/** Timeout for observer thread stop. */
 	private static final int THREAD_STOP_TIMEOUT = 4000;
+
+	private final IContainer container;
 
 	/** Application name displayed into meters dump header. */
 	private final String appName;
@@ -77,9 +75,10 @@ final class Observer implements Configurable, ManagedLifeCycle, Runnable {
 	 * 
 	 * @param app parent application.
 	 */
-	private Observer(AppContext app) {
-		log.trace("Observer(App)");
-		this.appName = app.getAppName();
+	public Observer(IContainer container) {
+		log.trace("Observer(IContainer)");
+		this.container = container;
+		this.appName = "test";// app.getAppName();
 	}
 
 	@Override
@@ -124,16 +123,11 @@ final class Observer implements Configurable, ManagedLifeCycle, Runnable {
 				}
 			}
 
-			List<InvocationMeter> invocationMeters = getMeters();
-			Collections.sort(invocationMeters, new Comparator<InvocationMeter>() {
-				@Override
-				public int compare(InvocationMeter m1, InvocationMeter m2) {
-					return ((Long) m1.getMaxProcessingTime()).compareTo(m2.getMaxProcessingTime());
-				}
-			});
+			List<IInvocationMeter> invocationMeters = getMeters();
+			Collections.sort(invocationMeters, (m1, m2) -> ((Long) m1.getMaxProcessingTime()).compareTo(m2.getMaxProcessingTime()));
 
 			meterLog.info("Start observer meters dump for %s:", appName);
-			for (InvocationMeter meter : invocationMeters) {
+			for (IInvocationMeter meter : invocationMeters) {
 				if (meter.getInvocationsCount() != 0) {
 					meterLog.info(meter.toExternalForm());
 				}
@@ -151,11 +145,11 @@ final class Observer implements Configurable, ManagedLifeCycle, Runnable {
 	 * 
 	 * @return application invocation meters.
 	 */
-	private static List<InvocationMeter> getMeters() {
-		List<InvocationMeter> invocationMeters = new ArrayList<InvocationMeter>();
-		IContainer container = (IContainer) Factory.getAppFactory();
+	private List<IInvocationMeter> getMeters() {
+		List<IInvocationMeter> invocationMeters = new ArrayList<IInvocationMeter>();
 		for (IManagedMethod managedMethod : container.getManagedMethods()) {
-			invocationMeters.add(((ManagedMethod) managedMethod).getMeter());
+			Meter meter = managedMethod.getServiceMeta(Meter.class);
+			invocationMeters.add(meter);
 		}
 		return invocationMeters;
 	}

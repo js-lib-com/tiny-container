@@ -20,6 +20,7 @@ import js.log.Log;
 import js.log.LogFactory;
 import js.tiny.container.core.SecurityContext;
 import js.tiny.container.interceptor.Interceptor;
+import js.tiny.container.perfmon.IInvocationMeter;
 import js.tiny.container.spi.AuthorizationException;
 import js.tiny.container.spi.IContainer;
 import js.tiny.container.spi.IContainerService;
@@ -37,7 +38,7 @@ import js.util.Types;
  * Managed method provides method level services. A managed method is a thin wrapper around Java reflective method. It has
  * methods to retrieve internal state and miscellaneous flags but the real added piece of functionality is
  * {@link #invoke(Object, Object...)} method. It is in charge, of course beside executing wrapped Java method, with interceptors
- * and invocation meters handling. For details please see {@link Interceptor} and {@link InvocationMeter} interfaces.
+ * and invocation meters handling. For details please see {@link Interceptor} and {@link IInvocationMeter} interfaces.
  * 
  * @author Iulian Rotaru
  * @version final
@@ -47,7 +48,7 @@ public final class ManagedMethod implements IManagedMethod, IMethodInvocationPro
 	private static final Log log = LogFactory.getLog(IManagedMethod.class);
 
 	/** Format string for managed method simple name, without class name. */
-	private static final String SIMPLE_NAME_FORMAT = "%s(%s)";
+	static final String SIMPLE_NAME_FORMAT = "%s(%s)";
 
 	/** Format string for managed method fully qualified name. */
 	private static final String QUALIFIED_NAME_FORMAT = "%s#" + SIMPLE_NAME_FORMAT;
@@ -86,13 +87,6 @@ public final class ManagedMethod implements IManagedMethod, IMethodInvocationPro
 
 	/** Method invocation arguments processor. */
 	private final ArgumentsProcessor argumentsProcessor;
-
-	/**
-	 * Optional invocation meter used to record invocations and errors count and processing time. By default meter is not used
-	 * and is null. It is created on the fly by {@link #getMeter()}, supposedly called only if application instrumentation is
-	 * active.
-	 */
-	private Meter meter;
 
 	private final Map<Class<? extends IContainerServiceMeta>, IContainerServiceMeta> serviceMetas = new HashMap<>();
 
@@ -147,6 +141,11 @@ public final class ManagedMethod implements IManagedMethod, IMethodInvocationPro
 	@Override
 	public String getName() {
 		return method.getName();
+	}
+
+	@Override
+	public String getSignature() {
+		return signature;
 	}
 
 	@Override
@@ -213,6 +212,7 @@ public final class ManagedMethod implements IManagedMethod, IMethodInvocationPro
 		// it can be null if on invocation chain there is Proxy invoked with no arguments
 		Object[] arguments = argumentsProcessor.preProcessArguments(this, methodInvocation.arguments());
 
+		// TODO: deprecated ?
 		if (methodInvocation.instance() instanceof Proxy) {
 			// if object is a Java Proxy does not apply method services implemented by below block
 			// instead directly invoke Java method on the Proxy instance
@@ -226,30 +226,13 @@ public final class ManagedMethod implements IManagedMethod, IMethodInvocationPro
 			}
 		}
 
-		if (meter == null) {
-			try {
-				return method.invoke(methodInvocation.instance(), arguments);
-			} catch (InvocationTargetException e) {
-				throw new InvocationException(e.getTargetException());
-			} catch (IllegalAccessException e) {
-				throw new BugError("Illegal access on method with accessibility set true.");
-			}
-		}
-
-		meter.incrementInvocationsCount();
-		meter.startProcessing();
-		Object returnValue = null;
 		try {
-			returnValue = method.invoke(methodInvocation.instance(), arguments);
+			return method.invoke(methodInvocation.instance(), arguments);
 		} catch (InvocationTargetException e) {
-			meter.incrementExceptionsCount();
 			throw new InvocationException(e.getTargetException());
 		} catch (IllegalAccessException e) {
-			// this condition is a bug; do not increment exceptions count
 			throw new BugError("Illegal access on method with accessibility set true.");
 		}
-		meter.stopProcessing();
-		return returnValue;
 	}
 
 	@Override
@@ -279,156 +262,6 @@ public final class ManagedMethod implements IManagedMethod, IMethodInvocationPro
 	@Override
 	public <T extends IContainerServiceMeta> T getServiceMeta(Class<T> type) {
 		return (T) serviceMetas.get(type);
-	}
-
-	// --------------------------------------------------------------------------------------------
-	// INVOCATION METER
-
-	/**
-	 * Invocation meters implementation for managed methods. Standard usage pattern is to update meter state on
-	 * {@link ManagedMethod#invoke(Object, Object...)} execution, like in sample code below. Also, not present in pseudo-code,
-	 * increment exceptions count if method logic fails.
-	 * 
-	 * <pre>
-	 * class ManagedMethod {
-	 * 	void invoke() {
-	 * 		this.meter.incrementInvocationsCount();
-	 * 		this.meter.startProcessing();
-	 * 		// process method logic
-	 * 		this.meter.stopProcessing();
-	 * 	}
-	 * }
-	 * </pre>
-	 * 
-	 * Managed method meter class implements {@link InvocationMeter} interface for meter counters reading.
-	 * 
-	 * @author Iulian Rotaru
-	 * @version final
-	 */
-	private static class Meter implements InvocationMeter {
-		/** Declaring class for instrumented managed method. */
-		private Class<?> declaringClass;
-
-		/** Instrumented method signature. */
-		private String methodSignature;
-
-		/** Method invocations count. Updated by {@link #incrementInvocationsCount()}. */
-		private long invocationsCount;
-
-		/** Method exceptions count. Updated by {@link #incrementExceptionsCount()}. */
-		private long exceptionsCount;
-
-		/** Total processing time. */
-		private long totalProcessingTime;
-
-		/** Maximum value of processing time. */
-		private long maxProcessingTime;
-
-		/** Timestamp for processing time recording start. */
-		private long startProcessingTimestamp;
-
-		/**
-		 * Construct meter instance. Store declaring class and initialize method signature.
-		 * 
-		 * @param method instrumented method.
-		 */
-		Meter(Method method) {
-			this.declaringClass = method.getDeclaringClass();
-
-			List<String> formalParameters = new ArrayList<String>();
-			for (Class<?> formalParameter : method.getParameterTypes()) {
-				formalParameters.add(formalParameter.getSimpleName());
-			}
-
-			this.methodSignature = String.format(SIMPLE_NAME_FORMAT, method.getName(), Strings.join(formalParameters, ','));
-		}
-
-		@Override
-		public Class<?> getMethodDeclaringClass() {
-			return declaringClass;
-		}
-
-		@Override
-		public String getMethodSignature() {
-			return methodSignature;
-		}
-
-		@Override
-		public long getInvocationsCount() {
-			return invocationsCount;
-		}
-
-		@Override
-		public long getExceptionsCount() {
-			return exceptionsCount;
-		}
-
-		@Override
-		public long getTotalProcessingTime() {
-			return totalProcessingTime;
-		}
-
-		@Override
-		public long getMaxProcessingTime() {
-			return maxProcessingTime;
-		}
-
-		@Override
-		public void reset() {
-			invocationsCount = 0;
-			exceptionsCount = 0;
-			totalProcessingTime = 0;
-			maxProcessingTime = 0;
-		}
-
-		@Override
-		public String toExternalForm() {
-			long totalProcessingTime = this.totalProcessingTime / 1000000;
-			long averageProcessingTime = invocationsCount != 0 ? totalProcessingTime / invocationsCount : 0;
-
-			StringBuilder sb = new StringBuilder();
-			sb.append(declaringClass.getCanonicalName());
-			sb.append("#");
-			sb.append(methodSignature);
-			sb.append(": ");
-			sb.append(invocationsCount);
-			sb.append(": ");
-			sb.append(exceptionsCount);
-			sb.append(": ");
-			sb.append(totalProcessingTime);
-			sb.append(": ");
-			sb.append(maxProcessingTime / 1000000);
-			sb.append(": ");
-			sb.append(averageProcessingTime);
-			return sb.toString();
-		}
-
-		/** Increment invocation count on every method invocation, including those failed. */
-		private void incrementInvocationsCount() {
-			++invocationsCount;
-		}
-
-		/** Increment exceptions count for every failed method invocation. */
-		private void incrementExceptionsCount() {
-			++exceptionsCount;
-		}
-
-		/**
-		 * Start recording of processing time. It is called just before method execution. Update internal
-		 * {@link #startProcessingTimestamp} to current system time.
-		 */
-		private void startProcessing() {
-			startProcessingTimestamp = System.nanoTime();
-		}
-
-		/** Stop recording of processing time and update total and maximum processing time. */
-		private void stopProcessing() {
-			long processingTime = System.nanoTime() - startProcessingTimestamp;
-			totalProcessingTime += processingTime;
-			if (maxProcessingTime < processingTime) {
-				maxProcessingTime = processingTime;
-			}
-		}
 	}
 
 	// --------------------------------------------------------------------------------------------
@@ -486,22 +319,5 @@ public final class ManagedMethod implements IManagedMethod, IMethodInvocationPro
 
 	void setSecurityEnabled(boolean securityEnabled) {
 		this.securityEnabled = securityEnabled;
-	}
-
-	/**
-	 * Enable instrumentation on the fly and return this method invocation meter.
-	 * 
-	 * @return this method invocation meter.
-	 * @see meter
-	 */
-	Meter getMeter() {
-		// creating meter on the fly is not dangerous and need not be synchronized
-		// this assumption is related to #invoke(Object, Object...) method logic
-		// if change invoke logic it may need to add synchronization here too
-
-		if (meter == null) {
-			meter = new Meter(method);
-		}
-		return meter;
 	}
 }

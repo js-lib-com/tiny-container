@@ -662,7 +662,7 @@ public final class ManagedClass implements IManagedClass {
 	@Override
 	public Class<?> getInterfaceClass() {
 		if (interfaceClasses.length > 1) {
-			throw new BugError("Attempt to treat multiple interfaces as a single one.");
+			//throw new BugError("Attempt to treat multiple interfaces as a single one.");
 		}
 		return interfaceClasses[0];
 	}

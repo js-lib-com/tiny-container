@@ -1,4 +1,4 @@
-package js.tiny.container;
+package js.tiny.container.perfmon;
 
 /**
  * Generic performance meter.
@@ -9,7 +9,7 @@ package js.tiny.container;
  * @author Iulian Rotaru
  * @version final
  */
-public interface Meter
+public interface IMeter
 {
   /**
    * Get formatted string representation of meter instance ready to persist.

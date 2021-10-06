@@ -17,6 +17,11 @@ public class ManagedMethodSpiStub implements IManagedMethod {
 	}
 
 	@Override
+	public String getSignature() {
+		throw new UnsupportedOperationException("getSignature()");
+	}
+
+	@Override
 	public Method getMethod() {
 		throw new UnsupportedOperationException("getMethod()");
 	}

@@ -311,7 +311,7 @@ public class ContainerUnitTest {
 				"<config>" + //
 				"	<managed-classes>" + //
 				"		<app class='js.tiny.container.core.App' />" + //
-				"		<observer class='js.tiny.container.Observer' />" + //
+				"		<observer class='js.tiny.container.perfmon.Observer' />" + //
 				"		<net-car class='js.tiny.container.unit.ContainerUnitTest$NetCar' />" + //
 				"		<managed-car class='js.tiny.container.unit.ContainerUnitTest$ManagedCar' />" + //
 				"		<app interface='js.tiny.container.core.App' class='js.tiny.container.unit.ContainerUnitTest$MockApp' />" + //
@@ -365,7 +365,7 @@ public class ContainerUnitTest {
 				"	<managed-classes>" + //
 				"		<app class='js.tiny.container.core.App' />" + //
 				"		<app-context interface='js.tiny.container.core.AppContext' class='js.tiny.container.unit.ContainerUnitTest$MockAppContext' />" + //
-				"		<observer class='js.tiny.container.Observer' />" + //
+				"		<observer class='js.tiny.container.perfmon.Observer' />" + //
 				"		<net-car class='js.tiny.container.unit.ContainerUnitTest$NetCar' />" + //
 				"		<managed-car class='js.tiny.container.unit.ContainerUnitTest$ManagedCar' />" + //
 				"		<app interface='js.tiny.container.core.App' class='js.tiny.container.unit.ContainerUnitTest$MockApp' />" + //

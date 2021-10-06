@@ -40,6 +40,7 @@ import js.tiny.container.core.App;
 import js.tiny.container.core.AppContext;
 import js.tiny.container.core.AppFactory;
 import js.tiny.container.interceptor.Interceptor;
+import js.tiny.container.perfmon.IInvocationMeter;
 import js.tiny.container.spi.IClassPostProcessor;
 import js.tiny.container.spi.IContainer;
 import js.tiny.container.spi.IContainerService;
@@ -119,7 +120,7 @@ import js.util.Types;
  * <dd>Invocation listeners provide a naive, but still useful AOP. There is {@link Interceptors} annotation for tagging methods
  * - declaring join points, and related interface to be implemented by interceptors, aka AOP advice. See {@link Interceptor}
  * interface for sample usage.</dd>
- * <dt>Method instrumentation. Uses {@link InvocationMeter} to monitor method invocations.</dt>
+ * <dt>Method instrumentation. Uses {@link IInvocationMeter} to monitor method invocations.</dt>
  * <dd>Every managed method has a meter that updates internal counters about execution time, invocation and exceptions count.
  * Invocation meter interface is used to collect counter values. Instrumentation manager, {@link Observer}, collects
  * periodically all managed methods counters and create report on server logger.</dd>

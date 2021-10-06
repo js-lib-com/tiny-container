@@ -1,4 +1,4 @@
-package js.tiny.container;
+package js.tiny.container.perfmon;
 
 /**
  * Method invocation meter. This meter is associated to an instrumented method and monitor processing time, invocations and
@@ -7,7 +7,7 @@ package js.tiny.container;
  * @author Iulian Rotaru
  * @version final
  */
-public interface InvocationMeter extends Meter {
+public interface IInvocationMeter extends IMeter {
 	/**
 	 * Get instrumented method declaring class. This is the class where instrumented method is declared. It can be useful to
 	 * filter meters by specific class(es).

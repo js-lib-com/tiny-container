@@ -8,9 +8,9 @@ import javax.annotation.security.PermitAll;
 import javax.ejb.Remote;
 
 import js.lang.InvocationException;
-import js.tiny.container.InvocationMeter;
 import js.tiny.container.core.SecurityContext;
 import js.tiny.container.interceptor.Interceptor;
+import js.tiny.container.perfmon.IInvocationMeter;
 
 /**
  * Managed method service provider interface. Although public, this interface is designed for library internal usage. User space
@@ -23,6 +23,8 @@ import js.tiny.container.interceptor.Interceptor;
  */
 public interface IManagedMethod {
 	String getName();
+	
+	String getSignature();
 	
 	/**
 	 * Get managed class that declares this managed method.
@@ -55,7 +57,7 @@ public interface IManagedMethod {
 
 	/**
 	 * Invoke managed method. Just delegate wrapped Java reflective method but takes care to execute {@link Interceptor}, if any
-	 * configured, and to update internal {@link InvocationMeter}.
+	 * configured, and to update internal {@link IInvocationMeter}.
 	 * 
 	 * @param object managed instance against which method is executed,
 	 * @param args invocation arguments.
