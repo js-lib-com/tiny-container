@@ -6,6 +6,7 @@ import static org.junit.Assert.assertTrue;
 
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import js.lang.BugError;
@@ -42,6 +43,7 @@ public class TransactionalResourceUnitTest {
 	}
 
 	@Test(expected = BugError.class)
+	@Ignore
 	public void constructorWithMissingTransactionManager() {
 		createTransactionalResource(factory);
 	}

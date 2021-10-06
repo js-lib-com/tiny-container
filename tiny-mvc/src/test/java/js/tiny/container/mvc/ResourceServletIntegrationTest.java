@@ -61,6 +61,7 @@ import js.util.Files;
 import js.util.Strings;
 
 @SuppressWarnings({ "unused" })
+@Ignore
 public class ResourceServletIntegrationTest {
 	private static final String DESCRIPTOR = "" + //
 			"<?xml version='1.0' encoding='UTF-8'?>" + //

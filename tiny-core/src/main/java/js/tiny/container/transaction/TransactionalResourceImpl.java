@@ -56,7 +56,7 @@ final class TransactionalResourceImpl implements TransactionalResource, Optional
 		// uses AppFactory instead of Classes.loadService to acquire transaction manager since need scope management
 		this.transactionManager = appFactory.getOptionalInstance(TransactionManager.class);
 		if (this.transactionManager == null) {
-			throw new BugError("Transaction manager service not found. Ensure there is |%s| service provider on run-time.", TransactionManager.class);
+			//throw new BugError("Transaction manager service not found. Ensure there is |%s| service provider on run-time.", TransactionManager.class);
 		}
 	}
 
@@ -70,8 +70,10 @@ final class TransactionalResourceImpl implements TransactionalResource, Optional
 	@Override
 	public void config(Config config) throws Exception {
 		log.trace("config(Config.Element)");
+		if(transactionManager!=null) {
 		log.debug("Configure transaction manager |%s|.", transactionManager.getClass());
 		transactionManager.config(config);
+		}
 	}
 
 	/** Destroy transaction manager and release all resources like caches and connection pools. */

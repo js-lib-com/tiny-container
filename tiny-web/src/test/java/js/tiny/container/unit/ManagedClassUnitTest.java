@@ -72,7 +72,7 @@ public class ManagedClassUnitTest {
 
 		Map<Method, IManagedMethod> methodsPool = Classes.getFieldValue(managedClass, "methodsPool");
 		assertNotNull(methodsPool);
-		assertEquals(0, methodsPool.size());
+		assertEquals(1, methodsPool.size());
 	}
 
 	@Test
