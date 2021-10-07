@@ -53,7 +53,6 @@ import js.tiny.container.spi.IManagedClass;
 import js.tiny.container.spi.IManagedMethod;
 import js.tiny.container.stub.AppContextStub;
 import js.tiny.container.stub.ContainerStub;
-import js.transaction.TransactionManager;
 import js.util.Classes;
 
 @SuppressWarnings({ "unchecked", "rawtypes", "unused", "hiding" })
@@ -667,7 +666,7 @@ public class ContainerUnitTest {
 			++classesCount;
 		}
 		// this hard coded value depends on lib-descriptor.xml
-		assertEquals(12, classesCount);
+		assertEquals(9, classesCount);
 	}
 
 	@Test

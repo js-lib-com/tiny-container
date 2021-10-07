@@ -36,7 +36,6 @@ import js.tiny.container.servlet.TinyConfigBuilder;
 import js.tiny.container.spi.IManagedClass;
 import js.tiny.container.spi.IManagedMethod;
 import js.tiny.container.stub.ContainerStub;
-import js.transaction.Transactional;
 import js.util.Classes;
 
 public class ManagedClassSpiConformanceTest {
@@ -294,14 +293,6 @@ public class ManagedClassSpiConformanceTest {
 		@Override
 		public String getModel() {
 			return "opel";
-		}
-	}
-
-	@Transactional
-	private static class TransactionalCar implements Car {
-		@Override
-		public String getModel() {
-			return null;
 		}
 	}
 

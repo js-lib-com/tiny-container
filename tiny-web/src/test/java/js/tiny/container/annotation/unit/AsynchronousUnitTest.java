@@ -20,7 +20,6 @@ import js.tiny.container.ManagedClass;
 import js.tiny.container.spi.IManagedClass;
 import js.tiny.container.spi.IManagedMethod;
 import js.tiny.container.stub.ContainerStub;
-import js.transaction.Transactional;
 import js.util.Classes;
 import js.util.Strings;
 
@@ -205,13 +204,6 @@ public class AsynchronousUnitTest {
 
 		@Asynchronous
 		private void privateMethod5() {
-		}
-	}
-
-	@Transactional
-	private static class MockClass6 implements MockInterface1 {
-		@Asynchronous
-		public void method6() {
 		}
 	}
 

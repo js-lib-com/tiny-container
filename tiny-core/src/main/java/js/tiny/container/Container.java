@@ -48,8 +48,6 @@ import js.tiny.container.spi.IContainerServiceProvider;
 import js.tiny.container.spi.IInstancePostProcessor;
 import js.tiny.container.spi.IManagedClass;
 import js.tiny.container.spi.IManagedMethod;
-//import js.tiny.container.timer.CalendarTimerService;
-import js.transaction.Transaction;
 import js.util.Classes;
 import js.util.Params;
 import js.util.Types;

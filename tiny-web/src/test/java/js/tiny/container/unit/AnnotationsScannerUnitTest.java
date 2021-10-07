@@ -18,7 +18,6 @@ import org.junit.Test;
 import js.tiny.container.ManagedClass;
 import js.tiny.container.interceptor.PreInvokeInterceptor;
 import js.tiny.container.spi.IManagedMethod;
-import js.transaction.Transactional;
 import js.util.Classes;
 
 /**
@@ -29,40 +28,34 @@ import js.util.Classes;
 public class AnnotationsScannerUnitTest {
 	@Test
 	public void getClassAnnotation() throws Exception {
-		assertNotNull(invokeStatic("getAnnotation", AnnotatedClass.class, Transactional.class));
 		assertNull(invokeStatic("getAnnotation", AnnotatedClass.class, Remote.class));
 	}
 
 	@Test
 	public void hasClassAnnotation() throws Exception {
-		assertTrue((boolean) invokeStatic("hasAnnotation", AnnotatedClass.class, Transactional.class));
 		assertFalse((boolean) invokeStatic("hasAnnotation", AnnotatedClass.class, Remote.class));
 	}
 
 	@Test
 	public void getInheritedClassAnnotation() throws Exception {
 		assertNotNull(invokeStatic("getAnnotation", ClassInheritedAnnotation.class, Remote.class));
-		assertNull(invokeStatic("getAnnotation", ClassInheritedAnnotation.class, Transactional.class));
 	}
 
 	@Test
 	public void hasInheritedClassAnnotation() throws Exception {
 		assertTrue((boolean) invokeStatic("hasAnnotation", ClassInheritedAnnotation.class, Remote.class));
-		assertFalse((boolean) invokeStatic("hasAnnotation", ClassInheritedAnnotation.class, Transactional.class));
 	}
 
 	@Test
 	public void getMethodAnnotation() throws Exception {
 		Method method = AnnotatedMethod.class.getMethod("exec");
 		assertNotNull(invokeStatic("getAnnotation", method, Asynchronous.class));
-		assertNull(invokeStatic("getAnnotation", method, Transactional.class));
 	}
 
 	@Test
 	public void hasMethodAnnotation() throws Exception {
 		Method method = AnnotatedMethod.class.getMethod("exec");
 		assertTrue((boolean) invokeStatic("hasAnnotation", method, Asynchronous.class));
-		assertFalse((boolean) invokeStatic("hasAnnotation", method, Transactional.class));
 	}
 
 	@Test
@@ -105,7 +98,6 @@ public class AnnotationsScannerUnitTest {
 	// --------------------------------------------------------------------------------------------
 	// FIXTURE
 
-	@Transactional
 	@Interceptors(InterceptorClass.class)
 	private static class AnnotatedClass {
 

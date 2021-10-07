@@ -82,7 +82,7 @@ final class TransactionService implements IContainerService, IMethodInvocationPr
 			return serviceChain.invokeNextProcessor(methodInvocation);
 		}
 
-		TransactionalResource transactionalResource = container.getInstance(TransactionalResource.class);
+		ITransactionalResource transactionalResource = container.getInstance(ITransactionalResource.class);
 		if (isMutable(managedMethod)) {
 			return executeMutableTransaction(transactionalResource, serviceChain, methodInvocation);
 		}
@@ -97,25 +97,21 @@ final class TransactionService implements IContainerService, IMethodInvocationPr
 	 * @return value returned by managed method.
 	 * @throws Throwable forward any error rose by method execution.
 	 */
-	private Object executeMutableTransaction(TransactionalResource transactionalResource, IMethodInvocationProcessorsChain serviceChain, IMethodInvocation methodInvocation) throws InvocationException {
-		// store transaction session on current thread via transactional resource utility
+	private Object executeMutableTransaction(ITransactionalResource transactionalResource, IMethodInvocationProcessorsChain serviceChain, IMethodInvocation methodInvocation) throws InvocationException {
+		// store resource manager owning current transaction on current thread via transactional resource utility
 		// it may happen to have multiple nested transaction on current thread
-		// since all are created by the same transactional resource, all are part of the same session
-		// and there is no harm if storeSession is invoked multiple times
-		// also performance penalty is comparable with the effort to prevent this multiple write
+
+		// since all are created by the same transactional resource, all are owned by the same resource manager, and there is no
+		// harm if storeResourceManager() is invoked multiple times; also performance penalty is comparable with the effort to
+		// prevent this multiple write
 
 		final IManagedMethod managedMethod = methodInvocation.method();
 		final Transaction transaction = transactionalResource.createTransaction(getScheme(managedMethod));
-		transactionalResource.storeSession(transaction.getResourceManager());
+		transactionalResource.storeResourceManager(transaction.getResourceManager());
 
 		try {
-
 			Object result = serviceChain.invokeNextProcessor(methodInvocation);
-
 			transaction.commit();
-			if (transaction.unused()) {
-				log.debug("Method |%s| superfluously declared transactional.", managedMethod);
-			}
 			return result;
 		} catch (Throwable throwable) {
 			transaction.rollback();
@@ -123,9 +119,9 @@ final class TransactionService implements IContainerService, IMethodInvocationPr
 		} finally {
 			if (transaction.close()) {
 				// it may happen to have multiple nested transaction on this thread
-				// if this is the case, remove session from current thread only if outermost transaction is closed
+				// if this is the case, remove resource manager from current thread only if outermost transaction is closed
 				// of course if not nested transactions, remove at once
-				transactionalResource.releaseSession();
+				transactionalResource.releaseResourceManager();
 			}
 		}
 	}
@@ -138,28 +134,20 @@ final class TransactionService implements IContainerService, IMethodInvocationPr
 	 * @return value returned by managed method.
 	 * @throws Throwable forward any error rose by method execution.
 	 */
-	private Object executeImmutableTransaction(TransactionalResource transactionalResource, IMethodInvocationProcessorsChain serviceChain, IMethodInvocation methodInvocation) throws InvocationException {
+	private Object executeImmutableTransaction(ITransactionalResource transactionalResource, IMethodInvocationProcessorsChain serviceChain, IMethodInvocation methodInvocation) throws InvocationException {
 		final IManagedMethod managedMethod = methodInvocation.method();
-		final String schema = managedMethod.getServiceMeta(TransactionalMeta.class).schema();
-
-		Transaction transaction = transactionalResource.createReadOnlyTransaction(schema);
+		final Transaction transaction = transactionalResource.createReadOnlyTransaction(getScheme(managedMethod));
 		// see mutable transaction comment
-		transactionalResource.storeSession(transaction.getResourceManager());
+		transactionalResource.storeResourceManager(transaction.getResourceManager());
 
 		try {
-
-			Object result = serviceChain.invokeNextProcessor(methodInvocation);
-
-			if (transaction.unused()) {
-				log.debug("Method |%s| superfluously declared transactional.", managedMethod);
-			}
-			return result;
+			return serviceChain.invokeNextProcessor(methodInvocation);
 		} catch (Throwable throwable) {
 			throw throwable(throwable, "Immutable transactional method |%s| invocation fail.", managedMethod);
 		} finally {
 			if (transaction.close()) {
 				// see mutable transaction comment
-				transactionalResource.releaseSession();
+				transactionalResource.releaseResourceManager();
 			}
 		}
 	}
@@ -228,5 +216,4 @@ final class TransactionService implements IContainerService, IMethodInvocationPr
 		// TODO Auto-generated method stub
 
 	}
-
 }

@@ -35,7 +35,6 @@ import js.tiny.container.servlet.TinyConfigBuilder;
 import js.tiny.container.spi.IManagedClass;
 import js.tiny.container.spi.IManagedMethod;
 import js.tiny.container.stub.ContainerStub;
-import js.transaction.Transactional;
 import js.util.Classes;
 
 @SuppressWarnings("unused")
@@ -73,21 +72,6 @@ public class ManagedClassUnitTest {
 		Map<Method, IManagedMethod> methodsPool = Classes.getFieldValue(managedClass, "methodsPool");
 		assertNotNull(methodsPool);
 		assertEquals(1, methodsPool.size());
-	}
-
-	@Test
-	public void transactionalConstructor() throws Throwable {
-		String config = "<test class='js.tiny.container.unit.ManagedClassUnitTest$DaoImpl' interface='js.tiny.container.unit.ManagedClassUnitTest$Dao' type='PROXY' />";
-		IManagedClass managedClass = getManagedClass(config(config));
-
-		assertEquals(Dao.class, managedClass.getInterfaceClasses()[0]);
-		assertEquals(DaoImpl.class, managedClass.getImplementationClass());
-		assertNotNull(managedClass.getContainer());
-		assertNull(managedClass.getConfig());
-		assertEquals("test:js.tiny.container.unit.ManagedClassUnitTest$DaoImpl:js.tiny.container.unit.ManagedClassUnitTest$Dao:PROXY:APPLICATION:LOCAL", managedClass.toString());
-		assertEquals(InstanceType.PROXY, managedClass.getInstanceType());
-		assertEquals(InstanceScope.APPLICATION, managedClass.getInstanceScope());
-		assertFalse(managedClass.isRemotelyAccessible());
 	}
 
 	@Test
@@ -410,15 +394,6 @@ public class ManagedClassUnitTest {
 		}
 	}
 
-	private static interface Dao {
-
-	}
-
-	@Transactional
-	private static class DaoImpl implements Dao {
-
-	}
-
 	@Remote
 	@DenyAll
 	private static interface Car {
@@ -520,17 +495,6 @@ public class ManagedClassUnitTest {
 		@Asynchronous
 		public boolean exec() {
 			return false;
-		}
-	}
-
-	@Transactional
-	private static interface AsyncTransactional {
-		@Asynchronous
-		void exec();
-	}
-
-	private static final class AsyncTransactionalImpl implements AsyncTransactional {
-		public void exec() {
 		}
 	}
 

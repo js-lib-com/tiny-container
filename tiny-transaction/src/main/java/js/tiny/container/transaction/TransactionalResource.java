@@ -10,16 +10,17 @@ import js.tiny.container.ManagedProxyHandler;
 import js.tiny.container.OptionalConfigurable;
 import js.tiny.container.core.AppFactory;
 import js.transaction.Transaction;
+import js.transaction.TransactionContext;
 import js.transaction.TransactionManager;
 
 /**
- * Transactional resource implementation. See {@link TransactionalResource} interface for transactional resource concept
+ * Transactional resource implementation. See {@link ITransactionalResource} interface for transactional resource concept
  * description.
  * <p>
  * Current implementation keeps a reference to {@link TransactionManager} and delegates it for transactions creation. Also has a
- * thread local storage, {@link #sessionStorage} that keeps session object references. Application code can retrieve session
- * object using {@link TransactionContext#getSession()} and execute service API on it while {@link ManagedProxyHandler} takes
- * care to provide transaction boundaries.
+ * thread local storage, {@link #resourceManagerStorage} that keeps session object references. Application code can retrieve
+ * session object using {@link TransactionContext#getSession()} and execute service API on it while {@link ManagedProxyHandler}
+ * takes care to provide transaction boundaries.
  * <p>
  * Because session objects are stored on an inheritable thread local storage, {@link InheritableThreadLocal}, it is legal for
  * application logic to create child threads while still being able to access session object. Anyway, keep in mind that when
@@ -30,9 +31,9 @@ import js.transaction.TransactionManager;
  * @author Iulian Rotaru
  * @version final
  */
-final class TransactionalResourceImpl implements TransactionalResource, OptionalConfigurable, ManagedPreDestroy {
+final class TransactionalResource implements ITransactionalResource, OptionalConfigurable, ManagedPreDestroy {
 	/** Class logger. */
-	private static final Log log = LogFactory.getLog(TransactionalResource.class);
+	private static final Log log = LogFactory.getLog(ITransactionalResource.class);
 
 	/**
 	 * Transaction manager. Since is legal to have runtimes without database support, e.g. embedded systems, transaction manager
@@ -41,22 +42,22 @@ final class TransactionalResourceImpl implements TransactionalResource, Optional
 	private final TransactionManager transactionManager;
 
 	/**
-	 * Keep currently executing transactional session object on thread local storage. Uses inheritable thread local so that
-	 * child threads can still access session object.
+	 * Keep the reference of currently executing resource manager on thread local storage. Uses inheritable thread local so that
+	 * child threads can still access the resource manager reference.
 	 */
-	private final ThreadLocal<Object> sessionStorage = new InheritableThreadLocal<>();
+	private final ThreadLocal<Object> resourceManagerStorage = new InheritableThreadLocal<>();
 
 	/**
 	 * Construct transactional resource for application served by given factory.
 	 * 
 	 * @param appFactory application factory.
 	 */
-	public TransactionalResourceImpl(AppFactory appFactory) {
+	public TransactionalResource(AppFactory appFactory) {
 		log.trace("TransactionalResource(AppFactory)");
 		// uses AppFactory instead of Classes.loadService to acquire transaction manager since need scope management
 		this.transactionManager = appFactory.getOptionalInstance(TransactionManager.class);
 		if (this.transactionManager == null) {
-			//throw new BugError("Transaction manager service not found. Ensure there is |%s| service provider on run-time.", TransactionManager.class);
+			throw new BugError("Transaction manager service not found. Ensure there is |%s| service provider on run-time.", TransactionManager.class);
 		}
 	}
 
@@ -70,10 +71,8 @@ final class TransactionalResourceImpl implements TransactionalResource, Optional
 	@Override
 	public void config(Config config) throws Exception {
 		log.trace("config(Config.Element)");
-		if(transactionManager!=null) {
 		log.debug("Configure transaction manager |%s|.", transactionManager.getClass());
 		transactionManager.config(config);
-		}
 	}
 
 	/** Destroy transaction manager and release all resources like caches and connection pools. */
@@ -89,34 +88,34 @@ final class TransactionalResourceImpl implements TransactionalResource, Optional
 	}
 
 	// --------------------------------------------------------------------------------------------
-	// TRANSACTIONAL SESSION
+	// TRANSACTIONAL RESOURCE MANAGER REFRENCE
 
 	/**
-	 * Store currently executing session on thread local variable.
+	 * Store the reference of the currently executing resource manager on thread local variable.
 	 * 
-	 * @param session currently executing session.
+	 * @param resourceManager currently executing resource manager.
 	 */
 	@Override
-	public void storeSession(Object session) {
-		sessionStorage.set(session);
+	public void storeResourceManager(Object resourceManager) {
+		resourceManagerStorage.set(resourceManager);
 	}
 
-	/** After transaction completes release session from thread local storage. */
+	/** After transaction completes release resource manager reference from thread local storage. */
 	@Override
-	public void releaseSession() {
-		sessionStorage.set(null);
+	public void releaseResourceManager() {
+		resourceManagerStorage.set(null);
 	}
 
 	/**
-	 * Get session object bound to current thread. Session object methods are executed inside transaction boundaries, also bound
-	 * to current thread.
+	 * Get resource manager bound to current thread. Resource manager methods are executed inside transaction boundaries, also
+	 * bound to current thread.
 	 * 
-	 * @return current thread session.
+	 * @return current thread resource manager.
 	 */
 	@SuppressWarnings("unchecked")
 	@Override
-	public <T> T getSession() {
-		return (T) sessionStorage.get();
+	public <T> T getResourceManager() {
+		return (T) resourceManagerStorage.get();
 	}
 
 	// --------------------------------------------------------------------------------------------
@@ -146,5 +145,12 @@ final class TransactionalResourceImpl implements TransactionalResource, Optional
 	@Override
 	public Transaction createReadOnlyTransaction(String schema) {
 		return transactionManager.createReadOnlyTransaction(schema);
+	}
+
+	// --------------------------------------------------------------------------------------------
+	// tests access to private state
+
+	ThreadLocal<Object> getResourceManagerStorage() {
+		return resourceManagerStorage;
 	}
 }

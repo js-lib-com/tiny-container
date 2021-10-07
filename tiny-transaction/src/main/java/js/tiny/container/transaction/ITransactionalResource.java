@@ -6,53 +6,54 @@ import js.transaction.TransactionManager;
 import js.transaction.WorkingUnit;
 
 /**
- * External resource that provides a transactional API. A transactional resource has two kinds of APIs: one exposed by session
- * object that deals with specific services and one for managing transactions, accessible via {@link Transaction} interface.
+ * External resource that provides a transactional API. A transactional resource has two kinds of APIs: one exposed by resource
+ * manager that deals with specific services and one for managing transactions, accessible via {@link Transaction} interface.
  * Service API is executed inside transactional boundaries managed by transaction API. When transaction object is retrieved from
- * transaction manager, it also contains session object.
+ * transaction manager, it also contains a reference to associated resource manager.
  * <p>
- * Transactional resource stores session object on current thread - see {@link #storeSession(Object)}, so that managed method
- * implemented by application can get session and execute service API on it.
+ * Transactional resource stores resource manager on current thread - see {@link #storeResourceManager(Object)}, so that managed
+ * method implemented by application can get resource manager reference and execute service API on it.
  * 
  * <pre>
  *    begin transaction      +-----------------+
  * --------------------------&gt;                 |
- *                  +--------|---------+       |
- *    service API   |                  |       |
- * -----------------&gt;  Session Object  |       |
- *                  |                  |       |
- *                  +--------|---------+       |
- *    commit transaction     |                 |    
- * --------------------------&gt;  Transactional  |
- *    close transaction      |  Resource       |
- * --------------------------&gt;                 |
- *                           +-----------------+
+ *                  +--------|-----------+       |
+ *    service API   |                    |       |
+ * -----------------&gt;  Resource Manager  |       |
+ *                  |                    |       |
+ *                  +--------|-----------+       |
+ *    commit transaction     |                   |    
+ * --------------------------&gt;  Transactional    |
+ *    close transaction      |  Resource         |
+ * --------------------------&gt;                   |
+ *                           +-------------------+
  * </pre>
  * <p>
- * After application managed method finishes its execution transaction is closed and session object is discarded from thread
- * local. Anyway, for nested transactions, {@link #releaseSession()} is executed only after outermost transaction was closed.
+ * After application managed method finishes its execution transaction is closed and resource manager reference is discarded
+ * from thread local. Anyway, for nested transactions, {@link #releaseResourceManager()} is executed only after outermost
+ * transaction was closed.
  * <p>
- * Sequence diagram for transaction and session object interaction. It is a simplified version and does not cover
+ * Sequence diagram for transaction and resource manager interaction. It is a simplified version and does not cover
  * {@link TransactionManager} and {@link TransactionContext} interfaces.
  * 
  * <pre>
- * +---------------+  +---------------------+  +-----------------------+  +-------------+  +---------+
- * | ManagedMethod |  | ManagedProxyHandler |  | TransactionalResource |  | Transaction |  | Session |
- * +-------+-------+  +-----------+---------+  +-------------+---------+  +------+------+  +----+----+
+ * +---------------+  +---------------------+  +-----------------------+  +-------------+  +-----------------+
+ * | ManagedMethod |  | ManagedProxyHandler |  | TransactionalResource |  | Transaction |  | ResourceManager |
+ * +-------+-------+  +-----------+---------+  +-------------+---------+  +------+------+  +----+------------+
  *         |     invoke           |                          |                   |              |
- * ~------------------------------&gt;   createTransaction      |   new             |              |      
+ * ~------------------------------&gt;  createTransaction       |   new             |              |      
  *         |                      +--------------------------&gt;-------------------&gt;              |
- *         |                      |   storeSession           |                   |              |           
+ *         |                      | storeResourceManager     |                   |              |           
  *         |                      +--------------------------&gt;                   |              |
  *         |     getSession       |                          |                   |              |
  *         &lt;-------------------------------------------------+                   |              |
  *         |     service API      |                          |                   |              |
  *         +------------------------------------------------------------------------------------&gt;
- *         |                      |   commit                 |                   |              |
+ *         |                      |  commit                  |                   |              |
  *         |                      +----------------------------------------------&gt;              |
- *         |                      |   close                  |                   |              |
+ *         |                      |  close                   |                   |              |
  *         |                      +----------------------------------------------&gt;              |
- *         |                      |   releaseSession         |                   |              |
+ *         |                      |  releaseResourceManager  |                   |              |
  *         |                      +--------------------------&gt;                   |              |
  *         |                      |                          |                   |              |
  * </pre>
@@ -60,10 +61,10 @@ import js.transaction.WorkingUnit;
  * <p>
  * This interface is for container internals and should not be used by applications; it is public for testing support.
  * <p>
- * For special needs transactional resource allows for manual transaction management. This is accomplished by delegating
+ * For special needs, transactional resource allows for manual transaction management. This is accomplished by delegating
  * underlying transaction manager, see {@link TransactionManager#exec(js.transaction.WorkingUnit, Object...)}. In sample code,
  * transactional resource creates and configures the transaction manager that takes care to execute {@link WorkingUnit} inside
- * transaction boundaries.
+ * transaction boundaries. In this example resource manager is a Hibernate Session object.
  * 
  * <pre>
  * TransactionalResource transactionalResource = Factory.getInstance(TransactionalResource.class);
@@ -80,9 +81,8 @@ import js.transaction.WorkingUnit;
  * </pre>
  * 
  * @author Iulian Rotaru
- * @version final
  */
-public interface TransactionalResource extends TransactionContext {
+public interface ITransactionalResource extends TransactionContext {
 	/**
 	 * Low level access to transaction manager for manual transaction management. See class description for sample code.
 	 * 
@@ -117,17 +117,17 @@ public interface TransactionalResource extends TransactionContext {
 	Transaction createReadOnlyTransaction(String schema);
 
 	/**
-	 * Store currently executing session object on thread local. Session object deals with transactional resource services.
+	 * Store currently executing resource manager on thread local. Resource manager deals with transactional resource services.
 	 * Application retrieve it from thread local, see {@link TransactionContext#getSession()} and executes its methods inside
 	 * transaction boundaries.
 	 * 
-	 * @param session currently executing session object.
+	 * @param resourceManager currently executing session object.
 	 */
-	void storeSession(Object session);
+	void storeResourceManager(Object resourceManager);
 
 	/**
-	 * After transaction completes release session object from thread local storage. For nested transactions this method should
-	 * be executed only after the outermost transaction was closed.
+	 * After transaction completes release resource manager from thread local storage. For nested transactions this method
+	 * should be executed only after the outermost transaction was closed.
 	 */
-	void releaseSession();
+	void releaseResourceManager();
 }

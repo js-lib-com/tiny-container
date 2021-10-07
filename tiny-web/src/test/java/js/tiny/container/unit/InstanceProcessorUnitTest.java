@@ -39,9 +39,7 @@ import js.tiny.container.spi.IManagedMethod;
 import js.tiny.container.stub.ContainerStub;
 import js.tiny.container.stub.ManagedClassSpiStub;
 import js.tiny.container.stub.ManagedMethodSpiStub;
-import js.transaction.TransactionManager;
 import js.util.Classes;
-import js.util.Types;
 
 @SuppressWarnings("unused")
 public class InstanceProcessorUnitTest {
@@ -465,9 +463,6 @@ public class InstanceProcessorUnitTest {
 		@SuppressWarnings("unchecked")
 		@Override
 		public <T> T getOptionalInstance(Class<? super T> interfaceClass, Object... args) {
-			if (Types.isKindOf(interfaceClass, TransactionManager.class)) {
-				return (T) Classes.loadService(interfaceClass);
-			}
 			IManagedClass managedClass = classesPool.get(interfaceClass);
 			if (managedClass == null) {
 				return null;
