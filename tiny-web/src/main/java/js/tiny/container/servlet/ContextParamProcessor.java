@@ -8,7 +8,6 @@ import js.annotation.ContextParam;
 import js.lang.BugError;
 import js.log.Log;
 import js.log.LogFactory;
-import js.tiny.container.core.AppContext;
 import js.tiny.container.spi.IClassPostProcessor;
 import js.tiny.container.spi.IInstancePostProcessor;
 import js.tiny.container.spi.IManagedClass;

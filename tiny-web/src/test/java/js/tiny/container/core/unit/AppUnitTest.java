@@ -10,8 +10,8 @@ import js.lang.Config;
 import js.lang.ConfigBuilder;
 import js.lang.ConfigException;
 import js.lang.Configurable;
-import js.tiny.container.core.App;
-import js.tiny.container.core.AppContext;
+import js.tiny.container.servlet.App;
+import js.tiny.container.servlet.AppContext;
 import js.tiny.container.servlet.TinyContainer;
 import js.tiny.container.stub.AppContextStub;
 
@@ -75,8 +75,8 @@ public class AppUnitTest {
 		String descriptor = "" + //
 				"<descriptor>" + //
 				"	<managed-classes>" + //
-				"		<app interface='js.tiny.container.core.App' class='js.tiny.container.core.unit.AppUnitTest$MockApp' />" + //
-				"		<app-context interface='js.tiny.container.core.AppContext' class='js.tiny.container.core.unit.AppUnitTest$MockAppContext'  />" + //
+				"		<app interface='js.tiny.container.servlet.App' class='js.tiny.container.core.unit.AppUnitTest$MockApp' />" + //
+				"		<app-context interface='js.tiny.container.servlet.AppContext' class='js.tiny.container.core.unit.AppUnitTest$MockAppContext'  />" + //
 				"	</managed-classes>" + //
 				"	<app>" + //
 				"	</app>" + //
@@ -97,8 +97,8 @@ public class AppUnitTest {
 		String descriptor = "" + //
 				"<descriptor>" + //
 				"	<managed-classes>" + //
-				"		<app interface='js.tiny.container.core.App' class='js.tiny.container.core.unit.AppUnitTest$MockApp' />" + //
-				"		<app-context interface='js.tiny.container.core.AppContext' class='js.tiny.container.core.unit.AppUnitTest$MockAppContext'  />" + //
+				"		<app interface='js.tiny.container.servlet.App' class='js.tiny.container.core.unit.AppUnitTest$MockApp' />" + //
+				"		<app-context interface='js.tiny.container.servlet.AppContext' class='js.tiny.container.core.unit.AppUnitTest$MockAppContext'  />" + //
 				"	</managed-classes>" + //
 				"	<app>" + //
 				"	</app>" + //
@@ -122,8 +122,8 @@ public class AppUnitTest {
 		String descriptor = "" + //
 				"<descriptor>" + //
 				"	<managed-classes>" + //
-				"		<app interface='js.tiny.container.core.App' class='js.tiny.container.core.unit.AppUnitTest$MockApp' />" + //
-				"		<app-context interface='js.tiny.container.core.AppContext' class='js.tiny.container.core.unit.AppUnitTest$MockAppContext'  />" + //
+				"		<app interface='js.tiny.container.servlet.App' class='js.tiny.container.core.unit.AppUnitTest$MockApp' />" + //
+				"		<app-context interface='js.tiny.container.servlet.AppContext' class='js.tiny.container.core.unit.AppUnitTest$MockAppContext'  />" + //
 				"	</managed-classes>" + //
 				"	<app>" + //
 				"	</app>" + //

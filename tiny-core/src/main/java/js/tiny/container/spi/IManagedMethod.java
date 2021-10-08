@@ -4,11 +4,9 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 
-import javax.annotation.security.PermitAll;
 import javax.ejb.Remote;
 
 import js.lang.InvocationException;
-import js.tiny.container.core.SecurityContext;
 import js.tiny.container.interceptor.Interceptor;
 import js.tiny.container.perfmon.IInvocationMeter;
 
@@ -23,9 +21,9 @@ import js.tiny.container.perfmon.IInvocationMeter;
  */
 public interface IManagedMethod {
 	String getName();
-	
+
 	String getSignature();
-	
+
 	/**
 	 * Get managed class that declares this managed method.
 	 * 
@@ -68,7 +66,7 @@ public interface IManagedMethod {
 	 * @throws InvocationException if method execution fails for whatever reason.
 	 */
 	<T> T invoke(Object object, Object... args) throws AuthorizationException, IllegalArgumentException, InvocationException;
-	
+
 	/**
 	 * Test if this managed method return type is void.
 	 * 
@@ -85,24 +83,6 @@ public interface IManagedMethod {
 	 * @return true if this managed method can be accessed remotely.
 	 */
 	boolean isRemotelyAccessible();
-
-	/**
-	 * Test if this managed method is unchecked, that is, can be accessed remotely without authorization. This predicate value
-	 * has meaning only if this managed method is remote, as defined by {@link #isRemotelyAccessible()}.
-	 * <p>
-	 * Usually, a managed method is private; it can be accessed remotely only inside an authorized security context. Anyway, it
-	 * becomes public if tagged with {@link PermitAll} annotation - this public state is known as security unchecked.
-	 * <p>
-	 * <b>Warning:</b> a public remote managed method can be accessed without authorization.
-	 * <p>
-	 * EJB3.1 17.3.2.2 - The Bean Provider or Application Assembler can indicate that all roles are permitted to execute one or
-	 * more specified methods (i.e., the methods should not be “checked” for authorization prior to invocation by the
-	 * container). The unchecked element is used instead of a role name in the method-permission element to indicate that all
-	 * roles are permitted.
-	 * 
-	 * @return true if this managed method is unchecked, that is, can be accessed remotely without authorization.
-	 */
-	boolean isUnchecked();
 
 	<T extends IContainerServiceMeta> T getServiceMeta(Class<T> type);
 

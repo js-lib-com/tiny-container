@@ -16,11 +16,11 @@ import js.lang.ConfigException;
 import js.lang.Configurable;
 import js.log.Log;
 import js.log.LogFactory;
-import js.tiny.container.core.AppContext;
 import js.tiny.container.http.NoSuchResourceException;
 import js.tiny.container.http.Resource;
 import js.tiny.container.mvc.FileResource;
 import js.tiny.container.mvc.ResourceServlet;
+import js.tiny.container.servlet.AppContext;
 import js.tiny.container.servlet.RequestContext;
 import js.util.Params;
 

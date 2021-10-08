@@ -5,7 +5,6 @@ import js.lang.BugError;
 import js.lang.InvocationException;
 import js.lang.NoProviderException;
 import js.tiny.container.core.AppFactory;
-import js.tiny.container.core.SecurityContext;
 
 /**
  * Container services for framework internals and plugins. This interface is a service provider interface and is not intended
@@ -16,7 +15,7 @@ import js.tiny.container.core.SecurityContext;
  * @author Iulian Rotaru
  * @version final
  */
-public interface IContainer extends AppFactory, SecurityContext {
+public interface IContainer extends AppFactory {
 	/**
 	 * Retrieve instance of requested managed class. Depending on managed class scope a new managed instance can be created or
 	 * it can be reused from caches. Optional constructor arguments are used only if a new local managed instance is created.
@@ -72,16 +71,4 @@ public interface IContainer extends AppFactory, SecurityContext {
 	 * @return container managed methods, in no particular order.
 	 */
 	Iterable<IManagedMethod> getManagedMethods();
-
-	/**
-	 * Get context property converted to requested type. A context property is defined by means external to application, on
-	 * run-time environment.
-	 * 
-	 * @param name context property name,
-	 * @param type requested type.
-	 * @param <T> context property type.
-	 * @return context property value converted to requested type or null if property not defined.
-	 * @throws ConverterException if property exist but cannot be converted to requested type.
-	 */
-	<T> T getProperty(String name, Class<T> type);
 }

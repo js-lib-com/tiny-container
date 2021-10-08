@@ -1,7 +1,5 @@
 package js.tiny.container.stub;
 
-import java.security.Principal;
-
 import js.tiny.container.spi.IContainer;
 import js.tiny.container.spi.IManagedClass;
 import js.tiny.container.spi.IManagedMethod;
@@ -33,36 +31,6 @@ public class ContainerSpiStub implements IContainer {
 	}
 
 	@Override
-	public boolean login(String username, String password) {
-		throw new UnsupportedOperationException("login(String username, String password)");
-	}
-
-	@Override
-	public void login(Principal principal) {
-		throw new UnsupportedOperationException("login(Principal principal)");
-	}
-
-	@Override
-	public void logout() {
-		throw new UnsupportedOperationException("logout()");
-	}
-
-	@Override
-	public Principal getUserPrincipal() {
-		throw new UnsupportedOperationException("getUserPrincipal()");
-	}
-
-	@Override
-	public boolean isAuthenticated() {
-		throw new UnsupportedOperationException("isAuthenticated()");
-	}
-
-	@Override
-	public boolean isAuthorized(String... roles) {
-		throw new UnsupportedOperationException("isAuthorized(String... roles)");
-	}
-
-	@Override
 	public <T> T getInstance(IManagedClass managedClass, Object... args) {
 		throw new UnsupportedOperationException("getInstance(ManagedClassSPI managedClass, Object... args)");
 	}
@@ -85,10 +53,5 @@ public class ContainerSpiStub implements IContainer {
 	@Override
 	public Iterable<IManagedMethod> getManagedMethods() {
 		throw new UnsupportedOperationException("getManagedMethods()");
-	}
-
-	@Override
-	public <T> T getProperty(String name, Class<T> type) {
-		throw new UnsupportedOperationException("getProperty(String name, Class<T> type)");
 	}
 }

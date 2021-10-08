@@ -52,11 +52,6 @@ public class ManagedMethodSpiStub implements IManagedMethod {
 	}
 
 	@Override
-	public boolean isUnchecked() {
-		throw new UnsupportedOperationException("isUnchecked()");
-	}
-
-	@Override
 	public IManagedClass getDeclaringClass() {
 		throw new UnsupportedOperationException("getDeclaringClass()");
 	}

@@ -4,7 +4,7 @@ import java.io.File;
 import java.security.Principal;
 import java.util.Locale;
 
-import js.tiny.container.core.AppContext;
+import js.tiny.container.servlet.AppContext;
 
 public class AppContextStub implements AppContext {
 	@Override

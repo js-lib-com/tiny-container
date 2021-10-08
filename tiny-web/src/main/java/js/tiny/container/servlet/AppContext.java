@@ -1,9 +1,10 @@
-package js.tiny.container.core;
+package js.tiny.container.servlet;
 
 import java.io.File;
 import java.util.Locale;
 
 import js.converter.ConverterException;
+import js.tiny.container.core.AppFactory;
 
 /**
  * Application context provides access to container services. There are two major services inherited from interfaces: managed

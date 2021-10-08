@@ -1,4 +1,4 @@
-package js.tiny.container.core;
+package js.tiny.container.servlet;
 
 import js.lang.Configurable;
 import js.lang.ManagedLifeCycle;

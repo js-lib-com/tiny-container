@@ -1,8 +1,9 @@
 package js.tiny.container.servlet;
 
+import js.converter.ConverterException;
 import js.tiny.container.spi.IContainer;
 
-public interface ITinyContainer extends IContainer {
+public interface ITinyContainer extends IContainer, SecurityContext {
 
 	/**
 	 * Get basic authentication realm. If realm is not defined into application descriptor uses context name.
@@ -35,5 +36,16 @@ public interface ITinyContainer extends IContainer {
 	 * @return login page location or null if not login page declared.
 	 */
 	String getLoginPage();
-	
+
+	/**
+	 * Get context property converted to requested type. A context property is defined by means external to application, on
+	 * run-time environment.
+	 * 
+	 * @param name context property name,
+	 * @param type requested type.
+	 * @param <T> context property type.
+	 * @return context property value converted to requested type or null if property not defined.
+	 * @throws ConverterException if property exist but cannot be converted to requested type.
+	 */
+	<T> T getProperty(String name, Class<T> type);
 }

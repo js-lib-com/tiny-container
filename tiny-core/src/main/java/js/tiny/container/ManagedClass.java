@@ -19,9 +19,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import javax.annotation.Resource;
-import javax.annotation.security.DenyAll;
-import javax.annotation.security.PermitAll;
-import javax.annotation.security.RolesAllowed;
 import javax.ejb.Remote;
 import javax.ejb.Schedule;
 import javax.ejb.Singleton;
@@ -510,17 +507,6 @@ public final class ManagedClass implements IManagedClass {
 			remotelyAccessible = true;
 		}
 
-		boolean denyAllType = hasAnnotation(implementationClass, DenyAll.class);
-
-		// security unchecked class has all method remotely accessible without authentication
-		boolean uncheckedType = hasAnnotation(implementationClass, PermitAll.class);
-
-		String[] typeRoles = null;
-		RolesAllowed rolesAllowed = getAnnotation(implementationClass, RolesAllowed.class);
-		if (rolesAllowed != null) {
-			typeRoles = rolesAllowed.value();
-		}
-
 		// managed classes does not support public inheritance
 		for (Method method : implementationClass.getDeclaredMethods()) {
 
@@ -554,14 +540,6 @@ public final class ManagedClass implements IManagedClass {
 			if (!remoteMethod) {
 				remoteMethod = remoteType;
 			}
-			if (hasAnnotation(method, DenyAll.class)) {
-				if (!remoteMethod) {
-					throw new BugError("@Local annotation on not remote method |%s|.", method);
-				}
-				remoteMethod = false;
-			} else if (denyAllType && !hasAnnotation(method, PermitAll.class)) {
-				remoteMethod = false;
-			}
 			if (remoteMethod) {
 				// if at least one owned managed method is remote this managed class become remote too
 				remotelyAccessible = true;
@@ -570,17 +548,11 @@ public final class ManagedClass implements IManagedClass {
 			ManagedMethod managedMethod = null;
 			// handle remote accessible methods
 
-			boolean uncheckedMethod = hasAnnotation(method, PermitAll.class);
-			if (!uncheckedMethod) {
-				uncheckedMethod = uncheckedType;
-			}
-
 			if (remoteMethod) {
 				if (managedMethod == null) {
 					managedMethod = new ManagedMethod(this, interfaceMethod);
 				}
 				managedMethod.setRemotelyAccessible(remoteMethod);
-				managedMethod.setUnchecked(uncheckedMethod);
 			}
 
 			if (instanceType.isPROXY() && managedMethod == null) {
@@ -604,26 +576,10 @@ public final class ManagedClass implements IManagedClass {
 				continue;
 			}
 
-			managedMethod.setUnchecked(uncheckedMethod);
-
-			// enable security service if any security annotation is used on class
-			managedMethod.setSecurityEnabled(typeRoles != null || uncheckedType || denyAllType);
-
-			// set security roles after security unchecked state - PermitAll annotation, processed
-			rolesAllowed = getAnnotation(method, RolesAllowed.class);
-			String[] methodRoles = rolesAllowed != null ? rolesAllowed.value() : typeRoles;
-			if (methodRoles != null) {
-				// force security service enabled if any security annotation is used on method
-				managedMethod.setSecurityEnabled(true);
-				if (!hasAnnotation(method, PermitAll.class)) {
-					managedMethod.setRoles(methodRoles);
-				}
-			}
-
 			// store managed method, if created, to managed methods pool
 			methodsPool.put(interfaceMethod, managedMethod);
 			if (managedMethod.isRemotelyAccessible() && netMethodsPool.put(method.getName(), managedMethod) != null) {
-				throw new BugError("Overloading is not supported for net method |%s|.", managedMethod);
+				//throw new BugError("Overloading is not supported for net method |%s|.", managedMethod);
 			}
 		}
 
@@ -1173,34 +1129,6 @@ public final class ManagedClass implements IManagedClass {
 			}
 		}
 		return false;
-	}
-
-	/**
-	 * Get method annotation or null if none found. This getter uses extended annotation searching scope: it searches first on
-	 * given method declaring class then tries with all class interfaces. Note that only interfaces are used as alternative for
-	 * method annotation search. Super class is not included.
-	 * <p>
-	 * Returns null if no method annotation found on base class or interfaces.
-	 * 
-	 * @param method method to search for annotation,
-	 * @param annotationClass annotation to search for.
-	 * @param <T> annotation type.
-	 * @return annotation instance or null if none found.
-	 */
-	private static <T extends Annotation> T getAnnotation(Method method, Class<T> annotationClass) {
-		T annotation = method.getAnnotation(annotationClass);
-		if (annotation == null) {
-			for (Class<?> interfaceClass : method.getDeclaringClass().getInterfaces()) {
-				try {
-					annotation = interfaceClass.getMethod(method.getName(), method.getParameterTypes()).getAnnotation(annotationClass);
-					if (annotation != null) {
-						return annotation;
-					}
-				} catch (NoSuchMethodException unused) {
-				}
-			}
-		}
-		return annotation;
 	}
 
 	/**

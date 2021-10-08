@@ -11,6 +11,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Observer;
 import java.util.ServiceLoader;
 import java.util.Set;
 import java.util.TreeSet;
@@ -36,8 +37,6 @@ import js.lang.NoProviderException;
 import js.log.Log;
 import js.log.LogFactory;
 import js.rmi.RemoteFactory;
-import js.tiny.container.core.App;
-import js.tiny.container.core.AppContext;
 import js.tiny.container.core.AppFactory;
 import js.tiny.container.interceptor.Interceptor;
 import js.tiny.container.perfmon.IInvocationMeter;
@@ -50,7 +49,6 @@ import js.tiny.container.spi.IManagedClass;
 import js.tiny.container.spi.IManagedMethod;
 import js.util.Classes;
 import js.util.Params;
-import js.util.Types;
 
 /**
  * Container creates managed classes and handle managed instances life cycle, that is, instances creation and caching. Basic
@@ -229,7 +227,7 @@ import js.util.Types;
  * @author Iulian Rotaru
  * @version draft
  */
-public abstract class Container implements IContainer, Configurable {
+public class Container implements IContainer, Configurable {
 	/** Class logger. */
 	private static final Log log = LogFactory.getLog(Container.class);
 
@@ -241,7 +239,7 @@ public abstract class Container implements IContainer, Configurable {
 	 * There are a number of built-in scope factories created by constructor but subclass may register new ones via
 	 * {@link #registerScopeFactory(ScopeFactory)}.
 	 */
-	private final Map<InstanceScope, ScopeFactory> scopeFactories = new HashMap<>();
+	protected final Map<InstanceScope, ScopeFactory> scopeFactories = new HashMap<>();
 
 	/**
 	 * Mutex for scope factory access. Instance retrieval algorithm uses scope factories in two steps: first try to retrieve an
@@ -288,7 +286,7 @@ public abstract class Container implements IContainer, Configurable {
 	 * Master cache for all managed classes registered to container. Since an application has one and only one container
 	 * instance, managed classes pool is unique per application. This pool is initialized by {@link #config(Config)} method.
 	 */
-	private final Map<Class<?>, IManagedClass> classesPool = new HashMap<>();
+	protected final Map<Class<?>, IManagedClass> classesPool = new HashMap<>();
 
 	private final Set<IContainerService> containerServices = new HashSet<>();
 
@@ -491,17 +489,6 @@ public abstract class Container implements IContainer, Configurable {
 
 		convertersInitialization(config);
 		pojoStaticInitialization(config);
-
-		// special handling for this container instance accessed via application context
-		// need to ensure this container instance is reused and not to create a new one
-		IManagedClass appContext = classesPool.get(AppContext.class);
-		// application context can be null on tests
-		// also on tests application context interface can be implemented by mock class not in container hierarchy
-		if (appContext != null && Types.isKindOf(appContext.getImplementationClass(), IContainer.class)) {
-			log.debug("Persist container instance on application scope.");
-			// managed class key cannot be null
-			scopeFactories.get(InstanceScope.APPLICATION).persistInstance(new InstanceKey(appContext.getKey().toString()), this);
-		}
 	}
 
 	/**
@@ -827,19 +814,6 @@ public abstract class Container implements IContainer, Configurable {
 	@Override
 	public IManagedClass getManagedClass(Class<?> interfaceClass) {
 		return classesPool.get(interfaceClass);
-	}
-
-	// --------------------------------------------------------------------------------------------
-	// SECURITY CONTEXT INTERFACE
-
-	@Override
-	public boolean isAuthenticated() {
-		return true;
-	}
-
-	@Override
-	public boolean isAuthorized(String... roles) {
-		return true;
 	}
 
 	// --------------------------------------------------------------------------------------------

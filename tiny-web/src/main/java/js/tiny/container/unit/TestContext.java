@@ -5,8 +5,8 @@ import java.io.InputStream;
 import java.util.Properties;
 
 import js.lang.Config;
-import js.tiny.container.core.AppContext;
 import js.tiny.container.core.Factory;
+import js.tiny.container.servlet.AppContext;
 import js.tiny.container.servlet.TinyContainer;
 
 public final class TestContext {

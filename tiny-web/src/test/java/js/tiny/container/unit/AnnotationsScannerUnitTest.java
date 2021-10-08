@@ -47,22 +47,9 @@ public class AnnotationsScannerUnitTest {
 	}
 
 	@Test
-	public void getMethodAnnotation() throws Exception {
-		Method method = AnnotatedMethod.class.getMethod("exec");
-		assertNotNull(invokeStatic("getAnnotation", method, Asynchronous.class));
-	}
-
-	@Test
 	public void hasMethodAnnotation() throws Exception {
 		Method method = AnnotatedMethod.class.getMethod("exec");
 		assertTrue((boolean) invokeStatic("hasAnnotation", method, Asynchronous.class));
-	}
-
-	@Test
-	public void getInheritedMethodAnnotation() throws Exception {
-		Method method = MethodInheritedAnnotation.class.getMethod("getManufacturer");
-		assertNotNull(invokeStatic("getAnnotation", method, PermitAll.class));
-		assertNull(invokeStatic("getAnnotation", method, Asynchronous.class));
 	}
 
 	@Test

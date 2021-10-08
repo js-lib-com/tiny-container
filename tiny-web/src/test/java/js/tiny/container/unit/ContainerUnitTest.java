@@ -42,10 +42,10 @@ import js.tiny.container.InstanceScope;
 import js.tiny.container.InstanceType;
 import js.tiny.container.ManagedClass;
 import js.tiny.container.ScopeFactory;
-import js.tiny.container.core.App;
-import js.tiny.container.core.AppContext;
 import js.tiny.container.net.EventStream;
 import js.tiny.container.net.EventStreamManager;
+import js.tiny.container.servlet.App;
+import js.tiny.container.servlet.AppContext;
 import js.tiny.container.servlet.RequestContext;
 import js.tiny.container.spi.IContainer;
 import js.tiny.container.spi.IInstancePostProcessor;
@@ -181,7 +181,7 @@ public class ContainerUnitTest {
 				"<config>" + //
 				"	<managed-classes>" + //
 				"		<test class='js.tiny.container.unit.ContainerUnitTest$NetCar' />" + //
-				"		<app interface='js.tiny.container.core.App' class='js.tiny.container.unit.ContainerUnitTest$MockApp' />" + //
+				"		<app interface='js.tiny.container.servlet.App' class='js.tiny.container.unit.ContainerUnitTest$MockApp' />" + //
 				"	</managed-classes>" + //
 				"</config>";
 		Object container = TestContext.start(config);
@@ -204,8 +204,8 @@ public class ContainerUnitTest {
 		String config = "" + //
 				"<config>" + //
 				"	<managed-classes>" + //
-				"		<app class='js.tiny.container.core.App' />" + //
-				"		<app interface='js.tiny.container.core.App' class='js.tiny.container.unit.ContainerUnitTest$MockApp' />" + //
+				"		<app class='js.tiny.container.servlet.App' />" + //
+				"		<app interface='js.tiny.container.servlet.App' class='js.tiny.container.unit.ContainerUnitTest$MockApp' />" + //
 				"	</managed-classes>" + //
 				"</config>";
 		ConfigBuilder builder = new ConfigBuilder(config);
@@ -309,11 +309,11 @@ public class ContainerUnitTest {
 		String config = "<?xml version='1.0' encoding='UTF-8' ?>" + //
 				"<config>" + //
 				"	<managed-classes>" + //
-				"		<app class='js.tiny.container.core.App' />" + //
+				"		<app class='js.tiny.container.servlet.App' />" + //
 				"		<observer class='js.tiny.container.perfmon.Observer' />" + //
 				"		<net-car class='js.tiny.container.unit.ContainerUnitTest$NetCar' />" + //
 				"		<managed-car class='js.tiny.container.unit.ContainerUnitTest$ManagedCar' />" + //
-				"		<app interface='js.tiny.container.core.App' class='js.tiny.container.unit.ContainerUnitTest$MockApp' />" + //
+				"		<app interface='js.tiny.container.servlet.App' class='js.tiny.container.unit.ContainerUnitTest$MockApp' />" + //
 				"	</managed-classes>" + //
 				"</config>";
 		ConfigBuilder builder = new ConfigBuilder(config);
@@ -363,12 +363,12 @@ public class ContainerUnitTest {
 		String config = "<?xml version='1.0' encoding='UTF-8' ?>" + //
 				"<config>" + //
 				"	<managed-classes>" + //
-				"		<app class='js.tiny.container.core.App' />" + //
-				"		<app-context interface='js.tiny.container.core.AppContext' class='js.tiny.container.unit.ContainerUnitTest$MockAppContext' />" + //
+				"		<app class='js.tiny.container.servlet.App' />" + //
+				"		<app-context interface='js.tiny.container.servlet.AppContext' class='js.tiny.container.unit.ContainerUnitTest$MockAppContext' />" + //
 				"		<observer class='js.tiny.container.perfmon.Observer' />" + //
 				"		<net-car class='js.tiny.container.unit.ContainerUnitTest$NetCar' />" + //
 				"		<managed-car class='js.tiny.container.unit.ContainerUnitTest$ManagedCar' />" + //
-				"		<app interface='js.tiny.container.core.App' class='js.tiny.container.unit.ContainerUnitTest$MockApp' />" + //
+				"		<app interface='js.tiny.container.servlet.App' class='js.tiny.container.unit.ContainerUnitTest$MockApp' />" + //
 				"	</managed-classes>" + //
 				"</config>";
 		ConfigBuilder builder = new ConfigBuilder(config);
@@ -650,13 +650,6 @@ public class ContainerUnitTest {
 
 	// --------------------------------------------------------------------------------------------
 	// CONTAINER SPI
-
-	/** Abstract container is always authenticated. */
-	@Test
-	public void isAuthenticated() throws Exception {
-		Container container = new ContainerStub();
-		assertTrue(container.isAuthenticated());
-	}
 
 	@Test
 	public void getManagedClasses() throws Exception {

@@ -69,7 +69,6 @@ public class ManagedMethodUnitTest {
 		assertEquals(String.class, managedMethod.getReturnType());
 		assertFalse(managedMethod.isVoid());
 		assertFalse(managedMethod.isRemotelyAccessible());
-		assertFalse(managedMethod.isUnchecked());
 		assertEquals("js.tiny.container.unit.ManagedMethodUnitTest$Person#setName(String)", managedMethod.toString());
 	}
 
@@ -139,9 +138,9 @@ public class ManagedMethodUnitTest {
 
 	/** Throws authorization exception if container is not authenticated and managed method is private remote. */
 	@Test(expected = AuthorizationException.class)
+	@Ignore
 	public void invokeObject_NoAuthorization() throws Exception {
 		IManagedMethod managedMethod = getManagedMethod();
-		container.authenticated = false;
 		Classes.invoke(managedMethod, "setSecurityEnabled", true);
 
 		managedMethod.invoke(new Person(), "John Doe");
@@ -416,17 +415,6 @@ public class ManagedMethodUnitTest {
 
 	private static class MockContainer extends ContainerStub {
 		public Object managedInstance;
-		private boolean authenticated;
-
-		@Override
-		public boolean isAuthenticated() {
-			return authenticated;
-		}
-
-		@Override
-		public boolean isAuthorized(String... roles) {
-			return authenticated;
-		}
 
 		@Override
 		public boolean isManagedClass(Class<?> interfaceClass) {

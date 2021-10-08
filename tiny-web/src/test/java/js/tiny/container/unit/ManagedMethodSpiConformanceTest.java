@@ -81,13 +81,6 @@ public class ManagedMethodSpiConformanceTest {
 		assertTrue(getterManagedMethod.isRemotelyAccessible());
 	}
 
-	@Test
-	public void isPublic() throws Exception {
-		assertFalse(getterManagedMethod.isUnchecked());
-		Classes.invoke(getterManagedMethod, "setUnchecked", true);
-		assertTrue(getterManagedMethod.isUnchecked());
-	}
-
 	// --------------------------------------------------------------------------------------------
 	// FIXTURE
 

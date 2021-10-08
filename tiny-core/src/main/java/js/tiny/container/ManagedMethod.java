@@ -18,11 +18,9 @@ import js.lang.BugError;
 import js.lang.InvocationException;
 import js.log.Log;
 import js.log.LogFactory;
-import js.tiny.container.core.SecurityContext;
 import js.tiny.container.interceptor.Interceptor;
 import js.tiny.container.perfmon.IInvocationMeter;
 import js.tiny.container.spi.AuthorizationException;
-import js.tiny.container.spi.IContainer;
 import js.tiny.container.spi.IContainerService;
 import js.tiny.container.spi.IContainerServiceMeta;
 import js.tiny.container.spi.IManagedClass;
@@ -53,9 +51,6 @@ public final class ManagedMethod implements IManagedMethod, IMethodInvocationPro
 	/** Format string for managed method fully qualified name. */
 	private static final String QUALIFIED_NAME_FORMAT = "%s#" + SIMPLE_NAME_FORMAT;
 
-	/** Back reference to parent container. */
-	private final IContainer container;
-
 	/** The managed class declaring this managed method. */
 	private final IManagedClass declaringClass;
 
@@ -71,17 +66,6 @@ public final class ManagedMethod implements IManagedMethod, IMethodInvocationPro
 	 */
 	private boolean remotelyAccessible;
 
-	/**
-	 * EJB3.1 17.3.2.2 - The Bean Provider or Application Assembler can indicate that all roles are permitted to execute one or
-	 * more specified methods (i.e., the methods should not be “checked” for authorization prior to invocation by the
-	 * container). The unchecked element is used instead of a role name in the method-permission element to indicate that all
-	 * roles are permitted.
-	 */
-	private boolean unchecked;
-
-	/** There is at least one metadata attribute related to security. */
-	private boolean securityEnabled;
-
 	/** Managed method signature, mainly for debugging. */
 	private final String signature;
 
@@ -91,12 +75,6 @@ public final class ManagedMethod implements IManagedMethod, IMethodInvocationPro
 	private final Map<Class<? extends IContainerServiceMeta>, IContainerServiceMeta> serviceMetas = new HashMap<>();
 
 	private final Set<IMethodInvocationProcessor> invocationProcessors = new HashSet<>();
-
-	/**
-	 * Roles allowed to invoke this managed method. If empty and if this method is private all authenticated users are
-	 * authorized.
-	 */
-	private String[] roles = new String[0];
 
 	/**
 	 * Construct a managed method with optional invocation interceptor. Store declaring class and Java reflective method,
@@ -110,7 +88,6 @@ public final class ManagedMethod implements IManagedMethod, IMethodInvocationPro
 	 * @param method Java reflective method wrapped by this managed method.
 	 */
 	public ManagedMethod(IManagedClass declaringClass, Method method) {
-		this.container = declaringClass.getContainer();
 		this.declaringClass = declaringClass;
 		this.method = method;
 		this.method.setAccessible(true);
@@ -203,11 +180,6 @@ public final class ManagedMethod implements IManagedMethod, IMethodInvocationPro
 
 	@Override
 	public Object invoke(IMethodInvocationProcessorsChain unused, IMethodInvocation methodInvocation) throws AuthorizationException, IllegalArgumentException, InvocationException {
-		if (securityEnabled && !unchecked && !container.isAuthorized(roles)) {
-			log.info("Reject not authenticated access to |%s|.", method);
-			throw new AuthorizationException();
-		}
-
 		// arguments processor converts <args> to empty array if it is null
 		// it can be null if on invocation chain there is Proxy invoked with no arguments
 		Object[] arguments = argumentsProcessor.preProcessArguments(this, methodInvocation.arguments());
@@ -245,11 +217,6 @@ public final class ManagedMethod implements IManagedMethod, IMethodInvocationPro
 		return remotelyAccessible;
 	}
 
-	@Override
-	public boolean isUnchecked() {
-		return unchecked;
-	}
-
 	/**
 	 * Returns a string describing this managed method.
 	 */
@@ -262,22 +229,6 @@ public final class ManagedMethod implements IManagedMethod, IMethodInvocationPro
 	@Override
 	public <T extends IContainerServiceMeta> T getServiceMeta(Class<T> type) {
 		return (T) serviceMetas.get(type);
-	}
-
-	// --------------------------------------------------------------------------------------------
-	// PACKAGE METHODS
-
-	/**
-	 * Set remote accessibility flag.
-	 * 
-	 * @param remotelyAccessible remote accessibility flag.
-	 */
-	void setRemotelyAccessible(boolean remotelyAccessible) {
-		this.remotelyAccessible = remotelyAccessible;
-	}
-
-	void setUnchecked(boolean unchecked) {
-		this.unchecked = unchecked;
 	}
 
 	@Override
@@ -303,6 +254,18 @@ public final class ManagedMethod implements IManagedMethod, IMethodInvocationPro
 		return annotation;
 	}
 
+	// --------------------------------------------------------------------------------------------
+	// PACKAGE METHODS
+
+	/**
+	 * Set remote accessibility flag.
+	 * 
+	 * @param remotelyAccessible remote accessibility flag.
+	 */
+	void setRemotelyAccessible(boolean remotelyAccessible) {
+		this.remotelyAccessible = remotelyAccessible;
+	}
+
 	void addServiceMeta(IContainerService service, IContainerServiceMeta serviceMeta) {
 		log.debug("Add service meta |%s| to managed method |%s|", serviceMeta.getClass(), this);
 		serviceMetas.put(serviceMeta.getClass(), serviceMeta);
@@ -313,11 +276,5 @@ public final class ManagedMethod implements IManagedMethod, IMethodInvocationPro
 
 	void setRoles(String[] roles) {
 		Params.notNullOrEmpty(roles, "Roles");
-		this.unchecked = false;
-		this.roles = roles;
-	}
-
-	void setSecurityEnabled(boolean securityEnabled) {
-		this.securityEnabled = securityEnabled;
 	}
 }

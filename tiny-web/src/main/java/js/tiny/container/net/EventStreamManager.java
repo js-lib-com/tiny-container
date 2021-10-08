@@ -7,7 +7,7 @@ import java.util.List;
 import javax.inject.Inject;
 
 import js.lang.Event;
-import js.tiny.container.core.AppContext;
+import js.tiny.container.servlet.AppContext;
 
 /**
  * Event stream manager facilitates server event push to connected clients. There are two events pushing scenarios: on security

@@ -2,8 +2,6 @@ package js.tiny.container.servlet;
 
 import java.security.Principal;
 
-import js.tiny.container.core.SecurityContext;
-
 /**
  * A nonce user has access only one time and for a short period of time. Container takes care to quickly invalidate the session.
  * Default value for session duration is 10 seconds.
