@@ -1,11 +1,13 @@
 package js.tiny.container.interceptor;
 
-import js.tiny.container.spi.IContainerServiceMeta;
+import js.tiny.container.spi.IContainerService;
+import js.tiny.container.spi.ServiceMeta;
 
-class InterceptedMeta implements IContainerServiceMeta {
+class InterceptedMeta extends ServiceMeta {
 	private final Class<? extends Interceptor> value;
 
-	public InterceptedMeta(Intercepted intercepted) {
+	public InterceptedMeta(IContainerService service, Intercepted intercepted) {
+		super(service);
 		this.value = intercepted.value();
 	}
 

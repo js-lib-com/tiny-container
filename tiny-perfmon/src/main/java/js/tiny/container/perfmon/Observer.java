@@ -148,7 +148,7 @@ class Observer implements Configurable, ManagedLifeCycle, Runnable {
 	private List<IInvocationMeter> getMeters() {
 		List<IInvocationMeter> invocationMeters = new ArrayList<IInvocationMeter>();
 		for (IManagedMethod managedMethod : container.getManagedMethods()) {
-			Meter meter = managedMethod.getServiceMeta(Meter.class);
+			Meter meter = managedMethod.getAttribute(PerformanceMonitorService.class, Meter.ATTR_METER, Meter.class);
 			invocationMeters.add(meter);
 		}
 		return invocationMeters;

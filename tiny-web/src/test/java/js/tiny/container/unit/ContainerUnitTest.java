@@ -310,7 +310,6 @@ public class ContainerUnitTest {
 				"<config>" + //
 				"	<managed-classes>" + //
 				"		<app class='js.tiny.container.servlet.App' />" + //
-				"		<observer class='js.tiny.container.perfmon.Observer' />" + //
 				"		<net-car class='js.tiny.container.unit.ContainerUnitTest$NetCar' />" + //
 				"		<managed-car class='js.tiny.container.unit.ContainerUnitTest$ManagedCar' />" + //
 				"		<app interface='js.tiny.container.servlet.App' class='js.tiny.container.unit.ContainerUnitTest$MockApp' />" + //
@@ -332,11 +331,10 @@ public class ContainerUnitTest {
 		container.config(builder.build());
 		container.start();
 
-		assertEquals(4, container.instantiatedClasses.size());
+		assertEquals(3, container.instantiatedClasses.size());
 		assertEquals("App", container.instantiatedClasses.get(0).getSimpleName());
-		assertEquals("Observer", container.instantiatedClasses.get(1).getSimpleName());
-		assertEquals("NetCar", container.instantiatedClasses.get(2).getSimpleName());
-		assertEquals("ManagedCar", container.instantiatedClasses.get(3).getSimpleName());
+		assertEquals("NetCar", container.instantiatedClasses.get(1).getSimpleName());
+		assertEquals("ManagedCar", container.instantiatedClasses.get(2).getSimpleName());
 	}
 
 	@Test
@@ -365,7 +363,6 @@ public class ContainerUnitTest {
 				"	<managed-classes>" + //
 				"		<app class='js.tiny.container.servlet.App' />" + //
 				"		<app-context interface='js.tiny.container.servlet.AppContext' class='js.tiny.container.unit.ContainerUnitTest$MockAppContext' />" + //
-				"		<observer class='js.tiny.container.perfmon.Observer' />" + //
 				"		<net-car class='js.tiny.container.unit.ContainerUnitTest$NetCar' />" + //
 				"		<managed-car class='js.tiny.container.unit.ContainerUnitTest$ManagedCar' />" + //
 				"		<app interface='js.tiny.container.servlet.App' class='js.tiny.container.unit.ContainerUnitTest$MockApp' />" + //
@@ -659,7 +656,7 @@ public class ContainerUnitTest {
 			++classesCount;
 		}
 		// this hard coded value depends on lib-descriptor.xml
-		assertEquals(9, classesCount);
+		assertEquals(8, classesCount);
 	}
 
 	@Test

@@ -44,9 +44,10 @@ import js.log.LogFactory;
 import js.tiny.container.core.AppFactory;
 import js.tiny.container.spi.IContainer;
 import js.tiny.container.spi.IContainerService;
-import js.tiny.container.spi.IContainerServiceMeta;
+import js.tiny.container.spi.IServiceMeta;
 import js.tiny.container.spi.IManagedClass;
 import js.tiny.container.spi.IManagedMethod;
+import js.tiny.container.spi.IMethodInvocationProcessor;
 import js.util.Classes;
 import js.util.Types;
 
@@ -369,10 +370,10 @@ public final class ManagedClass implements IManagedClass {
 	 */
 	private boolean autoInstanceCreation;
 
-	private final Map<Class<? extends IContainerServiceMeta>, IContainerServiceMeta> serviceMetas = new HashMap<>();
+	private final Map<Class<? extends IServiceMeta>, IServiceMeta> serviceMetas = new HashMap<>();
 
 	private final Set<IContainerService> services = new HashSet<>();
-	
+
 	/**
 	 * Loads this managed class state from class descriptor then delegates {@link #scanAnnotations()}. Annotations scanning is
 	 * performed only if this managed class type requires implementation, see {@link InstanceType#requiresImplementation()}.
@@ -484,14 +485,6 @@ public final class ManagedClass implements IManagedClass {
 	 */
 	private void scanAnnotations() {
 
-		for (IContainerService service : container.getServices()) {
-			for (IContainerServiceMeta serviceMeta : service.scan(this)) {
-				log.debug("Add service meta |%s| to managed class |%s|", serviceMeta.getClass(), this);
-				services.add(service);
-				serviceMetas.put(serviceMeta.getClass(), serviceMeta);
-			}
-		}
-
 		// startup annotation works only on singletons, that is, managed instances with application scope
 		if (hasAnnotation(implementationClass, Startup.class) && instanceScope == InstanceScope.APPLICATION) {
 			autoInstanceCreation = true;
@@ -545,41 +538,38 @@ public final class ManagedClass implements IManagedClass {
 				remotelyAccessible = true;
 			}
 
-			ManagedMethod managedMethod = null;
-			// handle remote accessible methods
+			final ManagedMethod managedMethod = new ManagedMethod(this, interfaceMethod);
+			methodsPool.put(interfaceMethod, managedMethod);
 
 			if (remoteMethod) {
-				if (managedMethod == null) {
-					managedMethod = new ManagedMethod(this, interfaceMethod);
-				}
 				managedMethod.setRemotelyAccessible(remoteMethod);
 			}
 
-			if (instanceType.isPROXY() && managedMethod == null) {
-				managedMethod = new ManagedMethod(this, interfaceMethod);
-			}
+			// if (managedMethod.isRemotelyAccessible() && netMethodsPool.put(method.getName(), managedMethod) != null) {
+			// throw new BugError("Overloading is not supported for net method |%s|.", managedMethod);
+			// }
+		}
 
+		for (IContainerService service : container.getServices()) {
+			for (IServiceMeta serviceMeta : service.scan(this)) {
+				log.debug("Add service meta |%s| to managed class |%s|", serviceMeta.getClass(), this);
+				services.add(service);
+				serviceMetas.put(serviceMeta.getClass(), serviceMeta);
+			}
+		}
+
+		for (IManagedMethod method : methodsPool.values()) {
+			ManagedMethod managedMethod = (ManagedMethod) method;
 			for (IContainerService service : container.getServices()) {
-				ManagedMethod tempManagedMethod = new ManagedMethod(this, interfaceMethod);
-				for (IContainerServiceMeta serviceMeta : service.scan(tempManagedMethod)) {
-					if (managedMethod == null) {
-						managedMethod = tempManagedMethod;
-					}
-					managedMethod.addServiceMeta(service, serviceMeta);
+				if (service instanceof IMethodInvocationProcessor) {
+					managedMethod.addInvocationProcessor((IMethodInvocationProcessor) service);
+				}
+				for (IServiceMeta serviceMeta : service.scan(managedMethod)) {
+					managedMethod.addServiceMeta(serviceMeta);
 					// if(serviceMeta.requiresInstanceCreation()) {
 					autoInstanceCreation = true;
 					// }
 				}
-			}
-
-			if (managedMethod == null) {
-				continue;
-			}
-
-			// store managed method, if created, to managed methods pool
-			methodsPool.put(interfaceMethod, managedMethod);
-			if (managedMethod.isRemotelyAccessible() && netMethodsPool.put(method.getName(), managedMethod) != null) {
-				//throw new BugError("Overloading is not supported for net method |%s|.", managedMethod);
 			}
 		}
 
@@ -618,7 +608,7 @@ public final class ManagedClass implements IManagedClass {
 	@Override
 	public Class<?> getInterfaceClass() {
 		if (interfaceClasses.length > 1) {
-			//throw new BugError("Attempt to treat multiple interfaces as a single one.");
+			// throw new BugError("Attempt to treat multiple interfaces as a single one.");
 		}
 		return interfaceClasses[0];
 	}
@@ -1063,7 +1053,7 @@ public final class ManagedClass implements IManagedClass {
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public <T extends IContainerServiceMeta> T getServiceMeta(Class<T> type) {
+	public <T extends IServiceMeta> T getServiceMeta(Class<T> type) {
 		return (T) serviceMetas.get(type);
 	}
 

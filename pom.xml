@@ -33,6 +33,7 @@
 		<module>tiny-rest</module>
 		<module>tiny-mvc</module>
 		<module>tiny-transaction</module>
+		<module>tiny-perfmon</module>
 	</modules>
 
 	<properties>

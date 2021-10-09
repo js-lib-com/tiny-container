@@ -14,7 +14,7 @@ import js.tiny.container.spi.IContainer;
 import js.tiny.container.spi.IContainerService;
 import js.tiny.container.spi.IManagedClass;
 import js.tiny.container.spi.IManagedMethod;
-import js.tiny.container.spi.IContainerServiceMeta;
+import js.tiny.container.spi.IServiceMeta;
 
 public class ManagedClassSpiStub implements IManagedClass {
 	@Override
@@ -118,7 +118,7 @@ public class ManagedClassSpiStub implements IManagedClass {
 	}
 
 	@Override
-	public <T extends IContainerServiceMeta> T getServiceMeta(Class<T> type) {
+	public <T extends IServiceMeta> T getServiceMeta(Class<T> type) {
 		throw new UnsupportedOperationException("getServiceMeta(Class<T> type)");
 	}
 

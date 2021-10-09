@@ -8,7 +8,7 @@ import js.lang.InvocationException;
 import js.tiny.container.spi.AuthorizationException;
 import js.tiny.container.spi.IManagedClass;
 import js.tiny.container.spi.IManagedMethod;
-import js.tiny.container.spi.IContainerServiceMeta;
+import js.tiny.container.spi.IServiceMeta;
 
 public class ManagedMethodSpiStub implements IManagedMethod {
 	@Override
@@ -57,12 +57,22 @@ public class ManagedMethodSpiStub implements IManagedMethod {
 	}
 
 	@Override
-	public <T extends IContainerServiceMeta> T getServiceMeta(Class<T> type) {
+	public <T extends IServiceMeta> T getServiceMeta(Class<T> type) {
 		throw new UnsupportedOperationException("getServiceMeta(Class<T> type)");
 	}
 
 	@Override
 	public <T extends Annotation> T getAnnotation(Class<T> type) {
 		throw new UnsupportedOperationException("getAnnotation(Class<T> type)");
+	}
+
+	@Override
+	public void setAttribute(Object context, String name, Object value) {
+		throw new UnsupportedOperationException("setAttribute(Object context, String name, Object value)");
+	}
+
+	@Override
+	public <T> T getAttribute(Object context, String name, Class<T> type) {
+		throw new UnsupportedOperationException("getAttribute(Object context, String name, Class<T> type)");
 	}
 }

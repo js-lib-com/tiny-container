@@ -6,7 +6,7 @@ import js.tiny.container.spi.IContainerServiceProvider;
 
 public class ResourceServiceProvider implements IContainerServiceProvider {
 	@Override
-	public IContainerService createService(IContainer container) {
+	public IContainerService getService(IContainer container) {
 		return new ResourceService();
 	}
 }

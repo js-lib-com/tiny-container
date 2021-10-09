@@ -2,16 +2,19 @@ package js.tiny.container.rest;
 
 import javax.ws.rs.Path;
 
-import js.tiny.container.spi.IContainerServiceMeta;
+import js.tiny.container.spi.IContainerService;
+import js.tiny.container.spi.ServiceMeta;
 
-class PathMeta implements IContainerServiceMeta {
+class PathMeta extends ServiceMeta {
 	private final String value;
 
-	public PathMeta(Path path) {
+	public PathMeta(IContainerService service, Path path) {
+		super(service);
 		this.value = path.value();
 	}
 
-	public PathMeta(String value) {
+	public PathMeta(IContainerService service, String value) {
+		super(service);
 		this.value = value;
 	}
 

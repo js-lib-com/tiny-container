@@ -20,7 +20,7 @@ import org.mockito.junit.MockitoJUnitRunner;
 import js.lang.InvocationException;
 import js.tiny.container.spi.AuthorizationException;
 import js.tiny.container.spi.IContainer;
-import js.tiny.container.spi.IContainerServiceMeta;
+import js.tiny.container.spi.IServiceMeta;
 import js.tiny.container.spi.IManagedClass;
 import js.tiny.container.spi.IManagedMethod;
 import js.tiny.container.spi.IMethodInvocation;
@@ -74,7 +74,7 @@ public class TransactionServiceTest {
 		when(managedClass.getAnnotation(Transactional.class)).thenReturn(transactional);
 
 		// when
-		List<IContainerServiceMeta> servicesMeta = service.scan(managedClass);
+		List<IServiceMeta> servicesMeta = service.scan(managedClass);
 
 		// then
 		assertThat(servicesMeta, not(empty()));
@@ -86,7 +86,7 @@ public class TransactionServiceTest {
 		when(managedClass.getAnnotation(Transactional.class)).thenReturn(transactional);
 
 		// when
-		List<IContainerServiceMeta> servicesMeta = service.scan(managedClass);
+		List<IServiceMeta> servicesMeta = service.scan(managedClass);
 
 		// then
 		assertThat(servicesMeta, not(empty()));
@@ -98,7 +98,7 @@ public class TransactionServiceTest {
 		when(managedMethod.getAnnotation(Transactional.class)).thenReturn(transactional);
 
 		// when
-		List<IContainerServiceMeta> servicesMeta = service.scan(managedMethod);
+		List<IServiceMeta> servicesMeta = service.scan(managedMethod);
 
 		// then
 		assertThat(servicesMeta, not(empty()));
@@ -110,7 +110,7 @@ public class TransactionServiceTest {
 		when(managedMethod.getAnnotation(Transactional.class)).thenReturn(transactional);
 
 		// when
-		List<IContainerServiceMeta> servicesMeta = service.scan(managedMethod);
+		List<IServiceMeta> servicesMeta = service.scan(managedMethod);
 
 		// then
 		assertThat(servicesMeta, not(empty()));

@@ -10,8 +10,17 @@ package js.tiny.container.spi;
  * service execution. This way, details about metadata implementation is know only by container service and application logic
  * but not by the container core.
  * 
+ * Service metadata is specific to a container service and has meaning only in relation with defining service. Service metadata
+ * instance is identified by its type. Implementation should implement {@link Object#equals(Object)} and
+ * {@link Object#hashCode()} using metadata type as discriminator or extend abstract {@link ServiceMeta}.
+ * 
  * @author Iulian Rotaru
  */
-public interface IContainerServiceMeta {
-
+public interface IServiceMeta {
+	/**
+	 * Get parent container service declaring this service meta.
+	 * 
+	 * @return parent container service.
+	 */
+	IContainerService getContainerService();
 }

@@ -1,7 +1,6 @@
 package js.tiny.container.perfmon;
 
 import js.tiny.container.ManagedMethod;
-import js.tiny.container.spi.IContainerServiceMeta;
 import js.tiny.container.spi.IManagedMethod;
 
 /**
@@ -25,9 +24,8 @@ import js.tiny.container.spi.IManagedMethod;
  * @author Iulian Rotaru
  * @version final
  */
-class Meter implements IInvocationMeter, IContainerServiceMeta {
-	/** Declaring class for instrumented managed method. */
-	private Class<?> declaringClass;
+class Meter implements IInvocationMeter {
+	public static final String ATTR_METER = "meter";
 
 	/** Instrumented method signature. */
 	private String methodSignature;
@@ -53,13 +51,7 @@ class Meter implements IInvocationMeter, IContainerServiceMeta {
 	 * @param method instrumented method.
 	 */
 	public Meter(IManagedMethod method) {
-		this.declaringClass = method.getDeclaringClass().getImplementationClass();
 		this.methodSignature = method.getSignature();
-	}
-
-	@Override
-	public Class<?> getMethodDeclaringClass() {
-		return declaringClass;
 	}
 
 	@Override
@@ -101,8 +93,6 @@ class Meter implements IInvocationMeter, IContainerServiceMeta {
 		long averageProcessingTime = invocationsCount != 0 ? totalProcessingTime / invocationsCount : 0;
 
 		StringBuilder sb = new StringBuilder();
-		sb.append(declaringClass.getCanonicalName());
-		sb.append("#");
 		sb.append(methodSignature);
 		sb.append(": ");
 		sb.append(invocationsCount);

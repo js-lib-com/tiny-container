@@ -204,14 +204,6 @@ public class ManagedClassSpiConformanceTest {
 	}
 
 	@Test
-	public void getNetMethod() throws Exception {
-		String config = "<test class='js.tiny.container.unit.ManagedClassSpiConformanceTest$NetCar' />";
-		IManagedMethod netMethod = getManagedClass(config(config)).getNetMethod("getModel");
-		assertNotNull(netMethod);
-		assertEquals("getModel", netMethod.getMethod().getName());
-	}
-
-	@Test
 	public void getNetMethod_NotFound() throws Exception {
 		String config = "<test class='js.tiny.container.unit.ManagedClassSpiConformanceTest$NetCar' />";
 		assertNull(getManagedClass(config(config)).getNetMethod("getCounty"));

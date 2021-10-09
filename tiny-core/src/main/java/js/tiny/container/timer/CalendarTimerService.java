@@ -16,7 +16,7 @@ import js.log.LogFactory;
 import js.tiny.container.InstanceScope;
 import js.tiny.container.spi.IManagedClass;
 import js.tiny.container.spi.IManagedMethod;
-import js.tiny.container.spi.IContainerServiceMeta;
+import js.tiny.container.spi.IServiceMeta;
 import js.util.Params;
 import js.util.Types;
 
@@ -36,14 +36,14 @@ class CalendarTimerService implements ICalendarTimerService {
 	}
 
 	@Override
-	public List<IContainerServiceMeta> scan(IManagedClass managedClass) {
+	public List<IServiceMeta> scan(IManagedClass managedClass) {
 		// TODO Auto-generated method stub
 		return Collections.emptyList();
 	}
 
 	@Override
-	public List<IContainerServiceMeta> scan(IManagedMethod managedMethod) {
-		List<IContainerServiceMeta> serviceMetas = new ArrayList<>();
+	public List<IServiceMeta> scan(IManagedMethod managedMethod) {
+		List<IServiceMeta> serviceMetas = new ArrayList<>();
 
 		Schedule schedule = managedMethod.getAnnotation(Schedule.class);
 		if (schedule != null) {
@@ -53,7 +53,7 @@ class CalendarTimerService implements ICalendarTimerService {
 			if (!Types.isVoid(managedMethod.getReturnType())) {
 				throw new BugError("Cron method |%s| must be void.", managedMethod);
 			}
-			serviceMetas.add(new ScheduleMeta(schedule));
+			serviceMetas.add(new ScheduleMeta(this, schedule));
 		}
 
 		return serviceMetas;

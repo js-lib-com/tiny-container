@@ -204,7 +204,7 @@ public interface IManagedClass {
 	 */
 	Map<String, Field> getContextParamFields();
 
-	<T extends IContainerServiceMeta> T getServiceMeta(Class<T> type);
+	<T extends IServiceMeta> T getServiceMeta(Class<T> type);
 	
 	<T extends Annotation> T getAnnotation(Class<T> type);
 }

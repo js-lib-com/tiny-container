@@ -9,17 +9,8 @@ package js.tiny.container.perfmon;
  */
 public interface IInvocationMeter extends IMeter {
 	/**
-	 * Get instrumented method declaring class. This is the class where instrumented method is declared. It can be useful to
-	 * filter meters by specific class(es).
-	 * 
-	 * @return method declaring class.
-	 */
-	Class<?> getMethodDeclaringClass();
-
-	/**
-	 * Return instrumented method short signature. Returned signature does not contains declaring class, since it is supplied by
-	 * {@link #getMethodDeclaringClass()}; it contains only method name and formal parameters list. It is intended as a visual
-	 * clue to related counters.
+	 * Return instrumented method short signature. Returned signature should contain declaring class. Method signature is
+	 * intended as a visual clue to related counters.
 	 * 
 	 * @return method signature.
 	 */

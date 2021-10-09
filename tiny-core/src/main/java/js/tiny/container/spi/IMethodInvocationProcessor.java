@@ -9,6 +9,6 @@ public interface IMethodInvocationProcessor extends IJoinPointProcessor {
 	Object invoke(IMethodInvocationProcessorsChain serviceChain, IMethodInvocation methodInvocation) throws AuthorizationException, IllegalArgumentException, InvocationException;
 
 	public static enum Priority {
-		SECURITY, FIRST, HIGH, NORMAL, LOW, LAST, NONE
+		SECURITY, PERFMON, FIRST, HIGH, NORMAL, LOW, LAST, NONE
 	}
 }

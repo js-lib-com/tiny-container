@@ -4,7 +4,6 @@
 		<!-- App should be declared first to be initialized before the other managed classes with managed life cycle. -->
 		<app class="js.tiny.container.servlet.App" />
 		<app-context interface="js.tiny.container.servlet.AppContext" class="js.tiny.container.servlet.TinyContainer" />
-		<observer class="js.tiny.container.perfmon.Observer" />
 
 		<request-context class="js.tiny.container.servlet.RequestContext" scope="THREAD" />
 		

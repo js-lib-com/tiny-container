@@ -21,6 +21,7 @@ import org.mockito.junit.MockitoJUnitRunner;
 import js.tiny.container.http.Resource;
 import js.tiny.container.servlet.ITinyContainer;
 import js.tiny.container.servlet.TinyContainer;
+import js.tiny.container.spi.IContainerService;
 import js.tiny.container.spi.IManagedClass;
 import js.tiny.container.spi.IManagedMethod;
 import js.util.Classes;
@@ -35,6 +36,8 @@ public class ResourceServletUnitTest {
 	@Mock
 	private ITinyContainer container;
 	@Mock
+	private IContainerService service;
+	@Mock
 	private IManagedClass managedClass;
 	@Mock
 	private IManagedMethod managedMethod;
@@ -47,7 +50,7 @@ public class ResourceServletUnitTest {
 		when(servletContext.getAttribute(TinyContainer.ATTR_INSTANCE)).thenReturn(container);
 
 		when(container.getManagedMethods()).thenReturn(Arrays.asList(managedMethod));
-		when(managedClass.getServiceMeta(ControllerMeta.class)).thenReturn(new ControllerMeta("controller"));
+		when(managedClass.getServiceMeta(ControllerMeta.class)).thenReturn(new ControllerMeta(service, "controller"));
 		when(managedMethod.getDeclaringClass()).thenReturn(managedClass);
 		when(managedMethod.getName()).thenReturn("resource");
 	}
@@ -62,7 +65,7 @@ public class ResourceServletUnitTest {
 	@Test
 	public void GivenResourceMethod_WhenServletInit_ThenRegister() throws ServletException {
 		// given
-		when(managedMethod.getServiceMeta(RequestPathMeta.class)).thenReturn(new RequestPathMeta("index"));
+		when(managedMethod.getServiceMeta(RequestPathMeta.class)).thenReturn(new RequestPathMeta(service, "index"));
 		when(managedMethod.getReturnType()).thenReturn(Resource.class);
 
 		// when
@@ -104,7 +107,7 @@ public class ResourceServletUnitTest {
 	@Test
 	public void GivenAppContext_WhenCreateStorageKey_ThenIncludeAppContext() throws Exception {
 		// given
-		when(managedMethod.getServiceMeta(RequestPathMeta.class)).thenReturn(new RequestPathMeta("resource"));
+		when(managedMethod.getServiceMeta(RequestPathMeta.class)).thenReturn(new RequestPathMeta(service, "resource"));
 
 		// when
 		String key = key(managedMethod);
@@ -116,7 +119,7 @@ public class ResourceServletUnitTest {
 	@Test
 	public void GivenRootContext_WhenCreateStorageKey_ThenNoAppContext() throws Exception {
 		// given
-		when(managedClass.getServiceMeta(ControllerMeta.class)).thenReturn(new ControllerMeta(""));
+		when(managedClass.getServiceMeta(ControllerMeta.class)).thenReturn(new ControllerMeta(service, ""));
 
 		// when
 		String key = key(managedMethod);

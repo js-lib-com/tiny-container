@@ -18,28 +18,24 @@ import js.lang.BugError;
 import js.lang.InvocationException;
 import js.log.Log;
 import js.log.LogFactory;
-import js.tiny.container.interceptor.Interceptor;
-import js.tiny.container.perfmon.IInvocationMeter;
 import js.tiny.container.spi.AuthorizationException;
-import js.tiny.container.spi.IContainerService;
-import js.tiny.container.spi.IContainerServiceMeta;
 import js.tiny.container.spi.IManagedClass;
 import js.tiny.container.spi.IManagedMethod;
 import js.tiny.container.spi.IMethodInvocation;
 import js.tiny.container.spi.IMethodInvocationProcessor;
 import js.tiny.container.spi.IMethodInvocationProcessorsChain;
+import js.tiny.container.spi.IServiceMeta;
 import js.util.Params;
 import js.util.Strings;
 import js.util.Types;
 
 /**
- * Managed method provides method level services. A managed method is a thin wrapper around Java reflective method. It has
- * methods to retrieve internal state and miscellaneous flags but the real added piece of functionality is
- * {@link #invoke(Object, Object...)} method. It is in charge, of course beside executing wrapped Java method, with interceptors
- * and invocation meters handling. For details please see {@link Interceptor} and {@link IInvocationMeter} interfaces.
+ * A managed method, aka business or application method, is a thin wrapper around Java reflective method. It has methods to
+ * retrieve internal state and miscellaneous flags but the real added piece of functionality is
+ * {@link #invoke(Object, Object...)} method that takes care to execute container services before delegating Java reflective
+ * method.
  * 
  * @author Iulian Rotaru
- * @version final
  */
 public final class ManagedMethod implements IManagedMethod, IMethodInvocationProcessor {
 	/** Class logger. */
@@ -72,7 +68,7 @@ public final class ManagedMethod implements IManagedMethod, IMethodInvocationPro
 	/** Method invocation arguments processor. */
 	private final ArgumentsProcessor argumentsProcessor;
 
-	private final Map<Class<? extends IContainerServiceMeta>, IContainerServiceMeta> serviceMetas = new HashMap<>();
+	private final Map<Class<? extends IServiceMeta>, IServiceMeta> serviceMetas = new HashMap<>();
 
 	private final Set<IMethodInvocationProcessor> invocationProcessors = new HashSet<>();
 
@@ -164,6 +160,7 @@ public final class ManagedMethod implements IManagedMethod, IMethodInvocationPro
 	public <T> T invoke(Object object, Object... args) throws AuthorizationException, IllegalArgumentException, InvocationException {
 		MethodInvocationProcessorsChain processorsChain = new MethodInvocationProcessorsChain();
 		processorsChain.addProcessors(invocationProcessors);
+
 		// this managed method is a method invocation processor too
 		// its priority ensures that it is executed at the end, after all other processors
 		processorsChain.addProcessor(this);
@@ -227,7 +224,7 @@ public final class ManagedMethod implements IManagedMethod, IMethodInvocationPro
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public <T extends IContainerServiceMeta> T getServiceMeta(Class<T> type) {
+	public <T extends IServiceMeta> T getServiceMeta(Class<T> type) {
 		return (T) serviceMetas.get(type);
 	}
 
@@ -254,6 +251,34 @@ public final class ManagedMethod implements IManagedMethod, IMethodInvocationPro
 		return annotation;
 	}
 
+	private final Map<String, Object> attributes = new HashMap<>();
+
+	@Override
+	public void setAttribute(Object context, String name, Object value) {
+		attributes.put(key(context, name), value);
+	}
+
+	@SuppressWarnings("unchecked")
+	@Override
+	public <T> T getAttribute(Object context, String name, Class<T> type) {
+		String key = key(context, name);
+		Object value = attributes.get(key);
+		if (value == null) {
+			throw new IllegalStateException(String.format("Cannot found managed method attribute |%s|.", key));
+		}
+		if (!Types.isInstanceOf(value, type)) {
+			throw new ClassCastException(String.format("Cannot cast attribute |%s| to type |%s|.", key, type));
+		}
+		return (T) value;
+	}
+
+	private static final String key(Object context, String name) {
+		if (!(context instanceof Class)) {
+			context = context.getClass();
+		}
+		return Strings.concat(((Class<?>) context).getCanonicalName(), '#', name);
+	}
+
 	// --------------------------------------------------------------------------------------------
 	// PACKAGE METHODS
 
@@ -266,12 +291,13 @@ public final class ManagedMethod implements IManagedMethod, IMethodInvocationPro
 		this.remotelyAccessible = remotelyAccessible;
 	}
 
-	void addServiceMeta(IContainerService service, IContainerServiceMeta serviceMeta) {
+	void addInvocationProcessor(IMethodInvocationProcessor invocationProcessor) {
+		invocationProcessors.add(invocationProcessor);
+	}
+	
+	void addServiceMeta(IServiceMeta serviceMeta) {
 		log.debug("Add service meta |%s| to managed method |%s|", serviceMeta.getClass(), this);
 		serviceMetas.put(serviceMeta.getClass(), serviceMeta);
-		if (service instanceof IMethodInvocationProcessor) {
-			invocationProcessors.add((IMethodInvocationProcessor) service);
-		}
 	}
 
 	void setRoles(String[] roles) {

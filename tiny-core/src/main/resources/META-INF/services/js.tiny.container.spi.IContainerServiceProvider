@@ -1,4 +1,3 @@
 js.tiny.container.timer.CalendarTimerServiceProvider
 js.tiny.container.interceptor.InterceptorServiceProvider
 js.tiny.container.async.AsyncServiceProvider
-js.tiny.container.perfmon.PerformanceMonitorServiceProvider

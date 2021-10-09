@@ -38,8 +38,6 @@ import js.log.Log;
 import js.log.LogFactory;
 import js.rmi.RemoteFactory;
 import js.tiny.container.core.AppFactory;
-import js.tiny.container.interceptor.Interceptor;
-import js.tiny.container.perfmon.IInvocationMeter;
 import js.tiny.container.spi.IClassPostProcessor;
 import js.tiny.container.spi.IContainer;
 import js.tiny.container.spi.IContainerService;
@@ -301,7 +299,7 @@ public class Container implements IContainer, Configurable {
 		log.trace("Container()");
 
 		for (IContainerServiceProvider provider : ServiceLoader.load(IContainerServiceProvider.class)) {
-			IContainerService service = provider.createService(this);
+			IContainerService service = provider.getService(this);
 			log.debug("Load container service |%s|.", service.getClass());
 			containerServices.add(service);
 		}

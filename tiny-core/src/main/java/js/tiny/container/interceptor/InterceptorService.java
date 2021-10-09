@@ -9,7 +9,7 @@ import js.log.LogFactory;
 import js.tiny.container.spi.AuthorizationException;
 import js.tiny.container.spi.IContainer;
 import js.tiny.container.spi.IContainerService;
-import js.tiny.container.spi.IContainerServiceMeta;
+import js.tiny.container.spi.IServiceMeta;
 import js.tiny.container.spi.IManagedClass;
 import js.tiny.container.spi.IManagedMethod;
 import js.tiny.container.spi.IMethodInvocation;
@@ -33,24 +33,24 @@ final class InterceptorService implements IContainerService, IMethodInvocationPr
 	}
 
 	@Override
-	public List<IContainerServiceMeta> scan(IManagedClass managedClass) {
-		List<IContainerServiceMeta> servicesMeta = new ArrayList<>();
+	public List<IServiceMeta> scan(IManagedClass managedClass) {
+		List<IServiceMeta> servicesMeta = new ArrayList<>();
 
 		Intercepted intercepted = managedClass.getAnnotation(Intercepted.class);
 		if (intercepted != null) {
-			servicesMeta.add(new InterceptedMeta(intercepted));
+			servicesMeta.add(new InterceptedMeta(this, intercepted));
 		}
 
 		return servicesMeta;
 	}
 
 	@Override
-	public List<IContainerServiceMeta> scan(IManagedMethod managedMethod) {
-		List<IContainerServiceMeta> servicesMeta = new ArrayList<>();
+	public List<IServiceMeta> scan(IManagedMethod managedMethod) {
+		List<IServiceMeta> servicesMeta = new ArrayList<>();
 
 		Intercepted intercepted = managedMethod.getAnnotation(Intercepted.class);
 		if (intercepted != null) {
-			servicesMeta.add(new InterceptedMeta(intercepted));
+			servicesMeta.add(new InterceptedMeta(this, intercepted));
 		}
 
 		return servicesMeta;

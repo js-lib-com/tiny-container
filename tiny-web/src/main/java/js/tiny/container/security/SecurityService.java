@@ -18,7 +18,7 @@ import js.tiny.container.servlet.TinyContainer;
 import js.tiny.container.spi.AuthorizationException;
 import js.tiny.container.spi.IContainer;
 import js.tiny.container.spi.IContainerService;
-import js.tiny.container.spi.IContainerServiceMeta;
+import js.tiny.container.spi.IServiceMeta;
 import js.tiny.container.spi.IManagedClass;
 import js.tiny.container.spi.IManagedMethod;
 import js.tiny.container.spi.IMethodInvocation;
@@ -41,44 +41,44 @@ public class SecurityService implements IContainerService, IMethodInvocationProc
 	}
 
 	@Override
-	public List<IContainerServiceMeta> scan(IManagedClass managedClass) {
-		List<IContainerServiceMeta> servicesMeta = new ArrayList<>();
+	public List<IServiceMeta> scan(IManagedClass managedClass) {
+		List<IServiceMeta> servicesMeta = new ArrayList<>();
 
 		RolesAllowed rolesAllowed = managedClass.getAnnotation(RolesAllowed.class);
 		if (rolesAllowed != null) {
-			servicesMeta.add(new RolesAllowedMeta(rolesAllowed));
+			servicesMeta.add(new RolesAllowedMeta(this, rolesAllowed));
 		}
 
 		DenyAll denyAll = managedClass.getAnnotation(DenyAll.class);
 		if (denyAll != null) {
-			servicesMeta.add(new DenyAllMeta());
+			servicesMeta.add(new DenyAllMeta(this));
 		}
 
 		PermitAll permitAll = managedClass.getAnnotation(PermitAll.class);
 		if (permitAll != null) {
-			servicesMeta.add(new PermitAllMeta());
+			servicesMeta.add(new PermitAllMeta(this));
 		}
 
 		return servicesMeta;
 	}
 
 	@Override
-	public List<IContainerServiceMeta> scan(IManagedMethod managedMethod) {
-		List<IContainerServiceMeta> servicesMeta = new ArrayList<>();
+	public List<IServiceMeta> scan(IManagedMethod managedMethod) {
+		List<IServiceMeta> servicesMeta = new ArrayList<>();
 
 		RolesAllowed rolesAllowed = managedMethod.getAnnotation(RolesAllowed.class);
 		if (rolesAllowed != null) {
-			servicesMeta.add(new RolesAllowedMeta(rolesAllowed));
+			servicesMeta.add(new RolesAllowedMeta(this, rolesAllowed));
 		}
 
 		DenyAll denyAll = managedMethod.getAnnotation(DenyAll.class);
 		if (denyAll != null) {
-			servicesMeta.add(new DenyAllMeta());
+			servicesMeta.add(new DenyAllMeta(this));
 		}
 
 		PermitAll permitAll = managedMethod.getAnnotation(PermitAll.class);
 		if (permitAll != null) {
-			servicesMeta.add(new PermitAllMeta());
+			servicesMeta.add(new PermitAllMeta(this));
 		}
 
 		return servicesMeta;

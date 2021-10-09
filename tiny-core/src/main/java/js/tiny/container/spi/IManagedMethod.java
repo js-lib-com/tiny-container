@@ -7,8 +7,6 @@ import java.lang.reflect.Type;
 import javax.ejb.Remote;
 
 import js.lang.InvocationException;
-import js.tiny.container.interceptor.Interceptor;
-import js.tiny.container.perfmon.IInvocationMeter;
 
 /**
  * Managed method service provider interface. Although public, this interface is designed for library internal usage. User space
@@ -54,8 +52,7 @@ public interface IManagedMethod {
 	Type getReturnType();
 
 	/**
-	 * Invoke managed method. Just delegate wrapped Java reflective method but takes care to execute {@link Interceptor}, if any
-	 * configured, and to update internal {@link IInvocationMeter}.
+	 * Invoke managed method taking care to execute container services, if any .
 	 * 
 	 * @param object managed instance against which method is executed,
 	 * @param args invocation arguments.
@@ -84,7 +81,11 @@ public interface IManagedMethod {
 	 */
 	boolean isRemotelyAccessible();
 
-	<T extends IContainerServiceMeta> T getServiceMeta(Class<T> type);
+	<T extends IServiceMeta> T getServiceMeta(Class<T> type);
 
 	<T extends Annotation> T getAnnotation(Class<T> type);
+
+	void setAttribute(Object context, String name, Object value);
+
+	<T> T getAttribute(Object context, String name, Class<T> type);
 }

@@ -1,12 +1,14 @@
 package js.tiny.container.mvc;
 
 import js.tiny.container.mvc.annotation.ResponseContentType;
-import js.tiny.container.spi.IContainerServiceMeta;
+import js.tiny.container.spi.IContainerService;
+import js.tiny.container.spi.ServiceMeta;
 
-class ResponseContentTypeMeta implements IContainerServiceMeta {
+class ResponseContentTypeMeta extends ServiceMeta {
 	private final String value;
 
-	public ResponseContentTypeMeta(ResponseContentType responseContentType) {
+	public ResponseContentTypeMeta(IContainerService service, ResponseContentType responseContentType) {
+		super(service);
 		this.value = responseContentType.value();
 	}
 

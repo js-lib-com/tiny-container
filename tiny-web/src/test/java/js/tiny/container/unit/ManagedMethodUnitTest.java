@@ -5,21 +5,16 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
-import java.lang.reflect.Field;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.lang.reflect.Type;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import org.junit.Before;
 import org.junit.Ignore;
@@ -28,17 +23,12 @@ import org.junit.Test;
 import js.lang.BugError;
 import js.lang.GType;
 import js.lang.InvocationException;
-import js.tiny.container.Container;
 import js.tiny.container.ManagedMethod;
-import js.tiny.container.core.AppFactory;
-import js.tiny.container.core.Factory;
 import js.tiny.container.interceptor.PostInvokeInterceptor;
 import js.tiny.container.interceptor.PreInvokeInterceptor;
-import js.tiny.container.perfmon.IInvocationMeter;
 import js.tiny.container.spi.AuthorizationException;
 import js.tiny.container.spi.IContainer;
 import js.tiny.container.spi.IContainerService;
-import js.tiny.container.spi.IManagedClass;
 import js.tiny.container.spi.IManagedMethod;
 import js.tiny.container.stub.ContainerStub;
 import js.tiny.container.stub.ManagedClassSpiStub;
@@ -211,170 +201,12 @@ public class ManagedMethodUnitTest {
 		managedMethod.invoke(human, "John Doe");
 	}
 
-	@Test
-	@Ignore
-	public void invokeObject_InstrumentationEnabled() throws Exception {
-		IManagedMethod managedMethod = getManagedMethod();
-		IInvocationMeter meter = Classes.invoke(managedMethod, "getMeter");
-
-		Person person = new Person();
-		assertEquals("John Doe", managedMethod.invoke(person, "John Doe"));
-		assertEquals("John Doe", person.name);
-
-		assertEquals(1, meter.getInvocationsCount());
-		assertEquals(0, meter.getExceptionsCount());
-		assertTrue(meter.getMaxProcessingTime() > 0);
-		assertEquals(meter.getMaxProcessingTime(), meter.getTotalProcessingTime());
-	}
-
-	@Test
-	@Ignore
-	public void invokeObject_InstrumentationEnabled_InvocationException() throws Exception {
-		class PersonEx {
-			void method() throws Exception {
-				throw new Exception("exception");
-			}
-		}
-		Method method = PersonEx.class.getDeclaredMethod("method");
-		IManagedMethod managedMethod = new ManagedMethod(managedClass, method);
-		IInvocationMeter meter = Classes.invoke(managedMethod, "getMeter");
-
-		try {
-			managedMethod.invoke(new PersonEx());
-			fail("Expected InvocationException.");
-		} catch (InvocationException unused) {
-		}
-
-		assertEquals(1, meter.getInvocationsCount());
-		assertEquals(1, meter.getExceptionsCount());
-		assertEquals(0, meter.getMaxProcessingTime());
-		assertEquals(0, meter.getTotalProcessingTime());
-	}
-
-	@Test
-	@Ignore
-	public void invokeObject_InstrumentationEnabled_NoAccessibleMethod() throws Exception {
-		Method method = Person.class.getDeclaredMethod("setName", String.class);
-		IManagedMethod managedMethod = new ManagedMethod(managedClass, method);
-		method.setAccessible(false);
-		IInvocationMeter meter = Classes.invoke(managedMethod, "getMeter");
-
-		try {
-			managedMethod.invoke(new Person(), "John Doe");
-			fail("Expected InvocationException.");
-		} catch (BugError unused) {
-		}
-
-		assertEquals(1, meter.getInvocationsCount());
-		// exception counter is not incremented on bugs
-		assertEquals(0, meter.getExceptionsCount());
-		assertEquals(0, meter.getMaxProcessingTime());
-		assertEquals(0, meter.getTotalProcessingTime());
-	}
-
-	// --------------------------------------------------------------------------------------------
-	// INVOCATION METER
-
-	@Test
-	@Ignore
-	public void meter_Constructor() throws Exception {
-		Method method = Person.class.getDeclaredMethod("setName", String.class);
-		IInvocationMeter meter = Classes.newInstance("js.tiny.container.ManagedMethod$Meter", method);
-
-		assertEquals(Person.class, meter.getMethodDeclaringClass());
-		assertEquals("setName(String)", meter.getMethodSignature());
-		assertEquals(0, meter.getInvocationsCount());
-		assertEquals(0, meter.getExceptionsCount());
-		assertEquals(0, meter.getTotalProcessingTime());
-		assertEquals(0, meter.getMaxProcessingTime());
-
-		assertEquals("js.tiny.container.unit.ManagedMethodUnitTest.Person#setName(String): 0: 0: 0: 0: 0", meter.toExternalForm());
-	}
-
-	@Test
-	@Ignore
-	public void meter_Setters() throws Exception {
-		Method method = Person.class.getDeclaredMethod("setName", String.class);
-		IInvocationMeter meter = Classes.newInstance("js.tiny.container.ManagedMethod$Meter", method);
-
-		Classes.invoke(meter, "incrementInvocationsCount");
-		Classes.invoke(meter, "incrementExceptionsCount");
-		Classes.invoke(meter, "startProcessing");
-		sleep(2);
-		Classes.invoke(meter, "stopProcessing");
-
-		assertEquals(1, meter.getInvocationsCount());
-		assertEquals(1, meter.getExceptionsCount());
-		assertTrue(meter.getTotalProcessingTime() > 0);
-		assertTrue(meter.getMaxProcessingTime() > 0);
-
-		assertTrue(meter.toExternalForm().contains("Person#setName(String): 1: 1: "));
-	}
-
-	@Test
-	@Ignore
-	public void meter_Reset() throws Exception {
-		Method method = Person.class.getDeclaredMethod("setName", String.class);
-		IInvocationMeter meter = Classes.newInstance("js.tiny.container.ManagedMethod$Meter", method);
-
-		Classes.invoke(meter, "incrementInvocationsCount");
-		Classes.invoke(meter, "incrementExceptionsCount");
-		Classes.invoke(meter, "startProcessing");
-		sleep(2);
-		Classes.invoke(meter, "stopProcessing");
-
-		meter.reset();
-
-		assertEquals(0, meter.getInvocationsCount());
-		assertEquals(0, meter.getExceptionsCount());
-		assertEquals(0, meter.getTotalProcessingTime());
-		assertEquals(0, meter.getMaxProcessingTime());
-	}
-
-	@Test
-	@Ignore
-	public void meter_MaxProcessingTime() throws Exception {
-		Method method = Person.class.getDeclaredMethod("setName", String.class);
-		IInvocationMeter meter = Classes.newInstance("js.tiny.container.ManagedMethod$Meter", method);
-
-		Classes.invoke(meter, "startProcessing");
-		sleep(200);
-		Classes.invoke(meter, "stopProcessing");
-		assertEquals(meter.getMaxProcessingTime(), meter.getTotalProcessingTime());
-		long maxProcessingTime = meter.getMaxProcessingTime();
-
-		Classes.invoke(meter, "startProcessing");
-		sleep(1);
-		Classes.invoke(meter, "stopProcessing");
-		assertTrue(meter.getTotalProcessingTime() > meter.getMaxProcessingTime());
-		assertEquals(maxProcessingTime, meter.getMaxProcessingTime());
-	}
-
 	// --------------------------------------------------------------------------------------------
 	// UTILITY METHODS
 
 	private IManagedMethod getManagedMethod() throws NoSuchMethodException, SecurityException {
 		Method method = Person.class.getDeclaredMethod("setName", String.class);
 		return new ManagedMethod(managedClass, method);
-	}
-
-	private static String key(IInvocationMeter meter) {
-		return meter.getMethodDeclaringClass().getCanonicalName() + "#" + meter.getMethodSignature();
-	}
-
-	private static List<IInvocationMeter> getMeters() throws Throwable {
-		List<IInvocationMeter> invocationMeters = new ArrayList<IInvocationMeter>();
-		AppFactory appFactory = Classes.invoke(Factory.class, "getAppFactory");
-		Map<Class<?>, IManagedClass> managedClasses = Classes.getFieldValue(appFactory, Container.class, "classesPool");
-		Set<IManagedClass> managedClassesSet = new HashSet<IManagedClass>(managedClasses.values());
-		for (IManagedClass managedClass : managedClassesSet) {
-			Map<Method, IManagedMethod> managedMethods = Classes.getFieldValue(managedClass, "methodsPool");
-			for (IManagedMethod managedMethod : managedMethods.values()) {
-				Field field = Classes.getFieldEx(managedMethod.getClass(), "meter");
-				invocationMeters.add((IInvocationMeter) field.get(managedMethod));
-			}
-		}
-		return invocationMeters;
 	}
 
 	/**

@@ -10,7 +10,7 @@ import js.log.LogFactory;
 import js.tiny.container.spi.AuthorizationException;
 import js.tiny.container.spi.IContainer;
 import js.tiny.container.spi.IContainerService;
-import js.tiny.container.spi.IContainerServiceMeta;
+import js.tiny.container.spi.IServiceMeta;
 import js.tiny.container.spi.IManagedClass;
 import js.tiny.container.spi.IManagedMethod;
 import js.tiny.container.spi.IMethodInvocation;
@@ -37,39 +37,39 @@ final class TransactionService implements IContainerService, IMethodInvocationPr
 	}
 
 	@Override
-	public List<IContainerServiceMeta> scan(IManagedClass managedClass) {
-		List<IContainerServiceMeta> servicesMeta = new ArrayList<>();
+	public List<IServiceMeta> scan(IManagedClass managedClass) {
+		List<IServiceMeta> servicesMeta = new ArrayList<>();
 
 		Transactional transactional = managedClass.getAnnotation(Transactional.class);
 		if (transactional != null) {
-			servicesMeta.add(new TransactionalMeta(transactional));
+			servicesMeta.add(new TransactionalMeta(this, transactional));
 		}
 
 		Immutable immutable = managedClass.getAnnotation(Immutable.class);
 		if (immutable != null) {
-			servicesMeta.add(new ImmutableMeta());
+			servicesMeta.add(new ImmutableMeta(this));
 		}
 
 		return servicesMeta;
 	}
 
 	@Override
-	public List<IContainerServiceMeta> scan(IManagedMethod managedMethod) {
-		List<IContainerServiceMeta> servicesMeta = new ArrayList<>();
+	public List<IServiceMeta> scan(IManagedMethod managedMethod) {
+		List<IServiceMeta> servicesMeta = new ArrayList<>();
 
 		Transactional transactional = managedMethod.getAnnotation(Transactional.class);
 		if (transactional != null) {
-			servicesMeta.add(new TransactionalMeta(transactional));
+			servicesMeta.add(new TransactionalMeta(this, transactional));
 		}
 
 		Immutable immutable = managedMethod.getAnnotation(Immutable.class);
 		if (immutable != null) {
-			servicesMeta.add(new ImmutableMeta());
+			servicesMeta.add(new ImmutableMeta(this));
 		}
 
 		Mutable mutable = managedMethod.getAnnotation(Mutable.class);
 		if (mutable != null) {
-			servicesMeta.add(new MutableMeta());
+			servicesMeta.add(new MutableMeta(this));
 		}
 
 		return servicesMeta;

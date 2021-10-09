@@ -1,12 +1,14 @@
 package js.tiny.container.transaction;
 
-import js.tiny.container.spi.IContainerServiceMeta;
+import js.tiny.container.spi.IContainerService;
+import js.tiny.container.spi.ServiceMeta;
 import js.transaction.Transactional;
 
-class TransactionalMeta implements IContainerServiceMeta {
+class TransactionalMeta extends ServiceMeta {
 	private final String schema;
 
-	public TransactionalMeta(Transactional transactional) {
+	public TransactionalMeta(IContainerService service, Transactional transactional) {
+		super(service);
 		this.schema = transactional.schema().isEmpty() ? null : transactional.schema();
 	}
 

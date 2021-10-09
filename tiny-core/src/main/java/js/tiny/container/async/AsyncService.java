@@ -11,7 +11,7 @@ import js.log.Log;
 import js.log.LogFactory;
 import js.tiny.container.spi.AuthorizationException;
 import js.tiny.container.spi.IContainerService;
-import js.tiny.container.spi.IContainerServiceMeta;
+import js.tiny.container.spi.IServiceMeta;
 import js.tiny.container.spi.IManagedClass;
 import js.tiny.container.spi.IManagedMethod;
 import js.tiny.container.spi.IMethodInvocation;
@@ -31,24 +31,24 @@ class AsyncService implements IContainerService, IMethodInvocationProcessor {
 	}
 
 	@Override
-	public List<IContainerServiceMeta> scan(IManagedClass managedClass) {
-		List<IContainerServiceMeta> servicesMeta = new ArrayList<>();
+	public List<IServiceMeta> scan(IManagedClass managedClass) {
+		List<IServiceMeta> servicesMeta = new ArrayList<>();
 
 		Asynchronous immutable = managedClass.getAnnotation(Asynchronous.class);
 		if (immutable != null) {
-			servicesMeta.add(new AsynchronousMeta());
+			servicesMeta.add(new AsynchronousMeta(this));
 		}
 
 		return servicesMeta;
 	}
 
 	@Override
-	public List<IContainerServiceMeta> scan(IManagedMethod managedMethod) {
-		List<IContainerServiceMeta> servicesMeta = new ArrayList<>();
+	public List<IServiceMeta> scan(IManagedMethod managedMethod) {
+		List<IServiceMeta> servicesMeta = new ArrayList<>();
 
 		Asynchronous immutable = managedMethod.getAnnotation(Asynchronous.class);
 		if (immutable != null) {
-			servicesMeta.add(new AsynchronousMeta());
+			servicesMeta.add(new AsynchronousMeta(this));
 		}
 
 		return servicesMeta;
