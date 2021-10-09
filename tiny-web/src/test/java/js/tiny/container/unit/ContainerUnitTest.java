@@ -89,12 +89,11 @@ public class ContainerUnitTest {
 		List<IInstancePostConstruct> instanceProcessors = Classes.getFieldValue(container, Container.class, "instanceProcessors");
 		assertNotNull(instanceProcessors);
 		//assertEquals(6, instanceProcessors.size());
-		assertClass("CalendarTimerService", instanceProcessors.get(0));
-		assertClass("InstanceFieldsInjectionProcessor", instanceProcessors.get(1));
-		assertClass("InstanceFieldsInitializationProcessor", instanceProcessors.get(2));
-		assertClass("ConfigurableInstanceProcessor", instanceProcessors.get(3));
-		assertClass("PostConstructInstanceProcessor", instanceProcessors.get(4));
-		assertClass("LoggerInstanceProcessor", instanceProcessors.get(5));
+		assertClass("InstanceFieldsInjectionProcessor", instanceProcessors.get(0));
+		assertClass("InstanceFieldsInitializationProcessor", instanceProcessors.get(1));
+		assertClass("ConfigurableInstanceProcessor", instanceProcessors.get(2));
+		assertClass("PostConstructInstanceProcessor", instanceProcessors.get(3));
+		assertClass("LoggerInstanceProcessor", instanceProcessors.get(4));
 
 		assertNotNull(Classes.getFieldValue(container, Container.class, "argumentsProcessor"));
 		assertClass("ArgumentsProcessor", Classes.getFieldValue(container, Container.class, "argumentsProcessor"));
@@ -470,7 +469,7 @@ public class ContainerUnitTest {
 
 		MockContainer container = new MockContainer();
 		List<IInstancePostConstruct> instanceProcessors = Classes.getFieldValue(container, Container.class, "instanceProcessors");
-		assertEquals(6, instanceProcessors.size());
+		assertEquals(5, instanceProcessors.size());
 		container.registerInstanceProcessor(new MockInstanceProcessor());
 
 		try {
@@ -479,8 +478,8 @@ public class ContainerUnitTest {
 		} catch (BugError unused) {
 		}
 
-		assertNotNull(instanceProcessors.get(6));
-		assertTrue(instanceProcessors.get(6) instanceof MockInstanceProcessor);
+		assertNotNull(instanceProcessors.get(5));
+		assertTrue(instanceProcessors.get(5) instanceof MockInstanceProcessor);
 	}
 
 	// --------------------------------------------------------------------------------------------

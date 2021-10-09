@@ -55,14 +55,13 @@ public class InstanceProcessorUnitTest {
 		List<IInstancePostConstruct> processors = Classes.getFieldValue(container, Container.class, "instanceProcessors");
 
 		assertNotNull(processors);
-		assertEquals(7, processors.size());
-		assertEquals("CalendarTimerService", processors.get(0).getClass().getSimpleName());
-		assertEquals("ContextParamProcessor", processors.get(1).getClass().getSimpleName());
-		assertEquals("InstanceFieldsInjectionProcessor", processors.get(2).getClass().getSimpleName());
-		assertEquals("InstanceFieldsInitializationProcessor", processors.get(3).getClass().getSimpleName());
-		assertEquals("ConfigurableInstanceProcessor", processors.get(4).getClass().getSimpleName());
-		assertEquals("PostConstructInstanceProcessor", processors.get(5).getClass().getSimpleName());
-		assertEquals("LoggerInstanceProcessor", processors.get(6).getClass().getSimpleName());
+		assertEquals(6, processors.size());
+		assertEquals("ContextParamProcessor", processors.get(0).getClass().getSimpleName());
+		assertEquals("InstanceFieldsInjectionProcessor", processors.get(1).getClass().getSimpleName());
+		assertEquals("InstanceFieldsInitializationProcessor", processors.get(2).getClass().getSimpleName());
+		assertEquals("ConfigurableInstanceProcessor", processors.get(3).getClass().getSimpleName());
+		assertEquals("PostConstructInstanceProcessor", processors.get(4).getClass().getSimpleName());
+		assertEquals("LoggerInstanceProcessor", processors.get(5).getClass().getSimpleName());
 	}
 
 	// --------------------------------------------------------------------------------------------

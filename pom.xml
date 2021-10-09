@@ -35,6 +35,7 @@
 		<module>tiny-transaction</module>
 		<module>tiny-perfmon</module>
 		<module>tiny-async</module>
+		<module>tiny-timer</module>
 	</modules>
 
 	<properties>
