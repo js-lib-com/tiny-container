@@ -11,7 +11,7 @@ import javax.naming.NamingException;
 import js.lang.BugError;
 import js.log.Log;
 import js.log.LogFactory;
-import js.tiny.container.spi.IInstancePostProcessor;
+import js.tiny.container.spi.IInstancePostConstruct;
 import js.tiny.container.spi.IManagedClass;
 import js.util.Classes;
 import js.util.Strings;
@@ -27,7 +27,7 @@ import js.util.Strings;
  * @author Iulian Rotaru
  * @version final
  */
-final class InstanceFieldsInjectionProcessor extends DependencyProcessor implements IInstancePostProcessor {
+final class InstanceFieldsInjectionProcessor extends DependencyProcessor implements IInstancePostConstruct {
 	private static final Log log = LogFactory.getLog(InstanceFieldsInitializationProcessor.class);
 
 	private final Context globalEnvironment;
@@ -58,7 +58,7 @@ final class InstanceFieldsInjectionProcessor extends DependencyProcessor impleme
 	 * @throws BugError if a field dependency cannot be resolved.
 	 */
 	@Override
-	public void postProcessInstance(IManagedClass managedClass, Object instance) {
+	public void postConstructInstance(IManagedClass managedClass, Object instance) {
 		if (instance == null) {
 			// null instance is silently ignored since container ensure not null instance argument
 			return;

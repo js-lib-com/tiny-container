@@ -48,7 +48,7 @@ import js.tiny.container.spi.IContainer;
 import js.tiny.container.spi.IContainerService;
 import js.tiny.container.spi.IManagedClass;
 import js.tiny.container.spi.IManagedMethod;
-import js.tiny.container.spi.IMethodInvocationProcessor;
+import js.tiny.container.spi.IInvocationProcessor;
 import js.tiny.container.spi.IServiceMeta;
 import js.util.Classes;
 import js.util.Types;
@@ -522,8 +522,8 @@ public final class ManagedClass implements IManagedClass {
 		for (IManagedMethod method : methodsPool.values()) {
 			ManagedMethod managedMethod = (ManagedMethod) method;
 			for (IContainerService service : container.getServices()) {
-				if (service instanceof IMethodInvocationProcessor) {
-					managedMethod.addInvocationProcessor((IMethodInvocationProcessor) service);
+				if (service instanceof IInvocationProcessor) {
+					managedMethod.addInvocationProcessor((IInvocationProcessor) service);
 				}
 				for (IServiceMeta serviceMeta : service.scan(managedMethod)) {
 					managedMethod.addServiceMeta(serviceMeta);

@@ -37,7 +37,6 @@ class CalendarTimerService implements ICalendarTimerService {
 
 	@Override
 	public List<IServiceMeta> scan(IManagedClass managedClass) {
-		// TODO Auto-generated method stub
 		return Collections.emptyList();
 	}
 
@@ -48,10 +47,10 @@ class CalendarTimerService implements ICalendarTimerService {
 		Schedule schedule = managedMethod.getAnnotation(Schedule.class);
 		if (schedule != null) {
 			if (!managedMethod.getDeclaringClass().getInstanceScope().equals(InstanceScope.APPLICATION)) {
-				throw new BugError("Crom method requires %s instance scope.", InstanceScope.APPLICATION);
+				throw new BugError("Timeout method requires |%s| instance scope.", InstanceScope.APPLICATION);
 			}
 			if (!Types.isVoid(managedMethod.getReturnType())) {
-				throw new BugError("Cron method |%s| must be void.", managedMethod);
+				throw new BugError("Timeout method |%s| must be void.", managedMethod);
 			}
 			serviceMetas.add(new ScheduleMeta(this, schedule));
 		}
@@ -60,7 +59,7 @@ class CalendarTimerService implements ICalendarTimerService {
 	}
 
 	@Override
-	public void postProcessInstance(IManagedClass managedClass, Object instance) {
+	public void postConstructInstance(IManagedClass managedClass, Object instance) {
 		// TODO: core should invoke this hook only for instances with timer service
 		// for now core hit this point for every managed instance
 

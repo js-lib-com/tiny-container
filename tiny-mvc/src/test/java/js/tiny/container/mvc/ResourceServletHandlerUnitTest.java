@@ -5,13 +5,11 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import java.io.IOException;
 import java.util.Arrays;
 
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletOutputStream;
-import javax.servlet.UnavailableException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -22,14 +20,12 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
 import js.json.Json;
-import js.lang.InvocationException;
 import js.tiny.container.http.Resource;
 import js.tiny.container.http.encoder.ArgumentsReader;
 import js.tiny.container.http.encoder.ArgumentsReaderFactory;
 import js.tiny.container.servlet.ITinyContainer;
 import js.tiny.container.servlet.RequestContext;
 import js.tiny.container.servlet.TinyContainer;
-import js.tiny.container.spi.AuthorizationException;
 import js.tiny.container.spi.IContainerService;
 import js.tiny.container.spi.IManagedClass;
 import js.tiny.container.spi.IManagedMethod;
@@ -72,7 +68,7 @@ public class ResourceServletHandlerUnitTest {
 	private ResourceServlet servlet;
 
 	@Before
-	public void beforeTest() throws UnavailableException, IllegalArgumentException, IOException, InvocationException, AuthorizationException {
+	public void beforeTest() throws Exception {
 		when(servletConfig.getServletName()).thenReturn("resource-servlet");
 		when(servletConfig.getServletContext()).thenReturn(servletContext);
 		when(servletContext.getServletContextName()).thenReturn("test-app");

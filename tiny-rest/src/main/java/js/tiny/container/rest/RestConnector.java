@@ -8,16 +8,16 @@ import javax.ws.rs.Produces;
 
 import js.log.Log;
 import js.log.LogFactory;
-import js.tiny.container.spi.IContainerService;
+import js.tiny.container.spi.IConnector;
 import js.tiny.container.spi.IManagedClass;
 import js.tiny.container.spi.IManagedMethod;
 import js.tiny.container.spi.IServiceMeta;
 
-public class RestService implements IContainerService {
-	private static final Log log = LogFactory.getLog(RestService.class);
+class RestConnector implements IConnector {
+	private static final Log log = LogFactory.getLog(RestConnector.class);
 
-	public RestService() {
-		log.trace("RestService()");
+	public RestConnector() {
+		log.trace("RestConnector()");
 	}
 
 	@Override

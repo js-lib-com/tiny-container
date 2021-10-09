@@ -12,7 +12,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.Path;
 
-import js.lang.InvocationException;
 import js.log.Log;
 import js.log.LogFactory;
 import js.tiny.container.http.ContentType;
@@ -184,7 +183,7 @@ public class RestServlet extends AppServlet {
 			// see https://httpstatuses.com/422
 			sendBadRequest(context);
 			return;
-		} catch (InvocationException e) {
+		} catch (Exception e) {
 			sendError(context, e);
 			return;
 		} finally {

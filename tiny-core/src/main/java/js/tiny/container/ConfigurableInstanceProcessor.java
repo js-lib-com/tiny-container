@@ -6,7 +6,7 @@ import js.lang.ConfigException;
 import js.lang.Configurable;
 import js.log.Log;
 import js.log.LogFactory;
-import js.tiny.container.spi.IInstancePostProcessor;
+import js.tiny.container.spi.IInstancePostConstruct;
 import js.tiny.container.spi.IManagedClass;
 
 /**
@@ -20,7 +20,7 @@ import js.tiny.container.spi.IManagedClass;
  * @author Iulian Rotaru
  * @version final
  */
-final class ConfigurableInstanceProcessor implements IInstancePostProcessor {
+final class ConfigurableInstanceProcessor implements IInstancePostConstruct {
 	private static final Log log = LogFactory.getLog(ConfigurableInstanceProcessor.class);
 
 	/**
@@ -35,7 +35,7 @@ final class ConfigurableInstanceProcessor implements IInstancePostProcessor {
 	 *             user defined logic.
 	 */
 	@Override
-	public void postProcessInstance(IManagedClass managedClass, Object instance) {
+	public void postConstructInstance(IManagedClass managedClass, Object instance) {
 		if (!(instance instanceof Configurable)) {
 			return;
 		}

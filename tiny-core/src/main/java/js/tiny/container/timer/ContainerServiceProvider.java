@@ -1,12 +1,12 @@
-package js.tiny.container.security;
+package js.tiny.container.timer;
 
 import js.tiny.container.spi.IContainer;
 import js.tiny.container.spi.IContainerService;
 import js.tiny.container.spi.IContainerServiceProvider;
 
-public class SecurityServiceProvider implements IContainerServiceProvider {
+public class ContainerServiceProvider implements IContainerServiceProvider {
 	@Override
 	public IContainerService getService(IContainer container) {
-		return new SecurityService(container);
+		return new CalendarTimerService();
 	}
 }

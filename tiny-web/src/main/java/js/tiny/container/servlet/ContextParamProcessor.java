@@ -8,8 +8,8 @@ import js.annotation.ContextParam;
 import js.lang.BugError;
 import js.log.Log;
 import js.log.LogFactory;
-import js.tiny.container.spi.IClassPostProcessor;
-import js.tiny.container.spi.IInstancePostProcessor;
+import js.tiny.container.spi.IClassPostLoad;
+import js.tiny.container.spi.IInstancePostConstruct;
 import js.tiny.container.spi.IManagedClass;
 
 /**
@@ -18,7 +18,7 @@ import js.tiny.container.spi.IManagedClass;
  * @author Iulian Rotaru
  * @version final
  */
-public class ContextParamProcessor implements IClassPostProcessor, IInstancePostProcessor {
+public class ContextParamProcessor implements IClassPostLoad, IInstancePostConstruct {
 	/** Class logger. */
 	private static final Log log = LogFactory.getLog(ContextParamProcessor.class);
 
@@ -38,7 +38,7 @@ public class ContextParamProcessor implements IClassPostProcessor, IInstancePost
 	}
 
 	@Override
-	public void postProcessClass(IManagedClass managedClass) {
+	public void postLoadClass(IManagedClass managedClass) {
 		for (Map.Entry<String, Field> entry : managedClass.getContextParamFields().entrySet()) {
 			final String parameterName = entry.getKey();
 			final Field field = entry.getValue();
@@ -50,7 +50,7 @@ public class ContextParamProcessor implements IClassPostProcessor, IInstancePost
 	}
 
 	@Override
-	public void postProcessInstance(IManagedClass managedClass, Object instance) {
+	public void postConstructInstance(IManagedClass managedClass, Object instance) {
 		for (Map.Entry<String, Field> entry : managedClass.getContextParamFields().entrySet()) {
 			final String parameterName = entry.getKey();
 			final Field field = entry.getValue();

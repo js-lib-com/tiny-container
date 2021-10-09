@@ -3,19 +3,17 @@ package js.tiny.container.perfmon;
 import java.util.Collections;
 import java.util.List;
 
-import js.lang.InvocationException;
 import js.log.Log;
 import js.log.LogFactory;
-import js.tiny.container.spi.AuthorizationException;
 import js.tiny.container.spi.IContainerService;
+import js.tiny.container.spi.IInvocation;
+import js.tiny.container.spi.IInvocationProcessor;
+import js.tiny.container.spi.IInvocationProcessorsChain;
 import js.tiny.container.spi.IManagedClass;
 import js.tiny.container.spi.IManagedMethod;
-import js.tiny.container.spi.IMethodInvocation;
-import js.tiny.container.spi.IMethodInvocationProcessor;
-import js.tiny.container.spi.IMethodInvocationProcessorsChain;
 import js.tiny.container.spi.IServiceMeta;
 
-class PerformanceMonitorService implements IContainerService, IMethodInvocationProcessor {
+class PerformanceMonitorService implements IContainerService, IInvocationProcessor {
 	private static final Log log = LogFactory.getLog(PerformanceMonitorService.class);
 
 	private static final String ATTR_METER = "meter";
@@ -43,15 +41,15 @@ class PerformanceMonitorService implements IContainerService, IMethodInvocationP
 	}
 
 	@Override
-	public Object invoke(IMethodInvocationProcessorsChain serviceChain, IMethodInvocation methodInvocation) throws AuthorizationException, IllegalArgumentException, InvocationException {
-		Meter meter = methodInvocation.method().getAttribute(getClass(), ATTR_METER, Meter.class);
+	public Object execute(IInvocationProcessorsChain chain, IInvocation invocation) throws Exception {
+		Meter meter = invocation.method().getAttribute(getClass(), ATTR_METER, Meter.class);
 		meter.incrementInvocationsCount();
 		meter.startProcessing();
 
 		Object value = null;
 		try {
 
-			value = serviceChain.invokeNextProcessor(methodInvocation);
+			value = chain.invokeNextProcessor(invocation);
 
 		} catch (Exception e) {
 			meter.incrementExceptionsCount();

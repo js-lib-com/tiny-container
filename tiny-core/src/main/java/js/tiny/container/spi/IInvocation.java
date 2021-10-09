@@ -1,6 +1,6 @@
 package js.tiny.container.spi;
 
-public interface IMethodInvocation {
+public interface IInvocation {
 	
 	IManagedMethod method();
 

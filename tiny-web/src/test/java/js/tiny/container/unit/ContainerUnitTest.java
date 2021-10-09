@@ -48,7 +48,7 @@ import js.tiny.container.servlet.App;
 import js.tiny.container.servlet.AppContext;
 import js.tiny.container.servlet.RequestContext;
 import js.tiny.container.spi.IContainer;
-import js.tiny.container.spi.IInstancePostProcessor;
+import js.tiny.container.spi.IInstancePostConstruct;
 import js.tiny.container.spi.IManagedClass;
 import js.tiny.container.spi.IManagedMethod;
 import js.tiny.container.stub.AppContextStub;
@@ -86,7 +86,7 @@ public class ContainerUnitTest {
 		assertClass("ServiceInstanceFactory", instanceFactories.get(InstanceType.SERVICE));
 		assertClass("RemoteInstanceFactory", instanceFactories.get(InstanceType.REMOTE));
 
-		List<IInstancePostProcessor> instanceProcessors = Classes.getFieldValue(container, Container.class, "instanceProcessors");
+		List<IInstancePostConstruct> instanceProcessors = Classes.getFieldValue(container, Container.class, "instanceProcessors");
 		assertNotNull(instanceProcessors);
 		//assertEquals(6, instanceProcessors.size());
 		assertClass("CalendarTimerService", instanceProcessors.get(0));
@@ -455,21 +455,21 @@ public class ContainerUnitTest {
 	/** Successful and overriding instance processor registration. */
 	@Test
 	public void registerInstanceProcessor() {
-		class MockInstanceProcessor implements IInstancePostProcessor {
+		class MockInstanceProcessor implements IInstancePostConstruct {
 			@Override
-			public void postProcessInstance(IManagedClass managedClass, Object instance) {
+			public void postConstructInstance(IManagedClass managedClass, Object instance) {
 			}
 		}
 
 		class MockContainer extends ContainerStub {
 			@Override
-			public void registerInstanceProcessor(IInstancePostProcessor instanceProcessor) {
+			public void registerInstanceProcessor(IInstancePostConstruct instanceProcessor) {
 				super.registerInstanceProcessor(instanceProcessor);
 			}
 		}
 
 		MockContainer container = new MockContainer();
-		List<IInstancePostProcessor> instanceProcessors = Classes.getFieldValue(container, Container.class, "instanceProcessors");
+		List<IInstancePostConstruct> instanceProcessors = Classes.getFieldValue(container, Container.class, "instanceProcessors");
 		assertEquals(6, instanceProcessors.size());
 		container.registerInstanceProcessor(new MockInstanceProcessor());
 

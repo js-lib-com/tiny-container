@@ -18,13 +18,12 @@ import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
 
 import js.lang.InvocationException;
-import js.tiny.container.spi.AuthorizationException;
 import js.tiny.container.spi.IContainer;
-import js.tiny.container.spi.IServiceMeta;
+import js.tiny.container.spi.IInvocation;
+import js.tiny.container.spi.IInvocationProcessorsChain;
 import js.tiny.container.spi.IManagedClass;
 import js.tiny.container.spi.IManagedMethod;
-import js.tiny.container.spi.IMethodInvocation;
-import js.tiny.container.spi.IMethodInvocationProcessorsChain;
+import js.tiny.container.spi.IServiceMeta;
 import js.transaction.Transaction;
 import js.transaction.Transactional;
 
@@ -48,9 +47,9 @@ public class TransactionServiceTest {
 	private TransactionalMeta transactionalMeta;
 
 	@Mock
-	private IMethodInvocationProcessorsChain processorsChain;
+	private IInvocationProcessorsChain processorsChain;
 	@Mock
-	IMethodInvocation methodInvocation;
+	IInvocation methodInvocation;
 
 	private TransactionService service;
 
@@ -117,11 +116,11 @@ public class TransactionServiceTest {
 	}
 
 	@Test
-	public void GivenNotTransactionalMethod_WhenInvoke_ThenNextProcessor() throws IllegalArgumentException, InvocationException, AuthorizationException {
+	public void GivenNotTransactionalMethod_WhenInvoke_ThenNextProcessor() throws Exception {
 		// given
 
 		// when
-		service.invoke(processorsChain, methodInvocation);
+		service.execute(processorsChain, methodInvocation);
 
 		// then
 		verify(processorsChain, times(1)).invokeNextProcessor(methodInvocation);
@@ -129,12 +128,12 @@ public class TransactionServiceTest {
 	}
 
 	@Test
-	public void GivenImmutableTransaction_WhenInvoke_ThenNoCommitOrRollback() throws IllegalArgumentException, InvocationException, AuthorizationException {
+	public void GivenImmutableTransaction_WhenInvoke_ThenNoCommitOrRollback() throws Exception {
 		// given
 		when(managedMethod.getServiceMeta(TransactionalMeta.class)).thenReturn(transactionalMeta);
 
 		// when
-		service.invoke(processorsChain, methodInvocation);
+		service.execute(processorsChain, methodInvocation);
 
 		// then
 		verify(transaction, times(0)).commit();
@@ -144,12 +143,12 @@ public class TransactionServiceTest {
 	}
 
 	@Test
-	public void GivenInheritedImmutableTransaction_WhenInvoke_ThenNoCommitOrRollback() throws IllegalArgumentException, InvocationException, AuthorizationException {
+	public void GivenInheritedImmutableTransaction_WhenInvoke_ThenNoCommitOrRollback() throws Exception {
 		// given
 		when(managedClass.getServiceMeta(TransactionalMeta.class)).thenReturn(transactionalMeta);
 
 		// when
-		service.invoke(processorsChain, methodInvocation);
+		service.execute(processorsChain, methodInvocation);
 
 		// then
 		verify(transaction, times(0)).commit();
@@ -159,13 +158,13 @@ public class TransactionServiceTest {
 	}
 
 	@Test
-	public void GivenNestedImmutableTransaction_WhenInvoke_ThenNoResourceManagerRelease() throws IllegalArgumentException, InvocationException, AuthorizationException {
+	public void GivenNestedImmutableTransaction_WhenInvoke_ThenNoResourceManagerRelease() throws Exception {
 		// given
 		when(managedMethod.getServiceMeta(TransactionalMeta.class)).thenReturn(transactionalMeta);
 		when(transaction.close()).thenReturn(false);
 
 		// when
-		service.invoke(processorsChain, methodInvocation);
+		service.execute(processorsChain, methodInvocation);
 
 		// then
 		verify(transaction, times(0)).commit();
@@ -175,14 +174,14 @@ public class TransactionServiceTest {
 	}
 
 	@Test
-	public void GivenExceptionOnImmutableTransaction_WhenInvoke_ThenNoCommitOrRollback() throws IllegalArgumentException, InvocationException, AuthorizationException {
+	public void GivenExceptionOnImmutableTransaction_WhenInvoke_ThenNoCommitOrRollback() throws Exception {
 		// given
 		when(managedMethod.getServiceMeta(TransactionalMeta.class)).thenReturn(transactionalMeta);
 		when(processorsChain.invokeNextProcessor(methodInvocation)).thenThrow(IOException.class);
 
 		// when
 		try {
-			service.invoke(processorsChain, methodInvocation);
+			service.execute(processorsChain, methodInvocation);
 		} catch (InvocationException expected) {
 		}
 
@@ -194,25 +193,25 @@ public class TransactionServiceTest {
 	}
 
 	@Test(expected = InvocationException.class)
-	public void GivenExceptionOnImmutableTransaction_WhenInvoke_ThenInvocationException() throws IllegalArgumentException, InvocationException, AuthorizationException {
+	public void GivenExceptionOnImmutableTransaction_WhenInvoke_ThenInvocationException() throws Exception {
 		// given
 		when(managedMethod.getServiceMeta(TransactionalMeta.class)).thenReturn(transactionalMeta);
 		when(processorsChain.invokeNextProcessor(methodInvocation)).thenThrow(IOException.class);
 
 		// when
-		service.invoke(processorsChain, methodInvocation);
+		service.execute(processorsChain, methodInvocation);
 
 		// then
 	}
 
 	@Test
-	public void GivenMutableTransaction_WhenInvoke_ThenCommit() throws IllegalArgumentException, InvocationException, AuthorizationException {
+	public void GivenMutableTransaction_WhenInvoke_ThenCommit() throws Exception {
 		// given
 		when(managedMethod.getServiceMeta(TransactionalMeta.class)).thenReturn(transactionalMeta);
 		when(managedMethod.getServiceMeta(MutableMeta.class)).thenReturn(Mockito.mock(MutableMeta.class));
 
 		// when
-		service.invoke(processorsChain, methodInvocation);
+		service.execute(processorsChain, methodInvocation);
 
 		// then
 		verify(transaction, times(1)).commit();
@@ -222,13 +221,13 @@ public class TransactionServiceTest {
 	}
 
 	@Test
-	public void GivenInheritedMutableTransaction_WhenInvoke_ThenCommit() throws IllegalArgumentException, InvocationException, AuthorizationException {
+	public void GivenInheritedMutableTransaction_WhenInvoke_ThenCommit() throws Exception {
 		// given
 		when(managedClass.getServiceMeta(TransactionalMeta.class)).thenReturn(transactionalMeta);
 		when(managedMethod.getServiceMeta(MutableMeta.class)).thenReturn(Mockito.mock(MutableMeta.class));
 
 		// when
-		service.invoke(processorsChain, methodInvocation);
+		service.execute(processorsChain, methodInvocation);
 
 		// then
 		verify(transaction, times(1)).commit();
@@ -238,14 +237,14 @@ public class TransactionServiceTest {
 	}
 
 	@Test
-	public void GivenNestedMutableTransaction_WhenInvoke_ThenNoResourceManagerRelease() throws IllegalArgumentException, InvocationException, AuthorizationException {
+	public void GivenNestedMutableTransaction_WhenInvoke_ThenNoResourceManagerRelease() throws Exception {
 		// given
 		when(managedMethod.getServiceMeta(TransactionalMeta.class)).thenReturn(transactionalMeta);
 		when(managedMethod.getServiceMeta(MutableMeta.class)).thenReturn(Mockito.mock(MutableMeta.class));
 		when(transaction.close()).thenReturn(false);
 
 		// when
-		service.invoke(processorsChain, methodInvocation);
+		service.execute(processorsChain, methodInvocation);
 
 		// then
 		verify(transaction, times(1)).commit();
@@ -255,7 +254,7 @@ public class TransactionServiceTest {
 	}
 
 	@Test
-	public void GivenExceptionOnMutableTransaction_WhenInvoke_ThenRollback() throws IllegalArgumentException, InvocationException, AuthorizationException {
+	public void GivenExceptionOnMutableTransaction_WhenInvoke_ThenRollback() throws Exception {
 		// given
 		when(managedMethod.getServiceMeta(TransactionalMeta.class)).thenReturn(transactionalMeta);
 		when(managedMethod.getServiceMeta(MutableMeta.class)).thenReturn(Mockito.mock(MutableMeta.class));
@@ -263,7 +262,7 @@ public class TransactionServiceTest {
 
 		// when
 		try {
-			service.invoke(processorsChain, methodInvocation);
+			service.execute(processorsChain, methodInvocation);
 		} catch (InvocationException expected) {
 		}
 
@@ -275,14 +274,14 @@ public class TransactionServiceTest {
 	}
 
 	@Test(expected = InvocationException.class)
-	public void GivenExceptionOnMutableTransaction_WhenInvoke_ThenInvocationException() throws IllegalArgumentException, InvocationException, AuthorizationException {
+	public void GivenExceptionOnMutableTransaction_WhenInvoke_ThenInvocationException() throws Exception {
 		// given
 		when(managedMethod.getServiceMeta(TransactionalMeta.class)).thenReturn(transactionalMeta);
 		when(managedMethod.getServiceMeta(MutableMeta.class)).thenReturn(Mockito.mock(MutableMeta.class));
 		when(processorsChain.invokeNextProcessor(methodInvocation)).thenThrow(IOException.class);
 
 		// when
-		service.invoke(processorsChain, methodInvocation);
+		service.execute(processorsChain, methodInvocation);
 
 		// then
 	}

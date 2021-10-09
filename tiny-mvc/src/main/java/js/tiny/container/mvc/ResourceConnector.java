@@ -8,15 +8,15 @@ import js.log.LogFactory;
 import js.tiny.container.mvc.annotation.Controller;
 import js.tiny.container.mvc.annotation.RequestPath;
 import js.tiny.container.mvc.annotation.ResponseContentType;
-import js.tiny.container.spi.IContainerService;
+import js.tiny.container.spi.IConnector;
 import js.tiny.container.spi.IManagedClass;
 import js.tiny.container.spi.IManagedMethod;
 import js.tiny.container.spi.IServiceMeta;
 
-final class ResourceService implements IContainerService {
-	private static final Log log = LogFactory.getLog(ResourceService.class);
+final class ResourceConnector implements IConnector {
+	private static final Log log = LogFactory.getLog(ResourceConnector.class);
 
-	public ResourceService() {
+	public ResourceConnector() {
 		log.trace("ResourceService()");
 	}
 

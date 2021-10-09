@@ -6,19 +6,17 @@ import java.util.List;
 import javax.ejb.Asynchronous;
 
 import js.lang.AsyncTask;
-import js.lang.InvocationException;
 import js.log.Log;
 import js.log.LogFactory;
-import js.tiny.container.spi.AuthorizationException;
 import js.tiny.container.spi.IContainerService;
-import js.tiny.container.spi.IServiceMeta;
+import js.tiny.container.spi.IInvocation;
+import js.tiny.container.spi.IInvocationProcessor;
+import js.tiny.container.spi.IInvocationProcessorsChain;
 import js.tiny.container.spi.IManagedClass;
 import js.tiny.container.spi.IManagedMethod;
-import js.tiny.container.spi.IMethodInvocation;
-import js.tiny.container.spi.IMethodInvocationProcessor;
-import js.tiny.container.spi.IMethodInvocationProcessorsChain;
+import js.tiny.container.spi.IServiceMeta;
 
-class AsyncService implements IContainerService, IMethodInvocationProcessor {
+class AsyncService implements IContainerService, IInvocationProcessor {
 	private static final Log log = LogFactory.getLog(AsyncService.class);
 
 	public AsyncService() {
@@ -26,7 +24,7 @@ class AsyncService implements IContainerService, IMethodInvocationProcessor {
 	}
 
 	@Override
-	public IMethodInvocationProcessor.Priority getPriority() {
+	public IInvocationProcessor.Priority getPriority() {
 		return Priority.HIGH;
 	}
 
@@ -62,16 +60,16 @@ class AsyncService implements IContainerService, IMethodInvocationProcessor {
 	 * 
 	 */
 	@Override
-	public Object invoke(IMethodInvocationProcessorsChain serviceChain, IMethodInvocation methodInvocation) throws AuthorizationException, IllegalArgumentException, InvocationException {
-		if (!isAsynchronous(methodInvocation.method())) {
-			return serviceChain.invokeNextProcessor(methodInvocation);
+	public Object execute(IInvocationProcessorsChain chain, IInvocation invocation) throws Exception {
+		if (!isAsynchronous(invocation.method())) {
+			return chain.invokeNextProcessor(invocation);
 		}
 
-		log.debug("Execute method asynchronous |%s|.", methodInvocation.method());
+		log.debug("Execute method asynchronous |%s|.", invocation.method());
 		AsyncTask<Void> asyncTask = new AsyncTask<Void>() {
 			@Override
 			protected Void execute() throws Throwable {
-				serviceChain.invokeNextProcessor(methodInvocation);
+				chain.invokeNextProcessor(invocation);
 				return null;
 			}
 		};

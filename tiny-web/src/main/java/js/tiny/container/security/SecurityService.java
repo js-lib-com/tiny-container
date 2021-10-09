@@ -9,7 +9,6 @@ import javax.annotation.security.RolesAllowed;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
-import js.lang.InvocationException;
 import js.lang.RolesPrincipal;
 import js.log.Log;
 import js.log.LogFactory;
@@ -18,14 +17,14 @@ import js.tiny.container.servlet.TinyContainer;
 import js.tiny.container.spi.AuthorizationException;
 import js.tiny.container.spi.IContainer;
 import js.tiny.container.spi.IContainerService;
-import js.tiny.container.spi.IServiceMeta;
+import js.tiny.container.spi.IInvocation;
+import js.tiny.container.spi.IInvocationProcessor;
+import js.tiny.container.spi.IInvocationProcessorsChain;
 import js.tiny.container.spi.IManagedClass;
 import js.tiny.container.spi.IManagedMethod;
-import js.tiny.container.spi.IMethodInvocation;
-import js.tiny.container.spi.IMethodInvocationProcessor;
-import js.tiny.container.spi.IMethodInvocationProcessorsChain;
+import js.tiny.container.spi.IServiceMeta;
 
-public class SecurityService implements IContainerService, IMethodInvocationProcessor {
+public class SecurityService implements IContainerService, IInvocationProcessor {
 	private static final Log log = LogFactory.getLog(SecurityService.class);
 
 	private final IContainer container;
@@ -85,14 +84,14 @@ public class SecurityService implements IContainerService, IMethodInvocationProc
 	}
 
 	@Override
-	public Object invoke(IMethodInvocationProcessorsChain processorsChain, IMethodInvocation methodInvocation) throws AuthorizationException, IllegalArgumentException, InvocationException {
-		final IManagedMethod managedMethod = methodInvocation.method();
+	public Object execute(IInvocationProcessorsChain chain, IInvocation invocation) throws Exception {
+		final IManagedMethod managedMethod = invocation.method();
 
 		final RequestContext requestContext = container.getInstance(RequestContext.class);
 		final HttpServletRequest httpRequest = requestContext.getRequest();
 		if (httpRequest == null) {
 			log.debug("Attempt use security service outside HTTP request. Grant not authenticated access to |%s|!", managedMethod);
-			return processorsChain.invokeNextProcessor(methodInvocation);
+			return chain.invokeNextProcessor(invocation);
 		}
 
 		if (isDenyAll(managedMethod)) {
@@ -102,7 +101,7 @@ public class SecurityService implements IContainerService, IMethodInvocationProc
 
 		if (isPermitAll(managedMethod)) {
 			log.debug("Public access to |%s|.", managedMethod);
-			return processorsChain.invokeNextProcessor(methodInvocation);
+			return chain.invokeNextProcessor(invocation);
 		}
 
 		if (!isAuthorized(httpRequest, getRoles(managedMethod))) {
@@ -110,13 +109,12 @@ public class SecurityService implements IContainerService, IMethodInvocationProc
 			throw new AuthorizationException();
 		}
 
-		return processorsChain.invokeNextProcessor(methodInvocation);
+		return chain.invokeNextProcessor(invocation);
 	}
 
 	@Override
 	public void destroy() {
-		// TODO Auto-generated method stub
-
+		log.trace("destroy()");
 	}
 
 	// --------------------------------------------------------------------------------------------

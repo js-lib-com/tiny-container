@@ -6,18 +6,17 @@ import java.util.List;
 import js.lang.InvocationException;
 import js.log.Log;
 import js.log.LogFactory;
-import js.tiny.container.spi.AuthorizationException;
 import js.tiny.container.spi.IContainer;
 import js.tiny.container.spi.IContainerService;
-import js.tiny.container.spi.IServiceMeta;
+import js.tiny.container.spi.IInvocation;
+import js.tiny.container.spi.IInvocationProcessor;
+import js.tiny.container.spi.IInvocationProcessorsChain;
 import js.tiny.container.spi.IManagedClass;
 import js.tiny.container.spi.IManagedMethod;
-import js.tiny.container.spi.IMethodInvocation;
-import js.tiny.container.spi.IMethodInvocationProcessor;
-import js.tiny.container.spi.IMethodInvocationProcessorsChain;
+import js.tiny.container.spi.IServiceMeta;
 import js.util.Classes;
 
-final class InterceptorService implements IContainerService, IMethodInvocationProcessor {
+final class InterceptorService implements IContainerService, IInvocationProcessor {
 	private static final Log log = LogFactory.getLog(InterceptorService.class);
 
 	private final IContainer container;
@@ -28,7 +27,7 @@ final class InterceptorService implements IContainerService, IMethodInvocationPr
 	}
 
 	@Override
-	public IMethodInvocationProcessor.Priority getPriority() {
+	public IInvocationProcessor.Priority getPriority() {
 		return Priority.FIRST;
 	}
 
@@ -58,16 +57,16 @@ final class InterceptorService implements IContainerService, IMethodInvocationPr
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public Object invoke(IMethodInvocationProcessorsChain serviceChain, IMethodInvocation methodInvocation) throws AuthorizationException, IllegalArgumentException, InvocationException {
-		final IManagedMethod managedMethod = methodInvocation.method();
-		final Object[] arguments = methodInvocation.arguments();
+	public Object execute(IInvocationProcessorsChain chain, IInvocation invocation) throws Exception {
+		final IManagedMethod managedMethod = invocation.method();
+		final Object[] arguments = invocation.arguments();
 
 		InterceptedMeta intercepted = managedMethod.getServiceMeta(InterceptedMeta.class);
 		if (intercepted == null) {
 			intercepted = managedMethod.getDeclaringClass().getServiceMeta(InterceptedMeta.class);
 		}
 		if (intercepted == null) {
-			return serviceChain.invokeNextProcessor(methodInvocation);
+			return chain.invokeNextProcessor(invocation);
 		}
 
 		Interceptor interceptor;
@@ -89,7 +88,7 @@ final class InterceptorService implements IContainerService, IMethodInvocationPr
 			}
 		}
 
-		Object returnValue = serviceChain.invokeNextProcessor(methodInvocation);
+		Object returnValue = chain.invokeNextProcessor(invocation);
 
 		if (interceptor instanceof PostInvokeInterceptor) {
 			log.debug("Execute post-invoke interceptor for method |%s|.", managedMethod);

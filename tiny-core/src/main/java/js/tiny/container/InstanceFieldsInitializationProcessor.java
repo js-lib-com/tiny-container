@@ -6,7 +6,7 @@ import js.converter.Converter;
 import js.converter.ConverterException;
 import js.lang.BugError;
 import js.lang.Config;
-import js.tiny.container.spi.IInstancePostProcessor;
+import js.tiny.container.spi.IInstancePostConstruct;
 import js.tiny.container.spi.IManagedClass;
 import js.util.Classes;
 
@@ -44,7 +44,7 @@ import js.util.Classes;
  * @author Iulian Rotaru
  * @version final
  */
-final class InstanceFieldsInitializationProcessor implements IInstancePostProcessor {
+final class InstanceFieldsInitializationProcessor implements IInstancePostConstruct {
 	/**
 	 * Initialize instance fields from managed class configuration object.
 	 * 
@@ -54,7 +54,7 @@ final class InstanceFieldsInitializationProcessor implements IInstancePostProces
 	 * @throws BugError if attempt to assign instance field to not POJO type.
 	 */
 	@Override
-	public void postProcessInstance(IManagedClass managedClass, Object instance) {
+	public void postConstructInstance(IManagedClass managedClass, Object instance) {
 		Config config = managedClass.getConfig();
 		if (config == null) {
 			return;

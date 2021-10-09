@@ -13,7 +13,6 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
 import js.lang.InvocationException;
-import js.tiny.container.spi.AuthorizationException;
 import js.tiny.container.spi.IManagedMethod;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -61,7 +60,7 @@ public class TimerTaskTest {
 	}
 
 	@Test
-	public void GivenMethodInvokationFail_WhenTaskRun_ThenLog() throws IllegalArgumentException, InvocationException, AuthorizationException {
+	public void GivenMethodInvokationFail_WhenTaskRun_ThenLog() throws Exception {
 		// given
 		when(managedMethod.invoke(instance)).thenThrow(InvocationException.class);
 

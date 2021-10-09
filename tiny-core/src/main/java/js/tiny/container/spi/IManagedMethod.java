@@ -4,8 +4,6 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 
-import js.lang.InvocationException;
-
 /**
  * Managed method service provider interface. Although public, this interface is designed for library internal usage. User space
  * code should consider this interface as volatile and subject to change without notice.
@@ -56,11 +54,9 @@ public interface IManagedMethod {
 	 * @param args invocation arguments.
 	 * @param <T> returned value type.
 	 * @return value returned by method or null for void.
-	 * @throws AuthorizationException if method is private and {@link SecurityContext} is not authenticated.
-	 * @throws IllegalArgumentException if invocation arguments does not match method signature.
-	 * @throws InvocationException if method execution fails for whatever reason.
+	 * @throws Exception any exception from method or container service execution is bubbled up.
 	 */
-	<T> T invoke(Object object, Object... args) throws AuthorizationException, IllegalArgumentException, InvocationException;
+	<T> T invoke(Object object, Object... args) throws Exception;
 
 	/**
 	 * Test if this managed method return type is void.

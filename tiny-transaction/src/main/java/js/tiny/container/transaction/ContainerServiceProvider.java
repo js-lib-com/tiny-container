@@ -1,12 +1,12 @@
-package js.tiny.container.async;
+package js.tiny.container.transaction;
 
 import js.tiny.container.spi.IContainer;
 import js.tiny.container.spi.IContainerService;
 import js.tiny.container.spi.IContainerServiceProvider;
 
-public class AsyncServiceProvider implements IContainerServiceProvider {
+public class ContainerServiceProvider implements IContainerServiceProvider {
 	@Override
 	public IContainerService getService(IContainer container) {
-		return new AsyncService();
+		return new TransactionService(container);
 	}
 }

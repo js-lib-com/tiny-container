@@ -7,21 +7,20 @@ import java.util.List;
 import js.lang.InvocationException;
 import js.log.Log;
 import js.log.LogFactory;
-import js.tiny.container.spi.AuthorizationException;
 import js.tiny.container.spi.IContainer;
 import js.tiny.container.spi.IContainerService;
-import js.tiny.container.spi.IServiceMeta;
+import js.tiny.container.spi.IInvocation;
+import js.tiny.container.spi.IInvocationProcessor;
+import js.tiny.container.spi.IInvocationProcessorsChain;
 import js.tiny.container.spi.IManagedClass;
 import js.tiny.container.spi.IManagedMethod;
-import js.tiny.container.spi.IMethodInvocation;
-import js.tiny.container.spi.IMethodInvocationProcessor;
-import js.tiny.container.spi.IMethodInvocationProcessorsChain;
+import js.tiny.container.spi.IServiceMeta;
 import js.transaction.Immutable;
 import js.transaction.Mutable;
 import js.transaction.Transaction;
 import js.transaction.Transactional;
 
-final class TransactionService implements IContainerService, IMethodInvocationProcessor {
+final class TransactionService implements IContainerService, IInvocationProcessor {
 	private static final Log log = LogFactory.getLog(TransactionService.class);
 
 	private final IContainer container;
@@ -76,17 +75,17 @@ final class TransactionService implements IContainerService, IMethodInvocationPr
 	}
 
 	@Override
-	public Object invoke(IMethodInvocationProcessorsChain serviceChain, IMethodInvocation methodInvocation) throws AuthorizationException, IllegalArgumentException, InvocationException {
-		final IManagedMethod managedMethod = methodInvocation.method();
+	public Object execute(IInvocationProcessorsChain chain, IInvocation invocation) throws Exception {
+		final IManagedMethod managedMethod = invocation.method();
 		if (!isTransactional(managedMethod)) {
-			return serviceChain.invokeNextProcessor(methodInvocation);
+			return chain.invokeNextProcessor(invocation);
 		}
 
 		ITransactionalResource transactionalResource = container.getInstance(ITransactionalResource.class);
 		if (isMutable(managedMethod)) {
-			return executeMutableTransaction(transactionalResource, serviceChain, methodInvocation);
+			return executeMutableTransaction(transactionalResource, chain, invocation);
 		}
-		return executeImmutableTransaction(transactionalResource, serviceChain, methodInvocation);
+		return executeImmutableTransaction(transactionalResource, chain, invocation);
 	}
 
 	/**
@@ -97,7 +96,7 @@ final class TransactionService implements IContainerService, IMethodInvocationPr
 	 * @return value returned by managed method.
 	 * @throws Throwable forward any error rose by method execution.
 	 */
-	private Object executeMutableTransaction(ITransactionalResource transactionalResource, IMethodInvocationProcessorsChain serviceChain, IMethodInvocation methodInvocation) throws InvocationException {
+	private Object executeMutableTransaction(ITransactionalResource transactionalResource, IInvocationProcessorsChain serviceChain, IInvocation methodInvocation) throws InvocationException {
 		// store resource manager owning current transaction on current thread via transactional resource utility
 		// it may happen to have multiple nested transaction on current thread
 
@@ -134,7 +133,7 @@ final class TransactionService implements IContainerService, IMethodInvocationPr
 	 * @return value returned by managed method.
 	 * @throws Throwable forward any error rose by method execution.
 	 */
-	private Object executeImmutableTransaction(ITransactionalResource transactionalResource, IMethodInvocationProcessorsChain serviceChain, IMethodInvocation methodInvocation) throws InvocationException {
+	private Object executeImmutableTransaction(ITransactionalResource transactionalResource, IInvocationProcessorsChain serviceChain, IInvocation methodInvocation) throws InvocationException {
 		final IManagedMethod managedMethod = methodInvocation.method();
 		final Transaction transaction = transactionalResource.createReadOnlyTransaction(getScheme(managedMethod));
 		// see mutable transaction comment

@@ -13,7 +13,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import js.lang.BugError;
-import js.lang.InvocationException;
 import js.log.Log;
 import js.log.LogFactory;
 import js.tiny.container.http.NoSuchResourceException;
@@ -200,7 +199,7 @@ public class ResourceServlet extends AppServlet {
 			dumpError(context, e);
 			httpResponse.sendError(HttpServletResponse.SC_NOT_FOUND, httpRequest.getRequestURI());
 			return;
-		} catch (InvocationException e) {
+		} catch (Exception e) {
 			// do not use AppServlet#sendError since it is encoded JSON and for resources need HTML
 			dumpError(context, e);
 			if (e.getCause() instanceof NoSuchResourceException) {

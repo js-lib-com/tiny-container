@@ -19,9 +19,9 @@ import js.log.LogFactory;
 import js.tiny.container.spi.AuthorizationException;
 import js.tiny.container.spi.IManagedClass;
 import js.tiny.container.spi.IManagedMethod;
-import js.tiny.container.spi.IMethodInvocation;
-import js.tiny.container.spi.IMethodInvocationProcessor;
-import js.tiny.container.spi.IMethodInvocationProcessorsChain;
+import js.tiny.container.spi.IInvocation;
+import js.tiny.container.spi.IInvocationProcessor;
+import js.tiny.container.spi.IInvocationProcessorsChain;
 import js.tiny.container.spi.IServiceMeta;
 import js.util.Params;
 import js.util.Strings;
@@ -35,7 +35,7 @@ import js.util.Types;
  * 
  * @author Iulian Rotaru
  */
-public final class ManagedMethod implements IManagedMethod, IMethodInvocationProcessor {
+public final class ManagedMethod implements IManagedMethod, IInvocationProcessor {
 	/** Class logger. */
 	private static final Log log = LogFactory.getLog(IManagedMethod.class);
 
@@ -62,7 +62,7 @@ public final class ManagedMethod implements IManagedMethod, IMethodInvocationPro
 
 	private final Map<Class<? extends IServiceMeta>, IServiceMeta> serviceMetas = new HashMap<>();
 
-	private final Set<IMethodInvocationProcessor> invocationProcessors = new HashSet<>();
+	private final Set<IInvocationProcessor> invocationProcessors = new HashSet<>();
 
 	/**
 	 * Construct a managed method with optional invocation interceptor. Store declaring class and Java reflective method,
@@ -89,8 +89,8 @@ public final class ManagedMethod implements IManagedMethod, IMethodInvocationPro
 		argumentsProcessor = new ArgumentsProcessor();
 
 		declaringClass.getServices().forEach(service -> {
-			if (service instanceof IMethodInvocationProcessor) {
-				invocationProcessors.add((IMethodInvocationProcessor) service);
+			if (service instanceof IInvocationProcessor) {
+				invocationProcessors.add((IInvocationProcessor) service);
 			}
 		});
 	}
@@ -143,14 +143,12 @@ public final class ManagedMethod implements IManagedMethod, IMethodInvocationPro
 	 * @param args optional managed method invocation arguments.
 	 * @param <T> returned value type.
 	 * @return value returned by method or null for void.
-	 * @throws AuthorizationException if method is private and {@link SecurityContext} is not authenticated.
-	 * @throws IllegalArgumentException if invocation arguments does not match method signature.
-	 * @throws InvocationException if method execution fails for whatever reason.
+	 * @throws Exception any exception from method or container service execution is bubbled up.
 	 */
 	@SuppressWarnings("unchecked")
 	@Override
-	public <T> T invoke(Object object, Object... args) throws AuthorizationException, IllegalArgumentException, InvocationException {
-		MethodInvocationProcessorsChain processorsChain = new MethodInvocationProcessorsChain();
+	public <T> T invoke(Object object, Object... args) throws Exception {
+		InvocationProcessorsChain processorsChain = new InvocationProcessorsChain();
 		processorsChain.addProcessors(invocationProcessors);
 
 		// this managed method is a method invocation processor too
@@ -158,7 +156,7 @@ public final class ManagedMethod implements IManagedMethod, IMethodInvocationPro
 		processorsChain.addProcessor(this);
 
 		processorsChain.createIterator();
-		IMethodInvocation methodInvocation = processorsChain.createMethodInvocation(this, object, args);
+		IInvocation methodInvocation = processorsChain.createMethodInvocation(this, object, args);
 		return (T) processorsChain.invokeNextProcessor(methodInvocation);
 	}
 
@@ -168,7 +166,7 @@ public final class ManagedMethod implements IManagedMethod, IMethodInvocationPro
 	}
 
 	@Override
-	public Object invoke(IMethodInvocationProcessorsChain unused, IMethodInvocation methodInvocation) throws AuthorizationException, IllegalArgumentException, InvocationException {
+	public Object execute(IInvocationProcessorsChain unused, IInvocation methodInvocation) throws AuthorizationException, IllegalArgumentException, InvocationException {
 		// arguments processor converts <args> to empty array if it is null
 		// it can be null if on invocation chain there is Proxy invoked with no arguments
 		Object[] arguments = argumentsProcessor.preProcessArguments(this, methodInvocation.arguments());
@@ -269,7 +267,7 @@ public final class ManagedMethod implements IManagedMethod, IMethodInvocationPro
 	// --------------------------------------------------------------------------------------------
 	// PACKAGE METHODS
 
-	void addInvocationProcessor(IMethodInvocationProcessor invocationProcessor) {
+	void addInvocationProcessor(IInvocationProcessor invocationProcessor) {
 		invocationProcessors.add(invocationProcessor);
 	}
 
