@@ -3,7 +3,6 @@ package js.tiny.container.unit;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import java.lang.reflect.Method;
@@ -27,18 +26,8 @@ import js.util.Classes;
  */
 public class AnnotationsScannerUnitTest {
 	@Test
-	public void getClassAnnotation() throws Exception {
-		assertNull(invokeStatic("getAnnotation", AnnotatedClass.class, Remote.class));
-	}
-
-	@Test
 	public void hasClassAnnotation() throws Exception {
 		assertFalse((boolean) invokeStatic("hasAnnotation", AnnotatedClass.class, Remote.class));
-	}
-
-	@Test
-	public void getInheritedClassAnnotation() throws Exception {
-		assertNotNull(invokeStatic("getAnnotation", ClassInheritedAnnotation.class, Remote.class));
 	}
 
 	@Test

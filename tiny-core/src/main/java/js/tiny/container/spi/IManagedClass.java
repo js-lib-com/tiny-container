@@ -3,11 +3,9 @@ package js.tiny.container.spi;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
-import java.lang.reflect.Method;
 import java.util.Collection;
 import java.util.Map;
 
-import javax.ejb.Remote;
 import javax.ejb.Schedule;
 import javax.inject.Inject;
 
@@ -37,7 +35,7 @@ public interface IManagedClass {
 	IContainer getContainer();
 
 	Collection<IContainerService> getServices();
-	
+
 	/**
 	 * Get the key uniquely identifying this managed class. Returned key is created incrementally, but not necessarily in
 	 * sequence, and can be used to sort managed classes in creation order; creation order is the order of class descriptor
@@ -119,32 +117,18 @@ public interface IManagedClass {
 	 */
 	Iterable<IManagedMethod> getManagedMethods();
 
-	Iterable<IManagedMethod> getNetMethods();
-
 	IManagedMethod getPostConstructMethod();
 
 	IManagedMethod getPreDestroyMethod();
 
 	/**
-	 * Get managed method wrapping requested Java method. This getter is designed to be used with managed classes of
-	 * {@link InstanceType#PROXY} type. Attempting to use with other types is considered a bug.
+	 * Get managed method by name. This getter tries to locate named managed method declared by this managed class and return
+	 * it; if not found returns null.
 	 * 
-	 * @param method Java method to search for wrapper managed method.
-	 * @return managed method or null if not found.
-	 * @throws NoSuchMethodException if there is no managed method wrapping requested Java method.
-	 * @throws BugError if attempt to use this getter on not {@link InstanceType#PROXY} types.
-	 */
-	IManagedMethod getManagedMethod(Method method) throws NoSuchMethodException;
-
-	/**
-	 * Get managed method by name, method that should be usable for remote requests. This getter tries to locate named managed
-	 * method declared by this managed class and return it; if not found returns null. Returned managed method is guaranteed to
-	 * be remotely accessible.
-	 * 
-	 * @param methodName the name of managed method intended for remote access.
+	 * @param methodName the name of managed method.
 	 * @return requested managed method, possible null.
 	 */
-	IManagedMethod getNetMethod(String methodName);
+	IManagedMethod getManagedMethod(String methodName);
 
 	/**
 	 * Get managed instance scope. There are predefined scope values, see {@link InstanceScope}, but user defined scopes are
@@ -161,17 +145,6 @@ public interface IManagedClass {
 	 * @return managed class type.
 	 */
 	InstanceType getInstanceType();
-
-	/**
-	 * Test if this managed class is remotely accessible, that is, is a net class. A managed class is remotely accessible if it
-	 * is tagged so with {@link Remote} annotation or has at least one method accessible remote, see
-	 * {@link IManagedMethod#isRemotelyAccessible()}.
-	 * <p>
-	 * A remotely accessible managed class is also knows as <code>net class</code>.
-	 * 
-	 * @return true only if this managed class is remotely accessible.
-	 */
-	boolean isRemotelyAccessible();
 
 	/**
 	 * Remote class implementation URL as declared into managed class descriptor. This value has meaning only if managed class
@@ -205,6 +178,6 @@ public interface IManagedClass {
 	Map<String, Field> getContextParamFields();
 
 	<T extends IServiceMeta> T getServiceMeta(Class<T> type);
-	
+
 	<T extends Annotation> T getAnnotation(Class<T> type);
 }

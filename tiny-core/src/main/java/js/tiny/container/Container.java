@@ -511,16 +511,10 @@ public class Container implements IContainer, Configurable {
 
 		// comparison is based on managed class key that is created incrementally
 
-		Set<IManagedClass> sortedClasses = new TreeSet<>(new Comparator<IManagedClass>() {
-			@Override
-			public int compare(IManagedClass o1, IManagedClass o2) {
-				// compare first with second to ensure ascending sorting
-				return o1.getKey().compareTo(o2.getKey());
-			}
-		});
+		// compare first with second to ensure ascending sorting
+		Set<IManagedClass> sortedClasses = new TreeSet<>((o1, o2) -> o1.getKey().compareTo(o2.getKey()));
 
 		for (IManagedClass managedClass : classesPool.values()) {
-			// process only implementations of managed life cycle interface
 			if (managedClass.isAutoInstanceCreation()) {
 				sortedClasses.add(managedClass);
 			}

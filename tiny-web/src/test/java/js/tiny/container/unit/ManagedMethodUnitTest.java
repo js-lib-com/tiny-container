@@ -58,7 +58,6 @@ public class ManagedMethodUnitTest {
 		assertEquals(String.class, managedMethod.getParameterTypes()[0]);
 		assertEquals(String.class, managedMethod.getReturnType());
 		assertFalse(managedMethod.isVoid());
-		assertFalse(managedMethod.isRemotelyAccessible());
 		assertEquals("js.tiny.container.unit.ManagedMethodUnitTest$Person#setName(String)", managedMethod.toString());
 	}
 

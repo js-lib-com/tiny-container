@@ -211,10 +211,6 @@ public final class HttpRmiServlet extends AppServlet {
 			log.error("HTTP-RMI request for not existing managed class |%s|.", interfaceName);
 			throw new ClassNotFoundException(requestURI);
 		}
-		if (!managedClass.isRemotelyAccessible()) {
-			log.error("HTTP-RMI request for local managed class |%s|. See @Remote annotation.", interfaceName);
-			throw new ClassNotFoundException(requestURI);
-		}
 		return managedClass;
 	}
 
@@ -229,13 +225,9 @@ public final class HttpRmiServlet extends AppServlet {
 	 *             not remotely accessible or it returns a {@link Resource}.
 	 */
 	private static IManagedMethod getManagedMethod(IManagedClass managedClass, String methodName, String requestURI) throws NoSuchMethodException {
-		IManagedMethod managedMethod = managedClass.getNetMethod(methodName);
+		IManagedMethod managedMethod = managedClass.getManagedMethod(methodName);
 		if (managedMethod == null) {
 			log.error("HTTP-RMI request for not existing managed method |%s#%s|.", managedClass.getInterfaceClass().getName(), methodName);
-			throw new NoSuchMethodException(requestURI);
-		}
-		if (!managedMethod.isRemotelyAccessible()) {
-			log.error("HTTP-RMI request for local managed method |%s#%s|. See @Remote annotation.", managedClass.getInterfaceClass().getName(), methodName);
 			throw new NoSuchMethodException(requestURI);
 		}
 		if (Types.isKindOf(managedMethod.getReturnType(), Resource.class)) {

@@ -56,10 +56,9 @@ public class ManagedClassUnitTest {
 		assertEquals(PojoImpl.class, managedClass.getImplementationClass());
 		assertNotNull(managedClass.getContainer());
 		assertNull(managedClass.getConfig());
-		assertEquals("test:js.tiny.container.unit.ManagedClassUnitTest$PojoImpl:js.tiny.container.unit.ManagedClassUnitTest$Pojo:POJO:APPLICATION:LOCAL", managedClass.toString());
+		assertEquals("test:js.tiny.container.unit.ManagedClassUnitTest$PojoImpl:js.tiny.container.unit.ManagedClassUnitTest$Pojo:POJO:APPLICATION", managedClass.toString());
 		assertEquals(InstanceType.POJO, managedClass.getInstanceType());
 		assertEquals(InstanceScope.APPLICATION, managedClass.getInstanceScope());
-		assertFalse(managedClass.isRemotelyAccessible());
 
 		Constructor<PojoImpl> constructor = PojoImpl.class.getDeclaredConstructor();
 		assertNotNull(constructor);
@@ -83,10 +82,9 @@ public class ManagedClassUnitTest {
 		assertEquals(PojoImpl.class, managedClass.getImplementationClass());
 		assertNotNull(managedClass.getContainer());
 		assertNull(managedClass.getConfig());
-		assertEquals("test:js.tiny.container.unit.ManagedClassUnitTest$PojoImpl:js.tiny.container.unit.ManagedClassUnitTest$Pojo:PROXY:APPLICATION:LOCAL", managedClass.toString());
+		assertEquals("test:js.tiny.container.unit.ManagedClassUnitTest$PojoImpl:js.tiny.container.unit.ManagedClassUnitTest$Pojo:PROXY:APPLICATION", managedClass.toString());
 		assertEquals(InstanceType.PROXY, managedClass.getInstanceType());
 		assertEquals(InstanceScope.APPLICATION, managedClass.getInstanceScope());
-		assertFalse(managedClass.isRemotelyAccessible());
 
 		Constructor<PojoImpl> constructor = PojoImpl.class.getDeclaredConstructor();
 		assertNotNull(constructor);
@@ -112,7 +110,7 @@ public class ManagedClassUnitTest {
 		assertNotNull(methodsPool);
 
 		Method method = NetCar.class.getMethod("getModel");
-		IManagedMethod managedMethod = (IManagedMethod) methodsPool.get(method);
+		IManagedMethod managedMethod = (IManagedMethod) methodsPool.get(method.getName());
 		assertNotNull(managedMethod);
 	}
 
@@ -173,7 +171,7 @@ public class ManagedClassUnitTest {
 		Object managedClass = getManagedClass(config(config));
 
 		assertNotNull(managedClass);
-		assertEquals("test:js.tiny.container.unit.ManagedClassUnitTest$Pojo:REMOTE:APPLICATION:LOCAL:http://services.bbnet.ro/", managedClass.toString());
+		assertEquals("test:js.tiny.container.unit.ManagedClassUnitTest$Pojo:REMOTE:APPLICATION:http://services.bbnet.ro/", managedClass.toString());
 		assertEquals("http://services.bbnet.ro/", Classes.getFieldValue(managedClass, "implementationURL"));
 
 		Map<?, ?> methodsPool = Classes.getFieldValue(managedClass, "methodsPool");
@@ -188,7 +186,7 @@ public class ManagedClassUnitTest {
 		Object managedClass = getManagedClass(config(config));
 
 		assertNotNull(managedClass);
-		assertEquals("test:js.tiny.container.unit.ManagedClassUnitTest$Pojo:REMOTE:APPLICATION:LOCAL:http://services.bbnet.ro/", managedClass.toString());
+		assertEquals("test:js.tiny.container.unit.ManagedClassUnitTest$Pojo:REMOTE:APPLICATION:http://services.bbnet.ro/", managedClass.toString());
 
 		Map<?, ?> methodsPool = Classes.getFieldValue(managedClass, "methodsPool");
 		assertNotNull(methodsPool);

@@ -123,7 +123,6 @@ public class InstanceAlgorithmUnitTest {
 		private Class<?> implementationClass;
 		private InstanceScope scope;
 		private InstanceType type;
-		private boolean remote;
 
 		public MockManagedClassSPI(IContainer container) {
 			this.container = container;
@@ -197,11 +196,6 @@ public class InstanceAlgorithmUnitTest {
 		@Override
 		public InstanceType getInstanceType() {
 			return type;
-		}
-
-		@Override
-		public boolean isRemotelyAccessible() {
-			return remote;
 		}
 
 		@Override

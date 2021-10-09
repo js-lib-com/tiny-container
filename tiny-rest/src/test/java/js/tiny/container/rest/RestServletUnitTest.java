@@ -107,7 +107,6 @@ public class RestServletUnitTest {
 		when(container.getManagedMethods()).thenReturn(Arrays.asList(managedMethod));
 		when(managedMethod.getServiceMeta(PathMeta.class)).thenReturn(new PathMeta(service, "user"));
 		when(managedMethod.getReturnType()).thenReturn(void.class);
-		when(managedMethod.isRemotelyAccessible()).thenReturn(true);
 
 		// when
 		RestServlet servlet = new RestServlet();
@@ -122,27 +121,10 @@ public class RestServletUnitTest {
 	}
 
 	@Test
-	public void GivenNotRemoteMethod_WhenServletInit_ThenMethodNotRegistered() throws ServletException {
-		// given
-		when(container.getManagedMethods()).thenReturn(Arrays.asList(managedMethod));
-		when(managedMethod.isRemotelyAccessible()).thenReturn(false);
-
-		// when
-		RestServlet servlet = new RestServlet();
-		servlet.init(servletConfig);
-
-		// then
-		Map<String, IManagedMethod> methods = Classes.getFieldValue(servlet, "restMethods");
-		assertNotNull(methods);
-		assertEquals(0, methods.size());
-	}
-
-	@Test
 	public void GivenResourceMethod_WhenServletInit_ThenMethodNotRegistered() throws ServletException {
 		// given
 		when(container.getManagedMethods()).thenReturn(Arrays.asList(managedMethod));
 		when(managedMethod.getReturnType()).thenReturn(Resource.class);
-		when(managedMethod.isRemotelyAccessible()).thenReturn(true);
 
 		// when
 		RestServlet servlet = new RestServlet();
@@ -208,7 +190,6 @@ public class RestServletUnitTest {
 	public void GivenStringRemoteMethod_WhenInvoke_Then200() throws Exception {
 		// given
 		when(container.getManagedMethods()).thenReturn(Arrays.asList(managedMethod));
-		when(managedMethod.isRemotelyAccessible()).thenReturn(true);
 		when(managedMethod.getServiceMeta(PathMeta.class)).thenReturn(new PathMeta(service, "rest/sub-resource"));
 		when(managedMethod.getParameterTypes()).thenReturn(new Class[0]);
 		when(managedMethod.getReturnType()).thenReturn(String.class);
@@ -232,7 +213,6 @@ public class RestServletUnitTest {
 	public void GivenVoidRemoteMethod_WhenInvoke_Then204() throws Exception {
 		// given
 		when(container.getManagedMethods()).thenReturn(Arrays.asList(managedMethod));
-		when(managedMethod.isRemotelyAccessible()).thenReturn(true);
 		when(managedMethod.getServiceMeta(PathMeta.class)).thenReturn(new PathMeta(service, "rest/sub-resource"));
 		when(managedMethod.getParameterTypes()).thenReturn(new Class[0]);
 		when(managedMethod.isVoid()).thenReturn(true);
@@ -251,7 +231,6 @@ public class RestServletUnitTest {
 		// given
 		when(container.getLoginRealm()).thenReturn("Test App");
 		when(container.getManagedMethods()).thenReturn(Arrays.asList(managedMethod));
-		when(managedMethod.isRemotelyAccessible()).thenReturn(true);
 		when(managedMethod.getServiceMeta(PathMeta.class)).thenReturn(new PathMeta(service, "rest/sub-resource"));
 		when(managedMethod.getParameterTypes()).thenReturn(new Class[0]);
 		when(managedMethod.invoke(null, new Object[0])).thenThrow(AuthorizationException.class);
@@ -273,7 +252,6 @@ public class RestServletUnitTest {
 		when(container.getManagedMethods()).thenReturn(Arrays.asList(managedMethod));
 		when(json.stringify(any())).thenReturn(error);
 
-		when(managedMethod.isRemotelyAccessible()).thenReturn(true);
 		when(managedMethod.getServiceMeta(PathMeta.class)).thenReturn(new PathMeta(service, "rest/missing-method"));
 
 		// when
@@ -292,7 +270,6 @@ public class RestServletUnitTest {
 		// given
 		when(container.getManagedMethods()).thenReturn(Arrays.asList(managedMethod));
 
-		when(managedMethod.isRemotelyAccessible()).thenReturn(true);
 		when(managedMethod.getServiceMeta(PathMeta.class)).thenReturn(new PathMeta(service, "rest/sub-resource"));
 		when(managedMethod.getParameterTypes()).thenReturn(new Class[0]);
 		when(managedMethod.invoke(null, new Object[0])).thenThrow(IllegalArgumentException.class);
@@ -315,7 +292,6 @@ public class RestServletUnitTest {
 		when(container.getManagedMethods()).thenReturn(Arrays.asList(managedMethod));
 		when(json.stringify(any())).thenReturn(error);
 
-		when(managedMethod.isRemotelyAccessible()).thenReturn(true);
 		when(managedMethod.getServiceMeta(PathMeta.class)).thenReturn(new PathMeta(service, "rest/sub-resource"));
 		when(managedMethod.getParameterTypes()).thenReturn(new Class[0]);
 		when(managedMethod.invoke(null, new Object[0])).thenThrow(new InvocationException(new Exception("exception")));
@@ -337,7 +313,6 @@ public class RestServletUnitTest {
 		// given
 		when(container.getManagedMethods()).thenReturn(Arrays.asList(managedMethod));
 
-		when(managedMethod.isRemotelyAccessible()).thenReturn(true);
 		when(managedMethod.getServiceMeta(PathMeta.class)).thenReturn(new PathMeta(service, "rest/sub-resource"));
 		when(managedMethod.getParameterTypes()).thenReturn(new Class[0]);
 		when(managedMethod.invoke(null, new Object[0])).thenThrow(RuntimeException.class);

@@ -139,9 +139,6 @@ public class RestServlet extends AppServlet {
 	public void init(ServletConfig config) throws ServletException {
 		super.init(config);
 		for (IManagedMethod managedMethod : container.getManagedMethods()) {
-			if (!managedMethod.isRemotelyAccessible()) {
-				continue;
-			}
 			if (!Types.isKindOf(managedMethod.getReturnType(), Resource.class)) {
 				restMethods.put(key(managedMethod), managedMethod);
 			}

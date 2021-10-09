@@ -19,8 +19,10 @@ import java.util.concurrent.atomic.AtomicInteger;
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import javax.annotation.Resource;
+import javax.annotation.security.DenyAll;
+import javax.annotation.security.PermitAll;
+import javax.ejb.Asynchronous;
 import javax.ejb.Remote;
-import javax.ejb.Schedule;
 import javax.ejb.Singleton;
 import javax.ejb.Startup;
 import javax.ejb.Stateful;
@@ -44,10 +46,10 @@ import js.log.LogFactory;
 import js.tiny.container.core.AppFactory;
 import js.tiny.container.spi.IContainer;
 import js.tiny.container.spi.IContainerService;
-import js.tiny.container.spi.IServiceMeta;
 import js.tiny.container.spi.IManagedClass;
 import js.tiny.container.spi.IManagedMethod;
 import js.tiny.container.spi.IMethodInvocationProcessor;
+import js.tiny.container.spi.IServiceMeta;
 import js.util.Classes;
 import js.util.Types;
 
@@ -333,10 +335,7 @@ public final class ManagedClass implements IManagedClass {
 	 * Managed methods pool for managed classes of type {@link InstanceType#PROXY}. Used by {@link ManagedProxyHandler} to find
 	 * out managed method bound to interface method.
 	 */
-	private final Map<Method, IManagedMethod> methodsPool = new HashMap<>();
-
-	/** Pool of net methods, that is, methods remotely accessible. */
-	private final Map<String, IManagedMethod> netMethodsPool = new HashMap<>();
+	private final Map<String, IManagedMethod> methodsPool = new HashMap<>();
 
 	/**
 	 * Map of fields annotated with {@link ContextParam} annotation. Map key is the context parameter name. This fields will be
@@ -351,12 +350,6 @@ public final class ManagedClass implements IManagedClass {
 
 	/** Cached value of managed class string representation, merely for logging. */
 	private final String string;
-
-	/**
-	 * A managed class is remotely accessible, also known as net class, if is annotated with {@link Remote} or has at least one
-	 * remotely accessible method.
-	 */
-	private boolean remotelyAccessible;
 
 	/**
 	 * Flag indicating that this managed class should be instantiated automatically by container, see {@link Container#start()}.
@@ -490,16 +483,6 @@ public final class ManagedClass implements IManagedClass {
 			autoInstanceCreation = true;
 		}
 
-		// set remote type and request URI path from @Remote, @Controller or @Service
-		boolean remoteType = false;
-		Remote remoteAnnotation = getAnnotation(implementationClass, Remote.class);
-		if (remoteAnnotation != null) {
-			remoteType = true;
-		}
-		if (remoteType) {
-			remotelyAccessible = true;
-		}
-
 		// managed classes does not support public inheritance
 		for (Method method : implementationClass.getDeclaredMethods()) {
 
@@ -524,30 +507,8 @@ public final class ManagedClass implements IManagedClass {
 				continue;
 			}
 
-			if (!Modifier.isPublic(modifiers) && !hasAnnotation(method, Schedule.class)) {
-				// continue scanning only public methods
-				continue;
-			}
-
-			boolean remoteMethod = hasAnnotation(method, Remote.class);
-			if (!remoteMethod) {
-				remoteMethod = remoteType;
-			}
-			if (remoteMethod) {
-				// if at least one owned managed method is remote this managed class become remote too
-				remotelyAccessible = true;
-			}
-
-			final ManagedMethod managedMethod = new ManagedMethod(this, interfaceMethod);
-			methodsPool.put(interfaceMethod, managedMethod);
-
-			if (remoteMethod) {
-				managedMethod.setRemotelyAccessible(remoteMethod);
-			}
-
-			// if (managedMethod.isRemotelyAccessible() && netMethodsPool.put(method.getName(), managedMethod) != null) {
-			// throw new BugError("Overloading is not supported for net method |%s|.", managedMethod);
-			// }
+			final IManagedMethod managedMethod = new ManagedMethod(this, interfaceMethod);
+			methodsPool.put(interfaceMethod.getName(), managedMethod);
 		}
 
 		for (IContainerService service : container.getServices()) {
@@ -634,11 +595,6 @@ public final class ManagedClass implements IManagedClass {
 	}
 
 	@Override
-	public Iterable<IManagedMethod> getNetMethods() {
-		return netMethodsPool.values();
-	}
-
-	@Override
 	public IManagedMethod getPostConstructMethod() {
 		return postConstructor;
 	}
@@ -649,20 +605,8 @@ public final class ManagedClass implements IManagedClass {
 	}
 
 	@Override
-	public IManagedMethod getManagedMethod(Method method) throws NoSuchMethodException {
-		if (!instanceType.equals(InstanceType.PROXY)) {
-			throw new BugError("Managed method getter can be used only on |%s| types.", InstanceType.PROXY);
-		}
-		IManagedMethod managedMethod = methodsPool.get(method);
-		if (managedMethod == null) {
-			throw new NoSuchMethodException(String.format("Missing managed method |%s#%s|.", implementationClass.getName(), method.getName()));
-		}
-		return managedMethod;
-	}
-
-	@Override
-	public IManagedMethod getNetMethod(String methodName) {
-		IManagedMethod managedMethod = netMethodsPool.get(methodName);
+	public IManagedMethod getManagedMethod(String methodName) {
+		IManagedMethod managedMethod = methodsPool.get(methodName);
 		if (managedMethod == null) {
 			log.error("Missing remote method |%s| from |%s|.", methodName, implementationClass);
 			return null;
@@ -678,11 +622,6 @@ public final class ManagedClass implements IManagedClass {
 	@Override
 	public InstanceType getInstanceType() {
 		return instanceType;
-	}
-
-	@Override
-	public boolean isRemotelyAccessible() {
-		return remotelyAccessible;
 	}
 
 	@Override
@@ -1039,8 +978,6 @@ public final class ManagedClass implements IManagedClass {
 		builder.append(instanceType);
 		builder.append(':');
 		builder.append(instanceScope);
-		builder.append(':');
-		builder.append(remotelyAccessible ? "NET" : "LOCAL");
 		if (implementationURL != null) {
 			builder.append(':');
 			builder.append(implementationURL);
@@ -1063,31 +1000,6 @@ public final class ManagedClass implements IManagedClass {
 		if (annotation == null) {
 			for (Class<?> interfaceClass : implementationClass.getInterfaces()) {
 				annotation = interfaceClass.getAnnotation(type);
-				if (annotation != null) {
-					break;
-				}
-			}
-		}
-		return annotation;
-	}
-
-	/**
-	 * Get class annotation or null if none found. This getter uses extended annotation searching scope: it searches first on
-	 * given class then tries with all class interfaces. Note that only interfaces are used as alternative for annotation
-	 * search. Super class is not included.
-	 * <p>
-	 * Returns null if no annotation found on base class or interfaces.
-	 * 
-	 * @param clazz base class to search for annotation,
-	 * @param annotationClass annotation to search for.
-	 * @param <T> annotation type.
-	 * @return annotation instance or null if none found.
-	 */
-	private static <T extends Annotation> T getAnnotation(Class<?> clazz, Class<T> annotationClass) {
-		T annotation = clazz.getAnnotation(annotationClass);
-		if (annotation == null) {
-			for (Class<?> interfaceClass : clazz.getInterfaces()) {
-				annotation = interfaceClass.getAnnotation(annotationClass);
 				if (annotation != null) {
 					break;
 				}

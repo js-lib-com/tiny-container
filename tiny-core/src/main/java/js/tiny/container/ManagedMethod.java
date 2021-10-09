@@ -12,8 +12,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import javax.ejb.Remote;
-
 import js.lang.BugError;
 import js.lang.InvocationException;
 import js.log.Log;
@@ -55,12 +53,6 @@ public final class ManagedMethod implements IManagedMethod, IMethodInvocationPro
 	 * {@link IManagedClass#getInterfaceClass()}.
 	 */
 	private final Method method;
-
-	/**
-	 * A managed method is remotely accessible, also known as net method, if is annotated with {@link Remote} or declaring class
-	 * is remotely accessible.
-	 */
-	private boolean remotelyAccessible;
 
 	/** Managed method signature, mainly for debugging. */
 	private final String signature;
@@ -209,11 +201,6 @@ public final class ManagedMethod implements IManagedMethod, IMethodInvocationPro
 		return Types.isVoid(method.getReturnType());
 	}
 
-	@Override
-	public boolean isRemotelyAccessible() {
-		return remotelyAccessible;
-	}
-
 	/**
 	 * Returns a string describing this managed method.
 	 */
@@ -282,19 +269,10 @@ public final class ManagedMethod implements IManagedMethod, IMethodInvocationPro
 	// --------------------------------------------------------------------------------------------
 	// PACKAGE METHODS
 
-	/**
-	 * Set remote accessibility flag.
-	 * 
-	 * @param remotelyAccessible remote accessibility flag.
-	 */
-	void setRemotelyAccessible(boolean remotelyAccessible) {
-		this.remotelyAccessible = remotelyAccessible;
-	}
-
 	void addInvocationProcessor(IMethodInvocationProcessor invocationProcessor) {
 		invocationProcessors.add(invocationProcessor);
 	}
-	
+
 	void addServiceMeta(IServiceMeta serviceMeta) {
 		log.debug("Add service meta |%s| to managed method |%s|", serviceMeta.getClass(), this);
 		serviceMetas.put(serviceMeta.getClass(), serviceMeta);

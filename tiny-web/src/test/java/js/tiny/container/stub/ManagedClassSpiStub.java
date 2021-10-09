@@ -3,7 +3,6 @@ package js.tiny.container.stub;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
-import java.lang.reflect.Method;
 import java.util.Collection;
 import java.util.Map;
 
@@ -48,11 +47,6 @@ public class ManagedClassSpiStub implements IManagedClass {
 	}
 
 	@Override
-	public Iterable<IManagedMethod> getNetMethods() {
-		throw new UnsupportedOperationException("getNetMethods()");
-	}
-
-	@Override
 	public IManagedMethod getPostConstructMethod() {
 		throw new UnsupportedOperationException("getPostConstructMethod()");
 	}
@@ -63,13 +57,8 @@ public class ManagedClassSpiStub implements IManagedClass {
 	}
 
 	@Override
-	public IManagedMethod getNetMethod(String methodName) {
-		throw new UnsupportedOperationException("getNetMethod(String methodName)");
-	}
-
-	@Override
-	public IManagedMethod getManagedMethod(Method method) throws NoSuchMethodException {
-		throw new UnsupportedOperationException("getManagedMethod(Method method)");
+	public IManagedMethod getManagedMethod(String methodName) {
+		throw new UnsupportedOperationException("getManagedMethod(String methodName)");
 	}
 
 	@Override
@@ -85,11 +74,6 @@ public class ManagedClassSpiStub implements IManagedClass {
 	@Override
 	public Class<?> getImplementationClass() {
 		throw new UnsupportedOperationException("getImplementationClass()");
-	}
-
-	@Override
-	public boolean isRemotelyAccessible() {
-		throw new UnsupportedOperationException("isRemotelyAccessible()");
 	}
 
 	@Override

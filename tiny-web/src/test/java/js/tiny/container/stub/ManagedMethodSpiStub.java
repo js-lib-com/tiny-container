@@ -47,11 +47,6 @@ public class ManagedMethodSpiStub implements IManagedMethod {
 	}
 
 	@Override
-	public boolean isRemotelyAccessible() {
-		throw new UnsupportedOperationException("isRemotelyAccessible()");
-	}
-
-	@Override
 	public IManagedClass getDeclaringClass() {
 		throw new UnsupportedOperationException("getDeclaringClass()");
 	}

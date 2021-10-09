@@ -3,6 +3,7 @@ package js.tiny.container;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
+import js.lang.BugError;
 import js.lang.InstanceInvocationHandler;
 import js.lang.InvocationException;
 import js.log.Log;
@@ -67,7 +68,10 @@ public final class ManagedProxyHandler implements InstanceInvocationHandler<Obje
 	 */
 	@Override
 	public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-		final IManagedMethod managedMethod = managedClass.getManagedMethod(method);
+		final IManagedMethod managedMethod = managedClass.getManagedMethod(method.getName());
+		if (managedMethod == null) {
+			throw new BugError("Attempt to use not managed method |%s|.", method);
+		}
 		log.trace("Invoke |%s|.", managedMethod);
 		try {
 			return managedMethod.invoke(managedInstance, args);

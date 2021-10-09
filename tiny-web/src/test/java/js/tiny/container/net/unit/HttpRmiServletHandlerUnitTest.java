@@ -151,12 +151,7 @@ public class HttpRmiServletHandlerUnitTest {
 		private MockManagedMethod managedMethod = new MockManagedMethod();
 
 		@Override
-		public boolean isRemotelyAccessible() {
-			return true;
-		}
-
-		@Override
-		public IManagedMethod getNetMethod(String methodName) {
+		public IManagedMethod getManagedMethod(String methodName) {
 			return managedMethod;
 		}
 	}
@@ -164,11 +159,6 @@ public class HttpRmiServletHandlerUnitTest {
 	private static class MockManagedMethod extends ManagedMethodSpiStub {
 		private Type returnType = void.class;
 		private Exception exception;
-
-		@Override
-		public boolean isRemotelyAccessible() {
-			return true;
-		}
 
 		@Override
 		public Type getReturnType() {

@@ -78,13 +78,6 @@ public class HttpRmiServletUnitTest {
 		getManagedClass(container, "java.lang.Object", "/java/lang/Object/toString");
 	}
 
-	@Test(expected = ClassNotFoundException.class)
-	public void getManagedClass_NoRemotelyAccessible() throws Exception {
-		MockContainer container = new MockContainer();
-		container.managedClass.remotelyAccessible = false;
-		getManagedClass(container, "java.lang.Object", "/java/lang/Object/toString");
-	}
-
 	@Test
 	public void getManagedMethod() throws Exception {
 		MockManagedClass managedClass = new MockManagedClass();
@@ -96,13 +89,6 @@ public class HttpRmiServletUnitTest {
 	public void getManagedMethod_NoManagedMethod() throws Exception {
 		MockManagedClass managedClass = new MockManagedClass();
 		managedClass.managedMethod = null;
-		getManagedMethod(managedClass, "toString", "/java/lang/Object/toString");
-	}
-
-	@Test(expected = NoSuchMethodException.class)
-	public void getManagedMethod_NoRemotelyAccessible() throws Exception {
-		MockManagedClass managedClass = new MockManagedClass();
-		managedClass.managedMethod.remotelyAccessible = false;
 		getManagedMethod(managedClass, "toString", "/java/lang/Object/toString");
 	}
 
@@ -141,7 +127,6 @@ public class HttpRmiServletUnitTest {
 	}
 
 	private static class MockManagedClass extends ManagedClassSpiStub {
-		private boolean remotelyAccessible = true;
 		private MockManagedMethod managedMethod = new MockManagedMethod();
 
 		@Override
@@ -150,24 +135,13 @@ public class HttpRmiServletUnitTest {
 		}
 
 		@Override
-		public boolean isRemotelyAccessible() {
-			return remotelyAccessible;
-		}
-
-		@Override
-		public IManagedMethod getNetMethod(String methodName) {
+		public IManagedMethod getManagedMethod(String methodName) {
 			return managedMethod;
 		}
 	}
 
 	private static class MockManagedMethod extends ManagedMethodSpiStub {
-		private boolean remotelyAccessible = true;
 		private Type returnType = void.class;
-
-		@Override
-		public boolean isRemotelyAccessible() {
-			return remotelyAccessible;
-		}
 
 		@Override
 		public Type getReturnType() {

@@ -183,30 +183,16 @@ public class ManagedClassSpiConformanceTest {
 	public void getManagedMethod() throws Exception {
 		String config = "<test interface='js.tiny.container.unit.ManagedClassSpiConformanceTest$Car' class='js.tiny.container.unit.ManagedClassSpiConformanceTest$CarImpl' type='PROXY' />";
 		Method method = Car.class.getDeclaredMethod("getModel");
-		IManagedMethod managedMethod = getManagedClass(config(config)).getManagedMethod(method);
+		IManagedMethod managedMethod = getManagedClass(config(config)).getManagedMethod(method.getName());
 
 		assertNotNull(managedMethod);
 		assertEquals(method, managedMethod.getMethod());
 	}
 
-	@Test(expected = NoSuchMethodException.class)
-	public void getManagedMethod_NoSuchMethodException() throws Exception {
-		String config = "<test interface='js.tiny.container.unit.ManagedClassSpiConformanceTest$Car' class='js.tiny.container.unit.ManagedClassSpiConformanceTest$CarImpl' type='PROXY' />";
-		Method method = Object.class.getDeclaredMethod("toString");
-		getManagedClass(config(config)).getManagedMethod(method);
-	}
-
-	@Test(expected = BugError.class)
-	public void getManagedMethod_NotPROXY() throws Exception {
-		String config = "<test class='js.tiny.container.unit.ManagedClassSpiConformanceTest$CarImpl' />";
-		Method method = CarImpl.class.getDeclaredMethod("getModel");
-		getManagedClass(config(config)).getManagedMethod(method);
-	}
-
 	@Test
 	public void getNetMethod_NotFound() throws Exception {
 		String config = "<test class='js.tiny.container.unit.ManagedClassSpiConformanceTest$NetCar' />";
-		assertNull(getManagedClass(config(config)).getNetMethod("getCounty"));
+		assertNull(getManagedClass(config(config)).getManagedMethod("getCounty"));
 	}
 
 	@Test
@@ -219,12 +205,6 @@ public class ManagedClassSpiConformanceTest {
 	public void getInstanceType() throws Exception {
 		String config = "<test class='js.tiny.container.unit.ManagedClassSpiConformanceTest$CarImpl' />";
 		assertEquals(InstanceType.POJO, getManagedClass(config(config)).getInstanceType());
-	}
-
-	@Test
-	public void isRemote() throws Exception {
-		String config = "<test class='js.tiny.container.unit.ManagedClassSpiConformanceTest$NetCar' />";
-		assertTrue(getManagedClass(config(config)).isRemotelyAccessible());
 	}
 
 	@Test

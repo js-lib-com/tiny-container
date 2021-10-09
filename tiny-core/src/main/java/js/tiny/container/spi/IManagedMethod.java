@@ -4,8 +4,6 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 
-import javax.ejb.Remote;
-
 import js.lang.InvocationException;
 
 /**
@@ -70,16 +68,6 @@ public interface IManagedMethod {
 	 * @return true if this managed method is void.
 	 */
 	boolean isVoid();
-
-	/**
-	 * Test if this managed method can be accessed remotely, that is, is a net method. A managed method is accessible remote if
-	 * it has {@link Remote} annotation or if its declaring class is remote.
-	 * <p>
-	 * A remotely accessible managed method is known as <code>net method</code>.
-	 * 
-	 * @return true if this managed method can be accessed remotely.
-	 */
-	boolean isRemotelyAccessible();
 
 	<T extends IServiceMeta> T getServiceMeta(Class<T> type);
 

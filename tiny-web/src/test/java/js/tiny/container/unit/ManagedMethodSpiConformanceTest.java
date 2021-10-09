@@ -74,13 +74,6 @@ public class ManagedMethodSpiConformanceTest {
 		assertTrue(setterManagedMethod.isVoid());
 	}
 
-	@Test
-	public void isRemotelyAccessible() throws Exception {
-		assertFalse(getterManagedMethod.isRemotelyAccessible());
-		Classes.invoke(getterManagedMethod, "setRemotelyAccessible", true);
-		assertTrue(getterManagedMethod.isRemotelyAccessible());
-	}
-
 	// --------------------------------------------------------------------------------------------
 	// FIXTURE
 

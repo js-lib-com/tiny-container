@@ -529,11 +529,6 @@ public class InstanceProcessorUnitTest {
 		}
 
 		@Override
-		public boolean isRemotelyAccessible() {
-			return false;
-		}
-
-		@Override
 		public IManagedMethod getPostConstructMethod() {
 			return implementationClass.equals(Joker.class) ? new MockManagedMethodSPI(Joker.getPostConstructMethod()) : null;
 		}
