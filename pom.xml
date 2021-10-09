@@ -34,6 +34,7 @@
 		<module>tiny-mvc</module>
 		<module>tiny-transaction</module>
 		<module>tiny-perfmon</module>
+		<module>tiny-async</module>
 	</modules>
 
 	<properties>

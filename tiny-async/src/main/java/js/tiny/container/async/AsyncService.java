@@ -65,7 +65,7 @@ class AsyncService implements IContainerService, IInvocationProcessor {
 			return chain.invokeNextProcessor(invocation);
 		}
 
-		log.debug("Execute method asynchronous |%s|.", invocation.method());
+		log.debug("Execute asynchronous |%s|.", invocation.method());
 		AsyncTask<Void> asyncTask = new AsyncTask<Void>() {
 			@Override
 			protected Void execute() throws Throwable {
@@ -80,8 +80,7 @@ class AsyncService implements IContainerService, IInvocationProcessor {
 
 	@Override
 	public void destroy() {
-		// TODO Auto-generated method stub
-
+		log.trace("destroy()");
 	}
 
 	private static boolean isAsynchronous(IManagedMethod managedMethod) {

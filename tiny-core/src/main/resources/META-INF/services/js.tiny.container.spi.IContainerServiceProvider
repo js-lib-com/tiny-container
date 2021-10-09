@@ -1,3 +1,2 @@
 js.tiny.container.timer.ContainerServiceProvider
 js.tiny.container.interceptor.ContainerServiceProvider
-js.tiny.container.async.ContainerServiceProvider
