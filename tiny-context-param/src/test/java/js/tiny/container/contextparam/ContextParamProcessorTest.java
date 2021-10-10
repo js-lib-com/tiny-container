@@ -23,7 +23,6 @@ public class ContextParamProcessorTest {
 	private IContainer container;
 	@Mock
 	private IManagedClass managedClass;
-
 	@Mock
 	private RequestContext requestContext;
 
@@ -41,7 +40,7 @@ public class ContextParamProcessorTest {
 	}
 
 	@Test
-	public void Given_WhenPostLoadClass_Then() {
+	public void GivenDefaults_WhenPostLoadClass_ThenFieldIitialized() {
 		// given
 
 		// when
@@ -52,7 +51,7 @@ public class ContextParamProcessorTest {
 	}
 
 	@Test
-	public void GivenMissingOptionalField_WhenPostLoadClass_ThenNull() {
+	public void GivenMissingOptionalField_WhenPostLoadClass_ThenNullField() {
 		// given
 		when(requestContext.getInitParameter(String.class, "static.field")).thenReturn(null);
 
@@ -72,11 +71,10 @@ public class ContextParamProcessorTest {
 		processor.postLoadClass(managedClass);
 
 		// then
-		assertThat(BusinessClass.staticField, nullValue());
 	}
 
 	@Test
-	public void Given_WhenPostConstructInstance_Then() {
+	public void GivenDefaults_WhenPostConstructInstance_ThenFieldInitialized() {
 		// given
 		BusinessClass instance = new BusinessClass();
 
@@ -85,6 +83,31 @@ public class ContextParamProcessorTest {
 
 		// then
 		assertThat(instance.instanceField, equalTo("value"));
+	}
+
+	@Test
+	public void GivenMissingOptionalField_WhenPostConstructInstance_ThenNullField() {
+		// given
+		BusinessClass instance = new BusinessClass();
+		when(requestContext.getInitParameter(String.class, "instance.field")).thenReturn(null);
+
+		// when
+		processor.postConstructInstance(managedClass, instance);
+
+		// then
+		assertThat(instance.instanceField, nullValue());
+	}
+
+	@Test(expected = RuntimeException.class)
+	public void GivenMissingMandatoryField_WhenPostConstructInstance_ThenException() {
+		// given
+		BusinessClass instance = new BusinessClass();
+		when(requestContext.getInitParameter(String.class, "instance.mandatory.field")).thenReturn(null);
+
+		// when
+		processor.postConstructInstance(managedClass, instance);
+
+		// then
 	}
 
 	private static class BusinessClass {
@@ -96,5 +119,8 @@ public class ContextParamProcessorTest {
 
 		@ContextParam("instance.field")
 		private String instanceField;
+
+		@ContextParam(value = "instance.mandatory.field", mandatory = true)
+		private String instanceMandatoryField;
 	}
 }
