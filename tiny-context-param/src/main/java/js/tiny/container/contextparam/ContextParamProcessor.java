@@ -3,6 +3,7 @@ package js.tiny.container.contextparam;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.Collections;
+import java.util.function.Predicate;
 
 import js.lang.BugError;
 import js.log.Log;
@@ -57,28 +58,22 @@ public class ContextParamProcessor implements IClassPostLoad, IInstancePostConst
 
 	@Override
 	public void postLoadClass(IManagedClass managedClass) {
-		RequestContext requestContext = container.getInstance(RequestContext.class);
-		for (Field field : managedClass.getImplementationClass().getDeclaredFields()) {
-			ContextParam contextParam = field.getAnnotation(ContextParam.class);
-			if (contextParam != null) {
-				final String parameterName = contextParam.value();
-				log.debug("Initialize static field |%s| from context parameter |%s|.", field, parameterName);
-				if (Modifier.isStatic(field.getModifiers())) {
-					setField(requestContext, field, null, parameterName);
-				}
-			}
-		}
+		processFields(managedClass, null, field -> Modifier.isStatic(field.getModifiers()));
 	}
 
 	@Override
 	public void postConstructInstance(IManagedClass managedClass, Object instance) {
+		processFields(managedClass, instance, field -> !Modifier.isStatic(field.getModifiers()));
+	}
+
+	private void processFields(IManagedClass managedClass, Object instance, Predicate<Field> predicate) {
 		RequestContext requestContext = container.getInstance(RequestContext.class);
 		for (Field field : managedClass.getImplementationClass().getDeclaredFields()) {
 			ContextParam contextParam = field.getAnnotation(ContextParam.class);
 			if (contextParam != null) {
 				final String parameterName = contextParam.value();
-				log.debug("Initialize instance field |%s| from context parameter |%s|.", field, parameterName);
-				if (!Modifier.isStatic(field.getModifiers())) {
+				log.debug("Initialize %s field |%s| from context parameter |%s|.", instance == null ? "static" : "instance", field, parameterName);
+				if (predicate.test(field)) {
 					setField(requestContext, field, instance, parameterName);
 				}
 			}
@@ -94,16 +89,14 @@ public class ContextParamProcessor implements IClassPostLoad, IInstancePostConst
 	 * @param parameterName name for context parameter.
 	 */
 	private static void setField(RequestContext requestContext, Field field, Object instance, String parameterName) {
-		final Object value = requestContext.getRequest().getServletContext().getInitParameter(parameterName);
+		final Object value = requestContext.getInitParameter(field.getType(), parameterName);
 		if (value == null) {
 			ContextParam contextParam = field.getAnnotation(ContextParam.class);
-			if (contextParam == null) {
-				throw new BugError("Missing ContextParam annotation from field |%s|.", field);
-			}
+			assert contextParam != null;
 			if (contextParam.mandatory()) {
 				throw new RuntimeException(String.format("Missing context parameter |%s| requested by field |%s|.", contextParam.value(), field));
 			}
-			log.warn("Field |%s| has no context parameter. Leave it on compiled value.", field);
+			log.warn("Field |%s| has no context parameter. Leave it unchanged.", field);
 			return;
 		}
 		field.setAccessible(true);

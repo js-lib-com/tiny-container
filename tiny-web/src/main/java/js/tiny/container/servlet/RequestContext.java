@@ -8,6 +8,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
+import js.converter.Converter;
+import js.converter.ConverterRegistry;
 import js.lang.BugError;
 import js.log.Log;
 import js.log.LogFactory;
@@ -78,6 +80,8 @@ public class RequestContext {
 	/** Class logger. */
 	private static final Log log = LogFactory.getLog(RequestContext.class);
 
+	private final Converter converter;
+
 	/** Parent container. */
 	private final ITinyContainer container;
 
@@ -127,6 +131,7 @@ public class RequestContext {
 	 * @param container parent container.
 	 */
 	public RequestContext(ITinyContainer container) {
+		this.converter = ConverterRegistry.getConverter();
 		this.container = container;
 	}
 
@@ -354,7 +359,7 @@ public class RequestContext {
 		assertAttached();
 		return (String) httpRequest.getAttribute(RequestDispatcher.FORWARD_CONTEXT_PATH);
 	}
-	
+
 	/**
 	 * Allows access to servlet request interface.
 	 * 
@@ -398,6 +403,17 @@ public class RequestContext {
 		}
 		// if create flag is true next call can throw IllegalStateException if HTTP response is committed
 		return httpRequest.getSession(create[0]);
+	}
+
+	/**
+	 * Return value of the named context-wide initialization parameter, or <code>null</code> if the parameter does not exist.
+	 *
+	 * @param parameterName parameter name.
+	 * @return value of the context-wide initialization parameter, possible null.
+	 */
+	public <T> T getInitParameter(Class<T> type, String parameterName) {
+		String value = getRequest().getServletContext().getInitParameter(parameterName);
+		return converter.asObject(value, type);
 	}
 
 	/** Dump this request context state to error logger. If this instance is not attached this method is NOP. */
