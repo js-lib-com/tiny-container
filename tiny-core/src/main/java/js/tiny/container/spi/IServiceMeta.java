@@ -17,10 +17,12 @@ package js.tiny.container.spi;
  * @author Iulian Rotaru
  */
 public interface IServiceMeta {
+	
 	/**
 	 * Get parent container service declaring this service meta.
 	 * 
 	 * @return parent container service.
 	 */
 	IContainerService getContainerService();
+	
 }

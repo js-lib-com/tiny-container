@@ -12,18 +12,19 @@ import js.tiny.container.servlet.AppContext;
 import js.tiny.container.servlet.RequestContext;
 import js.tiny.container.spi.IClassPostLoad;
 import js.tiny.container.spi.IContainer;
-import js.tiny.container.spi.IContainerService;
 import js.tiny.container.spi.IInstancePostConstruct;
 import js.tiny.container.spi.IManagedClass;
 import js.tiny.container.spi.IManagedMethod;
 import js.tiny.container.spi.IServiceMeta;
+import js.tiny.container.spi.IServiceMetaScanner;
+import js.tiny.container.spi.Priority;
 
 /**
  * Initialize fields depending on context parameters, both class and instance.
  * 
  * @author Iulian Rotaru
  */
-public class ContextParamProcessor implements IClassPostLoad, IInstancePostConstruct, IContainerService {
+public class ContextParamProcessor implements IClassPostLoad, IInstancePostConstruct, IServiceMetaScanner {
 	private static final Log log = LogFactory.getLog(ContextParamProcessor.class);
 
 	/**
@@ -42,18 +43,18 @@ public class ContextParamProcessor implements IClassPostLoad, IInstancePostConst
 	}
 
 	@Override
-	public Iterable<IServiceMeta> scan(IManagedClass managedClass) {
+	public int getPriority() {
+		return Priority.NORMAL.value(1);
+	}
+
+	@Override
+	public Iterable<IServiceMeta> scanServiceMeta(IManagedClass managedClass) {
 		return Collections.emptyList();
 	}
 
 	@Override
-	public Iterable<IServiceMeta> scan(IManagedMethod managedMethod) {
+	public Iterable<IServiceMeta> scanServiceMeta(IManagedMethod managedMethod) {
 		return Collections.emptyList();
-	}
-
-	@Override
-	public void destroy() {
-		log.trace("destroy()");
 	}
 
 	@Override

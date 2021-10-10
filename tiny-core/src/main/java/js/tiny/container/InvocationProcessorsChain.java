@@ -22,7 +22,7 @@ final class InvocationProcessorsChain implements IInvocationProcessorsChain {
 
 	public InvocationProcessorsChain() {
 		log.trace("MethodInvocationProcessorsChain()");
-		this.processors = new TreeSet<>((p1, p2) -> p1.getPriority().compareTo(p2.getPriority()));
+		this.processors = new TreeSet<>((p1, p2) -> Integer.compare(p1.getPriority(), p2.getPriority()));
 	}
 
 	public void addProcessor(IInvocationProcessor processor) {

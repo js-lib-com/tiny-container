@@ -9,10 +9,12 @@ package js.tiny.container.spi;
  * @author Iulian Rotaru
  */
 public interface IClassPostLoad extends IJoinPointProcessor {
+	
 	/**
 	 * Execute post-processing after managed class creation.
 	 * 
 	 * @param managedClass just created managed class.
 	 */
 	void postLoadClass(IManagedClass managedClass);
+
 }

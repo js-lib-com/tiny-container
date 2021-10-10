@@ -8,6 +8,7 @@ import js.log.Log;
 import js.log.LogFactory;
 import js.tiny.container.spi.IInstancePostConstruct;
 import js.tiny.container.spi.IManagedClass;
+import js.tiny.container.spi.Priority;
 
 /**
  * Configure instance with configuration object provided by instance managed class. The actual instance configuration is
@@ -22,6 +23,11 @@ import js.tiny.container.spi.IManagedClass;
  */
 final class ConfigurableInstanceProcessor implements IInstancePostConstruct {
 	private static final Log log = LogFactory.getLog(ConfigurableInstanceProcessor.class);
+
+	@Override
+	public int getPriority() {
+		return Priority.NORMAL.value(1);
+	}
 
 	/**
 	 * Configure instance with configuration object provided by instance managed class. In order to perform instance

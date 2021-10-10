@@ -154,11 +154,6 @@ public final class ManagedMethod implements IManagedMethod, IInvocationProcessor
 	}
 
 	@Override
-	public Priority getPriority() {
-		return Priority.NONE;
-	}
-
-	@Override
 	public Object executeService(IInvocationProcessorsChain unused, IInvocation methodInvocation) throws Exception {
 		// arguments processor converts <args> to empty array if it is null
 		// it can be null if on invocation chain there is Proxy invoked with no arguments

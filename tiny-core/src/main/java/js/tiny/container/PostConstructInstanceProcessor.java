@@ -7,6 +7,7 @@ import js.log.LogFactory;
 import js.tiny.container.spi.IInstancePostConstruct;
 import js.tiny.container.spi.IManagedClass;
 import js.tiny.container.spi.IManagedMethod;
+import js.tiny.container.spi.Priority;
 
 /**
  * Execute {@link ManagedPostConstruct#postConstruct()} on managed instance. Instance post-construction is executed after
@@ -18,6 +19,11 @@ import js.tiny.container.spi.IManagedMethod;
 final class PostConstructInstanceProcessor implements IInstancePostConstruct {
 	/** Class logger. */
 	private static final Log log = LogFactory.getLog(PostConstructInstanceProcessor.class);
+
+	@Override
+	public int getPriority() {
+		return Priority.NORMAL.value(1);
+	}
 
 	/**
 	 * Execute post-construct on managed instance. In order to perform instance post-construction, managed instance should

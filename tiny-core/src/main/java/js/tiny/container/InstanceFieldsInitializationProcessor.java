@@ -8,6 +8,7 @@ import js.lang.BugError;
 import js.lang.Config;
 import js.tiny.container.spi.IInstancePostConstruct;
 import js.tiny.container.spi.IManagedClass;
+import js.tiny.container.spi.Priority;
 import js.util.Classes;
 
 /**
@@ -45,6 +46,11 @@ import js.util.Classes;
  * @version final
  */
 final class InstanceFieldsInitializationProcessor implements IInstancePostConstruct {
+	@Override
+	public int getPriority() {
+		return Priority.NORMAL.value(1);
+	}
+
 	/**
 	 * Initialize instance fields from managed class configuration object.
 	 * 

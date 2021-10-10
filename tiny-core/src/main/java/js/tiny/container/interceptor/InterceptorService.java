@@ -7,16 +7,17 @@ import js.lang.InvocationException;
 import js.log.Log;
 import js.log.LogFactory;
 import js.tiny.container.spi.IContainer;
-import js.tiny.container.spi.IContainerService;
 import js.tiny.container.spi.IInvocation;
 import js.tiny.container.spi.IInvocationProcessor;
 import js.tiny.container.spi.IInvocationProcessorsChain;
 import js.tiny.container.spi.IManagedClass;
 import js.tiny.container.spi.IManagedMethod;
 import js.tiny.container.spi.IServiceMeta;
+import js.tiny.container.spi.IServiceMetaScanner;
+import js.tiny.container.spi.Priority;
 import js.util.Classes;
 
-final class InterceptorService implements IContainerService, IInvocationProcessor {
+final class InterceptorService implements IInvocationProcessor, IServiceMetaScanner {
 	private static final Log log = LogFactory.getLog(InterceptorService.class);
 
 	private final IContainer container;
@@ -27,12 +28,12 @@ final class InterceptorService implements IContainerService, IInvocationProcesso
 	}
 
 	@Override
-	public IInvocationProcessor.Priority getPriority() {
-		return Priority.FIRST;
+	public int getPriority() {
+		return Priority.FIRST.value(1);
 	}
 
 	@Override
-	public List<IServiceMeta> scan(IManagedClass managedClass) {
+	public List<IServiceMeta> scanServiceMeta(IManagedClass managedClass) {
 		List<IServiceMeta> servicesMeta = new ArrayList<>();
 
 		Intercepted intercepted = managedClass.getAnnotation(Intercepted.class);
@@ -44,7 +45,7 @@ final class InterceptorService implements IContainerService, IInvocationProcesso
 	}
 
 	@Override
-	public List<IServiceMeta> scan(IManagedMethod managedMethod) {
+	public List<IServiceMeta> scanServiceMeta(IManagedMethod managedMethod) {
 		List<IServiceMeta> servicesMeta = new ArrayList<>();
 
 		Intercepted intercepted = managedMethod.getAnnotation(Intercepted.class);
@@ -101,11 +102,5 @@ final class InterceptorService implements IContainerService, IInvocationProcesso
 			}
 		}
 		return returnValue;
-	}
-
-	@Override
-	public void destroy() {
-		// TODO Auto-generated method stub
-
 	}
 }

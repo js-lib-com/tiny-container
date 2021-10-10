@@ -16,6 +16,7 @@ import js.tiny.container.core.AppFactory;
  * @version final
  */
 public interface IContainer extends AppFactory {
+	
 	/**
 	 * Retrieve instance of requested managed class. Depending on managed class scope a new managed instance can be created or
 	 * it can be reused from caches. Optional constructor arguments are used only if a new local managed instance is created.
@@ -71,4 +72,5 @@ public interface IContainer extends AppFactory {
 	 * @return container managed methods, in no particular order.
 	 */
 	Iterable<IManagedMethod> getManagedMethods();
+	
 }

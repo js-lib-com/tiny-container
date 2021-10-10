@@ -16,15 +16,16 @@ import js.tiny.container.servlet.RequestContext;
 import js.tiny.container.servlet.TinyContainer;
 import js.tiny.container.spi.AuthorizationException;
 import js.tiny.container.spi.IContainer;
-import js.tiny.container.spi.IContainerService;
 import js.tiny.container.spi.IInvocation;
 import js.tiny.container.spi.IInvocationProcessor;
 import js.tiny.container.spi.IInvocationProcessorsChain;
 import js.tiny.container.spi.IManagedClass;
 import js.tiny.container.spi.IManagedMethod;
 import js.tiny.container.spi.IServiceMeta;
+import js.tiny.container.spi.IServiceMetaScanner;
+import js.tiny.container.spi.Priority;
 
-public class SecurityService implements IContainerService, IInvocationProcessor {
+public class SecurityService implements IInvocationProcessor, IServiceMetaScanner {
 	private static final Log log = LogFactory.getLog(SecurityService.class);
 
 	private final IContainer container;
@@ -35,12 +36,12 @@ public class SecurityService implements IContainerService, IInvocationProcessor 
 	}
 
 	@Override
-	public Priority getPriority() {
-		return Priority.SECURITY;
+	public int getPriority() {
+		return Priority.SECURITY.value(1);
 	}
 
 	@Override
-	public List<IServiceMeta> scan(IManagedClass managedClass) {
+	public List<IServiceMeta> scanServiceMeta(IManagedClass managedClass) {
 		List<IServiceMeta> servicesMeta = new ArrayList<>();
 
 		RolesAllowed rolesAllowed = managedClass.getAnnotation(RolesAllowed.class);
@@ -62,7 +63,7 @@ public class SecurityService implements IContainerService, IInvocationProcessor 
 	}
 
 	@Override
-	public List<IServiceMeta> scan(IManagedMethod managedMethod) {
+	public List<IServiceMeta> scanServiceMeta(IManagedMethod managedMethod) {
 		List<IServiceMeta> servicesMeta = new ArrayList<>();
 
 		RolesAllowed rolesAllowed = managedMethod.getAnnotation(RolesAllowed.class);
@@ -110,11 +111,6 @@ public class SecurityService implements IContainerService, IInvocationProcessor 
 		}
 
 		return chain.invokeNextProcessor(invocation);
-	}
-
-	@Override
-	public void destroy() {
-		log.trace("destroy()");
 	}
 
 	// --------------------------------------------------------------------------------------------

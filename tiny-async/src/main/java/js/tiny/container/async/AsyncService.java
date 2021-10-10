@@ -8,15 +8,16 @@ import javax.ejb.Asynchronous;
 import js.lang.AsyncTask;
 import js.log.Log;
 import js.log.LogFactory;
-import js.tiny.container.spi.IContainerService;
 import js.tiny.container.spi.IInvocation;
 import js.tiny.container.spi.IInvocationProcessor;
 import js.tiny.container.spi.IInvocationProcessorsChain;
 import js.tiny.container.spi.IManagedClass;
 import js.tiny.container.spi.IManagedMethod;
 import js.tiny.container.spi.IServiceMeta;
+import js.tiny.container.spi.IServiceMetaScanner;
+import js.tiny.container.spi.Priority;
 
-class AsyncService implements IContainerService, IInvocationProcessor {
+class AsyncService implements IInvocationProcessor, IServiceMetaScanner {
 	private static final Log log = LogFactory.getLog(AsyncService.class);
 
 	public AsyncService() {
@@ -24,12 +25,12 @@ class AsyncService implements IContainerService, IInvocationProcessor {
 	}
 
 	@Override
-	public IInvocationProcessor.Priority getPriority() {
-		return Priority.HIGH;
+	public int getPriority() {
+		return Priority.HIGH.value(1);
 	}
 
 	@Override
-	public List<IServiceMeta> scan(IManagedClass managedClass) {
+	public List<IServiceMeta> scanServiceMeta(IManagedClass managedClass) {
 		List<IServiceMeta> servicesMeta = new ArrayList<>();
 
 		Asynchronous immutable = managedClass.getAnnotation(Asynchronous.class);
@@ -41,7 +42,7 @@ class AsyncService implements IContainerService, IInvocationProcessor {
 	}
 
 	@Override
-	public List<IServiceMeta> scan(IManagedMethod managedMethod) {
+	public List<IServiceMeta> scanServiceMeta(IManagedMethod managedMethod) {
 		List<IServiceMeta> servicesMeta = new ArrayList<>();
 
 		Asynchronous immutable = managedMethod.getAnnotation(Asynchronous.class);
@@ -76,11 +77,6 @@ class AsyncService implements IContainerService, IInvocationProcessor {
 		asyncTask.start();
 
 		return null;
-	}
-
-	@Override
-	public void destroy() {
-		log.trace("destroy()");
 	}
 
 	private static boolean isAsynchronous(IManagedMethod managedMethod) {

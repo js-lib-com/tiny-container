@@ -4,6 +4,7 @@ import js.log.Log;
 import js.log.LogFactory;
 import js.tiny.container.spi.IInstancePostConstruct;
 import js.tiny.container.spi.IManagedClass;
+import js.tiny.container.spi.Priority;
 
 /**
  * Dump managed instance to {@link Container} class logger. This processor dumps instance managed class to container logger but
@@ -18,6 +19,11 @@ import js.tiny.container.spi.IManagedClass;
 final class LoggerInstanceProcessor implements IInstancePostConstruct {
 	/** Class logger. */
 	private static final Log log = LogFactory.getLog(LoggerInstanceProcessor.class);
+
+	@Override
+	public int getPriority() {
+		return Priority.NORMAL.value(1);
+	}
 
 	/**
 	 * Dump managed instance of {@link InstanceType#PROXY} type and with {@link InstanceScope#APPLICATION} scope to container

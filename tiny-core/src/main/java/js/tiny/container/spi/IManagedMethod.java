@@ -14,6 +14,7 @@ import java.lang.reflect.Type;
  * @version final
  */
 public interface IManagedMethod {
+	
 	String getName();
 
 	String getSignature();
@@ -74,4 +75,5 @@ public interface IManagedMethod {
 	void setAttribute(Object context, String name, Object value);
 
 	<T> T getAttribute(Object context, String name, Class<T> type);
+	
 }

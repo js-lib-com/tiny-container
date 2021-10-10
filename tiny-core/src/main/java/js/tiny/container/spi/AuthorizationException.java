@@ -8,13 +8,10 @@ package js.tiny.container.spi;
  * flow when access private resources after authentication and breaking this normal flow as exception.
  * 
  * @author Iulian Rotaru
- * @version final
  */
 public class AuthorizationException extends Exception {
-	/** Java serialization version. */
 	private static final long serialVersionUID = 13381077426911761L;
 
-	/** Default constructor. */
 	public AuthorizationException() {
 		super();
 	}

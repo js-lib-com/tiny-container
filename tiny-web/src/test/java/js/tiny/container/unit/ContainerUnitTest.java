@@ -51,6 +51,7 @@ import js.tiny.container.spi.IContainer;
 import js.tiny.container.spi.IInstancePostConstruct;
 import js.tiny.container.spi.IManagedClass;
 import js.tiny.container.spi.IManagedMethod;
+import js.tiny.container.spi.Priority;
 import js.tiny.container.stub.AppContextStub;
 import js.tiny.container.stub.ContainerStub;
 import js.util.Classes;
@@ -456,6 +457,11 @@ public class ContainerUnitTest {
 	public void registerInstanceProcessor() {
 		class MockInstanceProcessor implements IInstancePostConstruct {
 			@Override
+			public int getPriority() {
+				return Priority.NORMAL.value(1);
+			}
+
+			@Override
 			public void postConstructInstance(IManagedClass managedClass, Object instance) {
 			}
 		}
@@ -474,7 +480,7 @@ public class ContainerUnitTest {
 
 		try {
 			container.registerInstanceProcessor(new MockInstanceProcessor());
-//			fail("Overriding instance processor should throw exception.");
+			fail("Overriding instance processor should throw exception.");
 		} catch (BugError unused) {
 		}
 

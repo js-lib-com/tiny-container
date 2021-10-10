@@ -1,8 +1,8 @@
 package js.tiny.container.spi;
 
 /**
- * Container service implements the actual functionality provided by container. A service instance for a container can be
- * obtained only from a container service provider, see {@link IContainerServiceProvider}.
+ * A piece of functionality provided by container that can be loaded at runtime, using Java services loader facility. Container
+ * service instance is specialized by implementing specific join point interfaces - see {@link IJoinPointProcessor}.
  * 
  * Container service implementation should not contain any mutable state so that it can be safely reused, and behave civilized
  * in multi-threaded running environments.
@@ -11,9 +11,18 @@ package js.tiny.container.spi;
  */
 public interface IContainerService {
 
-	Iterable<IServiceMeta> scan(IManagedClass managedClass);
+	/**
+	 * Create and initialize container service.
+	 * 
+	 * @param container parent container.
+	 */
+	default void create(IContainer container) {
+	}
 
-	Iterable<IServiceMeta> scan(IManagedMethod managedMethod);
+	/**
+	 * Release resources used by container service.
+	 */
+	default void destroy() {
+	}
 
-	void destroy();
 }

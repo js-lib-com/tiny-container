@@ -8,19 +8,20 @@ import js.lang.InvocationException;
 import js.log.Log;
 import js.log.LogFactory;
 import js.tiny.container.spi.IContainer;
-import js.tiny.container.spi.IContainerService;
 import js.tiny.container.spi.IInvocation;
 import js.tiny.container.spi.IInvocationProcessor;
 import js.tiny.container.spi.IInvocationProcessorsChain;
 import js.tiny.container.spi.IManagedClass;
 import js.tiny.container.spi.IManagedMethod;
 import js.tiny.container.spi.IServiceMeta;
+import js.tiny.container.spi.IServiceMetaScanner;
+import js.tiny.container.spi.Priority;
 import js.transaction.Immutable;
 import js.transaction.Mutable;
 import js.transaction.Transaction;
 import js.transaction.Transactional;
 
-final class TransactionService implements IContainerService, IInvocationProcessor {
+final class TransactionService implements IInvocationProcessor, IServiceMetaScanner {
 	private static final Log log = LogFactory.getLog(TransactionService.class);
 
 	private final IContainer container;
@@ -31,12 +32,12 @@ final class TransactionService implements IContainerService, IInvocationProcesso
 	}
 
 	@Override
-	public Priority getPriority() {
-		return Priority.LAST;
+	public int getPriority() {
+		return Priority.LAST.value(1);
 	}
 
 	@Override
-	public List<IServiceMeta> scan(IManagedClass managedClass) {
+	public List<IServiceMeta> scanServiceMeta(IManagedClass managedClass) {
 		List<IServiceMeta> servicesMeta = new ArrayList<>();
 
 		Transactional transactional = managedClass.getAnnotation(Transactional.class);
@@ -53,7 +54,7 @@ final class TransactionService implements IContainerService, IInvocationProcesso
 	}
 
 	@Override
-	public List<IServiceMeta> scan(IManagedMethod managedMethod) {
+	public List<IServiceMeta> scanServiceMeta(IManagedMethod managedMethod) {
 		List<IServiceMeta> servicesMeta = new ArrayList<>();
 
 		Transactional transactional = managedMethod.getAnnotation(Transactional.class);
@@ -208,11 +209,5 @@ final class TransactionService implements IContainerService, IInvocationProcesso
 			return null;
 		}
 		return transactional.schema();
-	}
-
-	@Override
-	public void destroy() {
-		// TODO Auto-generated method stub
-
 	}
 }

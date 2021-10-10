@@ -73,7 +73,7 @@ public class TransactionServiceTest {
 		when(managedClass.getAnnotation(Transactional.class)).thenReturn(transactional);
 
 		// when
-		List<IServiceMeta> servicesMeta = service.scan(managedClass);
+		List<IServiceMeta> servicesMeta = service.scanServiceMeta(managedClass);
 
 		// then
 		assertThat(servicesMeta, not(empty()));
@@ -85,7 +85,7 @@ public class TransactionServiceTest {
 		when(managedClass.getAnnotation(Transactional.class)).thenReturn(transactional);
 
 		// when
-		List<IServiceMeta> servicesMeta = service.scan(managedClass);
+		List<IServiceMeta> servicesMeta = service.scanServiceMeta(managedClass);
 
 		// then
 		assertThat(servicesMeta, not(empty()));
@@ -97,7 +97,7 @@ public class TransactionServiceTest {
 		when(managedMethod.getAnnotation(Transactional.class)).thenReturn(transactional);
 
 		// when
-		List<IServiceMeta> servicesMeta = service.scan(managedMethod);
+		List<IServiceMeta> servicesMeta = service.scanServiceMeta(managedMethod);
 
 		// then
 		assertThat(servicesMeta, not(empty()));
@@ -109,7 +109,7 @@ public class TransactionServiceTest {
 		when(managedMethod.getAnnotation(Transactional.class)).thenReturn(transactional);
 
 		// when
-		List<IServiceMeta> servicesMeta = service.scan(managedMethod);
+		List<IServiceMeta> servicesMeta = service.scanServiceMeta(managedMethod);
 
 		// then
 		assertThat(servicesMeta, not(empty()));

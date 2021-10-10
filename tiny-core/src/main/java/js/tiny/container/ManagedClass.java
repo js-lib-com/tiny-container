@@ -1,6 +1,5 @@
 package js.tiny.container;
 
-
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
@@ -50,6 +49,7 @@ import js.tiny.container.spi.IInvocationProcessor;
 import js.tiny.container.spi.IManagedClass;
 import js.tiny.container.spi.IManagedMethod;
 import js.tiny.container.spi.IServiceMeta;
+import js.tiny.container.spi.IServiceMetaScanner;
 import js.util.Classes;
 import js.util.Types;
 
@@ -505,10 +505,13 @@ public final class ManagedClass implements IManagedClass {
 		}
 
 		for (IContainerService service : container.getServices()) {
-			for (IServiceMeta serviceMeta : service.scan(this)) {
-				log.debug("Add service meta |%s| to managed class |%s|", serviceMeta.getClass(), this);
-				services.add(service);
-				serviceMetas.put(serviceMeta.getClass(), serviceMeta);
+			if (service instanceof IServiceMetaScanner) {
+				IServiceMetaScanner scanner = (IServiceMetaScanner) service;
+				for (IServiceMeta serviceMeta : scanner.scanServiceMeta(this)) {
+					log.debug("Add service meta |%s| to managed class |%s|", serviceMeta.getClass(), this);
+					services.add(service);
+					serviceMetas.put(serviceMeta.getClass(), serviceMeta);
+				}
 			}
 		}
 
@@ -518,11 +521,14 @@ public final class ManagedClass implements IManagedClass {
 				if (service instanceof IInvocationProcessor) {
 					managedMethod.addInvocationProcessor((IInvocationProcessor) service);
 				}
-				for (IServiceMeta serviceMeta : service.scan(managedMethod)) {
-					managedMethod.addServiceMeta(serviceMeta);
-					// if(serviceMeta.requiresInstanceCreation()) {
-					autoInstanceCreation = true;
-					// }
+				if (service instanceof IServiceMetaScanner) {
+					IServiceMetaScanner scanner = (IServiceMetaScanner) service;
+					for (IServiceMeta serviceMeta : scanner.scanServiceMeta(managedMethod)) {
+						managedMethod.addServiceMeta(serviceMeta);
+						// if(serviceMeta.requiresInstanceCreation()) {
+						autoInstanceCreation = true;
+						// }
+					}
 				}
 			}
 		}

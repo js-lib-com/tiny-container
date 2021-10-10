@@ -17,10 +17,12 @@ import js.tiny.container.InstanceScope;
 import js.tiny.container.spi.IManagedClass;
 import js.tiny.container.spi.IManagedMethod;
 import js.tiny.container.spi.IServiceMeta;
+import js.tiny.container.spi.IServiceMetaScanner;
+import js.tiny.container.spi.Priority;
 import js.util.Params;
 import js.util.Types;
 
-class CalendarTimerService implements ICalendarTimerService {
+class CalendarTimerService implements ICalendarTimerService, IServiceMetaScanner {
 	private static final Log log = LogFactory.getLog(CalendarTimerService.class);
 
 	private static final int SCHEDULERS_THREAD_POLL = 2;
@@ -36,12 +38,17 @@ class CalendarTimerService implements ICalendarTimerService {
 	}
 
 	@Override
-	public List<IServiceMeta> scan(IManagedClass managedClass) {
+	public int getPriority() {
+		return Priority.NORMAL.value(1);
+	}
+
+	@Override
+	public List<IServiceMeta> scanServiceMeta(IManagedClass managedClass) {
 		return Collections.emptyList();
 	}
 
 	@Override
-	public List<IServiceMeta> scan(IManagedMethod managedMethod) {
+	public List<IServiceMeta> scanServiceMeta(IManagedMethod managedMethod) {
 		List<IServiceMeta> serviceMetas = new ArrayList<>();
 
 		Schedule schedule = managedMethod.getAnnotation(Schedule.class);

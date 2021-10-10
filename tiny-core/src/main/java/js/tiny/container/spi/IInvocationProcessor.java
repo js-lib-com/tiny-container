@@ -1,9 +1,7 @@
 package js.tiny.container.spi;
 
 public interface IInvocationProcessor extends IJoinPointProcessor {
-
-	Priority getPriority();
-
+	
 	/**
 	 * Execute container service logic implemented by current invocation processor then invoke the next processor from chain.
 	 * Current service logic can be executed before, after or around next processor logic. It is legal for current processor to
@@ -15,8 +13,5 @@ public interface IInvocationProcessor extends IJoinPointProcessor {
 	 * @throws Exception if service processing fails for whatever reason.
 	 */
 	Object executeService(IInvocationProcessorsChain chain, IInvocation invocation) throws Exception;
-
-	public static enum Priority {
-		SECURITY, PERFMON, FIRST, HIGH, NORMAL, LOW, LAST, NONE
-	}
+	
 }

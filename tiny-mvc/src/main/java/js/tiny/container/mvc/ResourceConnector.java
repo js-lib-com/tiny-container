@@ -12,8 +12,9 @@ import js.tiny.container.spi.IConnector;
 import js.tiny.container.spi.IManagedClass;
 import js.tiny.container.spi.IManagedMethod;
 import js.tiny.container.spi.IServiceMeta;
+import js.tiny.container.spi.IServiceMetaScanner;
 
-final class ResourceConnector implements IConnector {
+final class ResourceConnector implements IConnector, IServiceMetaScanner {
 	private static final Log log = LogFactory.getLog(ResourceConnector.class);
 
 	public ResourceConnector() {
@@ -21,7 +22,7 @@ final class ResourceConnector implements IConnector {
 	}
 
 	@Override
-	public List<IServiceMeta> scan(IManagedClass managedClass) {
+	public List<IServiceMeta> scanServiceMeta(IManagedClass managedClass) {
 		List<IServiceMeta> serviceMetas = new ArrayList<>();
 
 		Controller controller = managedClass.getAnnotation(Controller.class);
@@ -33,7 +34,7 @@ final class ResourceConnector implements IConnector {
 	}
 
 	@Override
-	public List<IServiceMeta> scan(IManagedMethod managedMethod) {
+	public List<IServiceMeta> scanServiceMeta(IManagedMethod managedMethod) {
 		List<IServiceMeta> serviceMetas = new ArrayList<>();
 
 		RequestPath requestPath = managedMethod.getAnnotation(RequestPath.class);
@@ -47,10 +48,5 @@ final class ResourceConnector implements IConnector {
 		}
 
 		return serviceMetas;
-	}
-
-	@Override
-	public void destroy() {
-		log.trace("destroy()");
 	}
 }
