@@ -4,12 +4,10 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.util.Collection;
-import java.util.Map;
 
 import javax.ejb.Schedule;
 import javax.inject.Inject;
 
-import js.annotation.ContextParam;
 import js.lang.BugError;
 import js.lang.Config;
 import js.lang.ManagedLifeCycle;
@@ -167,15 +165,6 @@ public interface IManagedClass {
 	 * @return true if managed instance should be created automatically by container.
 	 */
 	boolean isAutoInstanceCreation();
-
-	/**
-	 * Get managed class fields annotated with {@link ContextParam} annotation. Map key is the context parameter name. This
-	 * fields will be initialized from container runtime context by {@link ContextParamProcessor}. Note that both static and
-	 * instance fields are acceptable.
-	 * 
-	 * @return managed class fields that should be initialized from container runtime context.
-	 */
-	Map<String, Field> getContextParamFields();
 
 	<T extends IServiceMeta> T getServiceMeta(Class<T> type);
 

@@ -84,7 +84,7 @@ public class SecurityService implements IContainerService, IInvocationProcessor 
 	}
 
 	@Override
-	public Object execute(IInvocationProcessorsChain chain, IInvocation invocation) throws Exception {
+	public Object executeService(IInvocationProcessorsChain chain, IInvocation invocation) throws Exception {
 		final IManagedMethod managedMethod = invocation.method();
 
 		final RequestContext requestContext = container.getInstance(RequestContext.class);

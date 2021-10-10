@@ -65,9 +65,11 @@ public interface IManagedMethod {
 	 */
 	boolean isVoid();
 
-	<T extends IServiceMeta> T getServiceMeta(Class<T> type);
-
 	<T extends Annotation> T getAnnotation(Class<T> type);
+
+	void addServiceMeta(IServiceMeta serviceMeta);
+
+	<T extends IServiceMeta> T getServiceMeta(Class<T> type);
 
 	void setAttribute(Object context, String name, Object value);
 

@@ -55,13 +55,11 @@ public class InstanceProcessorUnitTest {
 		List<IInstancePostConstruct> processors = Classes.getFieldValue(container, Container.class, "instanceProcessors");
 
 		assertNotNull(processors);
-		assertEquals(6, processors.size());
-		assertEquals("ContextParamProcessor", processors.get(0).getClass().getSimpleName());
-		assertEquals("InstanceFieldsInjectionProcessor", processors.get(1).getClass().getSimpleName());
-		assertEquals("InstanceFieldsInitializationProcessor", processors.get(2).getClass().getSimpleName());
-		assertEquals("ConfigurableInstanceProcessor", processors.get(3).getClass().getSimpleName());
-		assertEquals("PostConstructInstanceProcessor", processors.get(4).getClass().getSimpleName());
-		assertEquals("LoggerInstanceProcessor", processors.get(5).getClass().getSimpleName());
+		assertEquals("InstanceFieldsInjectionProcessor", processors.get(0).getClass().getSimpleName());
+		assertEquals("InstanceFieldsInitializationProcessor", processors.get(1).getClass().getSimpleName());
+		assertEquals("ConfigurableInstanceProcessor", processors.get(2).getClass().getSimpleName());
+		assertEquals("PostConstructInstanceProcessor", processors.get(3).getClass().getSimpleName());
+		assertEquals("LoggerInstanceProcessor", processors.get(4).getClass().getSimpleName());
 	}
 
 	// --------------------------------------------------------------------------------------------

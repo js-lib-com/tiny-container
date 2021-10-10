@@ -4,7 +4,6 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.util.Collection;
-import java.util.Map;
 
 import js.lang.Config;
 import js.tiny.container.InstanceScope;
@@ -94,11 +93,6 @@ public class ManagedClassSpiStub implements IManagedClass {
 	@Override
 	public boolean isAutoInstanceCreation() {
 		throw new UnsupportedOperationException("isAutoInstanceCreation()");
-	}
-
-	@Override
-	public Map<String, Field> getContextParamFields() {
-		throw new UnsupportedOperationException("getContextParamFields()");
 	}
 
 	@Override

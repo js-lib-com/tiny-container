@@ -41,7 +41,7 @@ class PerformanceMonitorService implements IContainerService, IInvocationProcess
 	}
 
 	@Override
-	public Object execute(IInvocationProcessorsChain chain, IInvocation invocation) throws Exception {
+	public Object executeService(IInvocationProcessorsChain chain, IInvocation invocation) throws Exception {
 		Meter meter = invocation.method().getAttribute(getClass(), ATTR_METER, Meter.class);
 		meter.incrementInvocationsCount();
 		meter.startProcessing();

@@ -75,7 +75,7 @@ final class TransactionService implements IContainerService, IInvocationProcesso
 	}
 
 	@Override
-	public Object execute(IInvocationProcessorsChain chain, IInvocation invocation) throws Exception {
+	public Object executeService(IInvocationProcessorsChain chain, IInvocation invocation) throws Exception {
 		final IManagedMethod managedMethod = invocation.method();
 		if (!isTransactional(managedMethod)) {
 			return chain.invokeNextProcessor(invocation);

@@ -60,7 +60,7 @@ class AsyncService implements IContainerService, IInvocationProcessor {
 	 * 
 	 */
 	@Override
-	public Object execute(IInvocationProcessorsChain chain, IInvocation invocation) throws Exception {
+	public Object executeService(IInvocationProcessorsChain chain, IInvocation invocation) throws Exception {
 		if (!isAsynchronous(invocation.method())) {
 			return chain.invokeNextProcessor(invocation);
 		}

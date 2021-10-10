@@ -57,7 +57,7 @@ final class InterceptorService implements IContainerService, IInvocationProcesso
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public Object execute(IInvocationProcessorsChain chain, IInvocation invocation) throws Exception {
+	public Object executeService(IInvocationProcessorsChain chain, IInvocation invocation) throws Exception {
 		final IManagedMethod managedMethod = invocation.method();
 		final Object[] arguments = invocation.arguments();
 

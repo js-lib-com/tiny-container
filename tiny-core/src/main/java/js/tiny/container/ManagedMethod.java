@@ -16,12 +16,11 @@ import js.lang.BugError;
 import js.lang.InvocationException;
 import js.log.Log;
 import js.log.LogFactory;
-import js.tiny.container.spi.AuthorizationException;
-import js.tiny.container.spi.IManagedClass;
-import js.tiny.container.spi.IManagedMethod;
 import js.tiny.container.spi.IInvocation;
 import js.tiny.container.spi.IInvocationProcessor;
 import js.tiny.container.spi.IInvocationProcessorsChain;
+import js.tiny.container.spi.IManagedClass;
+import js.tiny.container.spi.IManagedMethod;
 import js.tiny.container.spi.IServiceMeta;
 import js.util.Params;
 import js.util.Strings;
@@ -65,14 +64,10 @@ public final class ManagedMethod implements IManagedMethod, IInvocationProcessor
 	private final Set<IInvocationProcessor> invocationProcessors = new HashSet<>();
 
 	/**
-	 * Construct a managed method with optional invocation interceptor. Store declaring class and Java reflective method,
-	 * initialize this managed method signature and arguments processor.
-	 * <p>
-	 * If method invocation interceptor is present initialize {@link #invoker} field with {@link InterceptedInvoker}; otherwise
-	 * uses {@link DefaultInvoker}.
+	 * Construct a managed method. Store declaring class and Java reflective method, initialize this managed method signature
+	 * and arguments processor.
 	 * 
 	 * @param declaringClass declaring managed class,
-	 * @param methodInterceptor optional method invocation interceptor, possible null,
 	 * @param method Java reflective method wrapped by this managed method.
 	 */
 	public ManagedMethod(IManagedClass declaringClass, Method method) {
@@ -135,19 +130,17 @@ public final class ManagedMethod implements IManagedMethod, IInvocationProcessor
 	}
 
 	/**
-	 * Invoke managed method and applies method level services. Delegates this managed method {@link #invoker}; accordingly
-	 * selected strategy invoker can be {@link DefaultInvoker} or {@link InterceptedInvoker}, if this managed method is
-	 * annotated with {@link Interceptor}. Also takes care to update {@link #meter}.
+	 * Invoke managed method and applies method level services.
 	 * 
-	 * @param object managed instance against which method is executed,
-	 * @param args optional managed method invocation arguments.
+	 * @param instance managed instance against which method is executed,
+	 * @param arguments optional managed method invocation arguments.
 	 * @param <T> returned value type.
 	 * @return value returned by method or null for void.
 	 * @throws Exception any exception from method or container service execution is bubbled up.
 	 */
 	@SuppressWarnings("unchecked")
 	@Override
-	public <T> T invoke(Object object, Object... args) throws Exception {
+	public <T> T invoke(Object instance, Object... arguments) throws Exception {
 		InvocationProcessorsChain processorsChain = new InvocationProcessorsChain();
 		processorsChain.addProcessors(invocationProcessors);
 
@@ -156,7 +149,7 @@ public final class ManagedMethod implements IManagedMethod, IInvocationProcessor
 		processorsChain.addProcessor(this);
 
 		processorsChain.createIterator();
-		IInvocation methodInvocation = processorsChain.createMethodInvocation(this, object, args);
+		IInvocation methodInvocation = processorsChain.createMethodInvocation(this, instance, arguments);
 		return (T) processorsChain.invokeNextProcessor(methodInvocation);
 	}
 
@@ -166,7 +159,7 @@ public final class ManagedMethod implements IManagedMethod, IInvocationProcessor
 	}
 
 	@Override
-	public Object execute(IInvocationProcessorsChain unused, IInvocation methodInvocation) throws AuthorizationException, IllegalArgumentException, InvocationException {
+	public Object executeService(IInvocationProcessorsChain unused, IInvocation methodInvocation) throws Exception {
 		// arguments processor converts <args> to empty array if it is null
 		// it can be null if on invocation chain there is Proxy invoked with no arguments
 		Object[] arguments = argumentsProcessor.preProcessArguments(this, methodInvocation.arguments());
@@ -207,12 +200,6 @@ public final class ManagedMethod implements IManagedMethod, IInvocationProcessor
 		return signature;
 	}
 
-	@SuppressWarnings("unchecked")
-	@Override
-	public <T extends IServiceMeta> T getServiceMeta(Class<T> type) {
-		return (T) serviceMetas.get(type);
-	}
-
 	@Override
 	public <T extends Annotation> T getAnnotation(Class<T> type) {
 		T annotation = method.getAnnotation(type);
@@ -234,6 +221,18 @@ public final class ManagedMethod implements IManagedMethod, IInvocationProcessor
 			}
 		}
 		return annotation;
+	}
+
+	@Override
+	public void addServiceMeta(IServiceMeta serviceMeta) {
+		log.debug("Add service meta |%s| to managed method |%s|", serviceMeta.getClass(), this);
+		serviceMetas.put(serviceMeta.getClass(), serviceMeta);
+	}
+
+	@SuppressWarnings("unchecked")
+	@Override
+	public <T extends IServiceMeta> T getServiceMeta(Class<T> type) {
+		return (T) serviceMetas.get(type);
 	}
 
 	private final Map<String, Object> attributes = new HashMap<>();
@@ -269,11 +268,6 @@ public final class ManagedMethod implements IManagedMethod, IInvocationProcessor
 
 	void addInvocationProcessor(IInvocationProcessor invocationProcessor) {
 		invocationProcessors.add(invocationProcessor);
-	}
-
-	void addServiceMeta(IServiceMeta serviceMeta) {
-		log.debug("Add service meta |%s| to managed method |%s|", serviceMeta.getClass(), this);
-		serviceMetas.put(serviceMeta.getClass(), serviceMeta);
 	}
 
 	void setRoles(String[] roles) {

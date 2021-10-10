@@ -1,5 +1,6 @@
 package js.tiny.container;
 
+
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
@@ -30,7 +31,6 @@ import javax.ejb.Stateless;
 import javax.inject.Inject;
 import javax.interceptor.Interceptors;
 
-import js.annotation.ContextParam;
 import js.converter.Converter;
 import js.converter.ConverterException;
 import js.lang.BugError;
@@ -46,9 +46,9 @@ import js.log.LogFactory;
 import js.tiny.container.core.AppFactory;
 import js.tiny.container.spi.IContainer;
 import js.tiny.container.spi.IContainerService;
+import js.tiny.container.spi.IInvocationProcessor;
 import js.tiny.container.spi.IManagedClass;
 import js.tiny.container.spi.IManagedMethod;
-import js.tiny.container.spi.IInvocationProcessor;
 import js.tiny.container.spi.IServiceMeta;
 import js.util.Classes;
 import js.util.Types;
@@ -271,7 +271,7 @@ import js.util.Types;
  * </table>
  * 
  * @author Iulian Rotaru
- * @version final
+ * @version draft
  */
 public final class ManagedClass implements IManagedClass {
 	/** Class logger. */
@@ -336,13 +336,6 @@ public final class ManagedClass implements IManagedClass {
 	 * out managed method bound to interface method.
 	 */
 	private final Map<String, IManagedMethod> methodsPool = new HashMap<>();
-
-	/**
-	 * Map of fields annotated with {@link ContextParam} annotation. Map key is the context parameter name. This fields will be
-	 * initialized from container runtime context by {@link ContextParamProcessor}. Note that both static and instance fields
-	 * are acceptable.
-	 */
-	private final Map<String, Field> contextParamFields = new HashMap<>();
 
 	private IManagedMethod postConstructor;
 
@@ -533,14 +526,6 @@ public final class ManagedClass implements IManagedClass {
 				}
 			}
 		}
-
-		for (Field field : implementationClass.getDeclaredFields()) {
-			ContextParam contextParam = field.getAnnotation(ContextParam.class);
-			if (contextParam != null) {
-				field.setAccessible(true);
-				contextParamFields.put(contextParam.value(), field);
-			}
-		}
 	}
 
 	// --------------------------------------------------------------------------------------------
@@ -627,11 +612,6 @@ public final class ManagedClass implements IManagedClass {
 	@Override
 	public String getImplementationURL() {
 		return implementationURL;
-	}
-
-	@Override
-	public Map<String, Field> getContextParamFields() {
-		return contextParamFields;
 	}
 
 	// --------------------------------------------------------------------------------------------

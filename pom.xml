@@ -36,6 +36,7 @@
 		<module>tiny-perfmon</module>
 		<module>tiny-async</module>
 		<module>tiny-timer</module>
+		<module>tiny-context-param</module>
 	</modules>
 
 	<properties>

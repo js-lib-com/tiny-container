@@ -47,7 +47,7 @@ final class InvocationProcessorsChain implements IInvocationProcessorsChain {
 			// TODO: end of processing chain
 			return null;
 		}
-		return iterator.next().execute(this, methodInvocation);
+		return iterator.next().executeService(this, methodInvocation);
 	}
 
 	private static final class MethodInvocation implements IInvocation {

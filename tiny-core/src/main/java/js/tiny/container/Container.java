@@ -5,7 +5,6 @@ import java.lang.reflect.Modifier;
 import java.lang.reflect.Proxy;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -326,6 +325,9 @@ public class Container implements IContainer, Configurable {
 		registerInstanceFactory(InstanceType.REMOTE, new RemoteInstanceFactory());
 
 		for (IContainerService containerService : containerServices) {
+			if (containerService instanceof IClassPostLoad) {
+				registerClassProcessor((IClassPostLoad) containerService);
+			}
 			if (containerService instanceof IInstancePostConstruct) {
 				registerInstanceProcessor((IInstancePostConstruct) containerService);
 			}
@@ -513,7 +515,6 @@ public class Container implements IContainer, Configurable {
 
 		// compare first with second to ensure ascending sorting
 		Set<IManagedClass> sortedClasses = new TreeSet<>((o1, o2) -> o1.getKey().compareTo(o2.getKey()));
-
 		for (IManagedClass managedClass : classesPool.values()) {
 			if (managedClass.isAutoInstanceCreation()) {
 				sortedClasses.add(managedClass);
@@ -551,16 +552,11 @@ public class Container implements IContainer, Configurable {
 		// classes pool is not sorted; it is a hash map for performance reasons
 		// also, a managed class may appear multiple times if have multiple interfaces
 		// bellow sorted set is used to ensure reverse order on managed classes destruction
+		
 		// comparison is based on managed class key that is created incrementally
 
-		Set<IManagedClass> sortedClasses = new TreeSet<>(new Comparator<IManagedClass>() {
-			@Override
-			public int compare(IManagedClass o1, IManagedClass o2) {
-				// compare second with first to ensure descending sorting
-				return o2.getKey().compareTo(o1.getKey());
-			}
-		});
-
+		// compare second with first to ensure descending sorting
+		Set<IManagedClass> sortedClasses = new TreeSet<>((o1, o2)-> o2.getKey().compareTo(o1.getKey()));
 		for (IManagedClass managedClass : classesPool.values()) {
 			// process only managed classes with pre-destroy hook
 			if (managedClass.getPreDestroyMethod() != null) {
