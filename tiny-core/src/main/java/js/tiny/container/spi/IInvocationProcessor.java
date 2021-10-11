@@ -13,5 +13,8 @@ public interface IInvocationProcessor extends IJoinPointProcessor {
 	 * @throws Exception if service processing fails for whatever reason.
 	 */
 	Object executeService(IInvocationProcessorsChain chain, IInvocation invocation) throws Exception;
-	
+
+	public enum Priority {
+		SECURITY, ASYNCHRONOUS, PERFMON, INTERCEPTOR, TRANSACTION
+	}
 }

@@ -68,12 +68,6 @@ public class ManagedMethodSpiConformanceTest {
 		assertEquals("John Doe", getterManagedMethod.invoke(person));
 	}
 
-	@Test
-	public void isVoid() {
-		assertFalse(getterManagedMethod.isVoid());
-		assertTrue(setterManagedMethod.isVoid());
-	}
-
 	// --------------------------------------------------------------------------------------------
 	// FIXTURE
 

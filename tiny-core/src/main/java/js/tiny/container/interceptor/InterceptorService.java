@@ -14,7 +14,6 @@ import js.tiny.container.spi.IManagedClass;
 import js.tiny.container.spi.IManagedMethod;
 import js.tiny.container.spi.IServiceMeta;
 import js.tiny.container.spi.IServiceMetaScanner;
-import js.tiny.container.spi.Priority;
 import js.util.Classes;
 
 final class InterceptorService implements IInvocationProcessor, IServiceMetaScanner {
@@ -29,7 +28,7 @@ final class InterceptorService implements IInvocationProcessor, IServiceMetaScan
 
 	@Override
 	public int getPriority() {
-		return Priority.FIRST.value(1);
+		return Priority.INTERCEPTOR.ordinal();
 	}
 
 	@Override

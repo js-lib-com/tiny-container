@@ -12,7 +12,6 @@ import js.tiny.container.spi.IManagedClass;
 import js.tiny.container.spi.IManagedMethod;
 import js.tiny.container.spi.IServiceMeta;
 import js.tiny.container.spi.IServiceMetaScanner;
-import js.tiny.container.spi.Priority;
 
 class PerformanceMonitorService implements IInvocationProcessor, IServiceMetaScanner {
 	private static final Log log = LogFactory.getLog(PerformanceMonitorService.class);
@@ -25,7 +24,7 @@ class PerformanceMonitorService implements IInvocationProcessor, IServiceMetaSca
 
 	@Override
 	public int getPriority() {
-		return Priority.PERFMON.value(1);
+		return Priority.PERFMON.ordinal();
 	}
 
 	@Override

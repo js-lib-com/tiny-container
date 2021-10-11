@@ -1,1 +1,2 @@
-js.tiny.container.contextparam.ContextParamServiceProvider
+js.tiny.container.contextparam.ClassContextParamProvider
+js.tiny.container.contextparam.InstanceContextParamProvider

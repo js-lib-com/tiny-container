@@ -57,7 +57,6 @@ public class ManagedMethodUnitTest {
 		assertEquals(1, managedMethod.getParameterTypes().length);
 		assertEquals(String.class, managedMethod.getParameterTypes()[0]);
 		assertEquals(String.class, managedMethod.getReturnType());
-		assertFalse(managedMethod.isVoid());
 		assertEquals("js.tiny.container.unit.ManagedMethodUnitTest$Person#setName(String)", managedMethod.toString());
 	}
 

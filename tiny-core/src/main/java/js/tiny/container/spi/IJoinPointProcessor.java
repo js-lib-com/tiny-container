@@ -10,7 +10,7 @@ package js.tiny.container.spi;
 public interface IJoinPointProcessor extends IContainerService {
 
 	default int getPriority() {
-		return -1;
+		return Integer.MAX_VALUE;
 	}
 
 }

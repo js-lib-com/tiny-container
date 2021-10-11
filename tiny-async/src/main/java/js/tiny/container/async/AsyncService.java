@@ -15,7 +15,6 @@ import js.tiny.container.spi.IManagedClass;
 import js.tiny.container.spi.IManagedMethod;
 import js.tiny.container.spi.IServiceMeta;
 import js.tiny.container.spi.IServiceMetaScanner;
-import js.tiny.container.spi.Priority;
 
 class AsyncService implements IInvocationProcessor, IServiceMetaScanner {
 	private static final Log log = LogFactory.getLog(AsyncService.class);
@@ -26,7 +25,7 @@ class AsyncService implements IInvocationProcessor, IServiceMetaScanner {
 
 	@Override
 	public int getPriority() {
-		return Priority.HIGH.value(1);
+		return Priority.ASYNCHRONOUS.ordinal();
 	}
 
 	@Override

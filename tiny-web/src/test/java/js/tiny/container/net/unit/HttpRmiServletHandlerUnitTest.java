@@ -31,7 +31,6 @@ import js.tiny.container.stub.TinyContainerStub;
 import js.tiny.container.unit.HttpServletRequestStub;
 import js.tiny.container.unit.HttpServletResponseStub;
 import js.util.Classes;
-import js.util.Types;
 
 @SuppressWarnings({ "unchecked", "rawtypes" })
 public class HttpRmiServletHandlerUnitTest {
@@ -163,11 +162,6 @@ public class HttpRmiServletHandlerUnitTest {
 		@Override
 		public Type getReturnType() {
 			return returnType;
-		}
-
-		@Override
-		public boolean isVoid() {
-			return Types.isVoid(returnType);
 		}
 
 		@Override

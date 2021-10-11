@@ -7,7 +7,6 @@ import js.log.LogFactory;
 import js.tiny.container.spi.IInstancePostConstruct;
 import js.tiny.container.spi.IManagedClass;
 import js.tiny.container.spi.IManagedMethod;
-import js.tiny.container.spi.Priority;
 
 /**
  * Execute {@link ManagedPostConstruct#postConstruct()} on managed instance. Instance post-construction is executed after
@@ -22,7 +21,7 @@ final class PostConstructInstanceProcessor implements IInstancePostConstruct {
 
 	@Override
 	public int getPriority() {
-		return Priority.NORMAL.value(1);
+		return Priority.LIFE_CYCLE.ordinal();
 	}
 
 	/**

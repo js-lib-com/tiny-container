@@ -158,20 +158,20 @@ public class RestServlet extends AppServlet {
 
 		ArgumentsReader argumentsReader = null;
 		Object value = null;
-		IManagedMethod method = null;
+		IManagedMethod managedMethod = null;
 
 		try {
-			method = restMethods.get(key(httpRequest.getPathInfo()));
-			if (method == null) {
+			managedMethod = restMethods.get(key(httpRequest.getPathInfo()));
+			if (managedMethod == null) {
 				throw new NoSuchMethodException();
 			}
 
-			Type[] formalParameters = method.getParameterTypes();
+			Type[] formalParameters = managedMethod.getParameterTypes();
 			argumentsReader = argumentsReaderFactory.getArgumentsReader(httpRequest, formalParameters);
 			Object[] arguments = argumentsReader.read(httpRequest, formalParameters);
 
-			Object instance = container.getInstance(method.getDeclaringClass());
-			value = method.invoke(instance, arguments);
+			Object instance = container.getInstance(managedMethod.getDeclaringClass());
+			value = managedMethod.invoke(instance, arguments);
 		} catch (AuthorizationException e) {
 			sendUnauthorized(context);
 			return;
@@ -203,7 +203,7 @@ public class RestServlet extends AppServlet {
 
 		httpResponse.setCharacterEncoding("UTF-8");
 
-		if (method.isVoid()) {
+		if (Types.isVoid(managedMethod.getReturnType())) {
 			// expected servlet container behavior:
 			// since there is nothing written to respond to output stream, container either set content length to zero
 			// or closes connection signaling end of content
@@ -218,7 +218,7 @@ public class RestServlet extends AppServlet {
 		// JSON but with limited capacity; if capacity is not exceeded set response content length; if capacity is exceeded
 		// switch to chunked transfer
 
-		ProducesMeta producesMeta = method.getServiceMeta(ProducesMeta.class);
+		ProducesMeta producesMeta = managedMethod.getServiceMeta(ProducesMeta.class);
 		String produces = producesMeta != null ? producesMeta.value() : null;
 
 		ContentType contentType = ContentType.valueOf(produces);

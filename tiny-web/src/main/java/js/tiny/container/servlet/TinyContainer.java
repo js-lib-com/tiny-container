@@ -204,18 +204,6 @@ public class TinyContainer extends Container implements ServletContextListener, 
 	}
 
 	@Override
-	protected void registerInstanceProcessor() {
-		//registerInstanceProcessor(new ContextParamProcessor(this));
-		super.registerInstanceProcessor();
-	}
-
-	@Override
-	protected void registerClassProcessor() {
-		//registerClassProcessor(new ContextParamProcessor(this));
-		super.registerClassProcessor();
-	}
-
-	@Override
 	public void config(Config config) throws ConfigException {
 		super.config(config);
 

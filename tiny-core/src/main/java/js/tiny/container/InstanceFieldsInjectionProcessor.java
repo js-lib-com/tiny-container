@@ -13,7 +13,6 @@ import js.log.Log;
 import js.log.LogFactory;
 import js.tiny.container.spi.IInstancePostConstruct;
 import js.tiny.container.spi.IManagedClass;
-import js.tiny.container.spi.Priority;
 import js.util.Classes;
 import js.util.Strings;
 
@@ -52,7 +51,7 @@ final class InstanceFieldsInjectionProcessor extends DependencyProcessor impleme
 
 	@Override
 	public int getPriority() {
-		return Priority.NORMAL.value(1);
+		return Priority.INJECT.ordinal();
 	}
 
 	/**

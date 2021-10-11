@@ -18,7 +18,6 @@ import js.tiny.container.spi.IManagedClass;
 import js.tiny.container.spi.IManagedMethod;
 import js.tiny.container.spi.IServiceMeta;
 import js.tiny.container.spi.IServiceMetaScanner;
-import js.tiny.container.spi.Priority;
 import js.util.Params;
 import js.util.Types;
 
@@ -39,7 +38,7 @@ class CalendarTimerService implements ICalendarTimerService, IServiceMetaScanner
 
 	@Override
 	public int getPriority() {
-		return Priority.NORMAL.value(1);
+		return Priority.TIMER.ordinal();
 	}
 
 	@Override

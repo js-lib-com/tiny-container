@@ -7,10 +7,8 @@ import java.lang.reflect.Proxy;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import js.lang.BugError;
 import js.lang.InvocationException;
@@ -22,7 +20,6 @@ import js.tiny.container.spi.IInvocationProcessorsChain;
 import js.tiny.container.spi.IManagedClass;
 import js.tiny.container.spi.IManagedMethod;
 import js.tiny.container.spi.IServiceMeta;
-import js.util.Params;
 import js.util.Strings;
 import js.util.Types;
 
@@ -34,8 +31,7 @@ import js.util.Types;
  * 
  * @author Iulian Rotaru
  */
-public final class ManagedMethod implements IManagedMethod, IInvocationProcessor {
-	/** Class logger. */
+public class ManagedMethod implements IManagedMethod, IInvocationProcessor {
 	private static final Log log = LogFactory.getLog(IManagedMethod.class);
 
 	/** Format string for managed method simple name, without class name. */
@@ -57,11 +53,11 @@ public final class ManagedMethod implements IManagedMethod, IInvocationProcessor
 	private final String signature;
 
 	/** Method invocation arguments processor. */
-	private final ArgumentsProcessor argumentsProcessor;
+	private final ArgumentsProcessor argumentsProcessor = new ArgumentsProcessor();
 
 	private final Map<Class<? extends IServiceMeta>, IServiceMeta> serviceMetas = new HashMap<>();
 
-	private final Set<IInvocationProcessor> invocationProcessors = new HashSet<>();
+	private final JoinPointProcessors<IInvocationProcessor> invocationProcessors = new JoinPointProcessors<>();
 
 	/**
 	 * Construct a managed method. Store declaring class and Java reflective method, initialize this managed method signature
@@ -80,8 +76,6 @@ public final class ManagedMethod implements IManagedMethod, IInvocationProcessor
 			formalParameters.add(formalParameter.getSimpleName());
 		}
 		signature = String.format(QUALIFIED_NAME_FORMAT, method.getDeclaringClass().getName(), method.getName(), Strings.join(formalParameters, ','));
-
-		argumentsProcessor = new ArgumentsProcessor();
 
 		declaringClass.getServices().forEach(service -> {
 			if (service instanceof IInvocationProcessor) {
@@ -182,11 +176,6 @@ public final class ManagedMethod implements IManagedMethod, IInvocationProcessor
 		}
 	}
 
-	@Override
-	public boolean isVoid() {
-		return Types.isVoid(method.getReturnType());
-	}
-
 	/**
 	 * Returns a string describing this managed method.
 	 */
@@ -263,9 +252,5 @@ public final class ManagedMethod implements IManagedMethod, IInvocationProcessor
 
 	void addInvocationProcessor(IInvocationProcessor invocationProcessor) {
 		invocationProcessors.add(invocationProcessor);
-	}
-
-	void setRoles(String[] roles) {
-		Params.notNullOrEmpty(roles, "Roles");
 	}
 }

@@ -42,6 +42,7 @@ import js.tiny.container.spi.IContainer;
 import js.tiny.container.spi.IContainerService;
 import js.tiny.container.spi.IContainerServiceProvider;
 import js.tiny.container.spi.IInstancePostConstruct;
+import js.tiny.container.spi.IInstancePreDestruct;
 import js.tiny.container.spi.IManagedClass;
 import js.tiny.container.spi.IManagedMethod;
 import js.util.Classes;
@@ -256,13 +257,13 @@ public class Container implements IContainer, Configurable {
 	private final Map<InstanceType, InstanceFactory> instanceFactories = new HashMap<>();
 
 	/**
-	 * Class post-processors are executed after {@link ManagedClass} creation and generally deals with managed implementation
-	 * static fields initialization, but is not limited to.
+	 * Class post-load processors are executed after {@link ManagedClass} creation and generally deals with managed
+	 * implementation static fields initialization, but is not limited to.
 	 * <p>
-	 * These processors are registered by {@link #registerClassProcessor(IClassPostLoad)}. Note that these processors are
-	 * global and executed for ALL managed classes.
+	 * These processors are registered by {@link #registerClassPostLoadProcessor(IClassPostLoad)}. Note that these processors
+	 * are global and executed for ALL managed classes.
 	 */
-	private final List<IClassPostLoad> classProcessors = new ArrayList<>();
+	private final JoinPointProcessors<IClassPostLoad> classPostLoadProcessors = new JoinPointProcessors<>();
 
 	/**
 	 * Instance post-processors are executed only on newly created managed instances. If instance is reused from scope cache
@@ -271,7 +272,9 @@ public class Container implements IContainer, Configurable {
 	 * There are a number of built-in processor created by constructor but subclass may register new ones via
 	 * {@link #registerInstanceProcessor(IInstancePostConstruct)}.
 	 */
-	private final List<IInstancePostConstruct> instanceProcessors = new ArrayList<>();
+	private final JoinPointProcessors<IInstancePostConstruct> instancePostConstructProcessors = new JoinPointProcessors<>();
+
+	private final JoinPointProcessors<IInstancePreDestruct> instancePreDestructProcessors = new JoinPointProcessors<>();
 
 	/**
 	 * Processor for managed constructor and method invocation arguments. Takes care of dependency injection on arguments and
@@ -326,37 +329,21 @@ public class Container implements IContainer, Configurable {
 
 		for (IContainerService containerService : containerServices) {
 			if (containerService instanceof IClassPostLoad) {
-				registerClassProcessor((IClassPostLoad) containerService);
+				classPostLoadProcessors.add((IClassPostLoad) containerService);
 			}
 			if (containerService instanceof IInstancePostConstruct) {
-				registerInstanceProcessor((IInstancePostConstruct) containerService);
+				instancePostConstructProcessors.add((IInstancePostConstruct) containerService);
+			}
+			if (containerService instanceof IInstancePreDestruct) {
+				instancePreDestructProcessors.add((IInstancePreDestruct) containerService);
 			}
 		}
 
-		registerInstanceProcessor();
-		registerClassProcessor();
-	}
-
-	public Collection<IContainerService> getServices() {
-		return containerServices;
-	}
-
-	/**
-	 * Register all instance post-processors.
-	 */
-	protected void registerInstanceProcessor() {
-		registerInstanceProcessor(new InstanceFieldsInjectionProcessor());
-		registerInstanceProcessor(new InstanceFieldsInitializationProcessor());
-		registerInstanceProcessor(new ConfigurableInstanceProcessor());
-		registerInstanceProcessor(new PostConstructInstanceProcessor());
-		registerInstanceProcessor(new LoggerInstanceProcessor());
-
-	}
-
-	/**
-	 * Register all managed class post-processors.
-	 */
-	protected void registerClassProcessor() {
+		instancePostConstructProcessors.add(new InstanceFieldsInjectionProcessor());
+		instancePostConstructProcessors.add(new InstanceFieldsInitializationProcessor());
+		instancePostConstructProcessors.add(new ConfigurableInstanceProcessor());
+		instancePostConstructProcessors.add(new PostConstructInstanceProcessor());
+		instancePostConstructProcessors.add(new LoggerInstanceProcessor());
 	}
 
 	/**
@@ -386,46 +373,11 @@ public class Container implements IContainer, Configurable {
 	 * @param instanceFactory instance factory.
 	 * @throws BugError if instance type is already registered.
 	 */
-	protected void registerInstanceFactory(InstanceType instanceType, InstanceFactory instanceFactory) {
+	private void registerInstanceFactory(InstanceType instanceType, InstanceFactory instanceFactory) {
 		log.debug("Register instance factory |%s| to |%s|.", instanceFactory.getClass(), instanceType);
 		if (instanceFactories.put(instanceType, instanceFactory) != null) {
 			throw new BugError("Attempt to override instance type |%s|.", instanceType);
 		}
-	}
-
-	/**
-	 * Register instance processor. Only a single instance per processor class is allowed.
-	 * 
-	 * @param instanceProcessor instance processor.
-	 * @throws BugError if instance processor class is already registered.
-	 * @see #instanceProcessors
-	 */
-	protected void registerInstanceProcessor(IInstancePostConstruct instanceProcessor) {
-		for (IInstancePostConstruct existingInstanceProcessoor : instanceProcessors) {
-			if (existingInstanceProcessoor.getClass().equals(instanceProcessor.getClass())) {
-				throw new BugError("Attempt to override instance processor |%s|.", instanceProcessor.getClass());
-			}
-		}
-		log.debug("Register instance processor |%s|.", instanceProcessor.getClass());
-		instanceProcessors.add(instanceProcessor);
-	}
-
-	/**
-	 * Register global processors for managed classes. Post-processors are singletons and only one post-processor instance of a
-	 * type is allowed.
-	 * 
-	 * @param classProcessor managed class post-processor.
-	 * @throws BugError if class processor class is already registered.
-	 * @see #classProcessors
-	 */
-	protected void registerClassProcessor(IClassPostLoad classProcessor) {
-		for (IClassPostLoad existingClassProcessoor : classProcessors) {
-			if (existingClassProcessoor.getClass().equals(classProcessor.getClass())) {
-				throw new BugError("Attempt to override class processor |%s|.", classProcessor.getClass());
-			}
-		}
-		log.debug("Register class processor |%s|.", classProcessor.getClass());
-		classProcessors.add(classProcessor);
 	}
 
 	/**
@@ -482,7 +434,7 @@ public class Container implements IContainer, Configurable {
 				classesPool.put(interfaceClass, managedClass);
 			}
 
-			for (IClassPostLoad classProcessor : classProcessors) {
+			for (IClassPostLoad classProcessor : classPostLoadProcessors) {
 				classProcessor.postLoadClass(managedClass);
 			}
 		}
@@ -552,11 +504,11 @@ public class Container implements IContainer, Configurable {
 		// classes pool is not sorted; it is a hash map for performance reasons
 		// also, a managed class may appear multiple times if have multiple interfaces
 		// bellow sorted set is used to ensure reverse order on managed classes destruction
-		
+
 		// comparison is based on managed class key that is created incrementally
 
 		// compare second with first to ensure descending sorting
-		Set<IManagedClass> sortedClasses = new TreeSet<>((o1, o2)-> o2.getKey().compareTo(o1.getKey()));
+		Set<IManagedClass> sortedClasses = new TreeSet<>((o1, o2) -> o2.getKey().compareTo(o1.getKey()));
 		for (IManagedClass managedClass : classesPool.values()) {
 			// process only managed classes with pre-destroy hook
 			if (managedClass.getPreDestroyMethod() != null) {
@@ -597,7 +549,9 @@ public class Container implements IContainer, Configurable {
 		}
 
 		classesPool.clear();
-		instanceProcessors.clear();
+		classPostLoadProcessors.clear();
+		instancePostConstructProcessors.clear();
+		instancePreDestructProcessors.clear();
 		scopeFactories.clear();
 		instanceFactories.clear();
 	}
@@ -747,7 +701,7 @@ public class Container implements IContainer, Configurable {
 		}
 
 		if (pojoInstance != null) {
-			for (IInstancePostConstruct instanceProcessor : instanceProcessors) {
+			for (IInstancePostConstruct instanceProcessor : instancePostConstructProcessors) {
 				instanceProcessor.postConstructInstance(managedClass, pojoInstance);
 			}
 		}
@@ -825,6 +779,10 @@ public class Container implements IContainer, Configurable {
 	 */
 	boolean hasInstanceFactory(InstanceType instanceType) {
 		return instanceFactories.containsKey(instanceType);
+	}
+
+	Collection<IContainerService> getServices() {
+		return containerServices;
 	}
 
 	// --------------------------------------------------------------------------------------------

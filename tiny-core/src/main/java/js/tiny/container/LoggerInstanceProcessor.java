@@ -4,7 +4,6 @@ import js.log.Log;
 import js.log.LogFactory;
 import js.tiny.container.spi.IInstancePostConstruct;
 import js.tiny.container.spi.IManagedClass;
-import js.tiny.container.spi.Priority;
 
 /**
  * Dump managed instance to {@link Container} class logger. This processor dumps instance managed class to container logger but
@@ -22,7 +21,7 @@ final class LoggerInstanceProcessor implements IInstancePostConstruct {
 
 	@Override
 	public int getPriority() {
-		return Priority.NORMAL.value(1);
+		return Priority.LOGGER.ordinal();
 	}
 
 	/**

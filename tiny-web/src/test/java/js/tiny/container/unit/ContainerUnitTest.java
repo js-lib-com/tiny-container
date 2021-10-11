@@ -48,10 +48,8 @@ import js.tiny.container.servlet.App;
 import js.tiny.container.servlet.AppContext;
 import js.tiny.container.servlet.RequestContext;
 import js.tiny.container.spi.IContainer;
-import js.tiny.container.spi.IInstancePostConstruct;
 import js.tiny.container.spi.IManagedClass;
 import js.tiny.container.spi.IManagedMethod;
-import js.tiny.container.spi.Priority;
 import js.tiny.container.stub.AppContextStub;
 import js.tiny.container.stub.ContainerStub;
 import js.util.Classes;
@@ -87,14 +85,13 @@ public class ContainerUnitTest {
 		assertClass("ServiceInstanceFactory", instanceFactories.get(InstanceType.SERVICE));
 		assertClass("RemoteInstanceFactory", instanceFactories.get(InstanceType.REMOTE));
 
-		List<IInstancePostConstruct> instanceProcessors = Classes.getFieldValue(container, Container.class, "instanceProcessors");
-		assertNotNull(instanceProcessors);
-		//assertEquals(6, instanceProcessors.size());
-		assertClass("InstanceFieldsInjectionProcessor", instanceProcessors.get(0));
-		assertClass("InstanceFieldsInitializationProcessor", instanceProcessors.get(1));
-		assertClass("ConfigurableInstanceProcessor", instanceProcessors.get(2));
-		assertClass("PostConstructInstanceProcessor", instanceProcessors.get(3));
-		assertClass("LoggerInstanceProcessor", instanceProcessors.get(4));
+//		List<IInstancePostConstruct> instanceProcessors = Classes.getFieldValue(container, Container.class, "instanceProcessors");
+//		assertNotNull(instanceProcessors);
+//		assertClass("InstanceFieldsInjectionProcessor", instanceProcessors.get(0));
+//		assertClass("InstanceFieldsInitializationProcessor", instanceProcessors.get(1));
+//		assertClass("ConfigurableInstanceProcessor", instanceProcessors.get(2));
+//		assertClass("PostConstructInstanceProcessor", instanceProcessors.get(3));
+//		assertClass("LoggerInstanceProcessor", instanceProcessors.get(4));
 
 		assertNotNull(Classes.getFieldValue(container, Container.class, "argumentsProcessor"));
 		assertClass("ArgumentsProcessor", Classes.getFieldValue(container, Container.class, "argumentsProcessor"));
@@ -424,68 +421,6 @@ public class ContainerUnitTest {
 		Map<InstanceScope, ScopeFactory> scopeFactories = Classes.getFieldValue(container, Container.class, "scopeFactories");
 		assertNotNull(scopeFactories.get(MOCK));
 		assertTrue(scopeFactories.get(MOCK) instanceof MockScopeFactory);
-	}
-
-	/** Successful and overriding instance factory registration. */
-	@Test
-	public void registerInstanceFactory() {
-		final InstanceType MOCK = new InstanceType("MOCK");
-
-		class MockContainer extends ContainerStub {
-			@Override
-			public void registerInstanceFactory(InstanceType instanceType, InstanceFactory instanceFactory) {
-				super.registerInstanceFactory(instanceType, instanceFactory);
-			}
-		}
-
-		MockContainer container = new MockContainer();
-		container.registerInstanceFactory(MOCK, new MockInstanceFactory());
-
-		try {
-			container.registerInstanceFactory(MOCK, new MockInstanceFactory());
-			fail("Overriding instance type should throw exception.");
-		} catch (BugError unused) {
-		}
-
-		Map<InstanceType, InstanceFactory> instanceFactories = Classes.getFieldValue(container, Container.class, "instanceFactories");
-		assertNotNull(instanceFactories.get(MOCK));
-		assertTrue(instanceFactories.get(MOCK) instanceof MockInstanceFactory);
-	}
-
-	/** Successful and overriding instance processor registration. */
-	@Test
-	public void registerInstanceProcessor() {
-		class MockInstanceProcessor implements IInstancePostConstruct {
-			@Override
-			public int getPriority() {
-				return Priority.NORMAL.value(1);
-			}
-
-			@Override
-			public void postConstructInstance(IManagedClass managedClass, Object instance) {
-			}
-		}
-
-		class MockContainer extends ContainerStub {
-			@Override
-			public void registerInstanceProcessor(IInstancePostConstruct instanceProcessor) {
-				super.registerInstanceProcessor(instanceProcessor);
-			}
-		}
-
-		MockContainer container = new MockContainer();
-		List<IInstancePostConstruct> instanceProcessors = Classes.getFieldValue(container, Container.class, "instanceProcessors");
-		assertEquals(5, instanceProcessors.size());
-		container.registerInstanceProcessor(new MockInstanceProcessor());
-
-		try {
-			container.registerInstanceProcessor(new MockInstanceProcessor());
-			fail("Overriding instance processor should throw exception.");
-		} catch (BugError unused) {
-		}
-
-		assertNotNull(instanceProcessors.get(5));
-		assertTrue(instanceProcessors.get(5) instanceof MockInstanceProcessor);
 	}
 
 	// --------------------------------------------------------------------------------------------

@@ -59,13 +59,6 @@ public interface IManagedMethod {
 	 */
 	<T> T invoke(Object object, Object... args) throws Exception;
 
-	/**
-	 * Test if this managed method return type is void.
-	 * 
-	 * @return true if this managed method is void.
-	 */
-	boolean isVoid();
-
 	<T extends Annotation> T getAnnotation(Class<T> type);
 
 	void addServiceMeta(IServiceMeta serviceMeta);

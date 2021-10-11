@@ -42,11 +42,6 @@ public class ManagedMethodSpiStub implements IManagedMethod {
 	}
 
 	@Override
-	public boolean isVoid() {
-		throw new UnsupportedOperationException("isVoid()");
-	}
-
-	@Override
 	public IManagedClass getDeclaringClass() {
 		throw new UnsupportedOperationException("getDeclaringClass()");
 	}

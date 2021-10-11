@@ -174,7 +174,7 @@ public final class HttpRmiServlet extends AppServlet {
 		}
 
 		httpResponse.setCharacterEncoding("UTF-8");
-		if (managedMethod.isVoid()) {
+		if (Types.isVoid(managedMethod.getReturnType())) {
 			httpResponse.setStatus(HttpServletResponse.SC_NO_CONTENT);
 			return;
 		}

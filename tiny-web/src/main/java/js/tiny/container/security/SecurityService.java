@@ -23,7 +23,6 @@ import js.tiny.container.spi.IManagedClass;
 import js.tiny.container.spi.IManagedMethod;
 import js.tiny.container.spi.IServiceMeta;
 import js.tiny.container.spi.IServiceMetaScanner;
-import js.tiny.container.spi.Priority;
 
 public class SecurityService implements IInvocationProcessor, IServiceMetaScanner {
 	private static final Log log = LogFactory.getLog(SecurityService.class);
@@ -37,7 +36,7 @@ public class SecurityService implements IInvocationProcessor, IServiceMetaScanne
 
 	@Override
 	public int getPriority() {
-		return Priority.SECURITY.value(1);
+		return Priority.SECURITY.ordinal();
 	}
 
 	@Override

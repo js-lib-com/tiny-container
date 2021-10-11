@@ -215,7 +215,7 @@ public class RestServletUnitTest {
 		when(container.getManagedMethods()).thenReturn(Arrays.asList(managedMethod));
 		when(managedMethod.getServiceMeta(PathMeta.class)).thenReturn(new PathMeta(service, "rest/sub-resource"));
 		when(managedMethod.getParameterTypes()).thenReturn(new Class[0]);
-		when(managedMethod.isVoid()).thenReturn(true);
+		when(managedMethod.getReturnType()).thenReturn(void.class);
 
 		// when
 		executeRequestHandler();

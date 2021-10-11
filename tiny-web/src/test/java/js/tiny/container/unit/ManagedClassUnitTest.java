@@ -35,6 +35,8 @@ import js.tiny.container.servlet.TinyConfigBuilder;
 import js.tiny.container.spi.IManagedClass;
 import js.tiny.container.spi.IManagedMethod;
 import js.tiny.container.stub.ContainerStub;
+import js.tiny.container.unit.TestConfigBuilder;
+import js.tiny.container.unit.TestContext;
 import js.util.Classes;
 
 @SuppressWarnings("unused")

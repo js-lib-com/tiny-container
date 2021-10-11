@@ -1,9 +1,8 @@
 package js.tiny.container;
 
-import java.util.Collection;
+import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.SortedSet;
-import java.util.TreeSet;
+import java.util.List;
 
 import js.log.Log;
 import js.log.LogFactory;
@@ -15,22 +14,22 @@ import js.tiny.container.spi.IManagedMethod;
 final class InvocationProcessorsChain implements IInvocationProcessorsChain {
 	private static final Log log = LogFactory.getLog(InvocationProcessorsChain.class);
 
-	/** Set of method invocation processors in the proper order for execution. */
-	private final SortedSet<IInvocationProcessor> processors;
+	/** List of method invocation processors in the proper order for execution. */
+	private final List<IInvocationProcessor> processors;
 
 	private Iterator<IInvocationProcessor> iterator;
 
 	public InvocationProcessorsChain() {
 		log.trace("MethodInvocationProcessorsChain()");
-		this.processors = new TreeSet<>((p1, p2) -> Integer.compare(p1.getPriority(), p2.getPriority()));
+		this.processors = new ArrayList<>();
 	}
 
 	public void addProcessor(IInvocationProcessor processor) {
 		processors.add(processor);
 	}
 
-	public void addProcessors(Collection<IInvocationProcessor> processors) {
-		this.processors.addAll(processors);
+	public void addProcessors(JoinPointProcessors<IInvocationProcessor> processors) {
+		processors.forEach(processor -> this.processors.add(processor));
 	}
 
 	public void createIterator() {

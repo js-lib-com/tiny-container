@@ -18,7 +18,7 @@ import js.lang.BugError;
  * @author Iulian Rotaru
  */
 public interface IInstancePostConstruct extends IJoinPointProcessor {
-	
+
 	/**
 	 * Execute specific post processing on instance of a given managed class. Implementation may or may not alter instance
 	 * state, depending on specific kind of processing. For example {@link LoggerInstanceProcessor} does not alter instance
@@ -30,5 +30,8 @@ public interface IInstancePostConstruct extends IJoinPointProcessor {
 	 * @throws BugError for every abnormal condition that prevent post-processing.
 	 */
 	void postConstructInstance(IManagedClass managedClass, Object instance);
-	
+
+	public enum Priority {
+		INJECT, CONFIG, LIFE_CYCLE, TIMER, LOGGER
+	}
 }
