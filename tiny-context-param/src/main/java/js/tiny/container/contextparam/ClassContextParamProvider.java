@@ -4,9 +4,9 @@ import js.tiny.container.spi.IContainer;
 import js.tiny.container.spi.IContainerService;
 import js.tiny.container.spi.IContainerServiceProvider;
 
-public class ContextParamServiceProvider implements IContainerServiceProvider {
+public class ClassContextParamProvider implements IContainerServiceProvider {
 	@Override
 	public IContainerService getService(IContainer container) {
-		return new ContextParamProcessor(container);
+		return new ClassContextParam(container);
 	}
 }

@@ -18,7 +18,7 @@ import js.tiny.container.spi.IContainer;
 import js.tiny.container.spi.IManagedClass;
 
 @RunWith(MockitoJUnitRunner.class)
-public class ContextParamProcessorTest {
+public class ClassContextParamTest {
 	@Mock
 	private IContainer container;
 	@Mock
@@ -26,7 +26,7 @@ public class ContextParamProcessorTest {
 	@Mock
 	private RequestContext requestContext;
 
-	private ContextParamProcessor processor;
+	private ClassContextParam processor;
 
 	@Before
 	public void beforeTest() {
@@ -36,7 +36,7 @@ public class ContextParamProcessorTest {
 		when(requestContext.getInitParameter(any(), any())).thenReturn("value");
 		doReturn(BusinessClass.class).when(managedClass).getImplementationClass();
 
-		processor = new ContextParamProcessor(container);
+		processor = new ClassContextParam(container);
 	}
 
 	@Test
@@ -71,56 +71,5 @@ public class ContextParamProcessorTest {
 		processor.postLoadClass(managedClass);
 
 		// then
-	}
-
-	@Test
-	public void GivenDefaults_WhenPostConstructInstance_ThenFieldInitialized() {
-		// given
-		BusinessClass instance = new BusinessClass();
-
-		// when
-		processor.postConstructInstance(managedClass, instance);
-
-		// then
-		assertThat(instance.instanceField, equalTo("value"));
-	}
-
-	@Test
-	public void GivenMissingOptionalField_WhenPostConstructInstance_ThenNullField() {
-		// given
-		BusinessClass instance = new BusinessClass();
-		when(requestContext.getInitParameter(String.class, "instance.field")).thenReturn(null);
-
-		// when
-		processor.postConstructInstance(managedClass, instance);
-
-		// then
-		assertThat(instance.instanceField, nullValue());
-	}
-
-	@Test(expected = RuntimeException.class)
-	public void GivenMissingMandatoryField_WhenPostConstructInstance_ThenException() {
-		// given
-		BusinessClass instance = new BusinessClass();
-		when(requestContext.getInitParameter(String.class, "instance.mandatory.field")).thenReturn(null);
-
-		// when
-		processor.postConstructInstance(managedClass, instance);
-
-		// then
-	}
-
-	private static class BusinessClass {
-		@ContextParam("static.field")
-		private static String staticField;
-
-		@ContextParam(value = "static.mandatory.field", mandatory = true)
-		private static String staticMandatoryField;
-
-		@ContextParam("instance.field")
-		private String instanceField;
-
-		@ContextParam(value = "instance.mandatory.field", mandatory = true)
-		private String instanceMandatoryField;
 	}
 }

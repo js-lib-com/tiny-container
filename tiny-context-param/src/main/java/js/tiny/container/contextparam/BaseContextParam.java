@@ -1,73 +1,26 @@
 package js.tiny.container.contextparam;
 
 import java.lang.reflect.Field;
-import java.lang.reflect.Modifier;
-import java.util.Collections;
 import java.util.function.Predicate;
 
 import js.lang.BugError;
 import js.log.Log;
 import js.log.LogFactory;
-import js.tiny.container.servlet.AppContext;
 import js.tiny.container.servlet.RequestContext;
-import js.tiny.container.spi.IClassPostLoad;
 import js.tiny.container.spi.IContainer;
-import js.tiny.container.spi.IInstancePostConstruct;
 import js.tiny.container.spi.IManagedClass;
-import js.tiny.container.spi.IManagedMethod;
-import js.tiny.container.spi.IServiceMeta;
-import js.tiny.container.spi.IServiceMetaScanner;
-import js.tiny.container.spi.Priority;
 
-/**
- * Initialize fields depending on context parameters, both class and instance.
- * 
- * @author Iulian Rotaru
- */
-public class ContextParamProcessor implements IClassPostLoad, IInstancePostConstruct, IServiceMetaScanner {
-	private static final Log log = LogFactory.getLog(ContextParamProcessor.class);
+abstract class BaseContextParam {
+	private static final Log log = LogFactory.getLog(BaseContextParam.class);
 
-	/**
-	 * Application context used to supply named context parameter, see {@link AppContext#getProperty(String)} and related
-	 * {@link AppContext#getProperty(String, Class)}.
-	 */
 	private final IContainer container;
 
-	/**
-	 * Initialize processor instance.
-	 * 
-	 * @param container application context.
-	 */
-	public ContextParamProcessor(IContainer container) {
+	protected BaseContextParam(IContainer container) {
+		log.trace("BaseContextParam(IContainer)");
 		this.container = container;
 	}
 
-	@Override
-	public int getPriority() {
-		return Priority.NORMAL.value(1);
-	}
-
-	@Override
-	public Iterable<IServiceMeta> scanServiceMeta(IManagedClass managedClass) {
-		return Collections.emptyList();
-	}
-
-	@Override
-	public Iterable<IServiceMeta> scanServiceMeta(IManagedMethod managedMethod) {
-		return Collections.emptyList();
-	}
-
-	@Override
-	public void postLoadClass(IManagedClass managedClass) {
-		processFields(managedClass, null, field -> Modifier.isStatic(field.getModifiers()));
-	}
-
-	@Override
-	public void postConstructInstance(IManagedClass managedClass, Object instance) {
-		processFields(managedClass, instance, field -> !Modifier.isStatic(field.getModifiers()));
-	}
-
-	private void processFields(IManagedClass managedClass, Object instance, Predicate<Field> predicate) {
+	protected void processFields(IManagedClass managedClass, Object instance, Predicate<Field> predicate) {
 		RequestContext requestContext = container.getInstance(RequestContext.class);
 		for (Field field : managedClass.getImplementationClass().getDeclaredFields()) {
 			ContextParam contextParam = field.getAnnotation(ContextParam.class);
@@ -107,4 +60,5 @@ public class ContextParamProcessor implements IClassPostLoad, IInstancePostConst
 			throw new BugError(e);
 		}
 	}
+
 }
