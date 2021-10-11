@@ -1,9 +1,7 @@
 package js.tiny.container.timer;
 
-import js.lang.InvocationException;
 import js.log.Log;
 import js.log.LogFactory;
-import js.tiny.container.spi.AuthorizationException;
 import js.tiny.container.spi.IManagedMethod;
 
 class TimerTask implements Runnable {
@@ -29,10 +27,8 @@ class TimerTask implements Runnable {
 			if (delay > 0) {
 				service.schedule(this, delay);
 			}
-		} catch (IllegalArgumentException | InvocationException | AuthorizationException e) {
-			log.error(e);
 		} catch (Throwable t) {
-			log.error(t);
+			log.dump(String.format("Fail on timer method |%s|: ", managedMethod), t);
 		}
 	}
 }

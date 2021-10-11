@@ -50,8 +50,8 @@ final class InstanceFieldsInjectionProcessor extends DependencyProcessor impleme
 	}
 
 	@Override
-	public int getPriority() {
-		return Priority.INJECT.ordinal();
+	public Priority getPriority() {
+		return Priority.INJECT;
 	}
 
 	/**

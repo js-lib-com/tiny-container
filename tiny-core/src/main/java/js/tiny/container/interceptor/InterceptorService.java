@@ -27,8 +27,8 @@ final class InterceptorService implements IInvocationProcessor, IServiceMetaScan
 	}
 
 	@Override
-	public int getPriority() {
-		return Priority.INTERCEPTOR.ordinal();
+	public Priority getPriority() {
+		return Priority.INTERCEPTOR;
 	}
 
 	@Override

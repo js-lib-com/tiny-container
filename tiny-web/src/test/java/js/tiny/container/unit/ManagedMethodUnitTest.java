@@ -1,12 +1,12 @@
 package js.tiny.container.unit;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.lang.reflect.Type;
@@ -135,7 +135,7 @@ public class ManagedMethodUnitTest {
 	}
 
 	/** Throws invocation exception if method execution fails. */
-	@Test(expected = InvocationException.class)
+	@Test(expected = InvocationTargetException.class)
 	public void invokeObject_InvocationException() throws Exception {
 		class PersonEx {
 			void method() throws Exception {
@@ -147,7 +147,7 @@ public class ManagedMethodUnitTest {
 	}
 
 	/** It is considered a bug if Java method accessible flag is not set. It should be set by constructor. */
-	@Test(expected = BugError.class)
+	@Test(expected = IllegalAccessException.class)
 	public void invokeObject_NoAccessibleMethod() throws Exception {
 		Method method = Person.class.getDeclaredMethod("setName", String.class);
 		IManagedMethod managedMethod = new ManagedMethod(managedClass, method);
@@ -167,7 +167,7 @@ public class ManagedMethodUnitTest {
 		assertEquals("John Doe", ((Person) handler.instance).name);
 	}
 
-	@Test(expected = InvocationException.class)
+	@Test(expected = InvocationTargetException.class)
 	public void invokeProxy_InvocationException() throws Exception {
 		class PersonEx implements Human {
 			@Override
@@ -187,7 +187,7 @@ public class ManagedMethodUnitTest {
 	}
 
 	/** It is considered a bug if Java method accessible flag is not set. It should be set by constructor. */
-	@Test(expected = BugError.class)
+	@Test(expected = IllegalAccessException.class)
 	public void invokeProxy_NoAccessibleMethod() throws Exception {
 		MockInvocationHandler handler = new MockInvocationHandler();
 		handler.instance = new Person();

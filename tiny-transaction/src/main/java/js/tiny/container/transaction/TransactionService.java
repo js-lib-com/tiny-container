@@ -31,8 +31,8 @@ final class TransactionService implements IInvocationProcessor, IServiceMetaScan
 	}
 
 	@Override
-	public int getPriority() {
-		return Priority.TRANSACTION.ordinal();
+	public Priority getPriority() {
+		return Priority.TRANSACTION;
 	}
 
 	@Override

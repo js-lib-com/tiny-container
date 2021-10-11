@@ -37,8 +37,8 @@ class CalendarTimerService implements ICalendarTimerService, IServiceMetaScanner
 	}
 
 	@Override
-	public int getPriority() {
-		return Priority.TIMER.ordinal();
+	public Priority getPriority() {
+		return Priority.TIMER;
 	}
 
 	@Override

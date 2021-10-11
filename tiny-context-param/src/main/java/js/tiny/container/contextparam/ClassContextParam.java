@@ -12,8 +12,8 @@ class ClassContextParam extends BaseContextParam implements IClassPostLoad {
 	}
 
 	@Override
-	public int getPriority() {
-		return Priority.INJECT.ordinal();
+	public Priority getPriority() {
+		return Priority.INJECT;
 	}
 
 	@Override

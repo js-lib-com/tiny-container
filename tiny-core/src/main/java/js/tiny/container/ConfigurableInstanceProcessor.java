@@ -24,8 +24,8 @@ final class ConfigurableInstanceProcessor implements IInstancePostConstruct {
 	private static final Log log = LogFactory.getLog(ConfigurableInstanceProcessor.class);
 
 	@Override
-	public int getPriority() {
-		return Priority.CONFIG.ordinal();
+	public Priority getPriority() {
+		return Priority.CONFIG;
 	}
 
 	/**

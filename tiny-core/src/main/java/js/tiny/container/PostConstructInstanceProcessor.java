@@ -20,8 +20,8 @@ final class PostConstructInstanceProcessor implements IInstancePostConstruct {
 	private static final Log log = LogFactory.getLog(PostConstructInstanceProcessor.class);
 
 	@Override
-	public int getPriority() {
-		return Priority.LIFE_CYCLE.ordinal();
+	public Priority getPriority() {
+		return Priority.LIFE_CYCLE;
 	}
 
 	/**

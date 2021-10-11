@@ -1,17 +1,13 @@
 package js.tiny.container;
 
 import java.lang.annotation.Annotation;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.lang.reflect.Proxy;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import js.lang.BugError;
-import js.lang.InvocationException;
 import js.log.Log;
 import js.log.LogFactory;
 import js.tiny.container.spi.IInvocation;
@@ -35,7 +31,7 @@ public class ManagedMethod implements IManagedMethod, IInvocationProcessor {
 	private static final Log log = LogFactory.getLog(IManagedMethod.class);
 
 	/** Format string for managed method simple name, without class name. */
-	static final String SIMPLE_NAME_FORMAT = "%s(%s)";
+	private static final String SIMPLE_NAME_FORMAT = "%s(%s)";
 
 	/** Format string for managed method fully qualified name. */
 	private static final String QUALIFIED_NAME_FORMAT = "%s#" + SIMPLE_NAME_FORMAT;
@@ -57,6 +53,11 @@ public class ManagedMethod implements IManagedMethod, IInvocationProcessor {
 
 	private final Map<Class<? extends IServiceMeta>, IServiceMeta> serviceMetas = new HashMap<>();
 
+	/**
+	 * Join point processors attached to {@link #invoke(Object, Object...)} method. When this method is executed all processors
+	 * hold by this join point are executed followed by {@link #executeService(IInvocationProcessorsChain, IInvocation)} that
+	 * does the actual method invocation.
+	 */
 	private final JoinPointProcessors<IInvocationProcessor> invocationProcessors = new JoinPointProcessors<>();
 
 	/**
@@ -83,9 +84,6 @@ public class ManagedMethod implements IManagedMethod, IInvocationProcessor {
 			}
 		});
 	}
-
-	// --------------------------------------------------------------------------------------------
-	// MANAGED METHOD INTERFACE
 
 	@Override
 	public IManagedClass getDeclaringClass() {
@@ -124,7 +122,10 @@ public class ManagedMethod implements IManagedMethod, IInvocationProcessor {
 	}
 
 	/**
-	 * Invoke managed method and applies method level services.
+	 * Join point where application logic execution cross-cuts container services related to method invocation. When an
+	 * application method should be executed container routes request to this join point. Here invocation processors chain is
+	 * created and executed; this way all processors from {@link #invocationProcessors} are executed before the actual
+	 * application method execution, via {@link #executeService(IInvocationProcessorsChain, IInvocation)}.
 	 * 
 	 * @param instance managed instance against which method is executed,
 	 * @param arguments optional managed method invocation arguments.
@@ -135,53 +136,32 @@ public class ManagedMethod implements IManagedMethod, IInvocationProcessor {
 	@SuppressWarnings("unchecked")
 	@Override
 	public <T> T invoke(Object instance, Object... arguments) throws Exception {
-		InvocationProcessorsChain processorsChain = new InvocationProcessorsChain();
-		processorsChain.addProcessors(invocationProcessors);
-
-		// this managed method is a method invocation processor too
-		// its priority ensures that it is executed at the end, after all other processors
-		processorsChain.addProcessor(this);
-
-		processorsChain.createIterator();
-		IInvocation methodInvocation = processorsChain.createMethodInvocation(this, instance, arguments);
-		return (T) processorsChain.invokeNextProcessor(methodInvocation);
+		InvocationProcessorsChain processorsChain = new InvocationProcessorsChain(invocationProcessors, this);
+		return (T) processorsChain.invokeNextProcessor(processorsChain.createInvocation(this, instance, arguments));
 	}
 
 	@Override
-	public Object executeService(IInvocationProcessorsChain unused, IInvocation methodInvocation) throws Exception {
-		// arguments processor converts <args> to empty array if it is null
-		// it can be null if on invocation chain there is Proxy invoked with no arguments
-		Object[] arguments = argumentsProcessor.preProcessArguments(this, methodInvocation.arguments());
-
-		// TODO: deprecated ?
-		if (methodInvocation.instance() instanceof Proxy) {
-			// if object is a Java Proxy does not apply method services implemented by below block
-			// instead directly invoke Java method on the Proxy instance
-			// container will call again this method but with the real object instance, in which case executes the next logic
-			try {
-				return method.invoke(methodInvocation.instance(), arguments);
-			} catch (InvocationTargetException e) {
-				throw new InvocationException(e.getTargetException());
-			} catch (IllegalAccessException e) {
-				throw new BugError("Illegal access on method with accessibility set true.");
-			}
-		}
-
-		try {
-			return method.invoke(methodInvocation.instance(), arguments);
-		} catch (InvocationTargetException e) {
-			throw new InvocationException(e.getTargetException());
-		} catch (IllegalAccessException e) {
-			throw new BugError("Illegal access on method with accessibility set true.");
-		}
+	public Priority getPriority() {
+		return Priority.METHOD;
 	}
 
 	/**
-	 * Returns a string describing this managed method.
+	 * Managed method implements {@link IInvocationProcessor} interface so that it can be part of invocation processors chain,
+	 * created and executed by {@link #invoke(Object, Object...)}. This managed method also inherits default priority value -
+	 * see {@link #getPriority()}; its value guarantees that managed method is executed last, after all container services were
+	 * executed.
+	 * 
+	 * This method gets invocation processors chain parameter, mandated by interface signature. Anyway, it is not unused; this
+	 * method does not call {@link IInvocationProcessorsChain#invokeNextProcessor(IInvocation)}, and as a consequence processing
+	 * chain is ended.
+	 * 
+	 * @param chain invocation processor chain, unused.
+	 * @param invocation invocation object.
 	 */
 	@Override
-	public String toString() {
-		return signature;
+	public Object executeService(IInvocationProcessorsChain chain, IInvocation invocation) throws Exception {
+		Object[] arguments = argumentsProcessor.preProcessArguments(this, invocation.arguments());
+		return method.invoke(invocation.instance(), arguments);
 	}
 
 	@Override
@@ -245,6 +225,11 @@ public class ManagedMethod implements IManagedMethod, IInvocationProcessor {
 			context = context.getClass();
 		}
 		return Strings.concat(((Class<?>) context).getCanonicalName(), '#', name);
+	}
+
+	@Override
+	public String toString() {
+		return signature;
 	}
 
 	// --------------------------------------------------------------------------------------------

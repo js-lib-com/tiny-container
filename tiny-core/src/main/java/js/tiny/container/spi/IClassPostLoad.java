@@ -1,23 +1,30 @@
 package js.tiny.container.spi;
 
 /**
- * Post processor executed on managed class. These hooks are executed by {@link IContainer} after {@link IManagedClass} creation
- * and generally deals with implementation static fields initialization, but not limited to.
- * <p>
- * Note that these processors are global and executed for every created managed classes.
+ * Post processing executed on managed classes. These container services are executed after {@link IManagedClass} load and
+ * generally deals with static fields initialization, but is not limited to.
  * 
  * @author Iulian Rotaru
  */
 public interface IClassPostLoad extends IJoinPointProcessor {
 
 	/**
-	 * Execute post-processing after managed class creation.
+	 * Execute container service logic after managed class loading.
 	 * 
-	 * @param managedClass just created managed class.
+	 * @param managedClass just loaded managed class.
 	 */
 	void postLoadClass(IManagedClass managedClass);
 
-	public enum Priority {
+	Priority getPriority();
+
+	/**
+	 * Predefined priorities available to class post-load processors.
+	 * 
+	 * @author Iulian Rotaru
+	 */
+	enum Priority implements IPriority {
+		/** 0 - inject values to class static fields */
 		INJECT
 	}
+
 }

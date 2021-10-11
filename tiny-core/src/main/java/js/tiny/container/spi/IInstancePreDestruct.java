@@ -4,7 +4,9 @@ public interface IInstancePreDestruct extends IJoinPointProcessor {
 
 	void preDestructInstance(IManagedClass managedClass, Object instance);
 
-	public enum Priority {
+	Priority getPriority();
+
+	enum Priority implements IPriority {
 		DESTROY
 	}
 }

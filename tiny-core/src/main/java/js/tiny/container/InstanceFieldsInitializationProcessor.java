@@ -46,8 +46,8 @@ import js.util.Classes;
  */
 final class InstanceFieldsInitializationProcessor implements IInstancePostConstruct {
 	@Override
-	public int getPriority() {
-		return Priority.INJECT.ordinal();
+	public Priority getPriority() {
+		return Priority.INJECT;
 	}
 
 	/**

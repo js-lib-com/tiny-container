@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import js.lang.BugError;
 import js.log.Log;
 import js.log.LogFactory;
 import js.tiny.container.spi.IInvocation;
@@ -17,36 +18,28 @@ final class InvocationProcessorsChain implements IInvocationProcessorsChain {
 	/** List of method invocation processors in the proper order for execution. */
 	private final List<IInvocationProcessor> processors;
 
-	private Iterator<IInvocationProcessor> iterator;
+	private final Iterator<IInvocationProcessor> iterator;
 
-	public InvocationProcessorsChain() {
+	public InvocationProcessorsChain(JoinPointProcessors<IInvocationProcessor> processors, IInvocationProcessor managedMethod) {
 		log.trace("MethodInvocationProcessorsChain()");
 		this.processors = new ArrayList<>();
-	}
-
-	public void addProcessor(IInvocationProcessor processor) {
-		processors.add(processor);
-	}
-
-	public void addProcessors(JoinPointProcessors<IInvocationProcessor> processors) {
 		processors.forEach(processor -> this.processors.add(processor));
-	}
-
-	public void createIterator() {
+		// managed method is a method invocation processor too
+		// its default priority ensures that it is executed at the end, after all other invocation processors
+		processors.add(managedMethod);
 		iterator = processors.iterator();
 	}
 
-	public IInvocation createMethodInvocation(IManagedMethod managedMethod, Object instance, Object[] arguments) {
+	public IInvocation createInvocation(IManagedMethod managedMethod, Object instance, Object[] arguments) {
 		return new MethodInvocation(managedMethod, instance, arguments);
 	}
 
 	@Override
-	public Object invokeNextProcessor(IInvocation methodInvocation) throws Exception {
+	public Object invokeNextProcessor(IInvocation invocation) throws Exception {
 		if (!iterator.hasNext()) {
-			// TODO: end of processing chain
-			return null;
+			throw new BugError("Invocation processors chain was not properly ended. See ManagedMethod#executeService().");
 		}
-		return iterator.next().executeService(this, methodInvocation);
+		return iterator.next().executeService(this, invocation);
 	}
 
 	private static final class MethodInvocation implements IInvocation {

@@ -23,8 +23,8 @@ class PerformanceMonitorService implements IInvocationProcessor, IServiceMetaSca
 	}
 
 	@Override
-	public int getPriority() {
-		return Priority.PERFMON.ordinal();
+	public Priority getPriority() {
+		return Priority.PERFMON;
 	}
 
 	@Override

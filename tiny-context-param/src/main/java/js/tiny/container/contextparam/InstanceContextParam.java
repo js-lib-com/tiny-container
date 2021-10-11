@@ -12,8 +12,8 @@ public class InstanceContextParam extends BaseContextParam implements IInstanceP
 	}
 
 	@Override
-	public int getPriority() {
-		return Priority.INJECT.ordinal();
+	public Priority getPriority() {
+		return Priority.INJECT;
 	}
 
 	@Override

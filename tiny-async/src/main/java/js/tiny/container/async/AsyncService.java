@@ -24,8 +24,8 @@ class AsyncService implements IInvocationProcessor, IServiceMetaScanner {
 	}
 
 	@Override
-	public int getPriority() {
-		return Priority.ASYNCHRONOUS.ordinal();
+	public Priority getPriority() {
+		return Priority.ASYNCHRONOUS;
 	}
 
 	@Override

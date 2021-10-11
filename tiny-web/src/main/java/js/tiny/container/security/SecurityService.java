@@ -35,8 +35,8 @@ public class SecurityService implements IInvocationProcessor, IServiceMetaScanne
 	}
 
 	@Override
-	public int getPriority() {
-		return Priority.SECURITY.ordinal();
+	public Priority getPriority() {
+		return Priority.SECURITY;
 	}
 
 	@Override
