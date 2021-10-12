@@ -20,12 +20,8 @@ import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import js.lang.BugError;
 import js.lang.GType;
-import js.lang.InvocationException;
 import js.tiny.container.ManagedMethod;
-import js.tiny.container.interceptor.PostInvokeInterceptor;
-import js.tiny.container.interceptor.PreInvokeInterceptor;
 import js.tiny.container.spi.AuthorizationException;
 import js.tiny.container.spi.IContainer;
 import js.tiny.container.spi.IContainerService;
@@ -277,6 +273,7 @@ public class ManagedMethodUnitTest {
 		}
 	}
 
+	/**
 	private static class MockInterceptor implements PreInvokeInterceptor, PostInvokeInterceptor {
 		private static int preInvokeProbe;
 		private static int postInvokeProbe;
@@ -329,7 +326,7 @@ public class ManagedMethodUnitTest {
 			++invokeProbe;
 		}
 	}
-
+*/
 	private static class MockInvocationHandler implements InvocationHandler {
 		private Object instance;
 

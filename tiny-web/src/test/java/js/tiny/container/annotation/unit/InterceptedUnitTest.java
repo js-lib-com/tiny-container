@@ -16,7 +16,6 @@ import js.lang.ConfigBuilder;
 import js.lang.ConfigException;
 import js.tiny.container.Container;
 import js.tiny.container.ManagedClass;
-import js.tiny.container.interceptor.Interceptor;
 import js.tiny.container.spi.IManagedClass;
 import js.tiny.container.spi.IManagedMethod;
 import js.tiny.container.stub.ContainerStub;
@@ -167,7 +166,7 @@ public class InterceptedUnitTest {
 	private static interface MockInterface {
 	}
 
-	private static class MockInterceptor implements Interceptor {
+	private static class MockInterceptor { // implements Interceptor {
 	}
 
 	@Interceptors(MockInterceptor.class)

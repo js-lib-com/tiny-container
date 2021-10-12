@@ -37,6 +37,7 @@
 		<module>tiny-async</module>
 		<module>tiny-timer</module>
 		<module>tiny-context-param</module>
+		<module>tiny-interceptor</module>
 	</modules>
 
 	<properties>
