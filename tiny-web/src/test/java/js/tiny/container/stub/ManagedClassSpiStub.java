@@ -91,11 +91,6 @@ public class ManagedClassSpiStub implements IManagedClass {
 	}
 
 	@Override
-	public boolean isAutoInstanceCreation() {
-		throw new UnsupportedOperationException("isAutoInstanceCreation()");
-	}
-
-	@Override
 	public <T extends IServiceMeta> T getServiceMeta(Class<T> type) {
 		throw new UnsupportedOperationException("getServiceMeta(Class<T> type)");
 	}

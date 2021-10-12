@@ -5,7 +5,7 @@ package js.tiny.container.spi;
  * 
  * @author Iulian Rotaru
  */
-public interface IInstancePreDestructionProcessor extends IJoinPointProcessor {
+public interface IInstancePreDestructionProcessor extends IFlowProcessor {
 
 	void onInstancePreDestruction(IManagedClass managedClass, Object instance);
 

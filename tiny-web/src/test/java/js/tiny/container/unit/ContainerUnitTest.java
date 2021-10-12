@@ -328,10 +328,9 @@ public class ContainerUnitTest {
 		container.config(builder.build());
 		container.start();
 
-		assertEquals(3, container.instantiatedClasses.size());
+		assertEquals(2, container.instantiatedClasses.size());
 		assertEquals("App", container.instantiatedClasses.get(0).getSimpleName());
-		assertEquals("NetCar", container.instantiatedClasses.get(1).getSimpleName());
-		assertEquals("ManagedCar", container.instantiatedClasses.get(2).getSimpleName());
+		assertEquals("ManagedCar", container.instantiatedClasses.get(1).getSimpleName());
 	}
 
 	@Test

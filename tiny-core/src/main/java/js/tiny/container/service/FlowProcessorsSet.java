@@ -1,15 +1,16 @@
-package js.tiny.container;
+package js.tiny.container.service;
 
 import java.util.Iterator;
 import java.util.SortedSet;
 import java.util.TreeSet;
+import java.util.function.Consumer;
 
-import js.tiny.container.spi.IJoinPointProcessor;
+import js.tiny.container.spi.IFlowProcessor;
 
-class JoinPointProcessors<T extends IJoinPointProcessor> implements Iterable<T> {
+public class FlowProcessorsSet<T extends IFlowProcessor> {
 	private final SortedSet<T> processors;
 
-	public JoinPointProcessors() {
+	public FlowProcessorsSet() {
 		this.processors = new TreeSet<>((processor1, processor2) -> {
 			final int priority1 = processor1.getPriority().ordinal();
 			final int priority2 = processor2.getPriority().ordinal();
@@ -25,9 +26,14 @@ class JoinPointProcessors<T extends IJoinPointProcessor> implements Iterable<T> 
 		processors.add(processor);
 	}
 
-	@Override
 	public Iterator<T> iterator() {
 		return processors.iterator();
+	}
+
+	public void forEach(Consumer<T> callback) {
+		for (T processor : processors) {
+			callback.accept(processor);
+		}
 	}
 
 	public void clear() {

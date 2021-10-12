@@ -5,12 +5,10 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.util.Collection;
 
-import javax.ejb.Schedule;
 import javax.inject.Inject;
 
 import js.lang.BugError;
 import js.lang.Config;
-import js.lang.ManagedLifeCycle;
 import js.tiny.container.InstanceScope;
 import js.tiny.container.InstanceType;
 
@@ -151,20 +149,6 @@ public interface IManagedClass {
 	 * @return remote class implementation URL.
 	 */
 	String getImplementationURL();
-
-	/**
-	 * Flag indicating that this managed class should be instantiated automatically by container. Note that created instance is
-	 * a singleton and managed instance scope should be {@link InstanceScope#APPLICATION}.
-	 * <p>
-	 * This flag is true for following conditions:
-	 * <ul>
-	 * <li>this managed class has {@link Schedule} methods,
-	 * <li>this managed class implements {@link ManagedLifeCycle} interface.
-	 * </ul>
-	 * 
-	 * @return true if managed instance should be created automatically by container.
-	 */
-	boolean isAutoInstanceCreation();
 
 	<T extends IServiceMeta> T getServiceMeta(Class<T> type);
 

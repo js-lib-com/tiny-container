@@ -15,7 +15,7 @@ package js.tiny.container.spi;
  * 
  * @author Iulian Rotaru
  */
-public interface IMethodInvocationProcessor extends IJoinPointProcessor {
+public interface IMethodInvocationProcessor extends IFlowProcessor {
 
 	/**
 	 * Execute container service logic implemented by current invocation processor then invoke the next processor from chain.

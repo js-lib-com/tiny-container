@@ -10,6 +10,7 @@ import java.util.Map;
 
 import js.log.Log;
 import js.log.LogFactory;
+import js.tiny.container.service.FlowProcessorsSet;
 import js.tiny.container.spi.IInvocation;
 import js.tiny.container.spi.IMethodInvocationProcessor;
 import js.tiny.container.spi.IInvocationProcessorsChain;
@@ -58,7 +59,7 @@ public class ManagedMethod implements IManagedMethod, IMethodInvocationProcessor
 	 * hold by this join point are executed followed by {@link #onMethodInvocation(IInvocationProcessorsChain, IInvocation)} that
 	 * does the actual method invocation.
 	 */
-	private final JoinPointProcessors<IMethodInvocationProcessor> invocationProcessors = new JoinPointProcessors<>();
+	private final FlowProcessorsSet<IMethodInvocationProcessor> invocationProcessors = new FlowProcessorsSet<>();
 
 	/**
 	 * Construct a managed method. Store declaring class and Java reflective method, initialize this managed method signature

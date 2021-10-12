@@ -6,7 +6,7 @@ package js.tiny.container.spi;
  * 
  * @author Iulian Rotaru
  */
-public interface IClassPostLoadedProcessor extends IJoinPointProcessor {
+public interface IClassPostLoadedProcessor extends IFlowProcessor {
 
 	/**
 	 * Execute container service logic after managed class loaded.

@@ -37,10 +37,13 @@ import js.log.Log;
 import js.log.LogFactory;
 import js.rmi.RemoteFactory;
 import js.tiny.container.core.AppFactory;
+import js.tiny.container.service.ContainerStartupProcessor;
+import js.tiny.container.service.FlowProcessorsSet;
 import js.tiny.container.spi.IClassPostLoadedProcessor;
 import js.tiny.container.spi.IContainer;
 import js.tiny.container.spi.IContainerService;
 import js.tiny.container.spi.IContainerServiceProvider;
+import js.tiny.container.spi.IContainerStartProcessor;
 import js.tiny.container.spi.IInstancePostConstructionProcessor;
 import js.tiny.container.spi.IInstancePreDestructionProcessor;
 import js.tiny.container.spi.IManagedClass;
@@ -256,14 +259,16 @@ public class Container implements IContainer, Configurable {
 	 */
 	private final Map<InstanceType, InstanceFactory> instanceFactories = new HashMap<>();
 
+	private final FlowProcessorsSet<IContainerStartProcessor> containerStartProcessors = new FlowProcessorsSet<>();
+
 	/**
 	 * Class post-load processors are executed after {@link ManagedClass} creation and generally deals with managed
 	 * implementation static fields initialization, but is not limited to.
 	 * <p>
-	 * These processors are registered by {@link #registerClassPostLoadProcessor(IClassPostLoadedProcessor)}. Note that these processors
-	 * are global and executed for ALL managed classes.
+	 * These processors are registered by {@link #registerClassPostLoadProcessor(IClassPostLoadedProcessor)}. Note that these
+	 * processors are global and executed for ALL managed classes.
 	 */
-	private final JoinPointProcessors<IClassPostLoadedProcessor> classPostLoadProcessors = new JoinPointProcessors<>();
+	private final FlowProcessorsSet<IClassPostLoadedProcessor> classPostLoadedProcessors = new FlowProcessorsSet<>();
 
 	/**
 	 * Instance post-processors are executed only on newly created managed instances. If instance is reused from scope cache
@@ -272,9 +277,9 @@ public class Container implements IContainer, Configurable {
 	 * There are a number of built-in processor created by constructor but subclass may register new ones via
 	 * {@link #registerInstanceProcessor(IInstancePostConstructionProcessor)}.
 	 */
-	private final JoinPointProcessors<IInstancePostConstructionProcessor> instancePostConstructProcessors = new JoinPointProcessors<>();
+	private final FlowProcessorsSet<IInstancePostConstructionProcessor> instancePostConstructionProcessors = new FlowProcessorsSet<>();
 
-	private final JoinPointProcessors<IInstancePreDestructionProcessor> instancePreDestructProcessors = new JoinPointProcessors<>();
+	private final FlowProcessorsSet<IInstancePreDestructionProcessor> instancePreDestructionProcessors = new FlowProcessorsSet<>();
 
 	/**
 	 * Processor for managed constructor and method invocation arguments. Takes care of dependency injection on arguments and
@@ -328,22 +333,27 @@ public class Container implements IContainer, Configurable {
 		registerInstanceFactory(InstanceType.REMOTE, new RemoteInstanceFactory());
 
 		for (IContainerService containerService : containerServices) {
+			if (containerService instanceof IContainerStartProcessor) {
+				containerStartProcessors.add((IContainerStartProcessor) containerService);
+			}
 			if (containerService instanceof IClassPostLoadedProcessor) {
-				classPostLoadProcessors.add((IClassPostLoadedProcessor) containerService);
+				classPostLoadedProcessors.add((IClassPostLoadedProcessor) containerService);
 			}
 			if (containerService instanceof IInstancePostConstructionProcessor) {
-				instancePostConstructProcessors.add((IInstancePostConstructionProcessor) containerService);
+				instancePostConstructionProcessors.add((IInstancePostConstructionProcessor) containerService);
 			}
 			if (containerService instanceof IInstancePreDestructionProcessor) {
-				instancePreDestructProcessors.add((IInstancePreDestructionProcessor) containerService);
+				instancePreDestructionProcessors.add((IInstancePreDestructionProcessor) containerService);
 			}
 		}
 
-		instancePostConstructProcessors.add(new InstanceFieldsInjectionProcessor());
-		instancePostConstructProcessors.add(new InstanceFieldsInitializationProcessor());
-		instancePostConstructProcessors.add(new ConfigurableInstanceProcessor());
-		instancePostConstructProcessors.add(new PostConstructInstanceProcessor());
-		instancePostConstructProcessors.add(new LoggerInstanceProcessor());
+		containerStartProcessors.add(new ContainerStartupProcessor());
+
+		instancePostConstructionProcessors.add(new InstanceFieldsInjectionProcessor());
+		instancePostConstructionProcessors.add(new InstanceFieldsInitializationProcessor());
+		instancePostConstructionProcessors.add(new ConfigurableInstanceProcessor());
+		instancePostConstructionProcessors.add(new PostConstructInstanceProcessor());
+		instancePostConstructionProcessors.add(new LoggerInstanceProcessor());
 	}
 
 	/**
@@ -434,53 +444,21 @@ public class Container implements IContainer, Configurable {
 				classesPool.put(interfaceClass, managedClass);
 			}
 
-			for (IClassPostLoadedProcessor classProcessor : classPostLoadProcessors) {
-				classProcessor.onClassPostLoaded(managedClass);
-			}
+			classPostLoadedProcessors.forEach(processor -> {
+				processor.onClassPostLoaded(managedClass);
+			});
 		}
 
 		convertersInitialization(config);
 		pojoStaticInitialization(config);
 	}
 
-	/**
-	 * Ensure all managed classes marked with 'auto-creation' are instantiated. Invoked at a final stage of container
-	 * initialization, this method checks every managed class that has {@link IManagedClass#isAutoInstanceCreation()} flag set
-	 * and ensure is instantiated.
-	 * <p>
-	 * Takes care to instantiate, configure if the case, and execute post-construct in the order from application descriptor.
-	 * This is critical for assuring that {@link App} is created first; {@link App} class descriptor is declared first into
-	 * application descriptor.
-	 * <p>
-	 * Note that this method does not explicitly execute {@link ManagedLifeCycle#postConstruct()} hooks; this hooks are actually
-	 * executed by instance processor, see {link {@link PostConstructInstanceProcessor}.
-	 */
-	@SuppressWarnings("unchecked")
+	/** Execute container services registered to {@link #containerStartProcessors}. */
 	public void start() {
 		log.trace("start()");
-
-		// classes pool is not sorted; it is a hash map that does not guarantee order
-		// also, a managed class may appear multiple times if have multiple interfaces
-		// bellow sorted set is used to ensure ascending order on managed classes instantiation
-
-		// comparison is based on managed class key that is created incrementally
-
-		// compare first with second to ensure ascending sorting
-		Set<IManagedClass> sortedClasses = new TreeSet<>((o1, o2) -> o1.getKey().compareTo(o2.getKey()));
-		for (IManagedClass managedClass : classesPool.values()) {
-			if (managedClass.isAutoInstanceCreation()) {
-				sortedClasses.add(managedClass);
-			}
-		}
-
-		for (IManagedClass managedClass : sortedClasses) {
-			// call getInstance to ensure managed instance with managed life cycle is started
-			// if there are more than one single interface peek one, no matter which; the simple way is to peek the first
-			// getInstance() will create instance only if not already exist; returned value is ignored
-
-			log.debug("Create managed instance with managed life cycle |%s|.", managedClass.getInterfaceClass());
-			getInstance((Class<? super Object>) managedClass.getInterfaceClass());
-		}
+		containerStartProcessors.forEach(processor -> {
+			processor.onContainerStart(this);
+		});
 	}
 
 	/**
@@ -549,9 +527,9 @@ public class Container implements IContainer, Configurable {
 		}
 
 		classesPool.clear();
-		classPostLoadProcessors.clear();
-		instancePostConstructProcessors.clear();
-		instancePreDestructProcessors.clear();
+		classPostLoadedProcessors.clear();
+		instancePostConstructionProcessors.clear();
+		instancePreDestructionProcessors.clear();
 		scopeFactories.clear();
 		instanceFactories.clear();
 	}
@@ -701,9 +679,10 @@ public class Container implements IContainer, Configurable {
 		}
 
 		if (pojoInstance != null) {
-			for (IInstancePostConstructionProcessor instanceProcessor : instancePostConstructProcessors) {
-				instanceProcessor.onInstancePostConstruction(managedClass, pojoInstance);
-			}
+			final Object finalInstance = pojoInstance;
+			instancePostConstructionProcessors.forEach(processor -> {
+				processor.onInstancePostConstruction(managedClass, finalInstance);
+			});
 		}
 
 		return (T) instance;

@@ -344,18 +344,6 @@ public final class ManagedClass implements IManagedClass {
 	/** Cached value of managed class string representation, merely for logging. */
 	private final String string;
 
-	/**
-	 * Flag indicating that this managed class should be instantiated automatically by container, see {@link Container#start()}.
-	 * Note that created instance is a singleton and managed instance scope should be {@link InstanceScope#APPLICATION}.
-	 * <p>
-	 * This flag is true for following conditions:
-	 * <ul>
-	 * <li>this managed class has {@link Cron} methods,
-	 * <li>this managed class implements {@link ManagedLifeCycle} interface.
-	 * </ul>
-	 */
-	private boolean autoInstanceCreation;
-
 	private final Map<Class<? extends IServiceMeta>, IServiceMeta> serviceMetas = new HashMap<>();
 
 	private final Set<IContainerService> services = new HashSet<>();
@@ -382,11 +370,6 @@ public final class ManagedClass implements IManagedClass {
 
 		this.key = KEY_SEED.getAndIncrement();
 		this.string = buildStringRepresentation(descriptor);
-
-		// startup attribute is enable only on singletons, that is, managed instances with application scope
-		if (this.instanceScope == InstanceScope.APPLICATION && descriptor.hasAttribute("startup")) {
-			this.autoInstanceCreation = descriptor.getAttribute("startup", boolean.class);
-		}
 
 		// get declared constructor return null if no implementation class
 		this.constructor = getDeclaredConstructor(this.implementationClass);
@@ -471,11 +454,6 @@ public final class ManagedClass implements IManagedClass {
 	 */
 	private void scanAnnotations() {
 
-		// startup annotation works only on singletons, that is, managed instances with application scope
-		if (hasAnnotation(implementationClass, Startup.class) && instanceScope == InstanceScope.APPLICATION) {
-			autoInstanceCreation = true;
-		}
-
 		for (Method method : implementationClass.getDeclaredMethods()) {
 			Method interfaceMethod = getInterfaceMethod(method);
 			IManagedMethod managedMethod = new ManagedMethod(this, interfaceMethod);
@@ -518,9 +496,6 @@ public final class ManagedClass implements IManagedClass {
 					IServiceMetaScanner scanner = (IServiceMetaScanner) service;
 					for (IServiceMeta serviceMeta : scanner.scanServiceMeta(managedMethod)) {
 						managedMethod.addServiceMeta(serviceMeta);
-						// if(serviceMeta.requiresInstanceCreation()) {
-						autoInstanceCreation = true;
-						// }
 					}
 				}
 			}
@@ -615,11 +590,6 @@ public final class ManagedClass implements IManagedClass {
 
 	// --------------------------------------------------------------------------------------------
 	// CLASS DESCRIPTOR UTILITY METHODS
-
-	@Override
-	public boolean isAutoInstanceCreation() {
-		return autoInstanceCreation;
-	}
 
 	/**
 	 * Load optional implementation class from class descriptor and applies insanity checks. Load implementation class from
@@ -727,9 +697,6 @@ public final class ManagedClass implements IManagedClass {
 
 			if (interfaceClass == null) {
 				throw new ConfigException("Managed class interface |%s| not found.", interfaceName);
-			}
-			if (Types.isKindOf(interfaceClass, ManagedLifeCycle.class)) {
-				autoInstanceCreation = true;
 			}
 			if (instanceType.requiresInterface() && !interfaceClass.isInterface()) {
 				throw new ConfigException("Managed type |%s| requires interface to make Java Proxy happy but got |%s|.", instanceType, interfaceClass);
@@ -985,31 +952,6 @@ public final class ManagedClass implements IManagedClass {
 			}
 		}
 		return annotation;
-	}
-
-	/**
-	 * Test if class has requested annotation. This predicate uses extended annotation searching scope: it searches first on
-	 * given class then tries with all class interfaces. Note that only interfaces are used as alternative for annotation
-	 * search. Super class is not included.
-	 * <p>
-	 * Returns false if no annotation found on base class or interfaces.
-	 * 
-	 * @param clazz base class to search for annotation,
-	 * @param annotationClass annotation to search for.
-	 * @return true if annotation found.
-	 */
-	private static boolean hasAnnotation(Class<?> clazz, Class<? extends Annotation> annotationClass) {
-		Annotation annotation = clazz.getAnnotation(annotationClass);
-		if (annotation != null) {
-			return true;
-		}
-		for (Class<?> interfaceClass : clazz.getInterfaces()) {
-			annotation = interfaceClass.getAnnotation(annotationClass);
-			if (annotation != null) {
-				return true;
-			}
-		}
-		return false;
 	}
 
 	/**

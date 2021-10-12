@@ -7,6 +7,7 @@ import java.util.List;
 import js.lang.BugError;
 import js.log.Log;
 import js.log.LogFactory;
+import js.tiny.container.service.FlowProcessorsSet;
 import js.tiny.container.spi.IInvocation;
 import js.tiny.container.spi.IMethodInvocationProcessor;
 import js.tiny.container.spi.IInvocationProcessorsChain;
@@ -20,7 +21,7 @@ final class InvocationProcessorsChain implements IInvocationProcessorsChain {
 
 	private final Iterator<IMethodInvocationProcessor> iterator;
 
-	public InvocationProcessorsChain(JoinPointProcessors<IMethodInvocationProcessor> processors, IMethodInvocationProcessor managedMethod) {
+	public InvocationProcessorsChain(FlowProcessorsSet<IMethodInvocationProcessor> processors, IMethodInvocationProcessor managedMethod) {
 		log.trace("MethodInvocationProcessorsChain()");
 		this.processors = new ArrayList<>();
 		processors.forEach(processor -> this.processors.add(processor));
