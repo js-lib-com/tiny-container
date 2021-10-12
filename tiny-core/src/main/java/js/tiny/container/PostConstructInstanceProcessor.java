@@ -4,7 +4,7 @@ import js.lang.BugError;
 import js.lang.ManagedPostConstruct;
 import js.log.Log;
 import js.log.LogFactory;
-import js.tiny.container.spi.IInstancePostConstruct;
+import js.tiny.container.spi.IInstancePostConstructionProcessor;
 import js.tiny.container.spi.IManagedClass;
 import js.tiny.container.spi.IManagedMethod;
 import js.tiny.container.spi.IServiceMeta;
@@ -16,7 +16,7 @@ import js.tiny.container.spi.IServiceMetaScanner;
  * 
  * @author Iulian Rotaru
  */
-final class PostConstructInstanceProcessor implements IInstancePostConstruct, IServiceMetaScanner {
+final class PostConstructInstanceProcessor implements IInstancePostConstructionProcessor, IServiceMetaScanner {
 	private static final Log log = LogFactory.getLog(PostConstructInstanceProcessor.class);
 
 	@Override
@@ -45,7 +45,7 @@ final class PostConstructInstanceProcessor implements IInstancePostConstruct, IS
 	 * @throws BugError if instance post-construction fails due to exception of user defined logic.
 	 */
 	@Override
-	public void postConstructInstance(IManagedClass managedClass, Object instance) {
+	public void onInstancePostConstruction(IManagedClass managedClass, Object instance) {
 		IManagedMethod method = managedClass.getPostConstructMethod();
 		if (method == null) {
 			return;

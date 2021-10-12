@@ -45,7 +45,7 @@ public class InstanceContextParamTest {
 		BusinessClass instance = new BusinessClass();
 
 		// when
-		processor.postConstructInstance(managedClass, instance);
+		processor.onInstancePostConstruction(managedClass, instance);
 
 		// then
 		assertThat(instance.instanceField, equalTo("value"));
@@ -58,7 +58,7 @@ public class InstanceContextParamTest {
 		when(requestContext.getInitParameter(String.class, "instance.field")).thenReturn(null);
 
 		// when
-		processor.postConstructInstance(managedClass, instance);
+		processor.onInstancePostConstruction(managedClass, instance);
 
 		// then
 		assertThat(instance.instanceField, nullValue());
@@ -71,7 +71,7 @@ public class InstanceContextParamTest {
 		when(requestContext.getInitParameter(String.class, "instance.mandatory.field")).thenReturn(null);
 
 		// when
-		processor.postConstructInstance(managedClass, instance);
+		processor.onInstancePostConstruction(managedClass, instance);
 
 		// then
 	}

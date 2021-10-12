@@ -37,12 +37,12 @@ import js.log.Log;
 import js.log.LogFactory;
 import js.rmi.RemoteFactory;
 import js.tiny.container.core.AppFactory;
-import js.tiny.container.spi.IClassPostLoad;
+import js.tiny.container.spi.IClassPostLoadedProcessor;
 import js.tiny.container.spi.IContainer;
 import js.tiny.container.spi.IContainerService;
 import js.tiny.container.spi.IContainerServiceProvider;
-import js.tiny.container.spi.IInstancePostConstruct;
-import js.tiny.container.spi.IInstancePreDestruct;
+import js.tiny.container.spi.IInstancePostConstructionProcessor;
+import js.tiny.container.spi.IInstancePreDestructionProcessor;
 import js.tiny.container.spi.IManagedClass;
 import js.tiny.container.spi.IManagedMethod;
 import js.util.Classes;
@@ -260,21 +260,21 @@ public class Container implements IContainer, Configurable {
 	 * Class post-load processors are executed after {@link ManagedClass} creation and generally deals with managed
 	 * implementation static fields initialization, but is not limited to.
 	 * <p>
-	 * These processors are registered by {@link #registerClassPostLoadProcessor(IClassPostLoad)}. Note that these processors
+	 * These processors are registered by {@link #registerClassPostLoadProcessor(IClassPostLoadedProcessor)}. Note that these processors
 	 * are global and executed for ALL managed classes.
 	 */
-	private final JoinPointProcessors<IClassPostLoad> classPostLoadProcessors = new JoinPointProcessors<>();
+	private final JoinPointProcessors<IClassPostLoadedProcessor> classPostLoadProcessors = new JoinPointProcessors<>();
 
 	/**
 	 * Instance post-processors are executed only on newly created managed instances. If instance is reused from scope cache
 	 * this processors are not executed. They add instance specific services. This list contains processors in execution order.
 	 * <p>
 	 * There are a number of built-in processor created by constructor but subclass may register new ones via
-	 * {@link #registerInstanceProcessor(IInstancePostConstruct)}.
+	 * {@link #registerInstanceProcessor(IInstancePostConstructionProcessor)}.
 	 */
-	private final JoinPointProcessors<IInstancePostConstruct> instancePostConstructProcessors = new JoinPointProcessors<>();
+	private final JoinPointProcessors<IInstancePostConstructionProcessor> instancePostConstructProcessors = new JoinPointProcessors<>();
 
-	private final JoinPointProcessors<IInstancePreDestruct> instancePreDestructProcessors = new JoinPointProcessors<>();
+	private final JoinPointProcessors<IInstancePreDestructionProcessor> instancePreDestructProcessors = new JoinPointProcessors<>();
 
 	/**
 	 * Processor for managed constructor and method invocation arguments. Takes care of dependency injection on arguments and
@@ -328,14 +328,14 @@ public class Container implements IContainer, Configurable {
 		registerInstanceFactory(InstanceType.REMOTE, new RemoteInstanceFactory());
 
 		for (IContainerService containerService : containerServices) {
-			if (containerService instanceof IClassPostLoad) {
-				classPostLoadProcessors.add((IClassPostLoad) containerService);
+			if (containerService instanceof IClassPostLoadedProcessor) {
+				classPostLoadProcessors.add((IClassPostLoadedProcessor) containerService);
 			}
-			if (containerService instanceof IInstancePostConstruct) {
-				instancePostConstructProcessors.add((IInstancePostConstruct) containerService);
+			if (containerService instanceof IInstancePostConstructionProcessor) {
+				instancePostConstructProcessors.add((IInstancePostConstructionProcessor) containerService);
 			}
-			if (containerService instanceof IInstancePreDestruct) {
-				instancePreDestructProcessors.add((IInstancePreDestruct) containerService);
+			if (containerService instanceof IInstancePreDestructionProcessor) {
+				instancePreDestructProcessors.add((IInstancePreDestructionProcessor) containerService);
 			}
 		}
 
@@ -434,8 +434,8 @@ public class Container implements IContainer, Configurable {
 				classesPool.put(interfaceClass, managedClass);
 			}
 
-			for (IClassPostLoad classProcessor : classPostLoadProcessors) {
-				classProcessor.postLoadClass(managedClass);
+			for (IClassPostLoadedProcessor classProcessor : classPostLoadProcessors) {
+				classProcessor.onClassPostLoaded(managedClass);
 			}
 		}
 
@@ -701,8 +701,8 @@ public class Container implements IContainer, Configurable {
 		}
 
 		if (pojoInstance != null) {
-			for (IInstancePostConstruct instanceProcessor : instancePostConstructProcessors) {
-				instanceProcessor.postConstructInstance(managedClass, pojoInstance);
+			for (IInstancePostConstructionProcessor instanceProcessor : instancePostConstructProcessors) {
+				instanceProcessor.onInstancePostConstruction(managedClass, pojoInstance);
 			}
 		}
 

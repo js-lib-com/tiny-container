@@ -17,14 +17,14 @@ import js.tiny.container.servlet.TinyContainer;
 import js.tiny.container.spi.AuthorizationException;
 import js.tiny.container.spi.IContainer;
 import js.tiny.container.spi.IInvocation;
-import js.tiny.container.spi.IInvocationProcessor;
+import js.tiny.container.spi.IMethodInvocationProcessor;
 import js.tiny.container.spi.IInvocationProcessorsChain;
 import js.tiny.container.spi.IManagedClass;
 import js.tiny.container.spi.IManagedMethod;
 import js.tiny.container.spi.IServiceMeta;
 import js.tiny.container.spi.IServiceMetaScanner;
 
-public class SecurityService implements IInvocationProcessor, IServiceMetaScanner {
+public class SecurityService implements IMethodInvocationProcessor, IServiceMetaScanner {
 	private static final Log log = LogFactory.getLog(SecurityService.class);
 
 	private final IContainer container;
@@ -84,7 +84,7 @@ public class SecurityService implements IInvocationProcessor, IServiceMetaScanne
 	}
 
 	@Override
-	public Object executeService(IInvocationProcessorsChain chain, IInvocation invocation) throws Exception {
+	public Object onMethodInvocation(IInvocationProcessorsChain chain, IInvocation invocation) throws Exception {
 		final IManagedMethod managedMethod = invocation.method();
 
 		final RequestContext requestContext = container.getInstance(RequestContext.class);

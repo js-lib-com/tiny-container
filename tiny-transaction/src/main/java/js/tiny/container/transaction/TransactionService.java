@@ -9,7 +9,7 @@ import js.log.Log;
 import js.log.LogFactory;
 import js.tiny.container.spi.IContainer;
 import js.tiny.container.spi.IInvocation;
-import js.tiny.container.spi.IInvocationProcessor;
+import js.tiny.container.spi.IMethodInvocationProcessor;
 import js.tiny.container.spi.IInvocationProcessorsChain;
 import js.tiny.container.spi.IManagedClass;
 import js.tiny.container.spi.IManagedMethod;
@@ -20,7 +20,7 @@ import js.transaction.Mutable;
 import js.transaction.Transaction;
 import js.transaction.Transactional;
 
-final class TransactionService implements IInvocationProcessor, IServiceMetaScanner {
+final class TransactionService implements IMethodInvocationProcessor, IServiceMetaScanner {
 	private static final Log log = LogFactory.getLog(TransactionService.class);
 
 	private final IContainer container;
@@ -75,7 +75,7 @@ final class TransactionService implements IInvocationProcessor, IServiceMetaScan
 	}
 
 	@Override
-	public Object executeService(IInvocationProcessorsChain chain, IInvocation invocation) throws Exception {
+	public Object onMethodInvocation(IInvocationProcessorsChain chain, IInvocation invocation) throws Exception {
 		final IManagedMethod managedMethod = invocation.method();
 		if (!isTransactional(managedMethod)) {
 			return chain.invokeNextProcessor(invocation);

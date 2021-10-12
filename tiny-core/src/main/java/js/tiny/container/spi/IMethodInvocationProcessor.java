@@ -15,7 +15,7 @@ package js.tiny.container.spi;
  * 
  * @author Iulian Rotaru
  */
-public interface IInvocationProcessor extends IJoinPointProcessor {
+public interface IMethodInvocationProcessor extends IJoinPointProcessor {
 
 	/**
 	 * Execute container service logic implemented by current invocation processor then invoke the next processor from chain.
@@ -27,7 +27,7 @@ public interface IInvocationProcessor extends IJoinPointProcessor {
 	 * @return value returned by next processor from chain or null if next processor is not executed.
 	 * @throws Exception if service processing fails for whatever reason.
 	 */
-	Object executeService(IInvocationProcessorsChain chain, IInvocation invocation) throws Exception;
+	Object onMethodInvocation(IInvocationProcessorsChain chain, IInvocation invocation) throws Exception;
 
 	Priority getPriority();
 

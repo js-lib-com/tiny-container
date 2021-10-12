@@ -45,7 +45,7 @@ import js.log.LogFactory;
 import js.tiny.container.core.AppFactory;
 import js.tiny.container.spi.IContainer;
 import js.tiny.container.spi.IContainerService;
-import js.tiny.container.spi.IInvocationProcessor;
+import js.tiny.container.spi.IMethodInvocationProcessor;
 import js.tiny.container.spi.IManagedClass;
 import js.tiny.container.spi.IManagedMethod;
 import js.tiny.container.spi.IServiceMeta;
@@ -476,15 +476,11 @@ public final class ManagedClass implements IManagedClass {
 			autoInstanceCreation = true;
 		}
 
-		// managed classes does not support public inheritance
 		for (Method method : implementationClass.getDeclaredMethods()) {
-
-			final int modifiers = method.getModifiers();
-			if (Modifier.isStatic(modifiers)) {
-				continue;
-			}
-
 			Method interfaceMethod = getInterfaceMethod(method);
+			IManagedMethod managedMethod = new ManagedMethod(this, interfaceMethod);
+			methodsPool.put(interfaceMethod.getName(), managedMethod);
+
 			if (hasAnnotation(method, PostConstruct.class)) {
 				if (postConstructor != null) {
 					throw new BugError("Duplicated @PostConstruct method |%s|.", method);
@@ -499,9 +495,6 @@ public final class ManagedClass implements IManagedClass {
 				preDestructor = new ManagedMethod(this, interfaceMethod);
 				continue;
 			}
-
-			final IManagedMethod managedMethod = new ManagedMethod(this, interfaceMethod);
-			methodsPool.put(interfaceMethod.getName(), managedMethod);
 		}
 
 		for (IContainerService service : container.getServices()) {
@@ -518,8 +511,8 @@ public final class ManagedClass implements IManagedClass {
 		for (IManagedMethod method : methodsPool.values()) {
 			ManagedMethod managedMethod = (ManagedMethod) method;
 			for (IContainerService service : container.getServices()) {
-				if (service instanceof IInvocationProcessor) {
-					managedMethod.addInvocationProcessor((IInvocationProcessor) service);
+				if (service instanceof IMethodInvocationProcessor) {
+					managedMethod.addInvocationProcessor((IMethodInvocationProcessor) service);
 				}
 				if (service instanceof IServiceMetaScanner) {
 					IServiceMetaScanner scanner = (IServiceMetaScanner) service;

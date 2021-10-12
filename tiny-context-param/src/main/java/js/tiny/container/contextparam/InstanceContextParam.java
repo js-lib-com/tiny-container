@@ -3,10 +3,10 @@ package js.tiny.container.contextparam;
 import java.lang.reflect.Modifier;
 
 import js.tiny.container.spi.IContainer;
-import js.tiny.container.spi.IInstancePostConstruct;
+import js.tiny.container.spi.IInstancePostConstructionProcessor;
 import js.tiny.container.spi.IManagedClass;
 
-public class InstanceContextParam extends BaseContextParam implements IInstancePostConstruct {
+public class InstanceContextParam extends BaseContextParam implements IInstancePostConstructionProcessor {
 	public InstanceContextParam(IContainer container) {
 		super(container);
 	}
@@ -17,7 +17,7 @@ public class InstanceContextParam extends BaseContextParam implements IInstanceP
 	}
 
 	@Override
-	public void postConstructInstance(IManagedClass managedClass, Object instance) {
+	public void onInstancePostConstruction(IManagedClass managedClass, Object instance) {
 		processFields(managedClass, instance, field -> !Modifier.isStatic(field.getModifiers()));
 	}
 }

@@ -8,7 +8,7 @@ import js.lang.BugError;
 import js.log.Log;
 import js.log.LogFactory;
 import js.tiny.container.spi.IInvocation;
-import js.tiny.container.spi.IInvocationProcessor;
+import js.tiny.container.spi.IMethodInvocationProcessor;
 import js.tiny.container.spi.IInvocationProcessorsChain;
 import js.tiny.container.spi.IManagedMethod;
 
@@ -16,11 +16,11 @@ final class InvocationProcessorsChain implements IInvocationProcessorsChain {
 	private static final Log log = LogFactory.getLog(InvocationProcessorsChain.class);
 
 	/** List of method invocation processors in the proper order for execution. */
-	private final List<IInvocationProcessor> processors;
+	private final List<IMethodInvocationProcessor> processors;
 
-	private final Iterator<IInvocationProcessor> iterator;
+	private final Iterator<IMethodInvocationProcessor> iterator;
 
-	public InvocationProcessorsChain(JoinPointProcessors<IInvocationProcessor> processors, IInvocationProcessor managedMethod) {
+	public InvocationProcessorsChain(JoinPointProcessors<IMethodInvocationProcessor> processors, IMethodInvocationProcessor managedMethod) {
 		log.trace("MethodInvocationProcessorsChain()");
 		this.processors = new ArrayList<>();
 		processors.forEach(processor -> this.processors.add(processor));
@@ -39,7 +39,7 @@ final class InvocationProcessorsChain implements IInvocationProcessorsChain {
 		if (!iterator.hasNext()) {
 			throw new BugError("Invocation processors chain was not properly ended. See ManagedMethod#executeService().");
 		}
-		return iterator.next().executeService(this, invocation);
+		return iterator.next().onMethodInvocation(this, invocation);
 	}
 
 	private static final class MethodInvocation implements IInvocation {

@@ -2,7 +2,7 @@ package js.tiny.container.spi;
 
 /**
  * Container services related to managed instances post processing. Instance processors are registered to container and enacted
- * by instance retrieval logic. Note that post processing is executed only on newly created instances but not if managed
+ * by managed instance retrieval logic. Note that post processing is executed only on newly created instances but not if managed
  * instance is reused from scope factory.
  * 
  * Instance processor may have side effects on given instance, depending on specific implementation. For example
@@ -11,7 +11,7 @@ package js.tiny.container.spi;
  * 
  * @author Iulian Rotaru
  */
-public interface IInstancePostConstruct extends IJoinPointProcessor {
+public interface IInstancePostConstructionProcessor extends IJoinPointProcessor {
 
 	/**
 	 * Execute specific post processing logic on instance of a given managed class. Implementation may or may not alter instance
@@ -20,12 +20,12 @@ public interface IInstancePostConstruct extends IJoinPointProcessor {
 	 * @param managedClass managed class,
 	 * @param instance instance of given managed class.
 	 */
-	void postConstructInstance(IManagedClass managedClass, Object instance);
+	void onInstancePostConstruction(IManagedClass managedClass, Object instance);
 
 	Priority getPriority();
 
 	/**
-	 * Predefined priorities available to instance constructor post processing.
+	 * Predefined priorities available to instance post processing.
 	 * 
 	 * @author Iulian Rotaru
 	 */
@@ -34,8 +34,8 @@ public interface IInstancePostConstruct extends IJoinPointProcessor {
 		INJECT,
 		/** 1 - execute instance configuration from external descriptors */
 		CONFIG,
-		/** 2 - instance life-cycle management */
-		LIFE_CYCLE,
+		/** 2 - application specific initialization logic is executed after initialization and configuration */
+		CONSTRUCTOR,
 		/** 3 - timer services */
 		TIMER,
 		/** 4 - dump instance informations to logger */

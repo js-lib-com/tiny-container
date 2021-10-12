@@ -44,7 +44,7 @@ public class ClassContextParamTest {
 		// given
 
 		// when
-		processor.postLoadClass(managedClass);
+		processor.onClassPostLoaded(managedClass);
 
 		// then
 		assertThat(BusinessClass.staticField, equalTo("value"));
@@ -56,7 +56,7 @@ public class ClassContextParamTest {
 		when(requestContext.getInitParameter(String.class, "static.field")).thenReturn(null);
 
 		// when
-		processor.postLoadClass(managedClass);
+		processor.onClassPostLoaded(managedClass);
 
 		// then
 		assertThat(BusinessClass.staticField, nullValue());
@@ -68,7 +68,7 @@ public class ClassContextParamTest {
 		when(requestContext.getInitParameter(String.class, "static.mandatory.field")).thenReturn(null);
 
 		// when
-		processor.postLoadClass(managedClass);
+		processor.onClassPostLoaded(managedClass);
 
 		// then
 	}

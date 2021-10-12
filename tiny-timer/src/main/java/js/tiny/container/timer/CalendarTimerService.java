@@ -10,11 +10,11 @@ import javax.ejb.Schedule;
 
 import js.log.Log;
 import js.log.LogFactory;
-import js.tiny.container.spi.IInstancePostConstruct;
+import js.tiny.container.spi.IInstancePostConstructionProcessor;
 import js.tiny.container.spi.IManagedClass;
 import js.tiny.container.spi.IManagedMethod;
 
-class CalendarTimerService implements IInstancePostConstruct {
+class CalendarTimerService implements IInstancePostConstructionProcessor {
 	private static final Log log = LogFactory.getLog(CalendarTimerService.class);
 
 	private static final int SCHEDULERS_THREAD_POLL = 2;
@@ -36,7 +36,7 @@ class CalendarTimerService implements IInstancePostConstruct {
 	}
 
 	@Override
-	public void postConstructInstance(IManagedClass managedClass, Object instance) {
+	public void onInstancePostConstruction(IManagedClass managedClass, Object instance) {
 		for (IManagedMethod managedMethod : managedClass.getManagedMethods()) {
 			Schedule schedule = managedMethod.getAnnotation(Schedule.class);
 			if (schedule != null) {

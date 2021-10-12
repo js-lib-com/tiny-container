@@ -120,7 +120,7 @@ public class TransactionServiceTest {
 		// given
 
 		// when
-		service.executeService(processorsChain, methodInvocation);
+		service.onMethodInvocation(processorsChain, methodInvocation);
 
 		// then
 		verify(processorsChain, times(1)).invokeNextProcessor(methodInvocation);
@@ -133,7 +133,7 @@ public class TransactionServiceTest {
 		when(managedMethod.getServiceMeta(TransactionalMeta.class)).thenReturn(transactionalMeta);
 
 		// when
-		service.executeService(processorsChain, methodInvocation);
+		service.onMethodInvocation(processorsChain, methodInvocation);
 
 		// then
 		verify(transaction, times(0)).commit();
@@ -148,7 +148,7 @@ public class TransactionServiceTest {
 		when(managedClass.getServiceMeta(TransactionalMeta.class)).thenReturn(transactionalMeta);
 
 		// when
-		service.executeService(processorsChain, methodInvocation);
+		service.onMethodInvocation(processorsChain, methodInvocation);
 
 		// then
 		verify(transaction, times(0)).commit();
@@ -164,7 +164,7 @@ public class TransactionServiceTest {
 		when(transaction.close()).thenReturn(false);
 
 		// when
-		service.executeService(processorsChain, methodInvocation);
+		service.onMethodInvocation(processorsChain, methodInvocation);
 
 		// then
 		verify(transaction, times(0)).commit();
@@ -181,7 +181,7 @@ public class TransactionServiceTest {
 
 		// when
 		try {
-			service.executeService(processorsChain, methodInvocation);
+			service.onMethodInvocation(processorsChain, methodInvocation);
 		} catch (InvocationException expected) {
 		}
 
@@ -199,7 +199,7 @@ public class TransactionServiceTest {
 		when(processorsChain.invokeNextProcessor(methodInvocation)).thenThrow(IOException.class);
 
 		// when
-		service.executeService(processorsChain, methodInvocation);
+		service.onMethodInvocation(processorsChain, methodInvocation);
 
 		// then
 	}
@@ -211,7 +211,7 @@ public class TransactionServiceTest {
 		when(managedMethod.getServiceMeta(MutableMeta.class)).thenReturn(Mockito.mock(MutableMeta.class));
 
 		// when
-		service.executeService(processorsChain, methodInvocation);
+		service.onMethodInvocation(processorsChain, methodInvocation);
 
 		// then
 		verify(transaction, times(1)).commit();
@@ -227,7 +227,7 @@ public class TransactionServiceTest {
 		when(managedMethod.getServiceMeta(MutableMeta.class)).thenReturn(Mockito.mock(MutableMeta.class));
 
 		// when
-		service.executeService(processorsChain, methodInvocation);
+		service.onMethodInvocation(processorsChain, methodInvocation);
 
 		// then
 		verify(transaction, times(1)).commit();
@@ -244,7 +244,7 @@ public class TransactionServiceTest {
 		when(transaction.close()).thenReturn(false);
 
 		// when
-		service.executeService(processorsChain, methodInvocation);
+		service.onMethodInvocation(processorsChain, methodInvocation);
 
 		// then
 		verify(transaction, times(1)).commit();
@@ -262,7 +262,7 @@ public class TransactionServiceTest {
 
 		// when
 		try {
-			service.executeService(processorsChain, methodInvocation);
+			service.onMethodInvocation(processorsChain, methodInvocation);
 		} catch (InvocationException expected) {
 		}
 
@@ -281,7 +281,7 @@ public class TransactionServiceTest {
 		when(processorsChain.invokeNextProcessor(methodInvocation)).thenThrow(IOException.class);
 
 		// when
-		service.executeService(processorsChain, methodInvocation);
+		service.onMethodInvocation(processorsChain, methodInvocation);
 
 		// then
 	}

@@ -11,7 +11,7 @@ import java.util.Map;
 import js.log.Log;
 import js.log.LogFactory;
 import js.tiny.container.spi.IInvocation;
-import js.tiny.container.spi.IInvocationProcessor;
+import js.tiny.container.spi.IMethodInvocationProcessor;
 import js.tiny.container.spi.IInvocationProcessorsChain;
 import js.tiny.container.spi.IManagedClass;
 import js.tiny.container.spi.IManagedMethod;
@@ -27,7 +27,7 @@ import js.util.Types;
  * 
  * @author Iulian Rotaru
  */
-public class ManagedMethod implements IManagedMethod, IInvocationProcessor {
+public class ManagedMethod implements IManagedMethod, IMethodInvocationProcessor {
 	private static final Log log = LogFactory.getLog(IManagedMethod.class);
 
 	/** Format string for managed method simple name, without class name. */
@@ -55,10 +55,10 @@ public class ManagedMethod implements IManagedMethod, IInvocationProcessor {
 
 	/**
 	 * Join point processors attached to {@link #invoke(Object, Object...)} method. When this method is executed all processors
-	 * hold by this join point are executed followed by {@link #executeService(IInvocationProcessorsChain, IInvocation)} that
+	 * hold by this join point are executed followed by {@link #onMethodInvocation(IInvocationProcessorsChain, IInvocation)} that
 	 * does the actual method invocation.
 	 */
-	private final JoinPointProcessors<IInvocationProcessor> invocationProcessors = new JoinPointProcessors<>();
+	private final JoinPointProcessors<IMethodInvocationProcessor> invocationProcessors = new JoinPointProcessors<>();
 
 	/**
 	 * Construct a managed method. Store declaring class and Java reflective method, initialize this managed method signature
@@ -79,8 +79,8 @@ public class ManagedMethod implements IManagedMethod, IInvocationProcessor {
 		signature = String.format(QUALIFIED_NAME_FORMAT, method.getDeclaringClass().getName(), method.getName(), Strings.join(formalParameters, ','));
 
 		declaringClass.getServices().forEach(service -> {
-			if (service instanceof IInvocationProcessor) {
-				invocationProcessors.add((IInvocationProcessor) service);
+			if (service instanceof IMethodInvocationProcessor) {
+				invocationProcessors.add((IMethodInvocationProcessor) service);
 			}
 		});
 	}
@@ -125,7 +125,7 @@ public class ManagedMethod implements IManagedMethod, IInvocationProcessor {
 	 * Join point where application logic execution cross-cuts container services related to method invocation. When an
 	 * application method should be executed container routes request to this join point. Here invocation processors chain is
 	 * created and executed; this way all processors from {@link #invocationProcessors} are executed before the actual
-	 * application method execution, via {@link #executeService(IInvocationProcessorsChain, IInvocation)}.
+	 * application method execution, via {@link #onMethodInvocation(IInvocationProcessorsChain, IInvocation)}.
 	 * 
 	 * @param instance managed instance against which method is executed,
 	 * @param arguments optional managed method invocation arguments.
@@ -146,7 +146,7 @@ public class ManagedMethod implements IManagedMethod, IInvocationProcessor {
 	}
 
 	/**
-	 * Managed method implements {@link IInvocationProcessor} interface so that it can be part of invocation processors chain,
+	 * Managed method implements {@link IMethodInvocationProcessor} interface so that it can be part of invocation processors chain,
 	 * created and executed by {@link #invoke(Object, Object...)}. This managed method also inherits default priority value -
 	 * see {@link #getPriority()}; its value guarantees that managed method is executed last, after all container services were
 	 * executed.
@@ -159,7 +159,7 @@ public class ManagedMethod implements IManagedMethod, IInvocationProcessor {
 	 * @param invocation invocation object.
 	 */
 	@Override
-	public Object executeService(IInvocationProcessorsChain chain, IInvocation invocation) throws Exception {
+	public Object onMethodInvocation(IInvocationProcessorsChain chain, IInvocation invocation) throws Exception {
 		Object[] arguments = argumentsProcessor.preProcessArguments(this, invocation.arguments());
 		return method.invoke(invocation.instance(), arguments);
 	}
@@ -235,7 +235,7 @@ public class ManagedMethod implements IManagedMethod, IInvocationProcessor {
 	// --------------------------------------------------------------------------------------------
 	// PACKAGE METHODS
 
-	void addInvocationProcessor(IInvocationProcessor invocationProcessor) {
+	void addInvocationProcessor(IMethodInvocationProcessor invocationProcessor) {
 		invocationProcessors.add(invocationProcessor);
 	}
 }

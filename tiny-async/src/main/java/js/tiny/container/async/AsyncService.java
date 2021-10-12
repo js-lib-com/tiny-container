@@ -9,14 +9,14 @@ import js.lang.AsyncTask;
 import js.log.Log;
 import js.log.LogFactory;
 import js.tiny.container.spi.IInvocation;
-import js.tiny.container.spi.IInvocationProcessor;
+import js.tiny.container.spi.IMethodInvocationProcessor;
 import js.tiny.container.spi.IInvocationProcessorsChain;
 import js.tiny.container.spi.IManagedClass;
 import js.tiny.container.spi.IManagedMethod;
 import js.tiny.container.spi.IServiceMeta;
 import js.tiny.container.spi.IServiceMetaScanner;
 
-class AsyncService implements IInvocationProcessor, IServiceMetaScanner {
+class AsyncService implements IMethodInvocationProcessor, IServiceMetaScanner {
 	private static final Log log = LogFactory.getLog(AsyncService.class);
 
 	public AsyncService() {
@@ -60,7 +60,7 @@ class AsyncService implements IInvocationProcessor, IServiceMetaScanner {
 	 * 
 	 */
 	@Override
-	public Object executeService(IInvocationProcessorsChain chain, IInvocation invocation) throws Exception {
+	public Object onMethodInvocation(IInvocationProcessorsChain chain, IInvocation invocation) throws Exception {
 		if (!isAsynchronous(invocation.method())) {
 			return chain.invokeNextProcessor(invocation);
 		}
