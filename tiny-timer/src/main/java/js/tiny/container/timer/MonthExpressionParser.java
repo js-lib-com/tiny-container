@@ -4,6 +4,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.SortedSet;
 
+import javax.ejb.Schedule;
+
 import js.util.Params;
 
 class MonthExpressionParser extends BaseExpressionParser {
@@ -24,7 +26,7 @@ class MonthExpressionParser extends BaseExpressionParser {
 	}
 
 	@Override
-	public SortedSet<Integer> parse(ScheduleMeta schedule, CalendarEx calendar) {
+	public SortedSet<Integer> parse(Schedule schedule, CalendarEx calendar) {
 		Params.notNull(schedule, "Schedule");
 		Params.notNull(calendar, "Calendar");
 

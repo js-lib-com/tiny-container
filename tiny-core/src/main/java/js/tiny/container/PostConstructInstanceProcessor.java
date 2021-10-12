@@ -7,21 +7,33 @@ import js.log.LogFactory;
 import js.tiny.container.spi.IInstancePostConstruct;
 import js.tiny.container.spi.IManagedClass;
 import js.tiny.container.spi.IManagedMethod;
+import js.tiny.container.spi.IServiceMeta;
+import js.tiny.container.spi.IServiceMetaScanner;
 
 /**
  * Execute {@link ManagedPostConstruct#postConstruct()} on managed instance. Instance post-construction is executed after
  * initialization and configuration, of course only if managed instance implements {@link ManagedPostConstruct} interface.
  * 
  * @author Iulian Rotaru
- * @version final
  */
-final class PostConstructInstanceProcessor implements IInstancePostConstruct {
-	/** Class logger. */
+final class PostConstructInstanceProcessor implements IInstancePostConstruct, IServiceMetaScanner {
 	private static final Log log = LogFactory.getLog(PostConstructInstanceProcessor.class);
 
 	@Override
+	public Iterable<IServiceMeta> scanServiceMeta(IManagedClass managedClass) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public Iterable<IServiceMeta> scanServiceMeta(IManagedMethod managedMethod) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
 	public Priority getPriority() {
-		return Priority.LIFE_CYCLE;
+		return Priority.CONSTRUCTOR;
 	}
 
 	/**

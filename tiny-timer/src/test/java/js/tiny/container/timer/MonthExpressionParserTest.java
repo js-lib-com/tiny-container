@@ -18,7 +18,7 @@ import org.mockito.junit.MockitoJUnitRunner;
 @RunWith(MockitoJUnitRunner.class)
 public class MonthExpressionParserTest {
 	@Mock
-	private ScheduleMeta schedule;
+	private Schedule schedule;
 
 	private CalendarEx now;
 	private MonthExpressionParser parser;

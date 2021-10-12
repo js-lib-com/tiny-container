@@ -1,5 +1,7 @@
 package js.tiny.container.timer;
 
+import javax.ejb.Schedule;
+
 import js.log.Log;
 import js.log.LogFactory;
 import js.tiny.container.spi.IManagedMethod;
@@ -23,7 +25,7 @@ class TimerTask implements Runnable {
 		log.debug("Execute timer method |%s|.", managedMethod);
 		try {
 			managedMethod.invoke(instance);
-			long delay = service.computeDelay(managedMethod.getServiceMeta(ScheduleMeta.class));
+			long delay = service.computeDelay(managedMethod.getAnnotation(Schedule.class));
 			if (delay > 0) {
 				service.schedule(this, delay);
 			}

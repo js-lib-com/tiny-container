@@ -1,7 +1,5 @@
 package js.tiny.container.timer;
 
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.concurrent.Executors;
@@ -10,18 +8,13 @@ import java.util.concurrent.TimeUnit;
 
 import javax.ejb.Schedule;
 
-import js.lang.BugError;
 import js.log.Log;
 import js.log.LogFactory;
-import js.tiny.container.InstanceScope;
+import js.tiny.container.spi.IInstancePostConstruct;
 import js.tiny.container.spi.IManagedClass;
 import js.tiny.container.spi.IManagedMethod;
-import js.tiny.container.spi.IServiceMeta;
-import js.tiny.container.spi.IServiceMetaScanner;
-import js.util.Params;
-import js.util.Types;
 
-class CalendarTimerService implements ICalendarTimerService, IServiceMetaScanner {
+class CalendarTimerService implements IInstancePostConstruct {
 	private static final Log log = LogFactory.getLog(CalendarTimerService.class);
 
 	private static final int SCHEDULERS_THREAD_POLL = 2;
@@ -32,7 +25,8 @@ class CalendarTimerService implements ICalendarTimerService, IServiceMetaScanner
 		scheduler = Executors.newScheduledThreadPool(SCHEDULERS_THREAD_POLL);
 	}
 
-	public CalendarTimerService(ScheduledExecutorService scheduler) {
+	/** Test constructor. */
+	CalendarTimerService(ScheduledExecutorService scheduler) {
 		this.scheduler = scheduler;
 	}
 
@@ -42,50 +36,14 @@ class CalendarTimerService implements ICalendarTimerService, IServiceMetaScanner
 	}
 
 	@Override
-	public List<IServiceMeta> scanServiceMeta(IManagedClass managedClass) {
-		return Collections.emptyList();
-	}
-
-	@Override
-	public List<IServiceMeta> scanServiceMeta(IManagedMethod managedMethod) {
-		List<IServiceMeta> serviceMetas = new ArrayList<>();
-
-		Schedule schedule = managedMethod.getAnnotation(Schedule.class);
-		if (schedule != null) {
-			if (!managedMethod.getDeclaringClass().getInstanceScope().equals(InstanceScope.APPLICATION)) {
-				throw new BugError("Timeout method requires |%s| instance scope.", InstanceScope.APPLICATION);
-			}
-			if (!Types.isVoid(managedMethod.getReturnType())) {
-				throw new BugError("Timeout method |%s| must be void.", managedMethod);
-			}
-			serviceMetas.add(new ScheduleMeta(this, schedule));
-		}
-
-		return serviceMetas;
-	}
-
-	@Override
 	public void postConstructInstance(IManagedClass managedClass, Object instance) {
-		// TODO: core should invoke this hook only for instances with timer service
-		// for now core hit this point for every managed instance
-
 		for (IManagedMethod managedMethod : managedClass.getManagedMethods()) {
-			ScheduleMeta schedule = managedMethod.getServiceMeta(ScheduleMeta.class);
+			Schedule schedule = managedMethod.getAnnotation(Schedule.class);
 			if (schedule != null) {
-				createTimer(instance, managedMethod);
+				// computed remaining time can be zero in which case managed method is executed instantly
+				schedule(new TimerTask(this, instance, managedMethod), computeDelay(schedule));
 			}
 		}
-	}
-
-	@Override
-	public void createTimer(Object instance, IManagedMethod managedMethod) {
-		log.debug("Create timer for method |%s|.", managedMethod);
-
-		ScheduleMeta schedule = managedMethod.getServiceMeta(ScheduleMeta.class);
-		Params.notNull(schedule, "Managed method schedule");
-
-		// computed remaining time can be zero in which case managed method is executed instantly
-		schedule(new TimerTask(this, instance, managedMethod), computeDelay(schedule));
 	}
 
 	@Override
@@ -106,7 +64,7 @@ class CalendarTimerService implements ICalendarTimerService, IServiceMetaScanner
 	 * @param schedule method configured schedule.
 	 * @return delay to the next scheduler timeout, in milliseconds, or zero if no schedule passed.
 	 */
-	public long computeDelay(ScheduleMeta schedule) {
+	public long computeDelay(Schedule schedule) {
 		final Date now = new Date();
 		Date next = getNextTimeout(now, schedule);
 		if (next == null) {
@@ -127,7 +85,7 @@ class CalendarTimerService implements ICalendarTimerService, IServiceMetaScanner
 	 * @param schedule method configured schedule.
 	 * @return next scheduler event or null if configured schedule is passed.
 	 */
-	Date getNextTimeout(Date now, ScheduleMeta schedule) {
+	Date getNextTimeout(Date now, Schedule schedule) {
 		CalendarEx evaluationMoment = new CalendarEx(now);
 		// next scheduler timeout should be at least one second after the evaluation moment
 		evaluationMoment.increment(CalendarUnit.SECOND);
