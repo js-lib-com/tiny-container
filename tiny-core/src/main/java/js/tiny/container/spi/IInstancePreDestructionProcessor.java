@@ -1,7 +1,7 @@
 package js.tiny.container.spi;
 
 /**
- * Join point processors executed just before instance destruction.
+ * Flow processors executed just before instance destruction.
  * 
  * @author Iulian Rotaru
  */

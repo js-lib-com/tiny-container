@@ -11,6 +11,7 @@ import java.util.Map;
 import js.log.Log;
 import js.log.LogFactory;
 import js.tiny.container.service.FlowProcessorsSet;
+import js.tiny.container.service.InvocationProcessorsChain;
 import js.tiny.container.spi.IInvocation;
 import js.tiny.container.spi.IMethodInvocationProcessor;
 import js.tiny.container.spi.IInvocationProcessorsChain;
@@ -28,7 +29,7 @@ import js.util.Types;
  * 
  * @author Iulian Rotaru
  */
-public class ManagedMethod implements IManagedMethod, IMethodInvocationProcessor {
+public class ManagedMethod implements IManagedMethod {
 	private static final Log log = LogFactory.getLog(IManagedMethod.class);
 
 	/** Format string for managed method simple name, without class name. */

@@ -18,7 +18,7 @@ import js.util.Types;
  * @author Iulian Rotaru
  * @version final
  */
-final class ArgumentsProcessor extends DependencyProcessor {
+final class ArgumentsProcessor {
 	/** Reusable empty arguments used when provided arguments array is null. */
 	private static final Object[] EMPTY_ARGS = new Object[0];
 
@@ -86,7 +86,7 @@ final class ArgumentsProcessor extends DependencyProcessor {
 		case 0:
 			args = new Object[formalParameters.length];
 			for (int i = 0; i < args.length; i++) {
-				args[i] = getDependencyValue(managedClass, formalParameters[i]);
+				args[i] = DependencyProcessor.getDependencyValue(managedClass, formalParameters[i]);
 			}
 			break;
 

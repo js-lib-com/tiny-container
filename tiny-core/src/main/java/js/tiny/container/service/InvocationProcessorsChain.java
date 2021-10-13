@@ -1,4 +1,4 @@
-package js.tiny.container;
+package js.tiny.container.service;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -7,13 +7,12 @@ import java.util.List;
 import js.lang.BugError;
 import js.log.Log;
 import js.log.LogFactory;
-import js.tiny.container.service.FlowProcessorsSet;
 import js.tiny.container.spi.IInvocation;
 import js.tiny.container.spi.IMethodInvocationProcessor;
 import js.tiny.container.spi.IInvocationProcessorsChain;
 import js.tiny.container.spi.IManagedMethod;
 
-final class InvocationProcessorsChain implements IInvocationProcessorsChain {
+public class InvocationProcessorsChain implements IInvocationProcessorsChain {
 	private static final Log log = LogFactory.getLog(InvocationProcessorsChain.class);
 
 	/** List of method invocation processors in the proper order for execution. */

@@ -6,6 +6,8 @@ import java.lang.reflect.Type;
 
 import js.lang.InvocationException;
 import js.tiny.container.spi.AuthorizationException;
+import js.tiny.container.spi.IInvocation;
+import js.tiny.container.spi.IInvocationProcessorsChain;
 import js.tiny.container.spi.IManagedClass;
 import js.tiny.container.spi.IManagedMethod;
 import js.tiny.container.spi.IServiceMeta;
@@ -69,5 +71,15 @@ public class ManagedMethodSpiStub implements IManagedMethod {
 	@Override
 	public <T> T getAttribute(Object context, String name, Class<T> type) {
 		throw new UnsupportedOperationException("getAttribute(Object context, String name, Class<T> type)");
+	}
+
+	@Override
+	public Object onMethodInvocation(IInvocationProcessorsChain chain, IInvocation invocation) throws Exception {
+		throw new UnsupportedOperationException("onMethodInvocation(IInvocationProcessorsChain chain, IInvocation invocation)");
+	}
+
+	@Override
+	public Priority getPriority() {
+		throw new UnsupportedOperationException("getPriority()");
 	}
 }

@@ -113,7 +113,7 @@ public class InstanceProcessorUnitTest {
 	}
 
 	private static IInstancePostConstructionProcessor getInstanceFieldsInjectionProcessor() {
-		return Classes.newInstance("js.tiny.container.InstanceFieldsInjectionProcessor");
+		return Classes.newInstance("js.tiny.container.service.InstanceFieldsInjectionProcessor");
 	}
 
 	// --------------------------------------------------------------------------------------------
@@ -210,7 +210,7 @@ public class InstanceProcessorUnitTest {
 	}
 
 	private static IInstancePostConstructionProcessor getInstanceFieldsInitializationProcessor() {
-		return Classes.newInstance("js.tiny.container.InstanceFieldsInitializationProcessor");
+		return Classes.newInstance("js.tiny.container.service.InstanceFieldsInitializationProcessor");
 	}
 
 	// --------------------------------------------------------------------------------------------
@@ -286,7 +286,7 @@ public class InstanceProcessorUnitTest {
 	}
 
 	private static IInstancePostConstructionProcessor getConfigurableInstanceProcessor() {
-		return Classes.newInstance("js.tiny.container.ConfigurableInstanceProcessor");
+		return Classes.newInstance("js.tiny.container.service.ConfigurableInstanceProcessor");
 	}
 
 	// --------------------------------------------------------------------------------------------
@@ -331,7 +331,7 @@ public class InstanceProcessorUnitTest {
 	}
 
 	private static IInstancePostConstructionProcessor getPostConstructInstanceProcessor() {
-		return Classes.newInstance("js.tiny.container.PostConstructInstanceProcessor");
+		return Classes.newInstance("js.tiny.container.service.PostConstructInstanceProcessor");
 	}
 
 	// --------------------------------------------------------------------------------------------
@@ -371,7 +371,7 @@ public class InstanceProcessorUnitTest {
 	}
 
 	private static IInstancePostConstructionProcessor getLoggerInstanceProcessor() {
-		return Classes.newInstance("js.tiny.container.LoggerInstanceProcessor");
+		return Classes.newInstance("js.tiny.container.service.LoggerInstanceProcessor");
 	}
 
 	// --------------------------------------------------------------------------------------------

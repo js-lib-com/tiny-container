@@ -1,4 +1,4 @@
-package js.tiny.container;
+package js.tiny.container.service;
 
 import java.lang.reflect.Field;
 
@@ -11,6 +11,7 @@ import javax.naming.NamingException;
 import js.lang.BugError;
 import js.log.Log;
 import js.log.LogFactory;
+import js.tiny.container.DependencyProcessor;
 import js.tiny.container.spi.IInstancePostConstructionProcessor;
 import js.tiny.container.spi.IManagedClass;
 import js.util.Classes;
@@ -25,9 +26,8 @@ import js.util.Strings;
  * and inject it reflexively.
  * 
  * @author Iulian Rotaru
- * @version final
  */
-final class InstanceFieldsInjectionProcessor extends DependencyProcessor implements IInstancePostConstructionProcessor {
+public class InstanceFieldsInjectionProcessor implements IInstancePostConstructionProcessor {
 	private static final Log log = LogFactory.getLog(InstanceFieldsInitializationProcessor.class);
 
 	private final Context globalEnvironment;
@@ -65,7 +65,7 @@ final class InstanceFieldsInjectionProcessor extends DependencyProcessor impleme
 	@Override
 	public void onInstancePostConstruction(IManagedClass managedClass, Object instance) {
 		if (instance == null) {
-			// null instance is silently ignored since container ensure not null instance argument
+			// null instance is silently ignored
 			return;
 		}
 		for (Field field : managedClass.getDependencies()) {
@@ -80,7 +80,7 @@ final class InstanceFieldsInjectionProcessor extends DependencyProcessor impleme
 			if (resourceAnnotation != null) {
 				value = getEnvEntryValue(field, resourceAnnotation);
 			} else {
-				value = getDependencyValue(managedClass, field.getType());
+				value = DependencyProcessor.getDependencyValue(managedClass, field.getType());
 			}
 
 			if (value == null) {

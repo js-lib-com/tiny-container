@@ -1,4 +1,4 @@
-package js.tiny.container;
+package js.tiny.container.service;
 
 import js.lang.BugError;
 import js.lang.ManagedPostConstruct;
@@ -16,7 +16,7 @@ import js.tiny.container.spi.IServiceMetaScanner;
  * 
  * @author Iulian Rotaru
  */
-final class PostConstructInstanceProcessor implements IInstancePostConstructionProcessor, IServiceMetaScanner {
+public class PostConstructInstanceProcessor implements IInstancePostConstructionProcessor, IServiceMetaScanner {
 	private static final Log log = LogFactory.getLog(PostConstructInstanceProcessor.class);
 
 	@Override

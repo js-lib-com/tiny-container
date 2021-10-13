@@ -37,8 +37,13 @@ import js.log.Log;
 import js.log.LogFactory;
 import js.rmi.RemoteFactory;
 import js.tiny.container.core.AppFactory;
-import js.tiny.container.service.ContainerStartupProcessor;
+import js.tiny.container.service.ConfigurableInstanceProcessor;
+import js.tiny.container.service.ManagedInstanceStartupProcessor;
 import js.tiny.container.service.FlowProcessorsSet;
+import js.tiny.container.service.InstanceFieldsInitializationProcessor;
+import js.tiny.container.service.InstanceFieldsInjectionProcessor;
+import js.tiny.container.service.LoggerInstanceProcessor;
+import js.tiny.container.service.PostConstructInstanceProcessor;
 import js.tiny.container.spi.IClassPostLoadedProcessor;
 import js.tiny.container.spi.IContainer;
 import js.tiny.container.spi.IContainerService;
@@ -305,13 +310,9 @@ public class Container implements IContainer, Configurable {
 	public Container() {
 		log.trace("Container()");
 
-		for (IContainerServiceProvider provider : ServiceLoader.load(IContainerServiceProvider.class)) {
-			IContainerService service = provider.getService(this);
-			log.debug("Load container service |%s|.", service.getClass());
-			containerServices.add(service);
-		}
-
-		// first register plug-in scope factories in order to avoid overriding built-in factories
+		// register scope and instance factories
+		// first register external factories in order to avoid overriding built-in factories
+		
 		for (ScopeFactory scopeFactory : ServiceLoader.load(ScopeFactory.class)) {
 			registerScopeFactory(scopeFactory);
 		}
@@ -320,7 +321,6 @@ public class Container implements IContainer, Configurable {
 		// local instances have no managed scope; simple creates a new instance for every call
 		registerScopeFactory(null);
 
-		// first register plug-in instance factories in order to avoid overriding built-in factories
 		for (InstanceFactory instanceFactory : ServiceLoader.load(InstanceFactory.class)) {
 			registerInstanceFactory(instanceFactory.getInstanceType(), instanceFactory);
 		}
@@ -332,22 +332,28 @@ public class Container implements IContainer, Configurable {
 		registerInstanceFactory(InstanceType.SERVICE, new ServiceInstanceFactory());
 		registerInstanceFactory(InstanceType.REMOTE, new RemoteInstanceFactory());
 
-		for (IContainerService containerService : containerServices) {
-			if (containerService instanceof IContainerStartProcessor) {
-				containerStartProcessors.add((IContainerStartProcessor) containerService);
+		// load external and built-in container services
+		
+		for (IContainerServiceProvider provider : ServiceLoader.load(IContainerServiceProvider.class)) {
+			IContainerService service = provider.getService(this);
+			log.debug("Load container service |%s|.", service.getClass());
+			containerServices.add(service);
+
+			if (service instanceof IContainerStartProcessor) {
+				containerStartProcessors.add((IContainerStartProcessor) service);
 			}
-			if (containerService instanceof IClassPostLoadedProcessor) {
-				classPostLoadedProcessors.add((IClassPostLoadedProcessor) containerService);
+			if (service instanceof IClassPostLoadedProcessor) {
+				classPostLoadedProcessors.add((IClassPostLoadedProcessor) service);
 			}
-			if (containerService instanceof IInstancePostConstructionProcessor) {
-				instancePostConstructionProcessors.add((IInstancePostConstructionProcessor) containerService);
+			if (service instanceof IInstancePostConstructionProcessor) {
+				instancePostConstructionProcessors.add((IInstancePostConstructionProcessor) service);
 			}
-			if (containerService instanceof IInstancePreDestructionProcessor) {
-				instancePreDestructionProcessors.add((IInstancePreDestructionProcessor) containerService);
+			if (service instanceof IInstancePreDestructionProcessor) {
+				instancePreDestructionProcessors.add((IInstancePreDestructionProcessor) service);
 			}
 		}
 
-		containerStartProcessors.add(new ContainerStartupProcessor());
+		containerStartProcessors.add(new ManagedInstanceStartupProcessor());
 
 		instancePostConstructionProcessors.add(new InstanceFieldsInjectionProcessor());
 		instancePostConstructionProcessors.add(new InstanceFieldsInitializationProcessor());

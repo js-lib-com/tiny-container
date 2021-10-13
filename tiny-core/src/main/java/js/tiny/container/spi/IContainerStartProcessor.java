@@ -1,7 +1,7 @@
 package js.tiny.container.spi;
 
 /**
- * Join point processors executed on container start.
+ * Flow processors executed at container start.
  * 
  * @author Iulian Rotaru
  */

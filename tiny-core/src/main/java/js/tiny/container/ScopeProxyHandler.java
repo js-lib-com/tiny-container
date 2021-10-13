@@ -4,6 +4,7 @@ import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 
 import js.tiny.container.core.AppFactory;
+import js.tiny.container.service.InstanceFieldsInjectionProcessor;
 
 /**
  * Adapter for dependency with shorter scope hosted into managed instance with larger scope. If dependency scope, i.e. life span

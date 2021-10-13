@@ -1,5 +1,7 @@
 package js.tiny.container.spi;
 
+import js.tiny.container.service.FlowProcessorsSet;
+
 /**
  * Container services executed on relevant points into container code flow. Container implementation discovers these processors
  * on an early phase of is life then execute them when program flow reach relevant points. Current implementation deals with two
@@ -9,15 +11,15 @@ package js.tiny.container.spi;
  * location in a program where the control flow can arrive via multiple paths: in our case container services and application
  * logic.
  * 
- * On a particular container flow point is possible to execute more that one processor. Since execution order matters every flow
- * processor should provide a priority.
+ * On a particular container flow point is possible to execute more that one processor - see {@link FlowProcessorsSet}. Since
+ * execution order matters every flow processor should provide a priority.
  * 
  * @author Iulian Rotaru
  */
 public interface IFlowProcessor extends IContainerService {
 
 	/**
-	 * Get flow processor priority inside its processors group.
+	 * Get flow processor priority inside its processors set.
 	 * 
 	 * @return processor priority.
 	 */

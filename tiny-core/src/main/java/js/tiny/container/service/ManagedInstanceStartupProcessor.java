@@ -18,8 +18,8 @@ import js.util.Types;
  * 
  * @author Iulian Rotaru
  */
-public class ContainerStartupProcessor implements IContainerStartProcessor {
-	private static final Log log = LogFactory.getLog(ContainerStartupProcessor.class);
+public class ManagedInstanceStartupProcessor implements IContainerStartProcessor {
+	private static final Log log = LogFactory.getLog(ManagedInstanceStartupProcessor.class);
 
 	@Override
 	public Priority getPriority() {

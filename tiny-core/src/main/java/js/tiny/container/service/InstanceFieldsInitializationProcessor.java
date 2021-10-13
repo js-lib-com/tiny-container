@@ -1,4 +1,4 @@
-package js.tiny.container;
+package js.tiny.container.service;
 
 import java.util.List;
 
@@ -6,6 +6,7 @@ import js.converter.Converter;
 import js.converter.ConverterException;
 import js.lang.BugError;
 import js.lang.Config;
+import js.tiny.container.InstanceType;
 import js.tiny.container.spi.IInstancePostConstructionProcessor;
 import js.tiny.container.spi.IManagedClass;
 import js.util.Classes;
@@ -42,9 +43,8 @@ import js.util.Classes;
  * is, returns given instance as it is.
  * 
  * @author Iulian Rotaru
- * @version final
  */
-final class InstanceFieldsInitializationProcessor implements IInstancePostConstructionProcessor {
+public class InstanceFieldsInitializationProcessor implements IInstancePostConstructionProcessor {
 	@Override
 	public Priority getPriority() {
 		return Priority.INJECT;

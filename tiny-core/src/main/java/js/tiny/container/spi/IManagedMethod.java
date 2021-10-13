@@ -13,8 +13,8 @@ import java.lang.reflect.Type;
  * @author Iulian Rotaru
  * @version final
  */
-public interface IManagedMethod {
-	
+public interface IManagedMethod extends IMethodInvocationProcessor {
+
 	String getName();
 
 	String getSignature();
@@ -68,5 +68,5 @@ public interface IManagedMethod {
 	void setAttribute(Object context, String name, Object value);
 
 	<T> T getAttribute(Object context, String name, Class<T> type);
-	
+
 }

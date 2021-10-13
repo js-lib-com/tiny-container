@@ -1,7 +1,10 @@
-package js.tiny.container;
+package js.tiny.container.service;
 
 import js.log.Log;
 import js.log.LogFactory;
+import js.tiny.container.Container;
+import js.tiny.container.InstanceScope;
+import js.tiny.container.InstanceType;
 import js.tiny.container.spi.IInstancePostConstructionProcessor;
 import js.tiny.container.spi.IManagedClass;
 
@@ -13,9 +16,8 @@ import js.tiny.container.spi.IManagedClass;
  * This processor is for debugging and works on behalf of container, that is, uses container class logger to write dump record.
  * 
  * @author Iulian Rotaru
- * @version final
  */
-final class LoggerInstanceProcessor implements IInstancePostConstructionProcessor {
+public class LoggerInstanceProcessor implements IInstancePostConstructionProcessor {
 	/** Class logger. */
 	private static final Log log = LogFactory.getLog(LoggerInstanceProcessor.class);
 

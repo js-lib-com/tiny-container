@@ -14,11 +14,10 @@ import js.util.Types;
 
 /**
  * Base class for all processors dealing with dependencies. Supplies utility method for dependency instance retrieval with guard
- * against circular dependencies. Usually {@link #getDependencyValue(IManagedClass, Class)} expect as dependency type a
- * managed class and just delegate container for instance retrieval, see
- * {@link AppFactory#getOptionalInstance(Class, Object...)}. Anyway, if dependency type is not a managed class tries to
- * instantiate it with standard {@link Class#newInstance()}; of course type should be concrete class and have default
- * constructor. Otherwise throws bug error.
+ * against circular dependencies. Usually {@link #getDependencyValue(IManagedClass, Class)} expect as dependency type a managed
+ * class and just delegate container for instance retrieval, see {@link AppFactory#getOptionalInstance(Class, Object...)}.
+ * Anyway, if dependency type is not a managed class tries to instantiate it with standard {@link Class#newInstance()}; of
+ * course type should be concrete class and have default constructor. Otherwise throws bug error.
  * <p>
  * Depending on host and dependency managed classes scope is possible that dependency value to be replaced by a scope proxy, see
  * {@link ScopeProxyHandler}. This is to adapt dependency with shorted life span into host with larger life span; otherwise
@@ -45,7 +44,7 @@ import js.util.Types;
  * @author Iulian Rotaru
  * @version final
  */
-abstract class DependencyProcessor {
+public final class DependencyProcessor {
 	/** Class logger. */
 	private static final Log log = LogFactory.getLog(DependencyProcessor.class);
 
@@ -62,7 +61,7 @@ abstract class DependencyProcessor {
 	 * @throws BugError if dependency value cannot be created or circular dependency is detected.
 	 */
 	@SuppressWarnings("unchecked")
-	protected static Object getDependencyValue(IManagedClass hostManagedClass, Class<?> type) {
+	public static Object getDependencyValue(IManagedClass hostManagedClass, Class<?> type) {
 		Stack<Class<?>> stackTrace = dependenciesStack.get();
 		if (stackTrace == null) {
 			stackTrace = new Stack<>();

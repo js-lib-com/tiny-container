@@ -2,12 +2,12 @@ package js.tiny.container.spi;
 
 /**
  * Container services related to managed instances post processing. Instance processors are registered to container and enacted
- * by managed instance retrieval logic. Note that post processing is executed only on newly created instances but not if managed
+ * by managed instance factory. Note that post processing is executed only on newly created instances but not if managed
  * instance is reused from scope factory.
  * 
  * Instance processor may have side effects on given instance, depending on specific implementation. For example
  * {@link LoggerInstanceProcessor} does not alter given instance whereas {@link InstanceFieldsInjectionProcessor} does inject
- * dependencies, altering instance state.
+ * fields value, altering instance state.
  * 
  * @author Iulian Rotaru
  */

@@ -7,6 +7,12 @@ import java.util.function.Consumer;
 
 import js.tiny.container.spi.IFlowProcessor;
 
+/**
+ * An set of flow processors ordered by priority, see {@link IFlowProcessor#getPriority()}. A set of processors is attached to a
+ * particular container flow point.
+ * 
+ * @author Iulian Rotaru
+ */
 public class FlowProcessorsSet<T extends IFlowProcessor> {
 	private final SortedSet<T> processors;
 
