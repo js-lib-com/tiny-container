@@ -102,6 +102,10 @@ public class InstanceScope implements Converter {
 		return value;
 	}
 
+	public boolean isLOCAL() {
+		return "LOCAL".equals(value);
+	}
+
 	/** Scope instance string representation. */
 	@Override
 	public String toString() {

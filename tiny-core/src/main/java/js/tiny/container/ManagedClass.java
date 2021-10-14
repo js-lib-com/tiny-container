@@ -6,7 +6,6 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -16,8 +15,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import javax.annotation.PostConstruct;
-import javax.annotation.PreDestroy;
 import javax.annotation.Resource;
 import javax.annotation.security.DenyAll;
 import javax.annotation.security.PermitAll;
@@ -37,20 +34,18 @@ import js.lang.Config;
 import js.lang.ConfigException;
 import js.lang.Configurable;
 import js.lang.ManagedLifeCycle;
-import js.lang.ManagedPostConstruct;
-import js.lang.ManagedPreDestroy;
-import js.lang.NoSuchBeingException;
 import js.log.Log;
 import js.log.LogFactory;
 import js.tiny.container.core.AppFactory;
 import js.tiny.container.spi.IContainer;
 import js.tiny.container.spi.IContainerService;
-import js.tiny.container.spi.IMethodInvocationProcessor;
 import js.tiny.container.spi.IManagedClass;
 import js.tiny.container.spi.IManagedMethod;
+import js.tiny.container.spi.IMethodInvocationProcessor;
 import js.tiny.container.spi.IServiceMeta;
 import js.tiny.container.spi.IServiceMetaScanner;
 import js.util.Classes;
+import js.util.Strings;
 import js.util.Types;
 
 /**
@@ -337,10 +332,6 @@ public final class ManagedClass implements IManagedClass {
 	 */
 	private final Map<String, IManagedMethod> methodsPool = new HashMap<>();
 
-	private IManagedMethod postConstructor;
-
-	private IManagedMethod preDestructor;
-
 	/** Cached value of managed class string representation, merely for logging. */
 	private final String string;
 
@@ -379,52 +370,6 @@ public final class ManagedClass implements IManagedClass {
 		if (this.instanceType.requiresImplementation()) {
 			scanAnnotations();
 			initializeStaticFields();
-
-			// handle ManagedPostConstruct and ManagedPredestroy interfaces only if no related method annotations
-			if (hasLifeCycleInterface(this.implementationClass, ManagedPostConstruct.class)) {
-				if (this.postConstructor != null) {
-					throw new BugError("Managed class |%s| has @PostConstruct method |%s| and implements ManagedPostConstruct interface.", this.implementationClass, this.postConstructor);
-				}
-				Method method = getInterfaceMethod(this.implementationClass, ManagedPostConstruct.class);
-				if (method != null) {
-					this.postConstructor = new ManagedMethod(this, method);
-				}
-			}
-			if (hasLifeCycleInterface(this.implementationClass, ManagedPreDestroy.class)) {
-				if (this.preDestructor != null) {
-					throw new BugError("Managed class |%s| has @PreDestroy method |%s| and implements ManagedPreDestroy interface.", this.implementationClass, this.preDestructor);
-				}
-				Method method = getInterfaceMethod(this.implementationClass, ManagedPreDestroy.class);
-				if (method != null) {
-					this.preDestructor = new ManagedMethod(this, method);
-				}
-			}
-		}
-	}
-
-	private static boolean hasLifeCycleInterface(Class<?> implementationClass, Class<?> interfaceClass) {
-		if (implementationClass == null) {
-			return false;
-		}
-		List<Class<?>> interfaces = Arrays.asList(implementationClass.getInterfaces());
-		if (interfaces.contains(ManagedLifeCycle.class) || interfaces.contains(interfaceClass)) {
-			return true;
-		}
-		return hasLifeCycleInterface(implementationClass.getSuperclass(), interfaceClass);
-	}
-
-	private static Method getInterfaceMethod(Class<?> implementationClass, Class<?> interfaceClass) {
-		if (!interfaceClass.isInterface()) {
-			throw new BugError("Type |%s| is not an interface.", interfaceClass);
-		}
-		Method[] methods = interfaceClass.getMethods();
-		if (methods.length != 1) {
-			throw new BugError("Interface |%s| does not have exactly one method.", interfaceClass);
-		}
-		try {
-			return Classes.getMethod(implementationClass, methods[0].getName(), methods[0].getParameterTypes());
-		} catch (NoSuchBeingException e) {
-			return null;
 		}
 	}
 
@@ -453,26 +398,10 @@ public final class ManagedClass implements IManagedClass {
 	 * @throws BugError for insane conditions.
 	 */
 	private void scanAnnotations() {
-
 		for (Method method : implementationClass.getDeclaredMethods()) {
 			Method interfaceMethod = getInterfaceMethod(method);
 			IManagedMethod managedMethod = new ManagedMethod(this, interfaceMethod);
 			methodsPool.put(interfaceMethod.getName(), managedMethod);
-
-			if (hasAnnotation(method, PostConstruct.class)) {
-				if (postConstructor != null) {
-					throw new BugError("Duplicated @PostConstruct method |%s|.", method);
-				}
-				postConstructor = new ManagedMethod(this, interfaceMethod);
-				continue;
-			}
-			if (hasAnnotation(method, PreDestroy.class)) {
-				if (preDestructor != null) {
-					throw new BugError("Duplicated @PreDestroy method |%s|.", method);
-				}
-				preDestructor = new ManagedMethod(this, interfaceMethod);
-				continue;
-			}
 		}
 
 		for (IContainerService service : container.getServices()) {
@@ -554,16 +483,6 @@ public final class ManagedClass implements IManagedClass {
 	}
 
 	@Override
-	public IManagedMethod getPostConstructMethod() {
-		return postConstructor;
-	}
-
-	@Override
-	public IManagedMethod getPreDestroyMethod() {
-		return preDestructor;
-	}
-
-	@Override
 	public IManagedMethod getManagedMethod(String methodName) {
 		IManagedMethod managedMethod = methodsPool.get(methodName);
 		if (managedMethod == null) {
@@ -586,6 +505,34 @@ public final class ManagedClass implements IManagedClass {
 	@Override
 	public String getImplementationURL() {
 		return implementationURL;
+	}
+
+	private final Map<String, Object> attributes = new HashMap<>();
+
+	@Override
+	public void setAttribute(Object context, String name, Object value) {
+		attributes.put(key(context, name), value);
+	}
+
+	@SuppressWarnings("unchecked")
+	@Override
+	public <T> T getAttribute(Object context, String name, Class<T> type) {
+		String key = key(context, name);
+		Object value = attributes.get(key);
+		if (value == null) {
+			return null;
+		}
+		if (!Types.isInstanceOf(value, type)) {
+			throw new ClassCastException(String.format("Cannot cast attribute |%s| to type |%s|.", key, type));
+		}
+		return (T) value;
+	}
+
+	private static final String key(Object context, String name) {
+		if (!(context instanceof Class)) {
+			context = context.getClass();
+		}
+		return Strings.concat(((Class<?>) context).getCanonicalName(), '#', name);
 	}
 
 	// --------------------------------------------------------------------------------------------
@@ -952,34 +899,6 @@ public final class ManagedClass implements IManagedClass {
 			}
 		}
 		return annotation;
-	}
-
-	/**
-	 * Test if method has requested annotation. This predicate uses extended annotation searching scope: it searches first on
-	 * given method declaring class then tries with all class interfaces. Note that only interfaces are used as alternative for
-	 * annotation search. Super class is not included.
-	 * <p>
-	 * Returns false if no method annotation found in declaring class or interfaces.
-	 * 
-	 * @param method method to search for annotation,
-	 * @param annotationClass annotation to search for.
-	 * @return true if annotation found.
-	 */
-	private static boolean hasAnnotation(Method method, Class<? extends Annotation> annotationClass) {
-		Annotation annotation = method.getAnnotation(annotationClass);
-		if (annotation != null) {
-			return true;
-		}
-		for (Class<?> interfaceClass : method.getDeclaringClass().getInterfaces()) {
-			try {
-				annotation = interfaceClass.getMethod(method.getName(), method.getParameterTypes()).getAnnotation(annotationClass);
-				if (annotation != null) {
-					return true;
-				}
-			} catch (NoSuchMethodException unused) {
-			}
-		}
-		return false;
 	}
 
 	/**

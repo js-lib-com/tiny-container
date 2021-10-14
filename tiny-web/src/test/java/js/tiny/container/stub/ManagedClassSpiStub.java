@@ -46,16 +46,6 @@ public class ManagedClassSpiStub implements IManagedClass {
 	}
 
 	@Override
-	public IManagedMethod getPostConstructMethod() {
-		throw new UnsupportedOperationException("getPostConstructMethod()");
-	}
-
-	@Override
-	public IManagedMethod getPreDestroyMethod() {
-		throw new UnsupportedOperationException("getPreDestroyMethod()");
-	}
-
-	@Override
 	public IManagedMethod getManagedMethod(String methodName) {
 		throw new UnsupportedOperationException("getManagedMethod(String methodName)");
 	}
@@ -103,5 +93,15 @@ public class ManagedClassSpiStub implements IManagedClass {
 	@Override
 	public <T extends Annotation> T getAnnotation(Class<T> type) {
 		throw new UnsupportedOperationException("getAnnotation(Class<T> type)");
+	}
+
+	@Override
+	public void setAttribute(Object context, String name, Object value) {
+		throw new UnsupportedOperationException("setAttribute(Object context, String name, Object value)");
+	}
+
+	@Override
+	public <T> T getAttribute(Object context, String name, Class<T> type) {
+		throw new UnsupportedOperationException("getAttribute(Object context, String name, Class<T> type)");
 	}
 }

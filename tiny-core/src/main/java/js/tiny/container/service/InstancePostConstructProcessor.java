@@ -1,5 +1,9 @@
 package js.tiny.container.service;
 
+import java.util.Collections;
+
+import javax.annotation.PostConstruct;
+
 import js.lang.BugError;
 import js.lang.ManagedPostConstruct;
 import js.log.Log;
@@ -16,24 +20,26 @@ import js.tiny.container.spi.IServiceMetaScanner;
  * 
  * @author Iulian Rotaru
  */
-public class PostConstructInstanceProcessor implements IInstancePostConstructionProcessor, IServiceMetaScanner {
-	private static final Log log = LogFactory.getLog(PostConstructInstanceProcessor.class);
+public class InstancePostConstructProcessor extends BaseInstanceLifeCycle implements IInstancePostConstructionProcessor, IServiceMetaScanner {
+	private static final Log log = LogFactory.getLog(InstancePostConstructProcessor.class);
 
-	@Override
-	public Iterable<IServiceMeta> scanServiceMeta(IManagedClass managedClass) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public Iterable<IServiceMeta> scanServiceMeta(IManagedMethod managedMethod) {
-		// TODO Auto-generated method stub
-		return null;
-	}
+	private static final String ATTR_POST_CONSTRUCT = "post-construct";
 
 	@Override
 	public Priority getPriority() {
 		return Priority.CONSTRUCTOR;
+	}
+
+	@Override
+	public Iterable<IServiceMeta> scanServiceMeta(IManagedClass managedClass) {
+		scanLifeCycleInterface(managedClass, ManagedPostConstruct.class, ATTR_POST_CONSTRUCT);
+		return Collections.emptyList();
+	}
+
+	@Override
+	public Iterable<IServiceMeta> scanServiceMeta(IManagedMethod managedMethod) {
+		scanLifeCycleAnnotation(managedMethod, PostConstruct.class, ATTR_POST_CONSTRUCT);
+		return Collections.emptyList();
 	}
 
 	/**
@@ -46,10 +52,11 @@ public class PostConstructInstanceProcessor implements IInstancePostConstruction
 	 */
 	@Override
 	public void onInstancePostConstruction(IManagedClass managedClass, Object instance) {
-		IManagedMethod method = managedClass.getPostConstructMethod();
+		IManagedMethod method = managedClass.getAttribute(this, ATTR_POST_CONSTRUCT, IManagedMethod.class);
 		if (method == null) {
 			return;
 		}
+
 		log.debug("Post-construct managed instance |%s|", instance.getClass());
 		try {
 			method.invoke(instance);

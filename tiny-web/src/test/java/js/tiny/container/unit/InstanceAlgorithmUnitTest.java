@@ -179,16 +179,6 @@ public class InstanceAlgorithmUnitTest {
 		}
 
 		@Override
-		public IManagedMethod getPostConstructMethod() {
-			return null;
-		}
-
-		@Override
-		public IManagedMethod getPreDestroyMethod() {
-			return null;
-		}
-
-		@Override
 		public InstanceScope getInstanceScope() {
 			return scope;
 		}
@@ -201,6 +191,11 @@ public class InstanceAlgorithmUnitTest {
 		@Override
 		public String getImplementationURL() {
 			return "http://localhost/";
+		}
+
+		@Override
+		public <T> T getAttribute(Object context, String name, Class<T> type) {
+			return null;
 		}
 	}
 }

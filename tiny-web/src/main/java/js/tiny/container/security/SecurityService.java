@@ -28,6 +28,7 @@ public class SecurityService implements IMethodInvocationProcessor, IServiceMeta
 	private static final Log log = LogFactory.getLog(SecurityService.class);
 
 	private final IContainer container;
+	private boolean enabled;
 
 	public SecurityService(IContainer container) {
 		log.trace("SecurityService(IContainer)");
@@ -58,6 +59,9 @@ public class SecurityService implements IMethodInvocationProcessor, IServiceMeta
 			servicesMeta.add(new PermitAllMeta(this));
 		}
 
+		if (!servicesMeta.isEmpty()) {
+			enabled = true;
+		}
 		return servicesMeta;
 	}
 
@@ -80,17 +84,26 @@ public class SecurityService implements IMethodInvocationProcessor, IServiceMeta
 			servicesMeta.add(new PermitAllMeta(this));
 		}
 
+		if (!servicesMeta.isEmpty()) {
+			enabled = true;
+		}
 		return servicesMeta;
 	}
 
 	@Override
 	public Object onMethodInvocation(IInvocationProcessorsChain chain, IInvocation invocation) throws Exception {
 		final IManagedMethod managedMethod = invocation.method();
+		// if there is no metadata related to security, grant unchecked access to everything
+		if (!enabled) {
+			log.debug("Not enabled security service. Grant unchecked access to |%s|!", managedMethod);
+			return chain.invokeNextProcessor(invocation);
+		}
 
-		final RequestContext requestContext = container.getInstance(RequestContext.class);
-		final HttpServletRequest httpRequest = requestContext.getRequest();
-		if (httpRequest == null) {
-			log.debug("Attempt use security service outside HTTP request. Grant not authenticated access to |%s|!", managedMethod);
+		final RequestContext requestContext = container.getOptionalInstance(RequestContext.class);
+		// grant unchecked access for methods executed outside HTTP request
+		// e.g. post construct executed from main thread at container startup
+		if (requestContext == null || !requestContext.isAttached()) {
+			log.debug("Attempt use security service outside HTTP request. Grant unchecked access to |%s|!", managedMethod);
 			return chain.invokeNextProcessor(invocation);
 		}
 
@@ -104,7 +117,7 @@ public class SecurityService implements IMethodInvocationProcessor, IServiceMeta
 			return chain.invokeNextProcessor(invocation);
 		}
 
-		if (!isAuthorized(httpRequest, getRoles(managedMethod))) {
+		if (!isAuthorized(requestContext.getRequest(), getRoles(managedMethod))) {
 			log.info("Reject not authorized access to |%s|.", managedMethod);
 			throw new AuthorizationException();
 		}

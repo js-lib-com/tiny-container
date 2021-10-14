@@ -18,8 +18,8 @@ import js.util.Types;
  * 
  * @author Iulian Rotaru
  */
-public class ManagedInstanceStartupProcessor implements IContainerStartProcessor {
-	private static final Log log = LogFactory.getLog(ManagedInstanceStartupProcessor.class);
+public class InstanceStartupProcessor implements IContainerStartProcessor {
+	private static final Log log = LogFactory.getLog(InstanceStartupProcessor.class);
 
 	@Override
 	public Priority getPriority() {
@@ -36,7 +36,7 @@ public class ManagedInstanceStartupProcessor implements IContainerStartProcessor
 	 * application descriptor.
 	 * <p>
 	 * Note that this method does not explicitly execute {@link ManagedLifeCycle#postConstruct()} hooks; this hooks are actually
-	 * executed by instance processor, see {link {@link PostConstructInstanceProcessor}.
+	 * executed by instance processor, see {link {@link InstancePostConstructProcessor}.
 	 */
 	@SuppressWarnings("unchecked")
 	@Override

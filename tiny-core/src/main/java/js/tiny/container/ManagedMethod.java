@@ -214,7 +214,7 @@ public class ManagedMethod implements IManagedMethod {
 		String key = key(context, name);
 		Object value = attributes.get(key);
 		if (value == null) {
-			throw new IllegalStateException(String.format("Cannot found managed method attribute |%s|.", key));
+			return null;
 		}
 		if (!Types.isInstanceOf(value, type)) {
 			throw new ClassCastException(String.format("Cannot cast attribute |%s| to type |%s|.", key, type));

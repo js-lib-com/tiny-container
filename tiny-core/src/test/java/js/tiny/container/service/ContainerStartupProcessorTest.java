@@ -13,11 +13,11 @@ public class ContainerStartupProcessorTest {
 	@Mock
 	private IContainer container;
 
-	private ManagedInstanceStartupProcessor processor;
+	private InstanceStartupProcessor processor;
 
 	@Before
 	public void beforeTest() {
-		processor = new ManagedInstanceStartupProcessor();
+		processor = new InstanceStartupProcessor();
 	}
 
 	@Test

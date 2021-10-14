@@ -21,6 +21,8 @@ import javax.ejb.Remote;
 import javax.inject.Inject;
 import javax.interceptor.Interceptors;
 
+import org.omg.PortableInterceptor.Interceptor;
+
 import js.converter.Converter;
 import js.converter.ConverterException;
 import js.converter.ConverterRegistry;
@@ -38,12 +40,12 @@ import js.log.LogFactory;
 import js.rmi.RemoteFactory;
 import js.tiny.container.core.AppFactory;
 import js.tiny.container.service.ConfigurableInstanceProcessor;
-import js.tiny.container.service.ManagedInstanceStartupProcessor;
 import js.tiny.container.service.FlowProcessorsSet;
 import js.tiny.container.service.InstanceFieldsInitializationProcessor;
 import js.tiny.container.service.InstanceFieldsInjectionProcessor;
+import js.tiny.container.service.InstancePostConstructProcessor;
+import js.tiny.container.service.InstanceStartupProcessor;
 import js.tiny.container.service.LoggerInstanceProcessor;
-import js.tiny.container.service.PostConstructInstanceProcessor;
 import js.tiny.container.spi.IClassPostLoadedProcessor;
 import js.tiny.container.spi.IContainer;
 import js.tiny.container.spi.IContainerService;
@@ -312,7 +314,7 @@ public class Container implements IContainer, Configurable {
 
 		// register scope and instance factories
 		// first register external factories in order to avoid overriding built-in factories
-		
+
 		for (ScopeFactory scopeFactory : ServiceLoader.load(ScopeFactory.class)) {
 			registerScopeFactory(scopeFactory);
 		}
@@ -333,7 +335,7 @@ public class Container implements IContainer, Configurable {
 		registerInstanceFactory(InstanceType.REMOTE, new RemoteInstanceFactory());
 
 		// load external and built-in container services
-		
+
 		for (IContainerServiceProvider provider : ServiceLoader.load(IContainerServiceProvider.class)) {
 			IContainerService service = provider.getService(this);
 			log.debug("Load container service |%s|.", service.getClass());
@@ -353,12 +355,12 @@ public class Container implements IContainer, Configurable {
 			}
 		}
 
-		containerStartProcessors.add(new ManagedInstanceStartupProcessor());
+		containerStartProcessors.add(new InstanceStartupProcessor());
 
 		instancePostConstructionProcessors.add(new InstanceFieldsInjectionProcessor());
 		instancePostConstructionProcessors.add(new InstanceFieldsInitializationProcessor());
 		instancePostConstructionProcessors.add(new ConfigurableInstanceProcessor());
-		instancePostConstructionProcessors.add(new PostConstructInstanceProcessor());
+		instancePostConstructionProcessors.add(new InstancePostConstructProcessor());
 		instancePostConstructionProcessors.add(new LoggerInstanceProcessor());
 	}
 
@@ -480,35 +482,25 @@ public class Container implements IContainer, Configurable {
 	public void destroy() {
 		log.trace("destroy()");
 
-		// !!! timer service should be destroyed first to avoid invoking timer methods on cleaned managed instance
-		for (IContainerService containerService : containerServices) {
-			containerService.destroy();
-		}
-
-		// classes pool is not sorted; it is a hash map for performance reasons
-		// also, a managed class may appear multiple times if have multiple interfaces
+		// classes pool is not sorted; also, a managed class may appear multiple times if have multiple interfaces
 		// bellow sorted set is used to ensure reverse order on managed classes destruction
 
 		// comparison is based on managed class key that is created incrementally
-
 		// compare second with first to ensure descending sorting
 		Set<IManagedClass> sortedClasses = new TreeSet<>((o1, o2) -> o2.getKey().compareTo(o1.getKey()));
 		for (IManagedClass managedClass : classesPool.values()) {
-			// process only managed classes with pre-destroy hook
-			if (managedClass.getPreDestroyMethod() != null) {
+			if (!managedClass.getInstanceScope().isLOCAL()) {
 				sortedClasses.add(managedClass);
 			}
 		}
 
 		for (IManagedClass managedClass : sortedClasses) {
-			IManagedMethod preDestroyMethod = managedClass.getPreDestroyMethod();
-
 			ScopeFactory scopeFactory = scopeFactories.get(managedClass.getInstanceScope());
 			// managed class key cannot be null
 			InstanceKey instanceKey = new InstanceKey(managedClass.getKey().toString());
 			Object instance = scopeFactory.getInstance(instanceKey);
 			if (instance == null) {
-				log.debug("Cannot obtain instance for pre-destroy method |%s|.", preDestroyMethod);
+				log.debug("Cannot obtain instance for pre-destroy method for class |%s|.", managedClass);
 				continue;
 			}
 
@@ -518,11 +510,14 @@ public class Container implements IContainer, Configurable {
 			instance = Classes.unproxy(instance);
 			log.debug("Pre-destroy managed instance |%s|.", instance.getClass());
 
-			try {
-				preDestroyMethod.invoke(instance);
-			} catch (Throwable t) {
-				log.dump(String.format("Managed instance |%s| pre-destroy fail:", instance.getClass()), t);
-			}
+			final Object finalInstance = instance;
+			instancePreDestructionProcessors.forEach(processor -> {
+				processor.onInstancePreDestruction(managedClass, finalInstance);
+			});
+		}
+
+		for (IContainerService containerService : containerServices) {
+			containerService.destroy();
 		}
 
 		for (ScopeFactory scopeFactory : scopeFactories.values()) {

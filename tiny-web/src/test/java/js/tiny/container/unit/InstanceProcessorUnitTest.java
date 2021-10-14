@@ -294,7 +294,9 @@ public class InstanceProcessorUnitTest {
 
 	@Test
 	public void postConstruct() {
+		MockManagedMethodSPI managedMethod = new MockManagedMethodSPI(Joker.getPostConstructMethod());
 		MockManagedClassSPI managedClass = new MockManagedClassSPI(Joker.class);
+		managedClass.attribute = managedMethod;
 		IInstancePostConstructionProcessor processor = getPostConstructInstanceProcessor();
 
 		Joker joker = new Joker();
@@ -322,7 +324,9 @@ public class InstanceProcessorUnitTest {
 
 	@Test(expected = BugError.class)
 	public void postConstruct_Exception() {
+		MockManagedMethodSPI managedMethod = new MockManagedMethodSPI(Joker.getPostConstructMethod());
 		MockManagedClassSPI managedClass = new MockManagedClassSPI(Joker.class);
+		managedClass.attribute = managedMethod;
 		IInstancePostConstructionProcessor processor = getPostConstructInstanceProcessor();
 
 		Joker joker = new Joker();
@@ -331,7 +335,7 @@ public class InstanceProcessorUnitTest {
 	}
 
 	private static IInstancePostConstructionProcessor getPostConstructInstanceProcessor() {
-		return Classes.newInstance("js.tiny.container.service.PostConstructInstanceProcessor");
+		return Classes.newInstance("js.tiny.container.service.InstancePostConstructProcessor");
 	}
 
 	// --------------------------------------------------------------------------------------------
@@ -479,6 +483,7 @@ public class InstanceProcessorUnitTest {
 		private InstanceScope instanceScope = InstanceScope.APPLICATION;
 		private InstanceType instanceType = InstanceType.POJO;
 		private boolean transactional;
+		private Object attribute;
 
 		public MockManagedClassSPI(Class<?> type) {
 			this.interfaceClasses = type.getInterfaces();
@@ -527,14 +532,10 @@ public class InstanceProcessorUnitTest {
 			return instanceType;
 		}
 
+		@SuppressWarnings("unchecked")
 		@Override
-		public IManagedMethod getPostConstructMethod() {
-			return implementationClass.equals(Joker.class) ? new MockManagedMethodSPI(Joker.getPostConstructMethod()) : null;
-		}
-
-		@Override
-		public IManagedMethod getPreDestroyMethod() {
-			return null;
+		public <T> T getAttribute(Object context, String name, Class<T> type) {
+			return (T) attribute;
 		}
 	}
 

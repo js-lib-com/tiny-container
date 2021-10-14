@@ -113,10 +113,6 @@ public interface IManagedClass {
 	 */
 	Iterable<IManagedMethod> getManagedMethods();
 
-	IManagedMethod getPostConstructMethod();
-
-	IManagedMethod getPreDestroyMethod();
-
 	/**
 	 * Get managed method by name. This getter tries to locate named managed method declared by this managed class and return
 	 * it; if not found returns null.
@@ -150,7 +146,11 @@ public interface IManagedClass {
 	 */
 	String getImplementationURL();
 
+	<T extends Annotation> T getAnnotation(Class<T> type);
+
 	<T extends IServiceMeta> T getServiceMeta(Class<T> type);
 
-	<T extends Annotation> T getAnnotation(Class<T> type);
+	void setAttribute(Object context, String name, Object value);
+
+	<T> T getAttribute(Object context, String name, Class<T> type);
 }
