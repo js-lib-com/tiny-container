@@ -38,6 +38,7 @@
 		<module>tiny-timer</module>
 		<module>tiny-context-param</module>
 		<module>tiny-interceptor</module>
+		<module>tiny-security</module>
 	</modules>
 
 	<properties>
