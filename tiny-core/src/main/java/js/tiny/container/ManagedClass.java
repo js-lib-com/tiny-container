@@ -7,7 +7,6 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -15,7 +14,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import javax.annotation.Resource;
 import javax.annotation.security.DenyAll;
 import javax.annotation.security.PermitAll;
 import javax.ejb.Asynchronous;
@@ -26,6 +24,7 @@ import javax.ejb.Stateful;
 import javax.ejb.Stateless;
 import javax.inject.Inject;
 import javax.interceptor.Interceptors;
+import javax.ws.rs.Path;
 
 import js.converter.Converter;
 import js.converter.ConverterException;
@@ -317,9 +316,6 @@ public final class ManagedClass implements IManagedClass {
 	/** Cached implementation constructor or null if this managed class has no implementation. */
 	private final Constructor<?> constructor;
 
-	/** Fields tagged with {@link Inject} annotation, in no particular order. */
-	private final Collection<Field> dependencies;
-
 	/**
 	 * Optional remote class implementation URL that can be used if this managed class is {@link InstanceType#REMOTE}. This
 	 * field is loaded from <code>url</code> attribute from class descriptor.
@@ -364,8 +360,6 @@ public final class ManagedClass implements IManagedClass {
 
 		// get declared constructor return null if no implementation class
 		this.constructor = getDeclaredConstructor(this.implementationClass);
-		// scan dependencies return empty collection if no implementation class
-		this.dependencies = scanDependencies(this.implementationClass);
 
 		if (this.instanceType.requiresImplementation()) {
 			scanAnnotations();
@@ -470,11 +464,6 @@ public final class ManagedClass implements IManagedClass {
 	@Override
 	public Constructor<?> getConstructor() {
 		return constructor;
-	}
-
-	@Override
-	public Iterable<Field> getDependencies() {
-		return dependencies;
 	}
 
 	@Override
@@ -759,38 +748,6 @@ public final class ManagedClass implements IManagedClass {
 		}
 		constructor.setAccessible(true);
 		return constructor;
-	}
-
-	/**
-	 * Scan class dependencies declared by {@link Inject} annotation. This method scans all fields, no matter private, protected
-	 * or public. Anyway it is considered a bug if inject annotation is found on final or static field.
-	 * <p>
-	 * Returns a collection of reflective fields with accessibility set but in not particular order. If given class argument is
-	 * null returns empty collection.
-	 * 
-	 * @param clazz class to scan dependencies for, null tolerated.
-	 * @return dependencies collection, in no particular order.
-	 * @throws BugError if annotation is used on final or static field.
-	 */
-	private static Collection<Field> scanDependencies(Class<?> clazz) {
-		if (clazz == null) {
-			return Collections.emptyList();
-		}
-		Collection<Field> dependencies = new ArrayList<>();
-		for (Field field : clazz.getDeclaredFields()) {
-			if (!field.isAnnotationPresent(Inject.class) && !field.isAnnotationPresent(Resource.class)) {
-				continue;
-			}
-			if (Modifier.isFinal(field.getModifiers())) {
-				throw new BugError("Attempt to inject final field |%s|.", field.getName());
-			}
-			if (Modifier.isStatic(field.getModifiers())) {
-				throw new BugError("Attempt to inject static field |%s|.", field.getName());
-			}
-			field.setAccessible(true);
-			dependencies.add(field);
-		}
-		return dependencies;
 	}
 
 	/**

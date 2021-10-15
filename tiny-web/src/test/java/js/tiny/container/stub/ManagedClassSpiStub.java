@@ -2,7 +2,6 @@ package js.tiny.container.stub;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
-import java.lang.reflect.Field;
 import java.util.Collection;
 
 import js.lang.Config;
@@ -68,11 +67,6 @@ public class ManagedClassSpiStub implements IManagedClass {
 	@Override
 	public IContainer getContainer() {
 		throw new UnsupportedOperationException("getContainer()");
-	}
-
-	@Override
-	public Iterable<Field> getDependencies() {
-		throw new UnsupportedOperationException("getDependencies()");
 	}
 
 	@Override

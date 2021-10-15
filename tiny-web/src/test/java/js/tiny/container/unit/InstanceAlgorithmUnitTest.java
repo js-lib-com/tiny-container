@@ -6,7 +6,6 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import java.lang.reflect.Constructor;
-import java.lang.reflect.Field;
 import java.lang.reflect.Proxy;
 import java.util.Collections;
 
@@ -171,11 +170,6 @@ public class InstanceAlgorithmUnitTest {
 			} catch (SecurityException e) {
 			}
 			return null;
-		}
-
-		@Override
-		public Iterable<Field> getDependencies() {
-			return Collections.emptyList();
 		}
 
 		@Override

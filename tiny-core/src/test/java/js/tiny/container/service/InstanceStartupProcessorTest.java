@@ -9,7 +9,7 @@ import org.mockito.junit.MockitoJUnitRunner;
 import js.tiny.container.spi.IContainer;
 
 @RunWith(MockitoJUnitRunner.class)
-public class ContainerStartupProcessorTest {
+public class InstanceStartupProcessorTest {
 	@Mock
 	private IContainer container;
 

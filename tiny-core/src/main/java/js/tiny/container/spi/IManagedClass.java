@@ -2,10 +2,7 @@ package js.tiny.container.spi;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
-import java.lang.reflect.Field;
 import java.util.Collection;
-
-import javax.inject.Inject;
 
 import js.lang.BugError;
 import js.lang.Config;
@@ -95,14 +92,6 @@ public interface IManagedClass {
 	 * @return implementation constructor, possible null.
 	 */
 	Constructor<?> getConstructor();
-
-	/**
-	 * Get this managed class dependencies, possible empty. Dependency fields are marked with {@link Inject} annotation.
-	 * Returned sequence is in a no particular order.
-	 * 
-	 * @return managed class dependencies, possible empty.
-	 */
-	Iterable<Field> getDependencies();
 
 	/**
 	 * Get managed methods owned by this managed class, sequence with no order guaranteed and possible empty. Note that managed

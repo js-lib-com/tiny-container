@@ -1,2 +1,3 @@
 js.tiny.container.service.InstancePostConstructProvider
 js.tiny.container.service.InstancePreDestroyProvider
+js.tiny.container.service.InstanceFieldsInjectionProvider

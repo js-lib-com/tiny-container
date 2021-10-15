@@ -65,58 +65,6 @@ public class InstanceProcessorUnitTest {
 	}
 
 	// --------------------------------------------------------------------------------------------
-	// INSTANCE FIELDS INJECTION PROCESSOR
-
-	@Test
-	public void instanceFieldsInjection() {
-		MockManagedClassSPI hostClass = new MockManagedClassSPI(Person.class);
-		MockManagedClassSPI carClass = new MockManagedClassSPI(Car.class);
-		IInstancePostConstructionProcessor processor = getInstanceFieldsInjectionProcessor();
-
-		Person person = new Person();
-		processor.onInstancePostConstruction(hostClass, person);
-
-		assertNotNull(person.factory);
-		assertTrue(person.factory instanceof MockContainer);
-		assertNotNull(person.car);
-		assertFalse(Proxy.isProxyClass(person.car.getClass()));
-		assertTrue(person.car instanceof Vehicle);
-		assertNotNull(person.pojo);
-		assertFalse(Proxy.isProxyClass(person.pojo.getClass()));
-	}
-
-	@Test
-	public void instanceFieldsInjection_Session() {
-		MockManagedClassSPI hostClass = new MockManagedClassSPI(Person.class);
-		MockManagedClassSPI carClass = new MockManagedClassSPI(Car.class);
-		carClass.instanceScope = InstanceScope.SESSION;
-		IInstancePostConstructionProcessor processor = getInstanceFieldsInjectionProcessor();
-
-		Person person = new Person();
-		processor.onInstancePostConstruction(hostClass, person);
-
-		assertNotNull(person.factory);
-		assertTrue(person.factory instanceof MockContainer);
-		assertNotNull(person.car);
-		assertTrue(Proxy.isProxyClass(person.car.getClass()));
-		assertTrue(person.car instanceof Vehicle);
-		assertNotNull(person.pojo);
-		assertFalse(Proxy.isProxyClass(person.pojo.getClass()));
-	}
-
-	/** Null instance arguments should not throw exception. */
-	@Test
-	public void instanceFieldsInjection_NullInstance() {
-		MockManagedClassSPI managedClass = new MockManagedClassSPI(Person.class);
-		IInstancePostConstructionProcessor processor = getInstanceFieldsInjectionProcessor();
-		processor.onInstancePostConstruction(managedClass, null);
-	}
-
-	private static IInstancePostConstructionProcessor getInstanceFieldsInjectionProcessor() {
-		return Classes.newInstance("js.tiny.container.service.InstanceFieldsInjectionProcessor");
-	}
-
-	// --------------------------------------------------------------------------------------------
 	// INSTANCE FIELDS INITIALIZATION PROCESSOR
 
 	@Test
@@ -508,6 +456,11 @@ public class InstanceProcessorUnitTest {
 		}
 
 		@Override
+		public Integer getKey() {
+			return 1;
+		}
+
+		@Override
 		public Class<?>[] getInterfaceClasses() {
 			return interfaceClasses;
 		}
@@ -515,11 +468,6 @@ public class InstanceProcessorUnitTest {
 		@Override
 		public Class<?> getImplementationClass() {
 			return implementationClass;
-		}
-
-		@Override
-		public Iterable<Field> getDependencies() {
-			return dependencies;
 		}
 
 		@Override

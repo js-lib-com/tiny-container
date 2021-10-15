@@ -8,7 +8,6 @@ import static org.junit.Assert.assertTrue;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
-import java.util.Collection;
 import java.util.Map;
 
 import javax.annotation.security.DenyAll;
@@ -35,8 +34,6 @@ import js.tiny.container.servlet.TinyConfigBuilder;
 import js.tiny.container.spi.IManagedClass;
 import js.tiny.container.spi.IManagedMethod;
 import js.tiny.container.stub.ContainerStub;
-import js.tiny.container.unit.TestConfigBuilder;
-import js.tiny.container.unit.TestContext;
 import js.util.Classes;
 
 @SuppressWarnings("unused")
@@ -66,10 +63,6 @@ public class ManagedClassUnitTest {
 		assertNotNull(constructor);
 		assertEquals(constructor, managedClass.getConstructor());
 
-		Collection<?> dependencies = (Collection<?>) managedClass.getDependencies();
-		assertNotNull(dependencies);
-		assertEquals(0, dependencies.size());
-
 		Map<Method, IManagedMethod> methodsPool = Classes.getFieldValue(managedClass, "methodsPool");
 		assertNotNull(methodsPool);
 		assertEquals(1, methodsPool.size());
@@ -91,10 +84,6 @@ public class ManagedClassUnitTest {
 		Constructor<PojoImpl> constructor = PojoImpl.class.getDeclaredConstructor();
 		assertNotNull(constructor);
 		assertEquals(constructor, managedClass.getConstructor());
-
-		Collection<?> dependencies = (Collection<?>) managedClass.getDependencies();
-		assertNotNull(dependencies);
-		assertEquals(0, dependencies.size());
 
 		Map<Method, IManagedMethod> methodsPool = Classes.getFieldValue(managedClass, "methodsPool");
 		assertNotNull(methodsPool);

@@ -8,7 +8,6 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
-import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -142,19 +141,6 @@ public class ManagedClassSpiConformanceTest {
 	public void getConstructor() throws Exception {
 		String config = "<test class='js.tiny.container.unit.ManagedClassSpiConformanceTest$CarImpl' />";
 		assertEquals(CarImpl.class.getDeclaredConstructor(), getManagedClass(config(config)).getConstructor());
-	}
-
-	@Test
-	public void getDependencies() throws Exception {
-		String config = "<test class='js.tiny.container.unit.ManagedClassSpiConformanceTest$Agency' />";
-		List<Field> dependencies = new ArrayList<>();
-		for (Field dependency : getManagedClass(config(config)).getDependencies()) {
-			dependencies.add(dependency);
-		}
-
-		assertEquals(2, dependencies.size());
-		assertTrue(dependencies.contains(Agency.class.getDeclaredField("person")));
-		assertTrue(dependencies.contains(Agency.class.getDeclaredField("car")));
 	}
 
 	@Test
