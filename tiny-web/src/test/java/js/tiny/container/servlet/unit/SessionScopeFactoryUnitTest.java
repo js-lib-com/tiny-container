@@ -15,11 +15,11 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import js.lang.BugError;
-import js.tiny.container.Container;
-import js.tiny.container.InstanceKey;
-import js.tiny.container.InstanceScope;
-import js.tiny.container.ScopeFactory;
+import js.tiny.container.cdi.ScopeFactory;
 import js.tiny.container.core.AppFactory;
+import js.tiny.container.core.Container;
+import js.tiny.container.core.InstanceKey;
+import js.tiny.container.core.InstanceScope;
 import js.tiny.container.servlet.ITinyContainer;
 import js.tiny.container.servlet.RequestContext;
 import js.tiny.container.servlet.TinyContainer;

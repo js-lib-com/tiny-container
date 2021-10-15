@@ -1,4 +1,4 @@
-package js.tiny.container;
+package js.tiny.container.cdi;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Member;
@@ -6,6 +6,7 @@ import java.lang.reflect.Method;
 
 import js.lang.IllegalArgumentException;
 import js.lang.VarArgs;
+import js.tiny.container.core.InstanceType;
 import js.tiny.container.spi.IManagedClass;
 import js.tiny.container.spi.IManagedMethod;
 import js.util.Types;
@@ -18,7 +19,7 @@ import js.util.Types;
  * @author Iulian Rotaru
  * @version final
  */
-final class ArgumentsProcessor {
+public class ArgumentsProcessor {
 	/** Reusable empty arguments used when provided arguments array is null. */
 	private static final Object[] EMPTY_ARGS = new Object[0];
 
@@ -86,7 +87,7 @@ final class ArgumentsProcessor {
 		case 0:
 			args = new Object[formalParameters.length];
 			for (int i = 0; i < args.length; i++) {
-				args[i] = DependencyProcessor.getDependencyValue(managedClass, formalParameters[i]);
+				args[i] = DependencyLoader.getDependencyValue(managedClass, formalParameters[i]);
 			}
 			break;
 

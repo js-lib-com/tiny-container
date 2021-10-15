@@ -6,7 +6,7 @@ import js.lang.ConfigException;
 import js.lang.Configurable;
 import js.log.Log;
 import js.log.LogFactory;
-import js.tiny.container.OptionalConfigurable;
+import js.tiny.container.core.OptionalConfigurable;
 import js.tiny.container.spi.IInstancePostConstructionProcessor;
 import js.tiny.container.spi.IManagedClass;
 

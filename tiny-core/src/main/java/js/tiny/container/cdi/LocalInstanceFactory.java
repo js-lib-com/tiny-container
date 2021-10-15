@@ -1,4 +1,4 @@
-package js.tiny.container;
+package js.tiny.container.cdi;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
@@ -8,6 +8,8 @@ import js.lang.BugError;
 import js.lang.InvocationException;
 import js.log.Log;
 import js.log.LogFactory;
+import js.tiny.container.core.InstanceType;
+import js.tiny.container.core.ManagedProxyHandler;
 import js.tiny.container.spi.IManagedClass;
 import js.util.Classes;
 import js.util.Strings;
@@ -22,7 +24,7 @@ import js.util.Strings;
  * @author Iulian Rotaru
  * @version final
  */
-final class LocalInstanceFactory implements InstanceFactory {
+public class LocalInstanceFactory implements InstanceFactory {
 	/** Class logger. */
 	private static final Log log = LogFactory.getLog(LocalInstanceFactory.class);
 

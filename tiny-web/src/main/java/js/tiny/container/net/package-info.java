@@ -454,7 +454,6 @@
  *  });
  * </pre>
  * @author Iulian Rotaru
- * @version draft
  */
 package js.tiny.container.net;
 

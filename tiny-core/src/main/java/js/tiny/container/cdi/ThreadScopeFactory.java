@@ -1,9 +1,11 @@
-package js.tiny.container;
+package js.tiny.container.cdi;
 
 import java.util.HashMap;
 import java.util.Map;
 
 import js.lang.BugError;
+import js.tiny.container.core.InstanceKey;
+import js.tiny.container.core.InstanceScope;
 
 /**
  * Scope factory that creates thread local instances. An instance with {@link InstanceScope#THREAD}, once created, has the same
@@ -19,7 +21,7 @@ import js.lang.BugError;
  * @author Iulian Rotaru
  * @version final
  */
-final class ThreadScopeFactory implements ScopeFactory {
+public class ThreadScopeFactory implements ScopeFactory {
 	/**
 	 * Managed instances pool for managed classes with thread scope. A managed class has a thread local storage created on the
 	 * fly. Once instance saved into thread local, it is reused for entire thread life span. Implementation should be aware not

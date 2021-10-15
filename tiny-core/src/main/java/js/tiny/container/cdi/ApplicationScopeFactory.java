@@ -1,7 +1,10 @@
-package js.tiny.container;
+package js.tiny.container.cdi;
 
 import java.util.HashMap;
 import java.util.Map;
+
+import js.tiny.container.core.InstanceKey;
+import js.tiny.container.core.InstanceScope;
 
 /**
  * Scope factory for application level singletons. Application scope factory has an {@link #instancesPool} and attempt to
@@ -11,7 +14,7 @@ import java.util.Map;
  * @author Iulian Rotaru
  * @version final
  */
-final class ApplicationScopeFactory implements ScopeFactory {
+public class ApplicationScopeFactory implements ScopeFactory {
 	/**
 	 * Managed instances pool for managed classes with application scope. Note that this cache has application scope only if
 	 * this factory has; anyway, container takes care to create a single instance of any scope factory, including this.

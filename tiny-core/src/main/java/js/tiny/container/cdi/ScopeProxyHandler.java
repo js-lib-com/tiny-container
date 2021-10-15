@@ -1,9 +1,10 @@
-package js.tiny.container;
+package js.tiny.container.cdi;
 
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 
 import js.tiny.container.core.AppFactory;
+import js.tiny.container.core.InstanceScope;
 import js.tiny.container.service.InstanceFieldsInjectionProcessor;
 
 /**

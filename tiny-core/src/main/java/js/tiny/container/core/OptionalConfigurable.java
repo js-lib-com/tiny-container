@@ -1,4 +1,4 @@
-package js.tiny.container;
+package js.tiny.container.core;
 
 import js.lang.Configurable;
 

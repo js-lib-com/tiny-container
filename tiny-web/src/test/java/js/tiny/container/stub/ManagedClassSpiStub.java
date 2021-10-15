@@ -5,8 +5,8 @@ import java.lang.reflect.Constructor;
 import java.util.Collection;
 
 import js.lang.Config;
-import js.tiny.container.InstanceScope;
-import js.tiny.container.InstanceType;
+import js.tiny.container.core.InstanceScope;
+import js.tiny.container.core.InstanceType;
 import js.tiny.container.spi.IContainer;
 import js.tiny.container.spi.IContainerService;
 import js.tiny.container.spi.IManagedClass;

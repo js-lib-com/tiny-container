@@ -5,7 +5,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-import js.tiny.container.InstanceType;
+import js.tiny.container.core.InstanceType;
 
 /**
  * An intercepted managed method executes an interceptor cross-cutting logic whenever is invoked. Works in conjunction with

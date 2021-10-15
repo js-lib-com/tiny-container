@@ -4,10 +4,10 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
 import js.lang.BugError;
-import js.tiny.container.InstanceKey;
-import js.tiny.container.InstanceScope;
-import js.tiny.container.ScopeFactory;
+import js.tiny.container.cdi.ScopeFactory;
 import js.tiny.container.core.AppFactory;
+import js.tiny.container.core.InstanceKey;
+import js.tiny.container.core.InstanceScope;
 
 /**
  * Scope factory for managed classes with HTTP session scope. A managed instance with {@link InstanceScope#SESSION} scope is

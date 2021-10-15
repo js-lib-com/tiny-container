@@ -1,7 +1,8 @@
-package js.tiny.container;
+package js.tiny.container.cdi;
 
 import js.lang.BugError;
 import js.lang.NoProviderException;
+import js.tiny.container.core.InstanceType;
 import js.tiny.container.spi.IManagedClass;
 import js.util.Classes;
 
@@ -13,7 +14,7 @@ import js.util.Classes;
  * @author Iulian Rotaru
  * @version final
  */
-final class ServiceInstanceFactory implements InstanceFactory {
+public class ServiceInstanceFactory implements InstanceFactory {
 	/**
 	 * Service instances factory is built-in and does not have a type name.
 	 * 

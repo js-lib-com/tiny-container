@@ -1,4 +1,4 @@
-package js.tiny.container;
+package js.tiny.container.core;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
@@ -38,7 +38,14 @@ import js.lang.NoProviderException;
 import js.log.Log;
 import js.log.LogFactory;
 import js.rmi.RemoteFactory;
-import js.tiny.container.core.AppFactory;
+import js.tiny.container.cdi.ApplicationScopeFactory;
+import js.tiny.container.cdi.ArgumentsProcessor;
+import js.tiny.container.cdi.InstanceFactory;
+import js.tiny.container.cdi.LocalInstanceFactory;
+import js.tiny.container.cdi.RemoteInstanceFactory;
+import js.tiny.container.cdi.ScopeFactory;
+import js.tiny.container.cdi.ServiceInstanceFactory;
+import js.tiny.container.cdi.ThreadScopeFactory;
 import js.tiny.container.service.ConfigurableInstanceProcessor;
 import js.tiny.container.service.FlowProcessorsSet;
 import js.tiny.container.service.InstanceFieldsInitializationProcessor;

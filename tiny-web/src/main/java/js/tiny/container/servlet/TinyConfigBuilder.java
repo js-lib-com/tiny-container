@@ -23,7 +23,7 @@ import js.lang.ConfigBuilder;
 import js.lang.ConfigException;
 import js.log.Log;
 import js.log.LogFactory;
-import js.tiny.container.Container;
+import js.tiny.container.core.Container;
 import js.util.Classes;
 import js.util.Strings;
 

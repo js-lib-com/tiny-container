@@ -128,7 +128,7 @@ public class ArgumentsProcessorUnitTest {
 	}
 
 	private static Object getArgumentsProcessor() {
-		return Classes.newInstance("js.tiny.container.ArgumentsProcessor");
+		return Classes.newInstance("js.tiny.container.cdi.ArgumentsProcessor");
 	}
 
 	// --------------------------------------------------------------------------------------------

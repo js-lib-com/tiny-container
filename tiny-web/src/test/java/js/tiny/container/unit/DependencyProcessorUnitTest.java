@@ -20,9 +20,9 @@ import org.junit.Test;
 
 import js.lang.BugError;
 import js.lang.InvocationException;
-import js.tiny.container.Container;
-import js.tiny.container.InstanceScope;
 import js.tiny.container.core.AppFactory;
+import js.tiny.container.core.Container;
+import js.tiny.container.core.InstanceScope;
 import js.tiny.container.servlet.AppContext;
 import js.tiny.container.spi.IContainer;
 import js.tiny.container.spi.IManagedClass;
@@ -177,7 +177,7 @@ public class DependencyProcessorUnitTest {
 		}
 
 		MockAppFactory appFactory = new MockAppFactory();
-		InvocationHandler scopeProxyHandler = Classes.newInstance("js.tiny.container.ScopeProxyHandler", appFactory, Human.class);
+		InvocationHandler scopeProxyHandler = Classes.newInstance("js.tiny.container.cdi.ScopeProxyHandler", appFactory, Human.class);
 
 		Method method = Human.class.getDeclaredMethod("setName", String.class);
 		method.setAccessible(true);
@@ -190,7 +190,7 @@ public class DependencyProcessorUnitTest {
 	// UTILITY METHODS
 
 	private static Class<?> processorClass() {
-		return Classes.forName("js.tiny.container.DependencyProcessor");
+		return Classes.forName("js.tiny.container.cdi.DependencyLoader");
 	}
 
 	private static <T> T getDependencyValue(Class<T> type) throws Exception {

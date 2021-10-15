@@ -1,5 +1,8 @@
 package js.tiny.container.spi;
 
+import js.tiny.container.service.InstanceFieldsInjectionProcessor;
+import js.tiny.container.service.LoggerInstanceProcessor;
+
 /**
  * Container services related to managed instances post processing. Instance processors are registered to container and enacted
  * by managed instance factory. Note that post processing is executed only on newly created instances but not if managed

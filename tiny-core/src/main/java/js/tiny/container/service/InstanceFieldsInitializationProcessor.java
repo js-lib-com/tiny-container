@@ -6,7 +6,7 @@ import js.converter.Converter;
 import js.converter.ConverterException;
 import js.lang.BugError;
 import js.lang.Config;
-import js.tiny.container.InstanceType;
+import js.tiny.container.core.InstanceType;
 import js.tiny.container.spi.IInstancePostConstructionProcessor;
 import js.tiny.container.spi.IManagedClass;
 import js.util.Classes;

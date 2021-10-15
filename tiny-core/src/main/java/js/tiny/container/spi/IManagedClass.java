@@ -6,8 +6,8 @@ import java.util.Collection;
 
 import js.lang.BugError;
 import js.lang.Config;
-import js.tiny.container.InstanceScope;
-import js.tiny.container.InstanceType;
+import js.tiny.container.core.InstanceScope;
+import js.tiny.container.core.InstanceType;
 
 /**
  * Service provider interface for managed class. Although public, this interface is designed for library internal usage.

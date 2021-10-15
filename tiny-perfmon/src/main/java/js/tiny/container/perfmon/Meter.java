@@ -1,6 +1,6 @@
 package js.tiny.container.perfmon;
 
-import js.tiny.container.ManagedMethod;
+import js.tiny.container.core.ManagedMethod;
 import js.tiny.container.spi.IManagedMethod;
 
 /**

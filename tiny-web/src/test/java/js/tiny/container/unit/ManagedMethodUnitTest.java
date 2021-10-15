@@ -21,7 +21,7 @@ import org.junit.Ignore;
 import org.junit.Test;
 
 import js.lang.GType;
-import js.tiny.container.ManagedMethod;
+import js.tiny.container.core.ManagedMethod;
 import js.tiny.container.spi.AuthorizationException;
 import js.tiny.container.spi.IContainer;
 import js.tiny.container.spi.IContainerService;

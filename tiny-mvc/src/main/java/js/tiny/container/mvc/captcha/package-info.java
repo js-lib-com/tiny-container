@@ -9,7 +9,6 @@
  * <a href="http://api.js-lib.com/widget/js/widget/Captcha.html">widget API</a>.   
  *
  * @author Iulian Rotaru
- * @version final
  */
 package js.tiny.container.mvc.captcha;
 

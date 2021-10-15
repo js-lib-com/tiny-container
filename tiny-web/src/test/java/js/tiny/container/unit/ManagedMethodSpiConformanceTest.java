@@ -1,8 +1,6 @@
 package js.tiny.container.unit;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
 
 import java.lang.reflect.Method;
 import java.util.Collection;
@@ -31,8 +29,8 @@ public class ManagedMethodSpiConformanceTest {
 		managedClass = new MockManagedClassSPI();
 		setterMethod = Person.class.getDeclaredMethod("setInfo", String.class, Date.class, int.class);
 		getterMethod = Person.class.getDeclaredMethod("getName");
-		setterManagedMethod = Classes.newInstance("js.tiny.container.ManagedMethod", managedClass, setterMethod);
-		getterManagedMethod = Classes.newInstance("js.tiny.container.ManagedMethod", managedClass, getterMethod);
+		setterManagedMethod = Classes.newInstance("js.tiny.container.core.ManagedMethod", managedClass, setterMethod);
+		getterManagedMethod = Classes.newInstance("js.tiny.container.core.ManagedMethod", managedClass, getterMethod);
 	}
 
 	@Test

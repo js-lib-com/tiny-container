@@ -17,7 +17,7 @@ import javax.naming.NamingException;
 import js.lang.BugError;
 import js.log.Log;
 import js.log.LogFactory;
-import js.tiny.container.DependencyProcessor;
+import js.tiny.container.cdi.DependencyLoader;
 import js.tiny.container.spi.IInstancePostConstructionProcessor;
 import js.tiny.container.spi.IManagedClass;
 import js.tiny.container.spi.IManagedMethod;
@@ -29,7 +29,7 @@ import js.util.Strings;
 /**
  * Post processor for instance fields injection. Fields are discovered by managed class based on {@link Inject} annotation and
  * provided to this processor by {@link IManagedClass#getDependencies()}. This class inherits dependency processor and delegates
- * {@link DependencyProcessor#getDependencyValue(IManagedClass, Class)} for dependency value processing.
+ * {@link DependencyLoader#getDependencyValue(IManagedClass, Class)} for dependency value processing.
  * <p>
  * In essence this processor scans all dependencies detected by managed class and for every field retrieve its dependency value
  * and inject it reflexively.
@@ -78,7 +78,7 @@ public class InstanceFieldsInjectionProcessor implements IInstancePostConstructi
 
 	/**
 	 * Inject dependencies described by given managed class into related managed instance. For every dependency field retrieve
-	 * its value using {@link DependencyProcessor#getDependencyValue(IManagedClass, Class)} and inject it reflexively.
+	 * its value using {@link DependencyLoader#getDependencyValue(IManagedClass, Class)} and inject it reflexively.
 	 * 
 	 * @param managedClass managed class,
 	 * @param instance instance of given managed class.
@@ -102,7 +102,7 @@ public class InstanceFieldsInjectionProcessor implements IInstancePostConstructi
 			if (resourceAnnotation != null) {
 				value = getEnvEntryValue(field, resourceAnnotation);
 			} else {
-				value = DependencyProcessor.getDependencyValue(managedClass, field.getType());
+				value = DependencyLoader.getDependencyValue(managedClass, field.getType());
 			}
 
 			if (value == null) {

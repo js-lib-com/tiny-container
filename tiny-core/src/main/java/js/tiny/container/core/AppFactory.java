@@ -6,9 +6,7 @@ import js.lang.InvocationException;
 import js.lang.NoProviderException;
 import js.rmi.RemoteFactory;
 import js.rmi.UnsupportedProtocolException;
-import js.tiny.container.InstanceFactory;
-import js.tiny.container.InstanceScope;
-import js.tiny.container.InstanceType;
+import js.tiny.container.cdi.InstanceFactory;
 
 /**
  * Managed instances factory with application scope. A managed instance is one created from a managed class. Managed instances

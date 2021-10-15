@@ -1,4 +1,4 @@
-package js.tiny.container;
+package js.tiny.container.cdi;
 
 import java.net.MalformedURLException;
 import java.util.HashMap;
@@ -10,6 +10,7 @@ import js.rmi.RemoteFactory;
 import js.rmi.RemoteFactoryProvider;
 import js.rmi.UnsupportedProtocolException;
 import js.tiny.container.core.AppFactory;
+import js.tiny.container.core.InstanceType;
 import js.tiny.container.spi.IManagedClass;
 import js.util.Strings;
 

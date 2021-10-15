@@ -26,9 +26,11 @@ import js.lang.NoProviderException;
 import js.rmi.RemoteFactory;
 import js.rmi.RemoteFactoryProvider;
 import js.rmi.UnsupportedProtocolException;
-import js.tiny.container.Container;
-import js.tiny.container.InstanceFactory;
-import js.tiny.container.InstanceType;
+import js.tiny.container.cdi.InstanceFactory;
+import js.tiny.container.cdi.LocalInstanceFactory;
+import js.tiny.container.cdi.ServiceInstanceFactory;
+import js.tiny.container.core.Container;
+import js.tiny.container.core.InstanceType;
 import js.tiny.container.spi.IManagedClass;
 import js.tiny.container.stub.ManagedClassSpiStub;
 import js.util.Classes;
@@ -219,7 +221,7 @@ public class InstanceFactoryUnitTest {
 	}
 
 	private static InstanceFactory getLocalInstanceFactory() {
-		return Classes.newInstance("js.tiny.container.LocalInstanceFactory");
+		return Classes.newInstance("js.tiny.container.cdi.LocalInstanceFactory");
 	}
 
 	// --------------------------------------------------------------------------------------------
@@ -290,7 +292,7 @@ public class InstanceFactoryUnitTest {
 	}
 
 	private static InstanceFactory getServiceInstanceFactory() {
-		return Classes.newInstance("js.tiny.container.ServiceInstanceFactory");
+		return Classes.newInstance("js.tiny.container.cdi.ServiceInstanceFactory");
 	}
 
 	// --------------------------------------------------------------------------------------------
@@ -360,7 +362,7 @@ public class InstanceFactoryUnitTest {
 	}
 
 	private static InstanceFactory getRemoteInstanceFactory() {
-		return Classes.newInstance("js.tiny.container.RemoteInstanceFactory");
+		return Classes.newInstance("js.tiny.container.cdi.RemoteInstanceFactory");
 	}
 
 	// --------------------------------------------------------------------------------------------

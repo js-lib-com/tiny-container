@@ -1,4 +1,4 @@
-package js.tiny.container;
+package js.tiny.container.core;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
@@ -35,7 +35,8 @@ import js.lang.Configurable;
 import js.lang.ManagedLifeCycle;
 import js.log.Log;
 import js.log.LogFactory;
-import js.tiny.container.core.AppFactory;
+import js.tiny.container.cdi.InstanceFactory;
+import js.tiny.container.cdi.ScopeFactory;
 import js.tiny.container.spi.IContainer;
 import js.tiny.container.spi.IContainerService;
 import js.tiny.container.spi.IManagedClass;

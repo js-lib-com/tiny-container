@@ -1,4 +1,4 @@
-package js.tiny.container;
+package js.tiny.container.cdi;
 
 import java.lang.reflect.Proxy;
 import java.util.Stack;
@@ -7,6 +7,7 @@ import js.lang.BugError;
 import js.log.Log;
 import js.log.LogFactory;
 import js.tiny.container.core.AppFactory;
+import js.tiny.container.core.InstanceScope;
 import js.tiny.container.spi.IContainer;
 import js.tiny.container.spi.IManagedClass;
 import js.util.Classes;
@@ -42,11 +43,10 @@ import js.util.Types;
  * {@link AppFactory} returns container reference provided by host managed class, see {@link IManagedClass#getContainer()}.
  * 
  * @author Iulian Rotaru
- * @version final
  */
-public final class DependencyProcessor {
+public final class DependencyLoader {
 	/** Class logger. */
-	private static final Log log = LogFactory.getLog(DependencyProcessor.class);
+	private static final Log log = LogFactory.getLog(DependencyLoader.class);
 
 	/** Thread local storage for dependencies trace stack. Used to prevent circular dependencies. */
 	private static ThreadLocal<Stack<Class<?>>> dependenciesStack = new ThreadLocal<>();

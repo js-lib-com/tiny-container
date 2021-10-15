@@ -19,10 +19,10 @@ import org.junit.Test;
 import js.converter.Converter;
 import js.converter.ConverterRegistry;
 import js.lang.BugError;
-import js.tiny.container.Container;
-import js.tiny.container.InstanceKey;
-import js.tiny.container.InstanceScope;
-import js.tiny.container.ScopeFactory;
+import js.tiny.container.cdi.ScopeFactory;
+import js.tiny.container.core.Container;
+import js.tiny.container.core.InstanceKey;
+import js.tiny.container.core.InstanceScope;
 import js.tiny.container.spi.IManagedClass;
 import js.tiny.container.stub.ManagedClassSpiStub;
 import js.util.Classes;
@@ -184,7 +184,7 @@ public class ScopeFactoryUnitTest {
 	}
 
 	private static ScopeFactory getApplicationScopeFactory() {
-		return Classes.newInstance("js.tiny.container.ApplicationScopeFactory");
+		return Classes.newInstance("js.tiny.container.cdi.ApplicationScopeFactory");
 	}
 
 	// --------------------------------------------------------------------------------------------
@@ -317,7 +317,7 @@ public class ScopeFactoryUnitTest {
 	}
 
 	private static ScopeFactory getThreadScopeFactory() {
-		return Classes.newInstance("js.tiny.container.ThreadScopeFactory");
+		return Classes.newInstance("js.tiny.container.cdi.ThreadScopeFactory");
 	}
 
 	// --------------------------------------------------------------------------------------------

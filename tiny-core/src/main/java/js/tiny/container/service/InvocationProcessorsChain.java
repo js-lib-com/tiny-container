@@ -8,9 +8,9 @@ import js.lang.BugError;
 import js.log.Log;
 import js.log.LogFactory;
 import js.tiny.container.spi.IInvocation;
-import js.tiny.container.spi.IMethodInvocationProcessor;
 import js.tiny.container.spi.IInvocationProcessorsChain;
 import js.tiny.container.spi.IManagedMethod;
+import js.tiny.container.spi.IMethodInvocationProcessor;
 
 public class InvocationProcessorsChain implements IInvocationProcessorsChain {
 	private static final Log log = LogFactory.getLog(InvocationProcessorsChain.class);

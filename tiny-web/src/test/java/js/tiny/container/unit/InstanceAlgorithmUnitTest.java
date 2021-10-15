@@ -13,8 +13,8 @@ import org.junit.Before;
 import org.junit.Test;
 
 import js.lang.Config;
-import js.tiny.container.InstanceScope;
-import js.tiny.container.InstanceType;
+import js.tiny.container.core.InstanceScope;
+import js.tiny.container.core.InstanceType;
 import js.tiny.container.spi.IContainer;
 import js.tiny.container.spi.IManagedMethod;
 import js.tiny.container.stub.ContainerStub;

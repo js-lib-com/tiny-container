@@ -2,9 +2,9 @@ package js.tiny.container.service;
 
 import js.log.Log;
 import js.log.LogFactory;
-import js.tiny.container.Container;
-import js.tiny.container.InstanceScope;
-import js.tiny.container.InstanceType;
+import js.tiny.container.core.Container;
+import js.tiny.container.core.InstanceScope;
+import js.tiny.container.core.InstanceType;
 import js.tiny.container.spi.IInstancePostConstructionProcessor;
 import js.tiny.container.spi.IManagedClass;
 
