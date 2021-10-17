@@ -4,7 +4,6 @@ import js.converter.ConverterException;
 import js.lang.BugError;
 import js.lang.InvocationException;
 import js.lang.NoProviderException;
-import js.tiny.container.core.IFactory;
 
 /**
  * Container services for framework internals and plugins. This interface is a service provider interface and is not intended

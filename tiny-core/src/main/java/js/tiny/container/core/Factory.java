@@ -2,6 +2,7 @@ package js.tiny.container.core;
 
 import js.lang.BugError;
 import js.rmi.UnsupportedProtocolException;
+import js.tiny.container.spi.IFactory;
 
 /**
  * Server global master factory for managed instances. This utility class has JVM level visibility and just delegates requests

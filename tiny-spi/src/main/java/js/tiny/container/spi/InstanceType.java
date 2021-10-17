@@ -1,11 +1,7 @@
-package js.tiny.container.core;
+package js.tiny.container.spi;
 
 import js.converter.Converter;
 import js.converter.ConverterException;
-import js.tiny.container.cdi.InstanceFactory;
-import js.tiny.container.cdi.LocalInstanceFactory;
-import js.tiny.container.cdi.RemoteInstanceFactory;
-import js.tiny.container.cdi.ServiceInstanceFactory;
 import js.util.Params;
 
 /**

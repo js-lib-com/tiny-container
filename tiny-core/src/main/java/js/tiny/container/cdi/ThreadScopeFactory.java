@@ -5,7 +5,7 @@ import java.util.Map;
 
 import js.lang.BugError;
 import js.tiny.container.core.InstanceKey;
-import js.tiny.container.core.InstanceScope;
+import js.tiny.container.spi.InstanceScope;
 
 /**
  * Scope factory that creates thread local instances. An instance with {@link InstanceScope#THREAD}, once created, has the same

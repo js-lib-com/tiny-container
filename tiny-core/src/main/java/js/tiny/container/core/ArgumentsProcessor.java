@@ -9,6 +9,7 @@ import js.lang.VarArgs;
 import js.tiny.container.cdi.DependencyLoader;
 import js.tiny.container.spi.IManagedClass;
 import js.tiny.container.spi.IManagedMethod;
+import js.tiny.container.spi.InstanceType;
 import js.util.Types;
 
 /**

@@ -13,7 +13,7 @@ import js.converter.ConverterRegistry;
 import js.lang.BugError;
 import js.log.Log;
 import js.log.LogFactory;
-import js.tiny.container.core.InstanceScope;
+import js.tiny.container.spi.InstanceScope;
 
 /**
  * Request context stored on current HTTP servlet request thread. This class allows access to container public services and to

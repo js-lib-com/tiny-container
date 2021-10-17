@@ -8,7 +8,7 @@ import js.lang.AsyncExceptionListener;
 import js.lang.ManagedLifeCycle;
 import js.log.Log;
 import js.log.LogFactory;
-import js.tiny.container.core.Factory;
+import js.tiny.container.spi.IContainer;
 
 /**
  * Scheduler for periodic and timeout tasks. This scheduler is a managed class and its instance if retrieved from factory, see
@@ -28,19 +28,25 @@ import js.tiny.container.core.Factory;
  * @author Iulian Rotaru
  */
 public final class Timer implements ManagedLifeCycle {
-	/** Class logger. */
 	private static final Log log = LogFactory.getLog(Timer.class);
 
+
+	private final IContainer container;
+	
 	/** Java {@link java.util.Timer} instance. */
-	private java.util.Timer timer;
+	private final java.util.Timer timer;
 
 	/** Pending user defined tasks mapped to Java {@link TimerTask}. */
-	private Map<Object, TimerTask> tasks;
+	private final Map<Object, TimerTask> tasks;
+
+	public Timer(IContainer container) {
+		this.container = container;
+		this.timer = new java.util.Timer();
+		this.tasks = new HashMap<Object, TimerTask>();
+	}
 
 	@Override
 	public synchronized void postConstruct() throws Exception {
-		this.timer = new java.util.Timer();
-		this.tasks = new HashMap<Object, TimerTask>();
 	}
 
 	@Override
@@ -112,12 +118,6 @@ public final class Timer implements ManagedLifeCycle {
 		}
 	}
 
-	/**
-	 * Prevent instantiation with new operator.
-	 */
-	private Timer() {
-	}
-
 	// ----------------------------------------------------
 	// TASK CLASS IMPLEMENTATIONS
 
@@ -126,7 +126,7 @@ public final class Timer implements ManagedLifeCycle {
 	 * 
 	 * @author Iulian Rotaru
 	 */
-	private static class PeriodicTaskImpl extends TimerTask {
+	private class PeriodicTaskImpl extends TimerTask {
 		private PeriodicTask periodicTask;
 
 		public PeriodicTaskImpl(PeriodicTask periodicTask) {
@@ -140,7 +140,7 @@ public final class Timer implements ManagedLifeCycle {
 				this.periodicTask.onPeriod();
 			} catch (Throwable throwable) {
 				Timer.log.error("%s: %s: %s", this.periodicTask.getClass(), throwable.getClass(), throwable.getMessage());
-				AsyncExceptionListener listener = Factory.getOptionalInstance(AsyncExceptionListener.class);
+				AsyncExceptionListener listener = container.getOptionalInstance(AsyncExceptionListener.class);
 				if (listener != null) {
 					listener.onAsyncException(throwable);
 				}
@@ -153,7 +153,7 @@ public final class Timer implements ManagedLifeCycle {
 	 * 
 	 * @author Iulian Rotaru
 	 */
-	private static class TimeoutTaskImpl extends TimerTask {
+	private class TimeoutTaskImpl extends TimerTask {
 		private TimeoutTask timeoutTask;
 
 		public TimeoutTaskImpl(TimeoutTask timeoutTask) {
@@ -167,7 +167,7 @@ public final class Timer implements ManagedLifeCycle {
 				this.timeoutTask.onTimeout();
 			} catch (Throwable throwable) {
 				Timer.log.error("%s: %s: %s", this.timeoutTask.getClass(), throwable.getClass(), throwable.getMessage());
-				AsyncExceptionListener listener = Factory.getOptionalInstance(AsyncExceptionListener.class);
+				AsyncExceptionListener listener = container.getOptionalInstance(AsyncExceptionListener.class);
 				if (listener != null) {
 					listener.onAsyncException(throwable);
 				}

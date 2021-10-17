@@ -1,9 +1,6 @@
-package js.tiny.container.core;
+package js.tiny.container.spi;
 
 import js.converter.Converter;
-import js.tiny.container.cdi.ApplicationScopeFactory;
-import js.tiny.container.cdi.ScopeFactory;
-import js.tiny.container.cdi.ThreadScopeFactory;
 
 /**
  * Managed class scope controls managed instance life span. Instance scope is used as selector for {@link ScopeFactory}

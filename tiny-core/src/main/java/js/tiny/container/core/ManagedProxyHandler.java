@@ -10,6 +10,7 @@ import js.log.Log;
 import js.log.LogFactory;
 import js.tiny.container.spi.IManagedClass;
 import js.tiny.container.spi.IManagedMethod;
+import js.tiny.container.spi.InstanceType;
 import js.util.Params;
 
 /**

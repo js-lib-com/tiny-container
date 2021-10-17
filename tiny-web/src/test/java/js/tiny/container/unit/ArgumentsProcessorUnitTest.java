@@ -12,8 +12,8 @@ import org.junit.Before;
 import org.junit.Test;
 
 import js.lang.VarArgs;
-import js.tiny.container.core.IFactory;
 import js.tiny.container.spi.IContainer;
+import js.tiny.container.spi.IFactory;
 import js.tiny.container.spi.IManagedClass;
 import js.tiny.container.stub.ContainerStub;
 import js.tiny.container.stub.ManagedClassSpiStub;

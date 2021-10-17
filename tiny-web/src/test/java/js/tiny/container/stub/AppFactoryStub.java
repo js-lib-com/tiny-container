@@ -1,6 +1,6 @@
 package js.tiny.container.stub;
 
-import js.tiny.container.core.IFactory;
+import js.tiny.container.spi.IFactory;
 
 public class AppFactoryStub implements IFactory {
 	@Override

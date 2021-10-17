@@ -8,9 +8,9 @@ import js.lang.BugError;
 import js.lang.InvocationException;
 import js.log.Log;
 import js.log.LogFactory;
-import js.tiny.container.core.InstanceType;
 import js.tiny.container.core.ManagedProxyHandler;
 import js.tiny.container.spi.IManagedClass;
+import js.tiny.container.spi.InstanceType;
 import js.util.Classes;
 import js.util.Strings;
 

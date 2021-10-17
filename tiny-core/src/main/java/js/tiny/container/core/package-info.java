@@ -15,17 +15,17 @@
  * </pre>
  * As result from above configuration snippet every managed class has an interface, an implementation, a type and a scope. Is acceptable,
  * though not really good practice, to use only <code>class</code> instead of <code>interface</code>/<code>implementation</code> tuple. 
- * There are two major types of managed classes: {@link js.tiny.container.core.InstanceType#POJO} and {@link js.tiny.container.core.InstanceType#PROXY}. Only container can 
+ * There are two major types of managed classes: {@link js.tiny.container.spi.InstanceType#POJO} and {@link js.tiny.container.spi.InstanceType#PROXY}. Only container can 
  * benefit from all managed classes services, see list below. 
  * <p>
- * A managed class is not created with <code>new</code> operator; there is a {@link js.tiny.container.core.IFactory factory} dedicated exactly for 
+ * A managed class is not created with <code>new</code> operator; there is a {@link js.tiny.container.spi.IFactory factory} dedicated exactly for 
  * that. Every application has its own managed instances factory; there is also a master factory - see {@link js.tiny.container.core.Factory}, with 
  * server global visibility. Every HTTP request is addressed to an application in a specific execution thread; master factory uses request 
  * this thread to store application specific factory so that is able to the delegate correct factory no matter from which application is 
  * used. Anyway, a managed class should first register to application factory; this happens on application factory creation, when all 
  * managed classes are created based on information from application descriptor. 
  * <p>
- * Managed instances are created by managed instances {@link js.tiny.container.core.IFactory factory} and comes in two flavors: managed POJOs and 
+ * Managed instances are created by managed instances {@link js.tiny.container.spi.IFactory factory} and comes in two flavors: managed POJOs and 
  * managed containers. Managed containers are in fact Java Proxy, with bytecode generated dynamically and allows for method level,
  * cross-cutting services like declarative transactions. Managed POJOs are more lightweight but no method level services. Here 
  * are listed all services supplied by current implementation:

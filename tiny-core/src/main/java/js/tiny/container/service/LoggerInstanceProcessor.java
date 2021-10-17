@@ -3,10 +3,10 @@ package js.tiny.container.service;
 import js.log.Log;
 import js.log.LogFactory;
 import js.tiny.container.core.Container;
-import js.tiny.container.core.InstanceScope;
-import js.tiny.container.core.InstanceType;
 import js.tiny.container.spi.IInstancePostConstructionProcessor;
 import js.tiny.container.spi.IManagedClass;
+import js.tiny.container.spi.InstanceScope;
+import js.tiny.container.spi.InstanceType;
 
 /**
  * Dump managed instance to {@link Container} class logger. This processor dumps instance managed class to container logger but

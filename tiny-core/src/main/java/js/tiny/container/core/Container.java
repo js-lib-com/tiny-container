@@ -61,6 +61,8 @@ import js.tiny.container.spi.IInstancePostConstructionProcessor;
 import js.tiny.container.spi.IInstancePreDestructionProcessor;
 import js.tiny.container.spi.IManagedClass;
 import js.tiny.container.spi.IManagedMethod;
+import js.tiny.container.spi.InstanceScope;
+import js.tiny.container.spi.InstanceType;
 import js.util.Classes;
 import js.util.Params;
 

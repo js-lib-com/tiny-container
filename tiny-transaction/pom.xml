@@ -10,7 +10,7 @@
 	<dependencies>
 		<dependency>
 			<groupId>${project.parent.groupId}</groupId>
-			<artifactId>tiny-core</artifactId>
+			<artifactId>tiny-spi</artifactId>
 			<version>${project.parent.version}</version>
 		</dependency>
 		<dependency>

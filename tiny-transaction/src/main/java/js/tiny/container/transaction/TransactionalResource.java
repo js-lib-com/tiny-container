@@ -6,9 +6,8 @@ import js.lang.ConfigException;
 import js.lang.ManagedPreDestroy;
 import js.log.Log;
 import js.log.LogFactory;
-import js.tiny.container.core.ManagedProxyHandler;
-import js.tiny.container.core.OptionalConfigurable;
 import js.tiny.container.spi.IContainer;
+import js.tiny.container.spi.OptionalConfigurable;
 import js.transaction.Transaction;
 import js.transaction.TransactionContext;
 import js.transaction.TransactionManager;
@@ -29,10 +28,9 @@ import js.transaction.TransactionManager;
  * specified behavior.
  * 
  * @author Iulian Rotaru
- * @version final
+ * @version draft
  */
 final class TransactionalResource implements ITransactionalResource, OptionalConfigurable, ManagedPreDestroy {
-	/** Class logger. */
 	private static final Log log = LogFactory.getLog(ITransactionalResource.class);
 
 	/**

@@ -17,6 +17,7 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
 import js.lang.BugError;
+import js.tiny.container.spi.IFactory;
 
 @RunWith(MockitoJUnitRunner.class)
 public class FactoryTest {

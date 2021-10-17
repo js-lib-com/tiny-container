@@ -3,10 +3,10 @@ package js.tiny.container.cdi;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 
-import js.tiny.container.core.IFactory;
-import js.tiny.container.core.InstanceScope;
 import js.tiny.container.service.InstanceFieldsInjectionProcessor;
 import js.tiny.container.spi.IContainer;
+import js.tiny.container.spi.IFactory;
+import js.tiny.container.spi.InstanceScope;
 
 /**
  * Adapter for dependency with shorter scope hosted into managed instance with larger scope. If dependency scope, i.e. life span

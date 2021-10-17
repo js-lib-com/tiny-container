@@ -23,14 +23,14 @@ import js.lang.ConfigBuilder;
 import js.lang.ConfigException;
 import js.log.Log;
 import js.log.LogFactory;
-import js.tiny.container.core.Container;
+import js.tiny.container.spi.IContainer;
 import js.util.Classes;
 import js.util.Strings;
 
 /**
  * Builder for configuration object used to configure tiny container. Create tiny container configuration object and load it
  * from external library and application descriptors. By convention configuration object has the same name as the web
- * application that creates the container. See {@link Container} for container descriptor description.
+ * application that creates the container. See {@link IContainer} for container descriptor description.
  * 
  * @author Iulian Rotaru
  * @version final

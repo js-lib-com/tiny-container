@@ -24,9 +24,9 @@ import js.log.LogFactory;
 import js.tiny.container.core.Container;
 import js.tiny.container.core.Factory;
 import js.tiny.container.core.InstanceKey;
-import js.tiny.container.core.InstanceScope;
 import js.tiny.container.spi.IContainer;
 import js.tiny.container.spi.IManagedClass;
+import js.tiny.container.spi.InstanceScope;
 import js.util.Types;
 
 /**

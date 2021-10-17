@@ -6,10 +6,10 @@ import java.util.Stack;
 import js.lang.BugError;
 import js.log.Log;
 import js.log.LogFactory;
-import js.tiny.container.core.IFactory;
-import js.tiny.container.core.InstanceScope;
 import js.tiny.container.spi.IContainer;
+import js.tiny.container.spi.IFactory;
 import js.tiny.container.spi.IManagedClass;
+import js.tiny.container.spi.InstanceScope;
 import js.util.Classes;
 import js.util.Types;
 

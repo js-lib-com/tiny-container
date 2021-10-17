@@ -1,7 +1,7 @@
 package js.tiny.container.cdi;
 
 import js.tiny.container.core.InstanceKey;
-import js.tiny.container.core.InstanceScope;
+import js.tiny.container.spi.InstanceScope;
 
 /**
  * Strategy for managed instances life span management, also known as managed instance <code>scope</code>. This interface is

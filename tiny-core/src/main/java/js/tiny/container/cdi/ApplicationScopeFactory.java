@@ -4,7 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import js.tiny.container.core.InstanceKey;
-import js.tiny.container.core.InstanceScope;
+import js.tiny.container.spi.InstanceScope;
 
 /**
  * Scope factory for application level singletons. Application scope factory has an {@link #instancesPool} and attempt to

@@ -17,8 +17,8 @@ import org.mockito.junit.MockitoJUnitRunner;
 import js.lang.BugError;
 import js.lang.Config;
 import js.lang.ManagedPreDestroy;
-import js.tiny.container.core.OptionalConfigurable;
 import js.tiny.container.spi.IContainer;
+import js.tiny.container.spi.OptionalConfigurable;
 import js.transaction.TransactionManager;
 
 @RunWith(MockitoJUnitRunner.class)

@@ -1,11 +1,10 @@
 package js.tiny.container.perfmon;
 
-import js.tiny.container.core.ManagedMethod;
 import js.tiny.container.spi.IManagedMethod;
 
 /**
  * Invocation meters implementation for managed methods. Standard usage pattern is to update meter state on
- * {@link ManagedMethod#invoke(Object, Object...)} execution, like in sample code below. Also, not present in pseudo-code,
+ * {@link IManagedMethod#invoke(Object, Object...)} execution, like in sample code below. Also, not present in pseudo-code,
  * increment exceptions count if method logic fails.
  * 
  * <pre>
@@ -22,7 +21,6 @@ import js.tiny.container.spi.IManagedMethod;
  * Managed method meter class implements {@link IInvocationMeter} interface for meter counters reading.
  * 
  * @author Iulian Rotaru
- * @version final
  */
 class Meter implements IInvocationMeter {
 	public static final String ATTR_METER = "meter";

@@ -30,8 +30,8 @@ import js.tiny.container.cdi.InstanceFactory;
 import js.tiny.container.cdi.LocalInstanceFactory;
 import js.tiny.container.cdi.ServiceInstanceFactory;
 import js.tiny.container.core.Container;
-import js.tiny.container.core.InstanceType;
 import js.tiny.container.spi.IManagedClass;
+import js.tiny.container.spi.InstanceType;
 import js.tiny.container.stub.ManagedClassSpiStub;
 import js.util.Classes;
 

@@ -28,12 +28,12 @@ import js.lang.ConfigException;
 import js.lang.Configurable;
 import js.lang.ManagedLifeCycle;
 import js.tiny.container.core.Container;
-import js.tiny.container.core.InstanceScope;
-import js.tiny.container.core.InstanceType;
 import js.tiny.container.core.ManagedClass;
 import js.tiny.container.servlet.TinyConfigBuilder;
 import js.tiny.container.spi.IManagedClass;
 import js.tiny.container.spi.IManagedMethod;
+import js.tiny.container.spi.InstanceScope;
+import js.tiny.container.spi.InstanceType;
 import js.tiny.container.stub.ContainerStub;
 import js.util.Classes;
 

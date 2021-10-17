@@ -2,8 +2,8 @@ package js.tiny.container.cdi;
 
 import js.lang.BugError;
 import js.lang.NoProviderException;
-import js.tiny.container.core.InstanceType;
 import js.tiny.container.spi.IManagedClass;
+import js.tiny.container.spi.InstanceType;
 import js.util.Classes;
 
 /**

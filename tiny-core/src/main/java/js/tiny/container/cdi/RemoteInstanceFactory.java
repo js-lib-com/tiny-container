@@ -9,9 +9,9 @@ import js.lang.BugError;
 import js.rmi.RemoteFactory;
 import js.rmi.RemoteFactoryProvider;
 import js.rmi.UnsupportedProtocolException;
-import js.tiny.container.core.IFactory;
-import js.tiny.container.core.InstanceType;
+import js.tiny.container.spi.IFactory;
 import js.tiny.container.spi.IManagedClass;
+import js.tiny.container.spi.InstanceType;
 import js.util.Strings;
 
 /**

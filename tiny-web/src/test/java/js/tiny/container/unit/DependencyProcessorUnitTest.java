@@ -20,12 +20,12 @@ import org.junit.Test;
 
 import js.lang.BugError;
 import js.lang.InvocationException;
-import js.tiny.container.core.IFactory;
 import js.tiny.container.core.Container;
-import js.tiny.container.core.InstanceScope;
 import js.tiny.container.servlet.AppContext;
 import js.tiny.container.spi.IContainer;
+import js.tiny.container.spi.IFactory;
 import js.tiny.container.spi.IManagedClass;
+import js.tiny.container.spi.InstanceScope;
 import js.tiny.container.stub.AppFactoryStub;
 import js.tiny.container.stub.ContainerStub;
 import js.tiny.container.stub.ManagedClassSpiStub;

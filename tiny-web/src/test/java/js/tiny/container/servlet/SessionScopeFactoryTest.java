@@ -18,8 +18,8 @@ import org.mockito.junit.MockitoJUnitRunner;
 
 import js.lang.BugError;
 import js.tiny.container.core.InstanceKey;
-import js.tiny.container.core.InstanceScope;
 import js.tiny.container.spi.IContainer;
+import js.tiny.container.spi.InstanceScope;
 
 @RunWith(MockitoJUnitRunner.class)
 public class SessionScopeFactoryTest {

@@ -3,8 +3,8 @@ package js.tiny.container.cdi;
 import js.lang.BugError;
 import js.lang.InvocationException;
 import js.lang.NoProviderException;
-import js.tiny.container.core.InstanceType;
 import js.tiny.container.spi.IManagedClass;
+import js.tiny.container.spi.InstanceType;
 
 /**
  * Managed instances factory deals with the actual instances creation. Instance creation process may depend on managed class

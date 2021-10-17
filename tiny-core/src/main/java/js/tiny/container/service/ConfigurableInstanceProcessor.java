@@ -6,9 +6,9 @@ import js.lang.ConfigException;
 import js.lang.Configurable;
 import js.log.Log;
 import js.log.LogFactory;
-import js.tiny.container.core.OptionalConfigurable;
 import js.tiny.container.spi.IInstancePostConstructionProcessor;
 import js.tiny.container.spi.IManagedClass;
+import js.tiny.container.spi.OptionalConfigurable;
 
 /**
  * Configure instance with configuration object provided by instance managed class. The actual instance configuration is

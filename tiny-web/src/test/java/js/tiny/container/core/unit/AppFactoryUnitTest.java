@@ -17,8 +17,8 @@ import org.junit.Test;
 import js.lang.BugError;
 import js.lang.InvocationException;
 import js.lang.NoProviderException;
-import js.tiny.container.core.IFactory;
 import js.tiny.container.servlet.AppContext;
+import js.tiny.container.spi.IFactory;
 import js.tiny.container.unit.TestContext;
 
 public class AppFactoryUnitTest {
