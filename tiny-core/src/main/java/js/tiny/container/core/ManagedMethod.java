@@ -10,7 +10,6 @@ import java.util.Map;
 
 import js.log.Log;
 import js.log.LogFactory;
-import js.tiny.container.cdi.ArgumentsProcessor;
 import js.tiny.container.service.FlowProcessorsSet;
 import js.tiny.container.service.InvocationProcessorsChain;
 import js.tiny.container.spi.IInvocation;
@@ -79,7 +78,7 @@ public class ManagedMethod implements IManagedMethod {
 		for (Class<?> formalParameter : method.getParameterTypes()) {
 			formalParameters.add(formalParameter.getSimpleName());
 		}
-		signature = String.format(QUALIFIED_NAME_FORMAT, method.getDeclaringClass().getName(), method.getName(), Strings.join(formalParameters, ','));
+		signature = String.format(QUALIFIED_NAME_FORMAT, declaringClass.getImplementationClass().getCanonicalName(), method.getName(), Strings.join(formalParameters, ','));
 
 		declaringClass.getServices().forEach(service -> {
 			if (service instanceof IMethodInvocationProcessor) {

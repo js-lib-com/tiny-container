@@ -12,7 +12,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import js.lang.VarArgs;
-import js.tiny.container.core.AppFactory;
+import js.tiny.container.core.IFactory;
 import js.tiny.container.spi.IContainer;
 import js.tiny.container.spi.IManagedClass;
 import js.tiny.container.stub.ContainerStub;
@@ -32,21 +32,9 @@ public class ArgumentsProcessorUnitTest {
 	}
 
 	@Test
-	public void constructorArguments() throws Exception {
-		managedClass.constructor = Person.class.getConstructor(String.class, int.class, boolean.class);
-		Object[] args = Classes.invoke(processor, "preProcessArguments", managedClass, new VarArgs<Object>("John Doe", 54, false));
-
-		assertNotNull(args);
-		assertEquals(3, args.length);
-		assertEquals("John Doe", args[0]);
-		assertEquals(54, args[1]);
-		assertFalse((boolean) args[2]);
-	}
-
-	@Test
 	public void constructorArguments_NoArguments() throws Exception {
 		managedClass.constructor = Person.class.getConstructor();
-		Object[] args = Classes.invoke(processor, "preProcessArguments", managedClass, new VarArgs<Object>());
+		Object[] args = Classes.invoke(processor, "getConstructorArguments", managedClass);
 
 		assertNotNull(args);
 		assertEquals(0, args.length);
@@ -54,8 +42,8 @@ public class ArgumentsProcessorUnitTest {
 
 	@Test
 	public void constructorArguments_DependencyInject() throws Exception {
-		managedClass.constructor = Person.class.getConstructor(AppFactory.class, Vehicle.class, Pojo.class);
-		Object[] args = Classes.invoke(processor, "preProcessArguments", managedClass, new VarArgs<Object>());
+		managedClass.constructor = Person.class.getConstructor(IFactory.class, Vehicle.class, Pojo.class);
+		Object[] args = Classes.invoke(processor, "getConstructorArguments", managedClass);
 
 		assertNotNull(args);
 		assertEquals(3, args.length);
@@ -68,37 +56,8 @@ public class ArgumentsProcessorUnitTest {
 	public void constructorArguments_NoImplementation() throws Exception {
 		managedClass.implementationClass = null;
 		managedClass.constructor = Person.class.getConstructor(String.class, int.class, boolean.class);
-		Object[] args = Classes.invoke(processor, "preProcessArguments", managedClass, new VarArgs<Object>("John Doe", 54, false));
+		Object[] args = Classes.invoke(processor, "getConstructorArguments", managedClass);
 
-		assertNotNull(args);
-		assertEquals(3, args.length);
-		assertEquals("John Doe", args[0]);
-		assertEquals(54, args[1]);
-		assertFalse((boolean) args[2]);
-	}
-
-	@Test(expected = IllegalArgumentException.class)
-	public void constructorArguments_BadArgumentsCount() throws Exception {
-		managedClass.constructor = Person.class.getConstructor(String.class, int.class, boolean.class);
-		Classes.invoke(processor, "preProcessArguments", managedClass, new VarArgs<Object>("John Doe"));
-	}
-
-	@Test(expected = IllegalArgumentException.class)
-	public void constructorArguments_InvalidArgumentType() throws Exception {
-		managedClass.constructor = Person.class.getConstructor(String.class, int.class, boolean.class);
-		Classes.invoke(processor, "preProcessArguments", managedClass, new VarArgs<Object>("John Doe", true));
-	}
-
-	@Test
-	public void constructorArguments_NullArgument() throws Exception {
-		managedClass.constructor = Person.class.getConstructor(String.class, int.class, boolean.class);
-		Classes.invoke(processor, "preProcessArguments", managedClass, new VarArgs<Object>("John Doe", 54, null));
-	}
-
-	@Test
-	public void constructorArguments_NullArgumentsArray() throws Exception {
-		managedClass.constructor = Person.class.getConstructor();
-		Object[] args = Classes.invoke(processor, "preProcessArguments", managedClass, null);
 		assertNotNull(args);
 		assertEquals(0, args.length);
 	}
@@ -128,7 +87,7 @@ public class ArgumentsProcessorUnitTest {
 	}
 
 	private static Object getArgumentsProcessor() {
-		return Classes.newInstance("js.tiny.container.cdi.ArgumentsProcessor");
+		return Classes.newInstance("js.tiny.container.core.ArgumentsProcessor");
 	}
 
 	// --------------------------------------------------------------------------------------------
@@ -142,7 +101,7 @@ public class ArgumentsProcessorUnitTest {
 		public Person(String name, int age, boolean married) {
 		}
 
-		public Person(AppFactory factory, Vehicle car, Pojo pojo) {
+		public Person(IFactory factory, Vehicle car, Pojo pojo) {
 		}
 
 		public void setValue() {
@@ -164,7 +123,7 @@ public class ArgumentsProcessorUnitTest {
 	private static class MockContainer extends ContainerStub {
 		@SuppressWarnings("unchecked")
 		@Override
-		public <T> T getOptionalInstance(Class<? super T> interfaceClass, Object... args) {
+		public <T> T getOptionalInstance(Class<? super T> interfaceClass) {
 			if (interfaceClass.equals(Vehicle.class)) {
 				return (T) new Car();
 			}

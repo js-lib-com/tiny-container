@@ -4,7 +4,7 @@ import js.converter.ConverterException;
 import js.lang.BugError;
 import js.lang.InvocationException;
 import js.lang.NoProviderException;
-import js.tiny.container.core.AppFactory;
+import js.tiny.container.core.IFactory;
 
 /**
  * Container services for framework internals and plugins. This interface is a service provider interface and is not intended
@@ -13,22 +13,21 @@ import js.tiny.container.core.AppFactory;
  * Beside services provided by inherited interfaces container SPI deals mainly with managed classes and methods.
  * 
  * @author Iulian Rotaru
- * @version final
  */
-public interface IContainer extends AppFactory {
-	
+public interface IContainer extends IFactory {
+
 	/**
 	 * Retrieve instance of requested managed class. Depending on managed class scope a new managed instance can be created or
-	 * it can be reused from caches. Optional constructor arguments are used only if a new local managed instance is created.
-	 * <p>
+	 * it can be reused from caches. If instance is newly created this factory method takes care to resolve all instance
+	 * dependencies - at field, constructor and method level, and execute post-construct method, of course if defined.
+	 * 
 	 * Under normal circumstances this factory method always succeed and does return a not null instance. Implementation should
 	 * fail only for severe errors like out of memory or similar extreme conditions. Anyway, since instance creation may involve
 	 * user defined constructors is possible also to throw {@link InvocationException}. Also if requested interface is a service
 	 * and no provider found at run-time this factory method throws {@link NoProviderException}. Finally, this factory method
 	 * may also fail for other conditions that are related to development stage and considered bugs.
 	 * 
-	 * @param managedClass managed class to return instance for,
-	 * @param args optional implementation constructor arguments, if new local instance should be created.
+	 * @param managedClass managed class to return instance for.
 	 * @param <T> instance type.
 	 * @return managed instance, created on the fly or reused from caches, but never null.
 	 * 
@@ -41,7 +40,7 @@ public interface IContainer extends AppFactory {
 	 * @throws BugError if instance post-construction fails due to exception of user defined logic.
 	 * @throws BugError if attempt to assign field to not POJO type.
 	 */
-	<T> T getInstance(IManagedClass managedClass, Object... args);
+	<T> T getInstance(IManagedClass managedClass);
 
 	/**
 	 * Test if interface class has a managed class bound.
@@ -72,5 +71,5 @@ public interface IContainer extends AppFactory {
 	 * @return container managed methods, in no particular order.
 	 */
 	Iterable<IManagedMethod> getManagedMethods();
-	
+
 }

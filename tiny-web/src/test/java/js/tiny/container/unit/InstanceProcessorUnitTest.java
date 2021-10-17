@@ -26,7 +26,7 @@ import js.lang.ConfigException;
 import js.lang.Configurable;
 import js.lang.InvocationException;
 import js.lang.ManagedPostConstruct;
-import js.tiny.container.core.AppFactory;
+import js.tiny.container.core.IFactory;
 import js.tiny.container.core.Container;
 import js.tiny.container.core.InstanceScope;
 import js.tiny.container.core.InstanceType;
@@ -327,7 +327,7 @@ public class InstanceProcessorUnitTest {
 	// FIXTURE
 
 	private static class Person {
-		private AppFactory factory;
+		private IFactory factory;
 		private Vehicle car;
 		private Pojo pojo;
 	}
@@ -400,7 +400,7 @@ public class InstanceProcessorUnitTest {
 
 		@SuppressWarnings("unchecked")
 		@Override
-		public <T> T getInstance(Class<? super T> interfaceClass, Object... args) {
+		public <T> T getInstance(Class<? super T> interfaceClass) {
 			if (interfaceClass.getSimpleName().equals("TransactionalResource")) {
 				Class<?> clazz = Classes.forName("js.container.TransactionalResourceImpl");
 				return (T) Classes.newInstance(clazz, this);
@@ -410,7 +410,7 @@ public class InstanceProcessorUnitTest {
 
 		@SuppressWarnings("unchecked")
 		@Override
-		public <T> T getOptionalInstance(Class<? super T> interfaceClass, Object... args) {
+		public <T> T getOptionalInstance(Class<? super T> interfaceClass) {
 			IManagedClass managedClass = classesPool.get(interfaceClass);
 			if (managedClass == null) {
 				return null;

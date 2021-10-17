@@ -4,7 +4,7 @@ import java.io.File;
 import java.util.Locale;
 
 import js.converter.ConverterException;
-import js.tiny.container.core.AppFactory;
+import js.tiny.container.core.IFactory;
 
 /**
  * Application context provides access to container services. There are two major services inherited from interfaces: managed
@@ -13,9 +13,8 @@ import js.tiny.container.core.AppFactory;
  * Application context instance can be injected into managed classes or retrieved from application factory.
  * 
  * @author Iulian Rotaru
- * @version final
  */
-public interface AppContext extends AppFactory, SecurityContext {
+public interface AppContext extends IFactory, SecurityContext {
 	/**
 	 * Get application name. Returned application name is rather for application identification than for displaying on user
 	 * interface.

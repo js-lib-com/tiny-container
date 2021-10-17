@@ -39,7 +39,6 @@ import js.log.Log;
 import js.log.LogFactory;
 import js.rmi.RemoteFactory;
 import js.tiny.container.cdi.ApplicationScopeFactory;
-import js.tiny.container.cdi.ArgumentsProcessor;
 import js.tiny.container.cdi.InstanceFactory;
 import js.tiny.container.cdi.LocalInstanceFactory;
 import js.tiny.container.cdi.RemoteInstanceFactory;
@@ -514,7 +513,9 @@ public class Container implements IContainer, Configurable {
 			// sorted managed classes contains only implementations of pre-destroy interface
 			// in case instance is a Java Proxy takes care to execute pre-destroy hook on wrapped instance
 			// in order to avoid adding container services to this finalization hook
-			instance = Classes.unproxy(instance);
+			if (instance instanceof InstanceInvocationHandler) {
+				instance = Classes.unproxy(instance);
+			}
 			log.debug("Pre-destroy managed instance |%s|.", instance.getClass());
 
 			final Object finalInstance = instance;
@@ -546,7 +547,7 @@ public class Container implements IContainer, Configurable {
 	// INSTANCE RETRIEVAL ALGORITHM
 
 	@Override
-	public <T> T getInstance(Class<? super T> interfaceClass, Object... args) {
+	public <T> T getInstance(Class<? super T> interfaceClass) {
 		Params.notNull(interfaceClass, "Interface class");
 
 		IManagedClass managedClass = classesPool.get(interfaceClass);
@@ -556,11 +557,11 @@ public class Container implements IContainer, Configurable {
 
 		// managed class key cannot be null
 		InstanceKey instanceKey = new InstanceKey(managedClass.getKey().toString());
-		return getInstance(managedClass, instanceKey, args);
+		return getInstance(managedClass, instanceKey);
 	}
 
 	@Override
-	public <T> T getInstance(String instanceName, Class<? super T> interfaceClass, Object... args) {
+	public <T> T getInstance(String instanceName, Class<? super T> interfaceClass) {
 		Params.notNullOrEmpty(instanceName, "Instance name");
 		Params.notNull(interfaceClass, "Interface class");
 
@@ -571,11 +572,11 @@ public class Container implements IContainer, Configurable {
 
 		// instance name should be unique and can be used as uniqueness indicator
 		InstanceKey key = new InstanceKey(instanceName);
-		return getInstance(managedClass, key, args);
+		return getInstance(managedClass, key);
 	}
 
 	@Override
-	public <T> T getOptionalInstance(Class<? super T> interfaceClass, Object... args) {
+	public <T> T getOptionalInstance(Class<? super T> interfaceClass) {
 		Params.notNull(interfaceClass, "Interface class");
 
 		IManagedClass managedClass = classesPool.get(interfaceClass);
@@ -590,7 +591,7 @@ public class Container implements IContainer, Configurable {
 		// managed class key cannot be null
 		InstanceKey instanceKey = new InstanceKey(managedClass.getKey().toString());
 		try {
-			return getInstance(managedClass, instanceKey, args);
+			return getInstance(managedClass, instanceKey);
 		} catch (NoProviderException e) {
 			// is not an error since application code is prepared for missing provider
 			log.debug(e);
@@ -599,10 +600,10 @@ public class Container implements IContainer, Configurable {
 	}
 
 	@Override
-	public <T> T getInstance(IManagedClass managedClass, Object... args) {
+	public <T> T getInstance(IManagedClass managedClass) {
 		// managed class key cannot be null
 		InstanceKey instanceKey = new InstanceKey(managedClass.getKey().toString());
-		return getInstance(managedClass, instanceKey, args);
+		return getInstance(managedClass, instanceKey);
 	}
 
 	/**
@@ -641,7 +642,7 @@ public class Container implements IContainer, Configurable {
 	 * @throws BugError if attempt to assign field to not POJO type.
 	 */
 	@SuppressWarnings("unchecked")
-	private <T> T getInstance(IManagedClass managedClass, InstanceKey instanceKey, Object... args) {
+	private <T> T getInstance(IManagedClass managedClass, InstanceKey instanceKey) {
 		// if(managedClass.getInstanceType().isREMOTE()) {
 		// return getRemoteInstance(new URL(managedClass.getImplementationURL()), (Class<? super T>)
 		// managedClass.getInterfaceClass());
@@ -651,8 +652,7 @@ public class Container implements IContainer, Configurable {
 		InstanceFactory instanceFactory = instanceFactories.get(managedClass.getInstanceType());
 
 		if (scopeFactory == null) {
-			args = argumentsProcessor.preProcessArguments(managedClass, args);
-			return instanceFactory.newInstance(managedClass, args);
+			return instanceFactory.newInstance(managedClass, argumentsProcessor.getConstructorArguments(managedClass));
 		}
 
 		boolean postProcessingEnabled = false;
@@ -661,8 +661,7 @@ public class Container implements IContainer, Configurable {
 			instance = scopeFactory.getInstance(instanceKey);
 			if (instance == null) {
 				postProcessingEnabled = true;
-				args = argumentsProcessor.preProcessArguments(managedClass, args);
-				instance = instanceFactory.newInstance(managedClass, args);
+				instance = instanceFactory.newInstance(managedClass, argumentsProcessor.getConstructorArguments(managedClass));
 				scopeFactory.persistInstance(instanceKey, instance);
 			}
 		}

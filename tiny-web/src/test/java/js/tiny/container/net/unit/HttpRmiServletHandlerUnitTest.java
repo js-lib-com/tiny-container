@@ -131,7 +131,7 @@ public class HttpRmiServletHandlerUnitTest {
 		}
 
 		@Override
-		public <T> T getInstance(IManagedClass managedClass, Object... args) {
+		public <T> T getInstance(IManagedClass managedClass) {
 			return (T) new Object();
 		}
 

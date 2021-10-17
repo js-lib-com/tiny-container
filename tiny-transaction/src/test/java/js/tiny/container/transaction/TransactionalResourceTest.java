@@ -17,20 +17,20 @@ import org.mockito.junit.MockitoJUnitRunner;
 import js.lang.BugError;
 import js.lang.Config;
 import js.lang.ManagedPreDestroy;
-import js.tiny.container.core.AppFactory;
 import js.tiny.container.core.OptionalConfigurable;
+import js.tiny.container.spi.IContainer;
 import js.transaction.TransactionManager;
 
 @RunWith(MockitoJUnitRunner.class)
 public class TransactionalResourceTest {
 	@Mock
-	private AppFactory appFactory;
+	private IContainer container;
 	@Mock
 	private TransactionManager transactionManager;
 
 	@Before
 	public void beforeTest() throws Exception {
-		when(appFactory.getOptionalInstance(TransactionManager.class)).thenReturn(transactionManager);
+		when(container.getOptionalInstance(TransactionManager.class)).thenReturn(transactionManager);
 	}
 
 	@Test
@@ -38,7 +38,7 @@ public class TransactionalResourceTest {
 		// given
 
 		// when
-		ITransactionalResource transactionalResource = new TransactionalResource(appFactory);
+		ITransactionalResource transactionalResource = new TransactionalResource(container);
 
 		// then
 		assertThat(transactionalResource.getTransactionManager(), equalTo(transactionManager));
@@ -47,10 +47,10 @@ public class TransactionalResourceTest {
 	@Test(expected = BugError.class)
 	public void GivenNoTransactionManager_WhenConstructor_ThenException() {
 		// given
-		when(appFactory.getOptionalInstance(TransactionManager.class)).thenReturn(null);
+		when(container.getOptionalInstance(TransactionManager.class)).thenReturn(null);
 
 		// when
-		new TransactionalResource(appFactory);
+		new TransactionalResource(container);
 
 		// then
 	}
@@ -62,7 +62,7 @@ public class TransactionalResourceTest {
 	@Test
 	public void GivenTransactionalResource_WhenGetSessionStorage_ThenInheritable() {
 		// given
-		TransactionalResource transactionalResource = new TransactionalResource(appFactory);
+		TransactionalResource transactionalResource = new TransactionalResource(container);
 
 		// when
 		Object sessionStorage = transactionalResource.getResourceManagerStorage();
@@ -80,7 +80,7 @@ public class TransactionalResourceTest {
 		// given
 		Object session = new Object();
 
-		final ITransactionalResource transactionalResource = new TransactionalResource(appFactory);
+		final ITransactionalResource transactionalResource = new TransactionalResource(container);
 		transactionalResource.storeResourceManager(session);
 
 		// when
@@ -105,7 +105,7 @@ public class TransactionalResourceTest {
 	@Test
 	public void GivenSessionObject_WhenStoreSession_ThenRetrieve() {
 		// given
-		ITransactionalResource transactionalResource = new TransactionalResource(appFactory);
+		ITransactionalResource transactionalResource = new TransactionalResource(container);
 
 		// when
 		Object session = new Object();
@@ -118,7 +118,7 @@ public class TransactionalResourceTest {
 	@Test
 	public void Given_WhenReleaseSession_ThenNull() {
 		// given
-		TransactionalResource transactionalResource = new TransactionalResource(appFactory);
+		TransactionalResource transactionalResource = new TransactionalResource(container);
 		ThreadLocal<Object> sessionStorage = transactionalResource.getResourceManagerStorage();
 		sessionStorage.set(new Object());
 
@@ -136,7 +136,7 @@ public class TransactionalResourceTest {
 		Config config = new Config("test");
 
 		// when
-		OptionalConfigurable transactionalResource = new TransactionalResource(appFactory);
+		OptionalConfigurable transactionalResource = new TransactionalResource(container);
 		transactionalResource.config(config);
 
 		// then
@@ -149,7 +149,7 @@ public class TransactionalResourceTest {
 		// given
 
 		// when
-		ManagedPreDestroy transactionalResource = new TransactionalResource(appFactory);
+		ManagedPreDestroy transactionalResource = new TransactionalResource(container);
 		transactionalResource.preDestroy();
 
 		// then
@@ -163,7 +163,7 @@ public class TransactionalResourceTest {
 		String schema = "app";
 
 		// when
-		ITransactionalResource transactionalResource = new TransactionalResource(appFactory);
+		ITransactionalResource transactionalResource = new TransactionalResource(container);
 		transactionalResource.createTransaction(schema);
 
 		//
@@ -176,7 +176,7 @@ public class TransactionalResourceTest {
 		String schema = null;
 
 		// when
-		ITransactionalResource transactionalResource = new TransactionalResource(appFactory);
+		ITransactionalResource transactionalResource = new TransactionalResource(container);
 		transactionalResource.createTransaction(schema);
 
 		//
@@ -190,7 +190,7 @@ public class TransactionalResourceTest {
 		String schema = "app";
 
 		// when
-		ITransactionalResource transactionalResource = new TransactionalResource(appFactory);
+		ITransactionalResource transactionalResource = new TransactionalResource(container);
 		transactionalResource.createReadOnlyTransaction(schema);
 
 		//
@@ -203,7 +203,7 @@ public class TransactionalResourceTest {
 		String schema = null;
 
 		// when
-		ITransactionalResource transactionalResource = new TransactionalResource(appFactory);
+		ITransactionalResource transactionalResource = new TransactionalResource(container);
 		transactionalResource.createReadOnlyTransaction(schema);
 
 		//

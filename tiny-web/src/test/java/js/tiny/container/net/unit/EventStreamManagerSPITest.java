@@ -21,17 +21,17 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
-import js.tiny.container.core.AppFactory;
 import js.tiny.container.net.EventGuest;
 import js.tiny.container.net.EventStream;
 import js.tiny.container.net.EventStreamConfig;
 import js.tiny.container.net.EventStreamManagerImpl;
 import js.tiny.container.net.EventStreamManagerSPI;
+import js.tiny.container.spi.IContainer;
 
 @RunWith(MockitoJUnitRunner.class)
 public class EventStreamManagerSPITest {
 	@Mock
-	private AppFactory factory;
+	private IContainer container;
 	@Mock
 	private Map<Principal, EventStream> eventsMap;
 	@Mock
@@ -45,12 +45,12 @@ public class EventStreamManagerSPITest {
 
 	@Before
 	public void beforeTest() {
-		manager = new EventStreamManagerImpl(factory, eventsMap);
+		manager = new EventStreamManagerImpl(container, eventsMap);
 	}
 
 	@Test
 	public void createEventStream() {
-		when(factory.getInstance(EventStream.class)).thenReturn(eventStream);
+		when(container.getInstance(EventStream.class)).thenReturn(eventStream);
 		manager.createEventStream(null, null);
 
 		// configuration object is not provided
@@ -72,7 +72,7 @@ public class EventStreamManagerSPITest {
 			}
 		}
 
-		when(factory.getInstance(EventStream.class)).thenReturn(eventStream);
+		when(container.getInstance(EventStream.class)).thenReturn(eventStream);
 		manager.createEventStream(new User(), null);
 
 		verify(eventStream, times(0)).config(any(EventStreamConfig.class));
@@ -86,7 +86,7 @@ public class EventStreamManagerSPITest {
 
 	@Test
 	public void createEventStream_Config() {
-		when(factory.getInstance(EventStream.class)).thenReturn(eventStream);
+		when(container.getInstance(EventStream.class)).thenReturn(eventStream);
 		manager.createEventStream(null, config);
 
 		// configuration object is passed to created event stream

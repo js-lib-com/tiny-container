@@ -4,8 +4,8 @@ import js.tiny.container.service.FlowProcessorsSet;
 
 /**
  * Container services executed on relevant points into container code flow. Container implementation discovers these processors
- * on an early phase of is life then execute them when program flow reach relevant points. Current implementation deals with two
- * kinds of flow processors: life cycle events and join points.
+ * on an early phase of is life then execute them when program flow reach those relevant points. Current implementation deals
+ * with two kinds of flow processors: life cycle events and join points.
  * 
  * A life cycle event is a moment in the life of an entity, e.g. container start, managed class loaded. A join point is a
  * location in a program where the control flow can arrive via multiple paths: in our case container services and application

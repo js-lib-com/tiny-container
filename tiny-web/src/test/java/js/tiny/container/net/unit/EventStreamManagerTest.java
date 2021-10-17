@@ -16,16 +16,16 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
 import js.lang.Event;
-import js.tiny.container.core.AppFactory;
 import js.tiny.container.net.EventStream;
 import js.tiny.container.net.EventStreamConfig;
 import js.tiny.container.net.EventStreamManager;
 import js.tiny.container.net.EventStreamManagerImpl;
+import js.tiny.container.spi.IContainer;
 
 @RunWith(MockitoJUnitRunner.class)
 public class EventStreamManagerTest {
 	@Mock
-	private AppFactory factory;
+	private IContainer container;
 	@Mock
 	private Map<Principal, EventStream> eventStreams;
 	@Mock
@@ -41,7 +41,7 @@ public class EventStreamManagerTest {
 
 	@Before
 	public void beforeTest() {
-		manager = new EventStreamManagerImpl(factory, eventStreams);
+		manager = new EventStreamManagerImpl(container, eventStreams);
 	}
 
 	@Test

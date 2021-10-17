@@ -184,16 +184,6 @@ public class ManagedClassUnitTest {
 		assertTrue(methodsPool.isEmpty());
 	}
 
-	@Test
-	public void newInstanceVarArgs() throws Exception {
-		String config = "<test class='js.tiny.container.unit.ManagedClassUnitTest$PojoVarArgs' />";
-		TestContext.start(config(config));
-		PojoVarArgs pojo = Factory.getInstance(PojoVarArgs.class, new VarArgs<String>("one", "two", "three"));
-		assertEquals("one", pojo.values[0]);
-		assertEquals("two", pojo.values[1]);
-		assertEquals("three", pojo.values[2]);
-	}
-
 	// --------------------------------------------------------------------------------------------
 	// INSANITY CHECK
 

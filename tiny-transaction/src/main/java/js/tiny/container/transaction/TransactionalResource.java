@@ -6,9 +6,9 @@ import js.lang.ConfigException;
 import js.lang.ManagedPreDestroy;
 import js.log.Log;
 import js.log.LogFactory;
-import js.tiny.container.core.AppFactory;
 import js.tiny.container.core.ManagedProxyHandler;
 import js.tiny.container.core.OptionalConfigurable;
+import js.tiny.container.spi.IContainer;
 import js.transaction.Transaction;
 import js.transaction.TransactionContext;
 import js.transaction.TransactionManager;
@@ -52,10 +52,10 @@ final class TransactionalResource implements ITransactionalResource, OptionalCon
 	 * 
 	 * @param appFactory application factory.
 	 */
-	public TransactionalResource(AppFactory appFactory) {
-		log.trace("TransactionalResource(AppFactory)");
+	public TransactionalResource(IContainer container) {
+		log.trace("TransactionalResource(IContainer)");
 		// uses AppFactory instead of Classes.loadService to acquire transaction manager since need scope management
-		this.transactionManager = appFactory.getOptionalInstance(TransactionManager.class);
+		this.transactionManager = container.getOptionalInstance(TransactionManager.class);
 		if (this.transactionManager == null) {
 			throw new BugError("Transaction manager service not found. Ensure there is |%s| service provider on run-time.", TransactionManager.class);
 		}

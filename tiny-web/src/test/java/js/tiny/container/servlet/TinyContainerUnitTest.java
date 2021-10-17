@@ -1,4 +1,4 @@
-package js.tiny.container.servlet.unit;
+package js.tiny.container.servlet;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -347,14 +347,14 @@ public class TinyContainerUnitTest {
 
 	@Test
 	public void getRequestLocale() throws ConfigException {
-		String config = "<context interface='js.tiny.container.servlet.RequestContext' class='js.tiny.container.servlet.unit.TinyContainerUnitTest$MockRequestContext' />";
+		String config = "<context interface='js.tiny.container.servlet.RequestContext' class='js.tiny.container.servlet.TinyContainerUnitTest$MockRequestContext' />";
 		TinyContainer container = getContainer(config);
 		assertEquals(Locale.ENGLISH, container.getRequestLocale());
 	}
 
 	@Test
 	public void getRemoteAddr() throws ConfigException {
-		String config = "<context interface='js.tiny.container.servlet.RequestContext' class='js.tiny.container.servlet.unit.TinyContainerUnitTest$MockRequestContext' />";
+		String config = "<context interface='js.tiny.container.servlet.RequestContext' class='js.tiny.container.servlet.TinyContainerUnitTest$MockRequestContext' />";
 		TinyContainer container = getContainer(config);
 		assertEquals("1.2.3.4", container.getRemoteAddr());
 	}
@@ -368,7 +368,7 @@ public class TinyContainerUnitTest {
 	 */
 	@Test
 	public void login_ServletContainer() throws ConfigException {
-		String config = "<context interface='js.tiny.container.servlet.RequestContext' class='js.tiny.container.servlet.unit.TinyContainerUnitTest$MockRequestContext' />";
+		String config = "<context interface='js.tiny.container.servlet.RequestContext' class='js.tiny.container.servlet.TinyContainerUnitTest$MockRequestContext' />";
 		TinyContainer container = getContainer(config);
 
 		assertTrue(container.login("username", "password"));
@@ -384,7 +384,7 @@ public class TinyContainerUnitTest {
 
 	@Test
 	public void login_ServletContainer_Fail() throws ConfigException {
-		String config = "<context interface='js.tiny.container.servlet.RequestContext' class='js.tiny.container.servlet.unit.TinyContainerUnitTest$MockRequestContext' />";
+		String config = "<context interface='js.tiny.container.servlet.RequestContext' class='js.tiny.container.servlet.TinyContainerUnitTest$MockRequestContext' />";
 		TinyContainer container = getContainer(config);
 
 		MockRequestContext context = container.getInstance(RequestContext.class);
@@ -401,7 +401,7 @@ public class TinyContainerUnitTest {
 
 	@Test
 	public void login_Application() throws ConfigException {
-		String config = "<context interface='js.tiny.container.servlet.RequestContext' class='js.tiny.container.servlet.unit.TinyContainerUnitTest$MockRequestContext' />";
+		String config = "<context interface='js.tiny.container.servlet.RequestContext' class='js.tiny.container.servlet.TinyContainerUnitTest$MockRequestContext' />";
 		TinyContainer container = getContainer(config);
 
 		class User implements Principal {
@@ -428,7 +428,7 @@ public class TinyContainerUnitTest {
 
 	@Test
 	public void login_Application_Nonce() throws ConfigException {
-		String config = "<context interface='js.tiny.container.servlet.RequestContext' class='js.tiny.container.servlet.unit.TinyContainerUnitTest$MockRequestContext' />";
+		String config = "<context interface='js.tiny.container.servlet.RequestContext' class='js.tiny.container.servlet.TinyContainerUnitTest$MockRequestContext' />";
 		TinyContainer container = getContainer(config);
 
 		MockRequestContext context = container.getInstance(RequestContext.class);
@@ -452,7 +452,7 @@ public class TinyContainerUnitTest {
 
 	@Test
 	public void login_Application_InvalidateException() throws ConfigException {
-		String config = "<context interface='js.tiny.container.servlet.RequestContext' class='js.tiny.container.servlet.unit.TinyContainerUnitTest$MockRequestContext' />";
+		String config = "<context interface='js.tiny.container.servlet.RequestContext' class='js.tiny.container.servlet.TinyContainerUnitTest$MockRequestContext' />";
 		TinyContainer container = getContainer(config);
 
 		class User implements Principal {
@@ -477,7 +477,7 @@ public class TinyContainerUnitTest {
 
 	@Test
 	public void logout() throws ConfigException {
-		String config = "<context interface='js.tiny.container.servlet.RequestContext' class='js.tiny.container.servlet.unit.TinyContainerUnitTest$MockRequestContext' />";
+		String config = "<context interface='js.tiny.container.servlet.RequestContext' class='js.tiny.container.servlet.TinyContainerUnitTest$MockRequestContext' />";
 		TinyContainer container = getContainer(config);
 
 		MockRequestContext context = container.getInstance(RequestContext.class);
@@ -494,7 +494,7 @@ public class TinyContainerUnitTest {
 
 	@Test
 	public void logout_OutsideSession() throws ConfigException {
-		String config = "<context interface='js.tiny.container.servlet.RequestContext' class='js.tiny.container.servlet.unit.TinyContainerUnitTest$MockRequestContext' />";
+		String config = "<context interface='js.tiny.container.servlet.RequestContext' class='js.tiny.container.servlet.TinyContainerUnitTest$MockRequestContext' />";
 		TinyContainer container = getContainer(config);
 
 		MockRequestContext context = container.getInstance(RequestContext.class);
@@ -507,7 +507,7 @@ public class TinyContainerUnitTest {
 
 	@Test
 	public void logout_ServletException() throws ConfigException {
-		String config = "<context interface='js.tiny.container.servlet.RequestContext' class='js.tiny.container.servlet.unit.TinyContainerUnitTest$MockRequestContext' />";
+		String config = "<context interface='js.tiny.container.servlet.RequestContext' class='js.tiny.container.servlet.TinyContainerUnitTest$MockRequestContext' />";
 		TinyContainer container = getContainer(config);
 
 		MockRequestContext context = container.getInstance(RequestContext.class);
@@ -525,7 +525,7 @@ public class TinyContainerUnitTest {
 
 	@Test
 	public void logout_InvalidateException() throws ConfigException {
-		String config = "<context interface='js.tiny.container.servlet.RequestContext' class='js.tiny.container.servlet.unit.TinyContainerUnitTest$MockRequestContext' />";
+		String config = "<context interface='js.tiny.container.servlet.RequestContext' class='js.tiny.container.servlet.TinyContainerUnitTest$MockRequestContext' />";
 		TinyContainer container = getContainer(config);
 
 		MockRequestContext context = container.getInstance(RequestContext.class);
@@ -543,7 +543,7 @@ public class TinyContainerUnitTest {
 
 	@Test(expected = BugError.class)
 	public void login_OutsideHttpRequest() throws ConfigException {
-		String config = "<context interface='js.tiny.container.servlet.RequestContext' class='js.tiny.container.servlet.unit.TinyContainerUnitTest$MockRequestContext' />";
+		String config = "<context interface='js.tiny.container.servlet.RequestContext' class='js.tiny.container.servlet.TinyContainerUnitTest$MockRequestContext' />";
 		TinyContainer container = getContainer(config);
 
 		MockRequestContext context = container.getInstance(RequestContext.class);
@@ -554,7 +554,7 @@ public class TinyContainerUnitTest {
 
 	@Test(expected = BugError.class)
 	public void logout_OutsideHttpRequest() throws ConfigException {
-		String config = "<context interface='js.tiny.container.servlet.RequestContext' class='js.tiny.container.servlet.unit.TinyContainerUnitTest$MockRequestContext' />";
+		String config = "<context interface='js.tiny.container.servlet.RequestContext' class='js.tiny.container.servlet.TinyContainerUnitTest$MockRequestContext' />";
 		TinyContainer container = getContainer(config);
 
 		MockRequestContext context = container.getInstance(RequestContext.class);
@@ -565,7 +565,7 @@ public class TinyContainerUnitTest {
 
 	@Test
 	public void getUserPrincipal_Application() throws ConfigException {
-		String config = "<context interface='js.tiny.container.servlet.RequestContext' class='js.tiny.container.servlet.unit.TinyContainerUnitTest$MockRequestContext' />";
+		String config = "<context interface='js.tiny.container.servlet.RequestContext' class='js.tiny.container.servlet.TinyContainerUnitTest$MockRequestContext' />";
 		TinyContainer container = getContainer(config);
 		container.login("username", "passsword");
 
@@ -576,7 +576,7 @@ public class TinyContainerUnitTest {
 
 	@Test
 	public void getUserPrincipal_Container() throws ConfigException {
-		String config = "<context interface='js.tiny.container.servlet.RequestContext' class='js.tiny.container.servlet.unit.TinyContainerUnitTest$MockRequestContext' />";
+		String config = "<context interface='js.tiny.container.servlet.RequestContext' class='js.tiny.container.servlet.TinyContainerUnitTest$MockRequestContext' />";
 		TinyContainer container = getContainer(config);
 
 		class User implements Principal {
@@ -594,7 +594,7 @@ public class TinyContainerUnitTest {
 
 	@Test
 	public void getUserPrincipal_Container_NoSession() throws ConfigException {
-		String config = "<context interface='js.tiny.container.servlet.RequestContext' class='js.tiny.container.servlet.unit.TinyContainerUnitTest$MockRequestContext' />";
+		String config = "<context interface='js.tiny.container.servlet.RequestContext' class='js.tiny.container.servlet.TinyContainerUnitTest$MockRequestContext' />";
 		TinyContainer container = getContainer(config);
 
 		MockRequestContext context = container.getInstance(RequestContext.class);
@@ -615,7 +615,7 @@ public class TinyContainerUnitTest {
 
 	@Test
 	public void getUserPrincipal_Application_OutsideSession() throws ConfigException {
-		String config = "<context interface='js.tiny.container.servlet.RequestContext' class='js.tiny.container.servlet.unit.TinyContainerUnitTest$MockRequestContext' />";
+		String config = "<context interface='js.tiny.container.servlet.RequestContext' class='js.tiny.container.servlet.TinyContainerUnitTest$MockRequestContext' />";
 		TinyContainer container = getContainer(config);
 
 		MockRequestContext context = container.getInstance(RequestContext.class);
@@ -636,7 +636,7 @@ public class TinyContainerUnitTest {
 
 	@Test
 	public void isAuthneticated() throws ConfigException {
-		String config = "<context interface='js.tiny.container.servlet.RequestContext' class='js.tiny.container.servlet.unit.TinyContainerUnitTest$MockRequestContext' />";
+		String config = "<context interface='js.tiny.container.servlet.RequestContext' class='js.tiny.container.servlet.TinyContainerUnitTest$MockRequestContext' />";
 		TinyContainer container = getContainer(config);
 
 		assertFalse(container.isAuthenticated());

@@ -11,7 +11,7 @@ import js.lang.Event;
 import js.lang.ManagedPreDestroy;
 import js.log.Log;
 import js.log.LogFactory;
-import js.tiny.container.core.AppFactory;
+import js.tiny.container.spi.IContainer;
 
 /**
  * Implementation for event stream manager. This class implements event stream life cycle management and events push interface
@@ -55,11 +55,10 @@ import js.tiny.container.core.AppFactory;
  * @version final
  */
 public class EventStreamManagerImpl implements EventStreamManager, ManagedPreDestroy, EventStreamManagerSPI {
-	/** Class logger. */
 	private static final Log log = LogFactory.getLog(EventStreamManagerImpl.class);
 
-	/** Application factory. */
-	private final AppFactory factory;
+	/** Parent container back reference. */
+	private final IContainer container;
 
 	/**
 	 * Storage for running event stream references. It is updated by {@link #createEventStream(String)} and
@@ -73,22 +72,22 @@ public class EventStreamManagerImpl implements EventStreamManager, ManagedPreDes
 	/**
 	 * Construct event stream manager instance and inject application factory.
 	 * 
-	 * @param factory application factory.
+	 * @param container parent container reference.
 	 */
 	@Inject
-	public EventStreamManagerImpl(AppFactory factory) {
-		this.factory = factory;
+	public EventStreamManagerImpl(IContainer container) {
+		this.container = container;
 		this.eventStreams = new HashMap<>();
 	}
 
 	/**
 	 * Test constructor.
 	 * 
-	 * @param factory application factory mock,
+	 * @param container container mock,
 	 * @param eventStreams mock for events streams storage.
 	 */
-	public EventStreamManagerImpl(AppFactory factory, Map<Principal, EventStream> eventStreams) {
-		this.factory = factory;
+	public EventStreamManagerImpl(IContainer container, Map<Principal, EventStream> eventStreams) {
+		this.container = container;
 		this.eventStreams = eventStreams;
 	}
 
@@ -123,7 +122,7 @@ public class EventStreamManagerImpl implements EventStreamManager, ManagedPreDes
 		if (principal == null) {
 			principal = new EventGuest();
 		}
-		EventStream eventStream = factory.getInstance(EventStream.class);
+		EventStream eventStream = container.getInstance(EventStream.class);
 		if (config != null) {
 			eventStream.config(config);
 		}

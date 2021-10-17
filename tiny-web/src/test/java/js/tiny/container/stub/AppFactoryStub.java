@@ -1,21 +1,21 @@
 package js.tiny.container.stub;
 
-import js.tiny.container.core.AppFactory;
+import js.tiny.container.core.IFactory;
 
-public class AppFactoryStub implements AppFactory {
+public class AppFactoryStub implements IFactory {
 	@Override
-	public <T> T getInstance(Class<? super T> interfaceClass, Object... args) {
-		throw new UnsupportedOperationException("getInstance(Class<? super T>, Object...)");
+	public <T> T getInstance(Class<? super T> interfaceClass) {
+		throw new UnsupportedOperationException("getInstance(Class<? super T>)");
 	}
 
 	@Override
-	public <T> T getInstance(String instanceName, Class<? super T> interfaceClass, Object... args) {
-		throw new UnsupportedOperationException("getInstance(String, Class<? super T>, Object...)");
+	public <T> T getInstance(String instanceName, Class<? super T> interfaceClass) {
+		throw new UnsupportedOperationException("getInstance(String, Class<? super T>)");
 	}
 
 	@Override
-	public <T> T getOptionalInstance(Class<? super T> interfaceClass, Object... args) {
-		throw new UnsupportedOperationException("getOptionalInstance(Class<? super T>, Object...)");
+	public <T> T getOptionalInstance(Class<? super T> interfaceClass) {
+		throw new UnsupportedOperationException("getOptionalInstance(Class<? super T>)");
 	}
 
 	@Override

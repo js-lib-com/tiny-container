@@ -282,12 +282,12 @@ public class ContainerUnitTest {
 			private Class<?> interfaceClass;
 
 			@Override
-			public <T> T getOptionalInstance(Class<? super T> interfaceClass, Object... args) {
+			public <T> T getOptionalInstance(Class<? super T> interfaceClass) {
 				return null;
 			}
 
 			@Override
-			public <T> T getInstance(Class<? super T> interfaceClass, Object... args) {
+			public <T> T getInstance(Class<? super T> interfaceClass) {
 				this.interfaceClass = interfaceClass;
 				return null;
 			}
@@ -318,7 +318,7 @@ public class ContainerUnitTest {
 			List<Class<?>> instantiatedClasses = new ArrayList<>();
 
 			@Override
-			public <T> T getInstance(Class<? super T> interfaceClass, Object... args) {
+			public <T> T getInstance(Class<? super T> interfaceClass) {
 				instantiatedClasses.add(interfaceClass);
 				return null;
 			}
@@ -1034,7 +1034,7 @@ public class ContainerUnitTest {
 
 	private static class MockContainer extends ContainerStub {
 		@Override
-		public <T> T getOptionalInstance(Class<? super T> interfaceClass, Object... args) {
+		public <T> T getOptionalInstance(Class<? super T> interfaceClass) {
 			return null;
 		}
 	}

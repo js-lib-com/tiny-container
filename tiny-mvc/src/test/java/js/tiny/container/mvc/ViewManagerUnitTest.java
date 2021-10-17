@@ -24,7 +24,7 @@ import js.lang.BugError;
 import js.lang.ConfigBuilder;
 import js.lang.ConfigException;
 import js.lang.Configurable;
-import js.tiny.container.core.AppFactory;
+import js.tiny.container.core.IFactory;
 import js.tiny.container.servlet.RequestContext;
 import js.tiny.container.spi.IContainer;
 import js.tiny.container.unit.TestContext;
@@ -103,7 +103,7 @@ public class ViewManagerUnitTest {
 		when(request.getContextPath()).thenReturn("/test-app");
 		when(request.getLocale()).thenReturn(Locale.US);
 
-		AppFactory factory = TestContext.start();
+		IFactory factory = TestContext.start();
 		RequestContext context = factory.getInstance(RequestContext.class);
 		context.attach(request, response);
 
@@ -129,7 +129,7 @@ public class ViewManagerUnitTest {
 		when(request.getContextPath()).thenReturn("/test-app");
 		when(request.getLocale()).thenReturn(Locale.US);
 
-		AppFactory factory = TestContext.start();
+		IFactory factory = TestContext.start();
 		RequestContext context = factory.getInstance(RequestContext.class);
 		context.attach(request, response);
 

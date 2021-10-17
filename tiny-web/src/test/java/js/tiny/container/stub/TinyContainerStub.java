@@ -8,18 +8,18 @@ import js.tiny.container.spi.IManagedMethod;
 
 public class TinyContainerStub implements ITinyContainer {
 	@Override
-	public <T> T getInstance(Class<? super T> interfaceClass, Object... args) {
-		throw new UnsupportedOperationException("getInstance(Class<? super T> interfaceClass, Object... args)");
+	public <T> T getInstance(Class<? super T> interfaceClass) {
+		throw new UnsupportedOperationException("getInstance(Class<? super T> interfaceClass)");
 	}
 
 	@Override
-	public <T> T getInstance(String instanceName, Class<? super T> interfaceClass, Object... args) {
-		throw new UnsupportedOperationException("getInstance(String instanceName, Class<? super T> interfaceClass, Object... args)");
+	public <T> T getInstance(String instanceName, Class<? super T> interfaceClass) {
+		throw new UnsupportedOperationException("getInstance(String instanceName, Class<? super T> interfaceClass)");
 	}
 
 	@Override
-	public <T> T getOptionalInstance(Class<? super T> interfaceClass, Object... args) {
-		throw new UnsupportedOperationException("getOptionalInstance(Class<? super T> interfaceClass, Object... args)");
+	public <T> T getOptionalInstance(Class<? super T> interfaceClass) {
+		throw new UnsupportedOperationException("getOptionalInstance(Class<? super T> interfaceClass)");
 	}
 
 	@Override
@@ -63,8 +63,8 @@ public class TinyContainerStub implements ITinyContainer {
 	}
 
 	@Override
-	public <T> T getInstance(IManagedClass managedClass, Object... args) {
-		throw new UnsupportedOperationException("getInstance(ManagedClassSPI managedClass, Object... args)");
+	public <T> T getInstance(IManagedClass managedClass) {
+		throw new UnsupportedOperationException("getInstance(ManagedClassSPI managedClass)");
 	}
 
 	@Override

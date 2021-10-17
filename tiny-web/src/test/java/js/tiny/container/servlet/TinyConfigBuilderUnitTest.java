@@ -1,4 +1,4 @@
-package js.tiny.container.servlet.unit;
+package js.tiny.container.servlet;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;

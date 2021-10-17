@@ -1,4 +1,4 @@
-package js.tiny.container.cdi;
+package js.tiny.container.core;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Member;
@@ -6,7 +6,7 @@ import java.lang.reflect.Method;
 
 import js.lang.IllegalArgumentException;
 import js.lang.VarArgs;
-import js.tiny.container.core.InstanceType;
+import js.tiny.container.cdi.DependencyLoader;
 import js.tiny.container.spi.IManagedClass;
 import js.tiny.container.spi.IManagedMethod;
 import js.util.Types;
@@ -19,27 +19,22 @@ import js.util.Types;
  * @author Iulian Rotaru
  * @version final
  */
-public class ArgumentsProcessor {
+class ArgumentsProcessor {
 	/** Reusable empty arguments used when provided arguments array is null. */
 	private static final Object[] EMPTY_ARGS = new Object[0];
 
 	/**
-	 * Pre-process constructor arguments for local managed classes. A managed class is <code>local</code> if is of
+	 * Get constructor arguments for local managed classes. A managed class is <code>local</code> if is of
 	 * {@link InstanceType#POJO} or {@link InstanceType#PROXY} type. Attempting to pre-process arguments for other managed class
-	 * types is silently ignored. This method delegates
-	 * {@link #preProcessArguments(IManagedClass, Member, Class[], Object...)}.
+	 * types is silently ignored. This method delegates {@link #preProcessArguments(IManagedClass, Member, Class[], Object...)}.
 	 * 
-	 * @param managedClass managed class,
-	 * @param args constructor arguments.
-	 * @return processed arguments.
+	 * @param managedClass managed class.
+	 * @return constructor arguments.
 	 */
-	public Object[] preProcessArguments(IManagedClass managedClass, Object... args) {
+	public Object[] getConstructorArguments(IManagedClass managedClass) {
 		// arguments can be null if on invocations chain there is Proxy handler invoked with no arguments
-		if (args == null) {
-			args = EMPTY_ARGS;
-		}
 		if (managedClass.getImplementationClass() == null) {
-			return args;
+			return EMPTY_ARGS;
 		}
 		Constructor<?> constructor = managedClass.getConstructor();
 
@@ -48,7 +43,7 @@ public class ArgumentsProcessor {
 
 		// because managed class is not generic is safe to use getParameterTypes instead of getGenericParameterTypes
 		final Class<?>[] types = constructor.getParameterTypes();
-		return preProcessArguments(managedClass, constructor, types, args);
+		return preProcessArguments(managedClass, constructor, types, EMPTY_ARGS);
 	}
 
 	/**

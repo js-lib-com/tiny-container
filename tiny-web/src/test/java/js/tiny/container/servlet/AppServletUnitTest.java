@@ -1,4 +1,4 @@
-package js.tiny.container.servlet.unit;
+package js.tiny.container.servlet;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -62,7 +62,7 @@ public class AppServletUnitTest {
 			"<?xml version='1.0' encoding='UTF-8'?>" + //
 			"<test>" + //
 			"	<managed-classes>" + //
-			"		<controller interface='js.tiny.container.servlet.RequestContext' class='js.tiny.container.servlet.unit.AppServletUnitTest$MockRequestContext' />" + //
+			"		<controller interface='js.tiny.container.servlet.RequestContext' class='js.tiny.container.servlet.AppServletUnitTest$MockRequestContext' />" + //
 			"	</managed-classes>" + //
 			"	<login>" + //
 			"		<property name='realm' value='Test App' />" + //

@@ -6,7 +6,6 @@ import js.lang.InvocationException;
 import js.lang.NoProviderException;
 import js.rmi.RemoteFactory;
 import js.rmi.UnsupportedProtocolException;
-import js.tiny.container.cdi.InstanceFactory;
 
 /**
  * Managed instances factory with application scope. A managed instance is one created from a managed class. Managed instances
@@ -41,36 +40,34 @@ import js.tiny.container.cdi.InstanceFactory;
  * {@link #getRemoteInstance(String, Class)} that retrieve a remote instance for specified URL.
  * 
  * @author Iulian Rotaru
- * @version final
  */
-public interface AppFactory extends RemoteFactory {
+public interface IFactory extends RemoteFactory {
+
 	/**
 	 * Return instance for requested interface, newly created or reused but never null, throwing exception if implementation not
 	 * found. If requested interface is not registered this factory method throws bug error. Depending on managed class
 	 * {@link InstanceScope}, new instance can be created on the fly or reused from scope specific pools. If instance should be
-	 * created, delegates managed class. Please note that optional constructor arguments are actually used only if instance is
-	 * created by this call; if instance is reused constructor arguments are simply ignored. Also note that not all
-	 * implementations does support constructor arguments, see {@link InstanceFactory}.
-	 * <p>
+	 * created, delegates managed class.
+	 * 
+	 * If instance is newly created this factory method takes care to resolve all instance dependencies - at field, constructor
+	 * and method level, and execute post-construct method, of course if defined.
+	 * 
 	 * This factory method consider missing managed class as logic flaw. So if one dares to request an instance for a not
 	 * registered interface {@link BugError} will be thrown. If this behavior is not desirable, there if
-	 * {@link #getOptionalInstance(Class, Object...)} method that returns null is requested interface has no implementation.
-	 * <p>
+	 * {@link #getOptionalInstance(Class)} method that returns null is requested interface has no implementation.
+	 * 
 	 * At least theoretically this factory method always succeed and does return a not null instance. Implementation should fail
 	 * only for severe errors like out of memory or similar extreme conditions. Anyway, since instance creation may involve user
 	 * defined constructors is possible also to throw {@link InvocationException}. Finally if requested interface is a service
 	 * and no provider found at run-time this factory method throws {@link NoProviderException}.
-	 * <p>
+	 * 
 	 * To conclude, recommended use case is to just use returned instance and let JVM fail since all failing conditions are more
 	 * or less for developer or deployer and should never happen in production.
 	 * 
-	 * @param interfaceClass requested interface class,
-	 * @param args optional constructor arguments.
+	 * @param interfaceClass requested interface class.
 	 * @param <T> managed class implementation.
 	 * @return managed instance, created on the fly or reused from caches, but never null.
 	 * @throws IllegalArgumentException if <code>interfaceClass</code> argument is null.
-	 * @throws IllegalArgumentException if <code>args</code> argument does not respect constructor signature or implementation
-	 *             does not support arguments but caller provides them.
 	 * @throws NoProviderException if interface is a service and no provider found on run-time.
 	 * @throws BugError if no implementation found for requested interface class.
 	 * @throws InvocationException if instance is local and constructor fails.
@@ -81,56 +78,20 @@ public interface AppFactory extends RemoteFactory {
 	 * @throws BugError if instance post-construction fails due to exception of user defined logic.
 	 * @throws BugError if attempt to assign field to not POJO type.
 	 */
-	<T> T getInstance(Class<? super T> interfaceClass, Object... args);
-
-	/**
-	 * Alternative for instance retrieval that allows for multiple instances per scope. Usually, for a given scope - except
-	 * {@link InstanceScope#LOCAL}, there can be a single managed instance. If {@link #getInstance(Class, Object...)} is called
-	 * multiple times in a given scope the same managed instance is reused. Named instances allow for multiple instances of a
-	 * given interface class but still reused by name in its scope. It is clearly that does not make sense to used names on
-	 * local instances, although there is no formal restriction.
-	 * <p>
-	 * When used on a managed class with {@link InstanceType#REMOTE} type, instance name is used for discovery, even if remote
-	 * class URL is defined into class descriptor.
-	 * <p>
-	 * In other respects this method behaves identically {@link #getInstance(Class, Object...)}.
-	 * 
-	 * @param instanceName instance name,
-	 * @param interfaceClass requested interface class,
-	 * @param args optional constructor arguments.
-	 * @param <T> managed class implementation.
-	 * @return managed instance, created on the fly or reused from caches, but never null.
-	 * @throws IllegalArgumentException if <code>instanceName</code> argument is null or empty or <code>interfaceClass</code>
-	 *             argument is null.
-	 * @throws IllegalArgumentException if <code>args</code> argument does not respect constructor signature or implementation
-	 *             does not support arguments but caller provides them.
-	 * @throws NoProviderException if interface is a service and no provider found on run-time.
-	 * @throws BugError if no implementation found for requested interface class.
-	 * @throws InvocationException if instance is local and constructor fails.
-	 * @throws ConverterException if attempt to initialize a field with a type for which there is no converter,
-	 * @throws BugError if dependency value cannot be created or circular dependency is detected.
-	 * @throws BugError if instance configuration fails either due to bad configuration object or fail on configuration user
-	 *             defined logic.
-	 * @throws BugError if instance post-construction fails due to exception of user defined logic.
-	 * @throws BugError if attempt to assign field to not POJO type.
-	 */
-	<T> T getInstance(String instanceName, Class<? super T> interfaceClass, Object... args);
+	<T> T getInstance(Class<? super T> interfaceClass);
 
 	/**
 	 * Convenient instance retrieval alternative that returns null if implementation not found. Use this factory method version
 	 * when implementation is not defined at application build but loaded at run-time. If implementation is not available this
 	 * method returns null instead of throwing exception.
-	 * <p>
-	 * If implementation is found this factory method behaves like {@link #getInstance(Class, Object...)} including exceptions
-	 * related to arguments and other failing conditions.
 	 * 
-	 * @param interfaceClass requested interface class,
-	 * @param args optional implementation constructor arguments.
+	 * If implementation is found this factory method behaves like {@link #getInstance(Class)} including dependencies,
+	 * post-construct and failing conditions.
+	 * 
+	 * @param interfaceClass requested interface class.
 	 * @return managed instance or null if no implementation found.
 	 * @param <T> managed class implementation.
 	 * @throws IllegalArgumentException if <code>interfaceClass</code> argument is null.
-	 * @throws IllegalArgumentException if <code>args</code> argument does not respect constructor signature or implementation
-	 *             does not support arguments but caller provides them.
 	 * @throws InvocationException if instance is local and constructor fails.
 	 * @throws ConverterException if attempt to initialize a field with a type for which there is no converter,
 	 * @throws BugError if dependency value cannot be created or circular dependency is detected.
@@ -139,7 +100,37 @@ public interface AppFactory extends RemoteFactory {
 	 * @throws BugError if instance post-construction fails due to exception of user defined logic.
 	 * @throws BugError if attempt to assign field to not POJO type.
 	 */
-	<T> T getOptionalInstance(Class<? super T> interfaceClass, Object... args);
+	<T> T getOptionalInstance(Class<? super T> interfaceClass);
+
+	/**
+	 * Alternative for instance retrieval that allows for multiple instances per scope. Usually, for a given scope - except
+	 * {@link InstanceScope#LOCAL}, there can be a single managed instance. If {@link #getInstance(Class)} is called multiple
+	 * times in a given scope the same managed instance is reused. Named instances allow for multiple instances of a given
+	 * interface class but still reused by name in its scope. It is clearly that does not make sense to use names on local
+	 * instances, although there is no formal restriction.
+	 * 
+	 * When used on a managed class with {@link InstanceType#REMOTE} type, instance name is used for discovery, even if remote
+	 * class URL is defined into class descriptor.
+	 * 
+	 * In other respects this method behaves identically {@link #getInstance(Class)}.
+	 * 
+	 * @param instanceName instance name,
+	 * @param interfaceClass requested interface class.
+	 * @param <T> managed class implementation.
+	 * @return managed instance, created on the fly or reused from caches, but never null.
+	 * @throws IllegalArgumentException if <code>instanceName</code> argument is null or empty or <code>interfaceClass</code>
+	 *             argument is null.
+	 * @throws NoProviderException if interface is a service and no provider found on run-time.
+	 * @throws BugError if no implementation found for requested interface class.
+	 * @throws InvocationException if instance is local and constructor fails.
+	 * @throws ConverterException if attempt to initialize a field with a type for which there is no converter,
+	 * @throws BugError if dependency value cannot be created or circular dependency is detected.
+	 * @throws BugError if instance configuration fails either due to bad configuration object or fail on configuration user
+	 *             defined logic.
+	 * @throws BugError if instance post-construction fails due to exception of user defined logic.
+	 * @throws BugError if attempt to assign field to not POJO type.
+	 */
+	<T> T getInstance(String instanceName, Class<? super T> interfaceClass);
 
 	/**
 	 * Create a Java Proxy instance for a remote deployed class. As result from sample code below, one needs to know remote

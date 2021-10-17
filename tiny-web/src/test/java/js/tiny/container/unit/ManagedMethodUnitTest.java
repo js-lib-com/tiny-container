@@ -249,7 +249,7 @@ public class ManagedMethodUnitTest {
 
 		@SuppressWarnings("unchecked")
 		@Override
-		public <T> T getInstance(Class<? super T> interfaceClass, Object... args) {
+		public <T> T getInstance(Class<? super T> interfaceClass) {
 			return (T) managedInstance;
 		}
 	}

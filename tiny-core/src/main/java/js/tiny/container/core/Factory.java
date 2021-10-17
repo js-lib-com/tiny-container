@@ -5,23 +5,22 @@ import js.rmi.UnsupportedProtocolException;
 
 /**
  * Server global master factory for managed instances. This utility class has JVM level visibility and just delegates requests
- * to {@link AppFactory}, application specific factory. All operations described by application factory interface are supported
- * by this master factory. See {@link AppFactory} class description for general presentation.
+ * to {@link IFactory}, application specific factory. All operations described by application factory interface are supported by
+ * this master factory. See {@link IFactory} class description for general presentation.
  * <p>
  * In order for master factory to be able to delegate application factory, it should be bound to current thread using
- * {@link #bind(AppFactory)}; otherwise {@link BugError} is thrown. One can test if application factory is properly bound using
+ * {@link #bind(IFactory)}; otherwise {@link BugError} is thrown. One can test if application factory is properly bound using
  * {@link #isValid()}. Also there is convenient helper that retrieve current thread application factory.
  * 
  * @author Iulian Rotaru
- * @version final
  */
 public final class Factory {
 	/**
 	 * Inheritable thread local storage for application specific factories. This field keeps application factory reference on
-	 * current thread; is updated by {@link #bind(AppFactory)} and value retrieved by {@link #getAppFactory()}. Uses inheritable
-	 * thread local storage so that child threads can have access to parent application factory.
+	 * current thread; is updated by {@link #bind(IFactory)} and value retrieved by {@link #get()}. Uses inheritable thread
+	 * local storage so that child threads can have access to parent application factory.
 	 */
-	private static ThreadLocal<AppFactory> tls = new InheritableThreadLocal<>();
+	private static ThreadLocal<IFactory> tls = new InheritableThreadLocal<>();
 
 	/** Forbid default constructor synthesis. */
 	private Factory() {
@@ -34,59 +33,52 @@ public final class Factory {
 	 * 
 	 * @param appFactory application specific factory.
 	 */
-	public static void bind(AppFactory appFactory) {
-		// Important note: Servlet container uses a pool of threads so that a thread is used for execution of multiple requests,
-		// but no sequence guaranteed. I do not know if threads pool is per web context or global per server. So, just to be
-		// sure, do not try to cache and reuse stored thread local value, that is, every time call tls.get(); heretical behavior
-		// may result if mix application factories.
+	public static void bind(IFactory appFactory) {
 		tls.set(appFactory);
 	}
 
 	/**
-	 * Delegates {@link AppFactory#getInstance(Class, Object...)}.
+	 * Delegates {@link IFactory#getInstance(Class)}.
 	 * 
-	 * @param interfaceClass requested interface class,
-	 * @param args optional constructor arguments.
+	 * @param interfaceClass requested interface class.
 	 * @param <T> managed class implementation.
 	 * @return managed instance, created on the fly or reused from caches, but never null.
 	 * @throws BugError if application factory is not bound to current thread.
-	 * @see AppFactory#getInstance(Class, Object...)
+	 * @see IFactory#getInstance(Class)
 	 */
-	public static <T> T getInstance(Class<T> interfaceClass, Object... args) {
-		return getAppFactory().getInstance(interfaceClass, args);
+	public static <T> T getInstance(Class<T> interfaceClass) {
+		return get().getInstance(interfaceClass);
 	}
 
 	/**
-	 * Delegates {@link AppFactory#getInstance(String, Class, Object...)}.
+	 * Delegates {@link IFactory#getInstance(String, Class)}.
 	 * 
 	 * @param instanceName instance name,
-	 * @param interfaceClass requested interface class,
-	 * @param args optional constructor arguments.
+	 * @param interfaceClass requested interface class.
 	 * @param <T> managed class implementation.
 	 * @return managed instance, created on the fly or reused from caches, but never null.
 	 * @throws BugError if application factory is not bound to current thread.
-	 * @see AppFactory#getInstance(String, Class, Object...)
+	 * @see IFactory#getInstance(String, Class)
 	 */
-	public static <T> T getInstance(String instanceName, Class<T> interfaceClass, Object... args) {
-		return getAppFactory().getInstance(instanceName, interfaceClass, args);
+	public static <T> T getInstance(String instanceName, Class<T> interfaceClass) {
+		return get().getInstance(instanceName, interfaceClass);
 	}
 
 	/**
-	 * Delegates {@link AppFactory#getOptionalInstance(Class, Object...)}.
+	 * Delegates {@link IFactory#getOptionalInstance(Class)}.
 	 * 
-	 * @param interfaceClass requested interface class,
-	 * @param args optional implementation constructor arguments.
+	 * @param interfaceClass requested interface class.
 	 * @return managed instance or null if no implementation found.
 	 * @param <T> managed class implementation.
 	 * @throws BugError if application factory is not bound to current thread.
-	 * @see AppFactory#getOptionalInstance(Class, Object...)
+	 * @see IFactory#getOptionalInstance(Class)
 	 */
-	public static <T> T getOptionalInstance(Class<T> interfaceClass, Object... args) {
-		return getAppFactory().getOptionalInstance(interfaceClass, args);
+	public static <T> T getOptionalInstance(Class<T> interfaceClass) {
+		return get().getOptionalInstance(interfaceClass);
 	}
 
 	/**
-	 * Delegates {@link AppFactory#getRemoteInstance(String, Class)}.
+	 * Delegates {@link IFactory#getRemoteInstance(String, Class)}.
 	 * 
 	 * @param implementationURL the URL of remote implementation,
 	 * @param interfaceClass interface implemented by remote class.
@@ -97,7 +89,7 @@ public final class Factory {
 	 * @see AppFactory#getRemoteInstance(String, Class)
 	 */
 	public static <T> T getRemoteInstance(String implementationURL, Class<? super T> interfaceClass) {
-		return getAppFactory().getRemoteInstance(implementationURL, interfaceClass);
+		return get().getRemoteInstance(implementationURL, interfaceClass);
 	}
 
 	/**
@@ -113,17 +105,21 @@ public final class Factory {
 
 	/**
 	 * Helper method to retrieve application factory bound to current thread. Retrieve application factory from current thread
-	 * local storage. In order to be successfully this method must be preceded by {@link #bind(AppFactory)} called from current
+	 * local storage. In order to be successfully this method must be preceded by {@link #bind(IFactory)} called from current
 	 * thread; otherwise bug error is thrown.
 	 * 
 	 * @return application factory bound to current thread.
 	 * @throws BugError if current thread has no application factory bound.
 	 */
-	public static AppFactory getAppFactory() {
-		AppFactory appFactory = tls.get();
-		if (appFactory == null) {
-			throw new BugError("No application factory bound to current thread |%s|. See #bind(AppFactory).", Thread.currentThread());
+	static IFactory get() {
+		IFactory factory = tls.get();
+		if (factory == null) {
+			throw new BugError("No factory implementation bound to current thread |%s|. See #bind(IFactory).", Thread.currentThread());
 		}
-		return appFactory;
+		return factory;
+	}
+
+	static ThreadLocal<IFactory> tls() {
+		return tls;
 	}
 }

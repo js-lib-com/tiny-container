@@ -6,7 +6,7 @@ import java.util.Stack;
 import js.lang.BugError;
 import js.log.Log;
 import js.log.LogFactory;
-import js.tiny.container.core.AppFactory;
+import js.tiny.container.core.IFactory;
 import js.tiny.container.core.InstanceScope;
 import js.tiny.container.spi.IContainer;
 import js.tiny.container.spi.IManagedClass;
@@ -16,7 +16,7 @@ import js.util.Types;
 /**
  * Base class for all processors dealing with dependencies. Supplies utility method for dependency instance retrieval with guard
  * against circular dependencies. Usually {@link #getDependencyValue(IManagedClass, Class)} expect as dependency type a managed
- * class and just delegate container for instance retrieval, see {@link AppFactory#getOptionalInstance(Class, Object...)}.
+ * class and just delegate container for instance retrieval, see {@link IFactory#getOptionalInstance(Class, Object...)}.
  * Anyway, if dependency type is not a managed class tries to instantiate it with standard {@link Class#newInstance()}; of
  * course type should be concrete class and have default constructor. Otherwise throws bug error.
  * <p>
@@ -40,7 +40,7 @@ import js.util.Types;
  * Application factory and its hierarchy cannot be managed classes since their job is to manage managed classes. If requested
  * dependency type is a kind of application factory, container cannot be used for instance retrieval. This is <b>special</b>
  * case handled by {@link #getDependencyValue(IManagedClass, Class)} with special logic: if dependency type is a kind of
- * {@link AppFactory} returns container reference provided by host managed class, see {@link IManagedClass#getContainer()}.
+ * {@link IFactory} returns container reference provided by host managed class, see {@link IManagedClass#getContainer()}.
  * 
  * @author Iulian Rotaru
  */
@@ -106,7 +106,7 @@ public final class DependencyLoader {
 				return value;
 			}
 
-			if (Types.isKindOf(type, AppFactory.class)) {
+			if (Types.isKindOf(type, IFactory.class)) {
 				// handle ApFactory and its hierarchy since it is a special case
 				return container;
 			}

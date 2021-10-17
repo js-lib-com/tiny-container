@@ -8,18 +8,18 @@ import js.tiny.container.servlet.AppContext;
 
 public class AppContextStub implements AppContext {
 	@Override
-	public <T> T getInstance(Class<? super T> interfaceClass, Object... args) {
-		throw new UnsupportedOperationException("getInstance(Class<? super T> interfaceClass, Object... args)");
+	public <T> T getInstance(Class<? super T> interfaceClass) {
+		throw new UnsupportedOperationException("getInstance(Class<? super T> interfaceClass)");
 	}
 
 	@Override
-	public <T> T getInstance(String instanceName, Class<? super T> interfaceClass, Object... args) {
-		throw new UnsupportedOperationException("getInstance(String instanceName, Class<? super T> interfaceClass, Object... args)");
+	public <T> T getInstance(String instanceName, Class<? super T> interfaceClass) {
+		throw new UnsupportedOperationException("getInstance(String instanceName, Class<? super T> interfaceClass)");
 	}
 
 	@Override
-	public <T> T getOptionalInstance(Class<? super T> interfaceClass, Object... args) {
-		throw new UnsupportedOperationException("getOptionalInstance(Class<? super T> interfaceClass, Object... args)");
+	public <T> T getOptionalInstance(Class<? super T> interfaceClass) {
+		throw new UnsupportedOperationException("getOptionalInstance(Class<? super T> interfaceClass)");
 	}
 
 	@Override

@@ -3,9 +3,10 @@ package js.tiny.container.cdi;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 
-import js.tiny.container.core.AppFactory;
+import js.tiny.container.core.IFactory;
 import js.tiny.container.core.InstanceScope;
 import js.tiny.container.service.InstanceFieldsInjectionProcessor;
+import js.tiny.container.spi.IContainer;
 
 /**
  * Adapter for dependency with shorter scope hosted into managed instance with larger scope. If dependency scope, i.e. life span
@@ -15,28 +16,27 @@ import js.tiny.container.service.InstanceFieldsInjectionProcessor;
  * HTTP request only.
  * <p>
  * This proxy uses parent application factory to retrieve managed instance before every method invocation.
- * {@link AppFactory#getInstance(Class, Object...)} takes care about managed instance scope.
+ * {@link IFactory#getInstance(Class, Object...)} takes care about managed instance scope.
  * <p>
  * This class is designed specifically for {@link InstanceFieldsInjectionProcessor}.
  * 
  * @author Iulian Rotaru
  * @param <T> managed class type.
- * @version final
  */
 final class ScopeProxyHandler<T> implements InvocationHandler {
-	/** Parent application factory. */
-	private final AppFactory appFactory;
+	/** Parent container reference. */
+	private final IContainer container;
 	/** Managed class interface. */
 	private final Class<T> interfaceClass;
 
 	/**
 	 * Construct scope proxy handler with parent application factory and managed class interface.
 	 * 
-	 * @param appFactory parent application factory,
+	 * @param container parent container reference,
 	 * @param interfaceClasss managed class interface.
 	 */
-	public ScopeProxyHandler(AppFactory appFactory, Class<T> interfaceClasss) {
-		this.appFactory = appFactory;
+	public ScopeProxyHandler(IContainer container, Class<T> interfaceClasss) {
+		this.container = container;
 		this.interfaceClass = interfaceClasss;
 	}
 
@@ -51,7 +51,7 @@ final class ScopeProxyHandler<T> implements InvocationHandler {
 	 */
 	@Override
 	public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-		T instance = appFactory.getInstance(interfaceClass);
+		T instance = container.getInstance(interfaceClass);
 		return method.invoke(instance, args);
 	}
 }

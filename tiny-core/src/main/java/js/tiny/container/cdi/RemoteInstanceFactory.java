@@ -9,14 +9,14 @@ import js.lang.BugError;
 import js.rmi.RemoteFactory;
 import js.rmi.RemoteFactoryProvider;
 import js.rmi.UnsupportedProtocolException;
-import js.tiny.container.core.AppFactory;
+import js.tiny.container.core.IFactory;
 import js.tiny.container.core.InstanceType;
 import js.tiny.container.spi.IManagedClass;
 import js.util.Strings;
 
 /**
  * Managed instances factory for classes deployed remotely. Beside being an instance factory this class also implements
- * {@link RemoteFactory}, providing support for {@link AppFactory#getRemoteInstance(String, Class)}.
+ * {@link RemoteFactory}, providing support for {@link IFactory#getRemoteInstance(String, Class)}.
  * <p>
  * <code>RemoteInstanceFactory</code> keeps a collection of {@link RemoteFactory} mapped by URL protocols. This class scans for
  * remote factory extensions deployed on run-time context as standard Java services, see {@link RemoteFactoryProvider}. It is
@@ -80,7 +80,7 @@ public class RemoteInstanceFactory implements InstanceFactory, RemoteFactory {
 	/**
 	 * Alternative to {@link #newInstance(IManagedClass, Object...)} when implementation URL is obtained at run-time, perhaps
 	 * from user interface. Returned value is a Java proxy that delegates a HTTP-RMI client. This method is designed
-	 * specifically for {@link AppFactory#getRemoteInstance(String, Class)}.
+	 * specifically for {@link IFactory#getRemoteInstance(String, Class)}.
 	 * <p>
 	 * This factory method does not check arguments validity. Both should be not null and interface class should be an actual
 	 * Java interface.

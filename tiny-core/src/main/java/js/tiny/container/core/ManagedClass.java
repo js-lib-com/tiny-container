@@ -54,7 +54,7 @@ import js.util.Types;
  * parses and validates class descriptor and annotations and initialize its state accordingly; managed class is immutable. Also
  * takes care to parse managed class configuration, if exist into application descriptor, see below <code>Descriptor</code>
  * section. Anyway, managed class has no means to create instances, like Java class has. This is because instance creation
- * algorithm is implemented into container and exposes by {@link AppFactory} interface.
+ * algorithm is implemented into container and exposes by {@link IFactory} interface.
  * <p>
  * As stated, managed class parses given class descriptor and scans all interfaces and implementation classes annotations in
  * order to initialize its internal state. Since is immutable, initialization is fully completed on construction, there is no
@@ -78,7 +78,7 @@ import js.util.Types;
  * Managed class has an interface and associated implementation. Usually there is only one interface but support for multiple
  * interface exists. Note that <code>interface</code> concept is not identical with Java interface. It is in fact the class used
  * to identify managed class and related instances; <code>interfaceClass</code> parameter from
- * {@link AppFactory#getInstance(Class, Object...)} refers to this <code>interface</code>. In most cases it is indeed a Java
+ * {@link IFactory#getInstance(Class, Object...)} refers to this <code>interface</code>. In most cases it is indeed a Java
  * interface but can be abstract class or even standard Java class. Implementation class is optional depending on
  * {@link #instanceType}. Anyway, if implementation exists it must be an instantiable class, package private accepted.
  * 
@@ -142,7 +142,7 @@ import js.util.Types;
  * &lt;weather-service interface="ro.bbnet.WeatherService" type="REMOTE" url="http://bbnet.ro" /&gt;
  * </pre>
  * 
- * Even if <code>url</code> attribute is provided, when use {@link AppFactory#getInstance(String, Class, Object...)} to retrieve
+ * Even if <code>url</code> attribute is provided, when use {@link IFactory#getInstance(String, Class, Object...)} to retrieve
  * named instances, container will enact a discovery process based on provided instance name that in this case should be unique
  * on local network.
  * 

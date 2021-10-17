@@ -5,9 +5,9 @@ import javax.servlet.http.HttpSession;
 
 import js.lang.BugError;
 import js.tiny.container.cdi.ScopeFactory;
-import js.tiny.container.core.AppFactory;
 import js.tiny.container.core.InstanceKey;
 import js.tiny.container.core.InstanceScope;
+import js.tiny.container.spi.IContainer;
 
 /**
  * Scope factory for managed classes with HTTP session scope. A managed instance with {@link InstanceScope#SESSION} scope is
@@ -19,19 +19,18 @@ import js.tiny.container.core.InstanceScope;
  * storage and retrieval.
  * 
  * @author Iulian Rotaru
- * @version final
  */
 final class SessionScopeFactory implements ScopeFactory {
-	/** Reference to parent application factory. */
-	private AppFactory appFactory;
+	/** Reference to parent container. */
+	private IContainer container;
 
 	/**
 	 * Construct session scope factory instance.
 	 * 
-	 * @param factory parent application factory.
+	 * @param container parent container reference.
 	 */
-	public SessionScopeFactory(AppFactory factory) {
-		this.appFactory = factory;
+	public SessionScopeFactory(IContainer container) {
+		this.container = container;
 	}
 
 	@Override
@@ -96,8 +95,8 @@ final class SessionScopeFactory implements ScopeFactory {
 	 * @return current request HTTP session.
 	 * @throws BugError if attempt to use this method outside a HTTP request.
 	 */
-	private HttpSession getSession(InstanceKey instanceKey) {
-		RequestContext requestContext = appFactory.getInstance(RequestContext.class);
+	HttpSession getSession(InstanceKey instanceKey) {
+		RequestContext requestContext = container.getInstance(RequestContext.class);
 		HttpServletRequest httpRequest = requestContext.getRequest();
 		if (httpRequest == null) {
 			throw new BugError("Invalid web context due to null HTTP request. Cannot create managed instance for |%s| with scope SESSION.", instanceKey);
