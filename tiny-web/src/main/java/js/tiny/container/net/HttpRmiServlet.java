@@ -151,7 +151,7 @@ public final class HttpRmiServlet extends AppServlet {
 		Object value = null;
 
 		try {
-			IManagedClass managedClass = getManagedClass(container, interfaceName, httpRequest.getRequestURI());
+			IManagedClass<?> managedClass = getManagedClass(container, interfaceName, httpRequest.getRequestURI());
 			managedMethod = getManagedMethod(managedClass, methodName, httpRequest.getRequestURI());
 
 			final Type[] formalParameters = managedMethod.getParameterTypes();
@@ -200,13 +200,13 @@ public final class HttpRmiServlet extends AppServlet {
 	 * @throws ClassNotFoundException if interface class not found on run-time class path, managed class not defined or is not
 	 *             remotely accessible.
 	 */
-	private static IManagedClass getManagedClass(IContainer container, String interfaceName, String requestURI) throws ClassNotFoundException {
+	private static IManagedClass<?> getManagedClass(IContainer container, String interfaceName, String requestURI) throws ClassNotFoundException {
 		Class<?> interfaceClass = Classes.forOptionalName(interfaceName);
 		if (interfaceClass == null) {
 			log.error("HTTP-RMI request for not existing class |%s|.", interfaceName);
 			throw new ClassNotFoundException(requestURI);
 		}
-		IManagedClass managedClass = container.getManagedClass(interfaceClass);
+		IManagedClass<?> managedClass = container.getManagedClass(interfaceClass);
 		if (managedClass == null) {
 			log.error("HTTP-RMI request for not existing managed class |%s|.", interfaceName);
 			throw new ClassNotFoundException(requestURI);
@@ -224,7 +224,7 @@ public final class HttpRmiServlet extends AppServlet {
 	 * @throws NoSuchMethodException if managed class has not any method with requested name, managed method was found but is
 	 *             not remotely accessible or it returns a {@link Resource}.
 	 */
-	private static IManagedMethod getManagedMethod(IManagedClass managedClass, String methodName, String requestURI) throws NoSuchMethodException {
+	private static IManagedMethod getManagedMethod(IManagedClass<?> managedClass, String methodName, String requestURI) throws NoSuchMethodException {
 		IManagedMethod managedMethod = managedClass.getManagedMethod(methodName);
 		if (managedMethod == null) {
 			log.error("HTTP-RMI request for not existing managed method |%s#%s|.", managedClass.getInterfaceClass().getName(), methodName);

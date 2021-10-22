@@ -17,7 +17,7 @@ public class InstanceContextParam extends BaseContextParam implements IInstanceP
 	}
 
 	@Override
-	public void onInstancePostConstruction(IManagedClass managedClass, Object instance) {
+	public <T> void onInstancePostConstruction(IManagedClass<T> managedClass, T instance) {
 		processFields(managedClass, instance, field -> !Modifier.isStatic(field.getModifiers()));
 	}
 }

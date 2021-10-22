@@ -21,12 +21,12 @@ import js.tiny.container.stub.ManagedMethodSpiStub;
 import js.util.Classes;
 
 public class ArgumentsProcessorUnitTest {
-	private MockManagedClassSPI managedClass;
+	private MockManagedClassSPI<Person> managedClass;
 	private Object processor;
 
 	@Before
 	public void beforeTest() {
-		managedClass = new MockManagedClassSPI();
+		managedClass = new MockManagedClassSPI<>();
 		managedClass.implementationClass = Person.class;
 		processor = getArgumentsProcessor();
 	}
@@ -131,10 +131,10 @@ public class ArgumentsProcessorUnitTest {
 		}
 	}
 
-	private static class MockManagedClassSPI extends ManagedClassSpiStub {
+	private static class MockManagedClassSPI<T> extends ManagedClassSpiStub<T> {
 		private static MockContainer container = new MockContainer();
-		private Class<?> implementationClass;
-		private Constructor<?> constructor;
+		private Class<? extends T> implementationClass;
+		private Constructor<? extends T> constructor;
 
 		@Override
 		public IContainer getContainer() {
@@ -142,22 +142,22 @@ public class ArgumentsProcessorUnitTest {
 		}
 
 		@Override
-		public Class<?> getImplementationClass() {
+		public Class<? extends T> getImplementationClass() {
 			return implementationClass;
 		}
 
 		@Override
-		public Constructor<?> getConstructor() {
+		public Constructor<? extends T> getConstructor() {
 			return constructor;
 		}
 	}
 
 	private static class MockManagedMethodSPI extends ManagedMethodSpiStub {
-		private MockManagedClassSPI declaringClass;
+		private MockManagedClassSPI<?> declaringClass;
 		private Method method;
 
 		@Override
-		public IManagedClass getDeclaringClass() {
+		public IManagedClass<?> getDeclaringClass() {
 			return declaringClass;
 		}
 

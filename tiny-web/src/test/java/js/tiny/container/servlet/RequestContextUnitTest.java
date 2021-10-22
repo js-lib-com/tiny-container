@@ -17,8 +17,6 @@ import org.junit.Before;
 import org.junit.Test;
 
 import js.lang.BugError;
-import js.tiny.container.servlet.Cookies;
-import js.tiny.container.servlet.RequestContext;
 import js.tiny.container.stub.TinyContainerStub;
 import js.tiny.container.unit.HttpServletRequestStub;
 import js.tiny.container.unit.HttpServletResponseStub;

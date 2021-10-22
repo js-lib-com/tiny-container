@@ -7,7 +7,7 @@ package js.tiny.container.spi;
  */
 public interface IInstancePreDestructionProcessor extends IFlowProcessor {
 
-	void onInstancePreDestruction(IManagedClass managedClass, Object instance);
+	<T> void onInstancePreDestruction(IManagedClass<T> managedClass, T instance);
 
 	Priority getPriority();
 

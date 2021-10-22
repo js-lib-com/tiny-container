@@ -39,7 +39,7 @@ public class ManagedMethod implements IManagedMethod {
 	private static final String QUALIFIED_NAME_FORMAT = "%s#" + SIMPLE_NAME_FORMAT;
 
 	/** The managed class declaring this managed method. */
-	private final IManagedClass declaringClass;
+	private final IManagedClass<?> declaringClass;
 
 	/**
 	 * Wrapped Java reflective method. This method instance reflects the method declared by managed class interface, see
@@ -69,7 +69,7 @@ public class ManagedMethod implements IManagedMethod {
 	 * @param declaringClass declaring managed class,
 	 * @param method Java reflective method wrapped by this managed method.
 	 */
-	public ManagedMethod(IManagedClass declaringClass, Method method) {
+	public ManagedMethod(IManagedClass<?> declaringClass, Method method) {
 		this.declaringClass = declaringClass;
 		this.method = method;
 		this.method.setAccessible(true);
@@ -88,7 +88,7 @@ public class ManagedMethod implements IManagedMethod {
 	}
 
 	@Override
-	public IManagedClass getDeclaringClass() {
+	public IManagedClass<?> getDeclaringClass() {
 		return declaringClass;
 	}
 

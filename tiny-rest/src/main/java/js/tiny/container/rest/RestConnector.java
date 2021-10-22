@@ -22,7 +22,7 @@ class RestConnector implements IConnector, IServiceMetaScanner {
 	}
 
 	@Override
-	public List<IServiceMeta> scanServiceMeta(IManagedClass managedClass) {
+	public List<IServiceMeta> scanServiceMeta(IManagedClass<?> managedClass) {
 		List<IServiceMeta> serviceMetas = new ArrayList<>();
 
 		Path path = managedClass.getAnnotation(Path.class);

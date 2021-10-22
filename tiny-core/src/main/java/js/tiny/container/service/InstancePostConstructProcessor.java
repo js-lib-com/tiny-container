@@ -31,7 +31,7 @@ public class InstancePostConstructProcessor extends BaseInstanceLifeCycle implem
 	}
 
 	@Override
-	public Iterable<IServiceMeta> scanServiceMeta(IManagedClass managedClass) {
+	public Iterable<IServiceMeta> scanServiceMeta(IManagedClass<?> managedClass) {
 		scanLifeCycleInterface(managedClass, ManagedPostConstruct.class, ATTR_POST_CONSTRUCT);
 		return Collections.emptyList();
 	}
@@ -51,7 +51,7 @@ public class InstancePostConstructProcessor extends BaseInstanceLifeCycle implem
 	 * @throws BugError if instance post-construction fails due to exception of user defined logic.
 	 */
 	@Override
-	public void onInstancePostConstruction(IManagedClass managedClass, Object instance) {
+	public <T> void onInstancePostConstruction(IManagedClass<T> managedClass, T instance) {
 		IManagedMethod method = managedClass.getAttribute(this, ATTR_POST_CONSTRUCT, IManagedMethod.class);
 		if (method == null) {
 			return;

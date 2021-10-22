@@ -126,12 +126,12 @@ public class HttpRmiServletHandlerUnitTest {
 		private MockManagedClass managedClass = new MockManagedClass();
 
 		@Override
-		public IManagedClass getManagedClass(Class<?> interfaceClass) {
+		public <T> IManagedClass<T> getManagedClass(Class<T> interfaceClass) {
 			return managedClass;
 		}
 
 		@Override
-		public <T> T getInstance(IManagedClass managedClass) {
+		public <T> T getInstance(IManagedClass<T> managedClass) {
 			return (T) new Object();
 		}
 

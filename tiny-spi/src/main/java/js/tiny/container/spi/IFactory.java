@@ -4,8 +4,6 @@ import js.converter.ConverterException;
 import js.lang.BugError;
 import js.lang.InvocationException;
 import js.lang.NoProviderException;
-import js.rmi.RemoteFactory;
-import js.rmi.UnsupportedProtocolException;
 
 /**
  * Managed instances factory with application scope. A managed instance is one created from a managed class. Managed instances
@@ -40,7 +38,7 @@ import js.rmi.UnsupportedProtocolException;
  * 
  * @author Iulian Rotaru
  */
-public interface IFactory extends RemoteFactory {
+public interface IFactory {
 
 	/**
 	 * Return instance for requested interface, newly created or reused but never null, throwing exception if implementation not
@@ -113,8 +111,8 @@ public interface IFactory extends RemoteFactory {
 	 * 
 	 * In other respects this method behaves identically {@link #getInstance(Class)}.
 	 * 
-	 * @param instanceName instance name,
-	 * @param interfaceClass requested interface class.
+	 * @param interfaceClass requested interface class,
+	 * @param instanceName instance name.
 	 * @param <T> managed class implementation.
 	 * @return managed instance, created on the fly or reused from caches, but never null.
 	 * @throws IllegalArgumentException if <code>instanceName</code> argument is null or empty or <code>interfaceClass</code>
@@ -129,44 +127,5 @@ public interface IFactory extends RemoteFactory {
 	 * @throws BugError if instance post-construction fails due to exception of user defined logic.
 	 * @throws BugError if attempt to assign field to not POJO type.
 	 */
-	<T> T getInstance(String instanceName, Class<? super T> interfaceClass);
-
-	/**
-	 * Create a Java Proxy instance for a remote deployed class. As result from sample code below, one needs to know remote
-	 * application context URL where class is deployed and have local interface for remote services. Interface to remote
-	 * services is not required to define all services supplied by remote class. It's enough to declare only those used in this
-	 * particular context; but methods signature should be respected, including package name. The recommended use case is for
-	 * service provider to supply a SPI package so that remote class interface signature is guaranteed.
-	 * 
-	 * <pre>
-	 * interface WeatherService {
-	 *    Weather getCurrentWeather(double latitude, double longitude);
-	 * }
-	 * ...
-	 * String implementationURL = &quot;http://weather.com/&quot;;
-	 * WeatherService service = appFactory.getInstance(implementationURL, WeatherService.class);
-	 * Weather weather = service.getCurrentWeather(47.1569, 27.5903);
-	 * </pre>
-	 * 
-	 * Implementation will return a Java Proxy instance able to send class and method names and actual arguments to remote
-	 * server and to retrieve returned value, using HTTP-RMI protocol. It is not required to perform URL validity and is caller
-	 * responsibility to ensure given implementation URL points to and existing remote class and that remote class actually
-	 * implements given interface. If given arguments does not match an existing remote class there will be exception on actual
-	 * remote method invocation.
-	 * <p>
-	 * This remote factory method is designed to be used when implementation URL is retrieved at runtime, perhaps via user
-	 * interface or some custom discovery mechanism. Otherwise uses standard managed instance factory methods and declare remote
-	 * interface as managed class of type {@link InstanceType#REMOTE}, see class description.
-	 * 
-	 * @param implementationURL the URL of remote implementation,
-	 * @param interfaceClass interface implemented by remote class.
-	 * @param <T> managed class implementation.
-	 * @return remote class proxy instance.
-	 * @throws IllegalArgumentException if either argument is null or <code>interfaceClass</code> argument is not actually an
-	 *             interface.
-	 * @throws UnsupportedProtocolException if URL protocol is not supported.
-	 */
-	<T> T getRemoteInstance(String implementationURL, Class<? super T> interfaceClass);
-
-	<T> T loadService(Class<T> serviceInterface);
+	<T> T getInstance(Class<? super T> interfaceClass, String instanceName);
 }

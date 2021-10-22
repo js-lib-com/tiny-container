@@ -49,7 +49,7 @@ public class ManagedClassUnitTest {
 	@Test
 	public void pojoConstructor() throws Throwable {
 		String config = "<test class='js.tiny.container.unit.ManagedClassUnitTest$PojoImpl' interface='js.tiny.container.unit.ManagedClassUnitTest$Pojo' />";
-		IManagedClass managedClass = getManagedClass(config(config));
+		IManagedClass<?> managedClass = getManagedClass(config(config));
 
 		assertEquals(Pojo.class, managedClass.getInterfaceClasses()[0]);
 		assertEquals(PojoImpl.class, managedClass.getImplementationClass());
@@ -71,7 +71,7 @@ public class ManagedClassUnitTest {
 	@Test
 	public void containerConstructor() throws Throwable {
 		String config = "<test class='js.tiny.container.unit.ManagedClassUnitTest$PojoImpl' interface='js.tiny.container.unit.ManagedClassUnitTest$Pojo' type='PROXY' />";
-		IManagedClass managedClass = getManagedClass(config(config));
+		IManagedClass<?> managedClass = getManagedClass(config(config));
 
 		assertEquals(Pojo.class, managedClass.getInterfaceClasses()[0]);
 		assertEquals(PojoImpl.class, managedClass.getImplementationClass());
@@ -133,7 +133,7 @@ public class ManagedClassUnitTest {
 				"	</test>" + //
 				"</config>";
 
-		IManagedClass managedClass = getManagedClass(descriptor);
+		IManagedClass<?> managedClass = getManagedClass(descriptor);
 		Config config = managedClass.getConfig();
 
 		assertNotNull(config);
@@ -312,7 +312,7 @@ public class ManagedClassUnitTest {
 	@Test
 	public void objectEquals() throws Exception {
 		String config = "<test class='js.tiny.container.unit.ManagedClassUnitTest$CarImpl' />";
-		IManagedClass managedClass = getManagedClass(config(config));
+		IManagedClass<?> managedClass = getManagedClass(config(config));
 		assertTrue(managedClass.equals(managedClass));
 		assertFalse(managedClass.equals(null));
 	}
@@ -333,7 +333,7 @@ public class ManagedClassUnitTest {
 	// --------------------------------------------------------------------------------------------
 	// UTILITY METHODS
 
-	private static IManagedClass getManagedClass(String config) throws Exception {
+	private static IManagedClass<?> getManagedClass(String config) throws Exception {
 		TinyConfigBuilder builder = new TestConfigBuilder(config);
 		Config appDescriptor = builder.build();
 		Container container = new MockContainer();
@@ -346,7 +346,7 @@ public class ManagedClassUnitTest {
 			}
 		}
 
-		return new ManagedClass(container, classDescriptor);
+		return new ManagedClass<>(container, classDescriptor);
 	}
 
 	private static String config(String classDescriptor) {

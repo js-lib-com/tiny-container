@@ -36,7 +36,7 @@ public class DependencyProcessorUnitTest {
 	/** Test getDependecyValue utility method does return correct instance without errors. */
 	@Test
 	public void getDependencyValue_ManagedClass() throws Exception {
-		MockManagedClassSPI managedClass = new MockManagedClassSPI(Person.class);
+		MockManagedClassSPI<?> managedClass = new MockManagedClassSPI<>(Person.class);
 		Object value = Classes.invoke(processorClass(), "getDependencyValue", managedClass, Person.class);
 
 		assertNotNull(value);
@@ -46,7 +46,7 @@ public class DependencyProcessorUnitTest {
 	/** AppFactory and its hierarchy cannot be managed class and dependency value is a special case. */
 	@Test
 	public void getDependencyValue_AppFactory() throws Exception {
-		MockManagedClassSPI managedClass = new MockManagedClassSPI(Person.class);
+		MockManagedClassSPI<?> managedClass = new MockManagedClassSPI<>(Person.class);
 
 		for (Class<?> clazz : new Class<?>[] { IFactory.class, AppContext.class, IContainer.class, Container.class }) {
 			Object value = Classes.invoke(processorClass(), "getDependencyValue", managedClass, clazz);
@@ -57,7 +57,7 @@ public class DependencyProcessorUnitTest {
 
 	@Test
 	public void getDependencyValue_Pojo() throws Exception {
-		MockManagedClassSPI managedClass = new MockManagedClassSPI(Person.class);
+		MockManagedClassSPI<?> managedClass = new MockManagedClassSPI<>(Person.class);
 		Object value = Classes.invoke(processorClass(), "getDependencyValue", managedClass, Pojo.class);
 
 		assertNotNull(value);
@@ -67,14 +67,14 @@ public class DependencyProcessorUnitTest {
 	/** POJO without default constructor should throw bug error. */
 	@Test(expected = BugError.class)
 	public void getDependencyValue_PojoNoDefaultConstructor() throws Exception {
-		MockManagedClassSPI managedClass = new MockManagedClassSPI(Person.class);
+		MockManagedClassSPI<?> managedClass = new MockManagedClassSPI<>(Person.class);
 		Classes.invoke(processorClass(), "getDependencyValue", managedClass, NotDefaultPojo.class);
 	}
 
 	/** Get dependencies stack trace for current thread and ensure it remains empty after a number of execution. */
 	@Test
 	public void getDependencyValue_DependenciesStack() throws Exception {
-		MockManagedClassSPI managedClass = new MockManagedClassSPI(Person.class);
+		MockManagedClassSPI<?> managedClass = new MockManagedClassSPI<>(Person.class);
 		Class<?> processorClass = processorClass();
 		ThreadLocal<Stack<Integer>> dependenciesStack = Classes.getFieldValue(processorClass, "dependenciesStack");
 		assertNotNull(dependenciesStack);
@@ -119,8 +119,8 @@ public class DependencyProcessorUnitTest {
 
 	@Test
 	public void isProxyRequired_Positive() throws Exception {
-		MockManagedClassSPI hostClass = new MockManagedClassSPI(Person.class);
-		MockManagedClassSPI dependencyClass = new MockManagedClassSPI(Person.class);
+		MockManagedClassSPI<?> hostClass = new MockManagedClassSPI<>(Person.class);
+		MockManagedClassSPI<?> dependencyClass = new MockManagedClassSPI<>(Person.class);
 		for (Map.Entry<InstanceScope, InstanceScope> entry : PROXY_SCOPES) {
 			hostClass.instanceScope = entry.getKey();
 			dependencyClass.instanceScope = entry.getValue();
@@ -142,8 +142,8 @@ public class DependencyProcessorUnitTest {
 			}
 		}
 
-		MockManagedClassSPI hostClass = new MockManagedClassSPI(Person.class);
-		MockManagedClassSPI dependencyClass = new MockManagedClassSPI(Person.class);
+		MockManagedClassSPI<?> hostClass = new MockManagedClassSPI<>(Person.class);
+		MockManagedClassSPI<?> dependencyClass = new MockManagedClassSPI<>(Person.class);
 		for (Map.Entry<InstanceScope, InstanceScope> entry : noProxyScopes) {
 			hostClass.instanceScope = entry.getKey();
 			dependencyClass.instanceScope = entry.getValue();
@@ -194,7 +194,7 @@ public class DependencyProcessorUnitTest {
 	}
 
 	private static <T> T getDependencyValue(Class<T> type) throws Exception {
-		MockManagedClassSPI managedClass = new MockManagedClassSPI(Person.class);
+		MockManagedClassSPI<?> managedClass = new MockManagedClassSPI<>(Person.class);
 		return Classes.invoke(processorClass(), "getDependencyValue", managedClass, type);
 	}
 
@@ -234,15 +234,15 @@ public class DependencyProcessorUnitTest {
 	}
 
 	private static class MockContainer extends ContainerStub {
-		private Map<Class<?>, IManagedClass> classesPool = new HashMap<>();
+		private Map<Class<?>, IManagedClass<?>> classesPool = new HashMap<>();
 
-		private void registerManagedClass(Class<?> interfaceClass, IManagedClass managedClass) {
+		private void registerManagedClass(Class<?> interfaceClass, IManagedClass<?> managedClass) {
 			classesPool.put(interfaceClass, managedClass);
 		}
 
 		@Override
 		public <T> T getOptionalInstance(Class<? super T> interfaceClass) {
-			IManagedClass managedClass = classesPool.get(interfaceClass);
+			IManagedClass<T> managedClass = (IManagedClass<T>) classesPool.get(interfaceClass);
 			if (managedClass == null) {
 				return null;
 			}
@@ -250,12 +250,12 @@ public class DependencyProcessorUnitTest {
 		}
 	}
 
-	private static class MockManagedClassSPI extends ManagedClassSpiStub {
+	private static class MockManagedClassSPI<T> extends ManagedClassSpiStub<T> {
 		private static MockContainer container = new MockContainer();
-		private Class<?> implementationClass;
+		private Class<? extends T> implementationClass;
 		private InstanceScope instanceScope = InstanceScope.APPLICATION;
 
-		public MockManagedClassSPI(Class<?> type) throws Exception {
+		public MockManagedClassSPI(Class<T> type) throws Exception {
 			this.implementationClass = type;
 			container.registerManagedClass(type.getInterfaces().length == 1 ? type.getInterfaces()[0] : type, this);
 		}
@@ -266,7 +266,7 @@ public class DependencyProcessorUnitTest {
 		}
 
 		@Override
-		public Class<?> getImplementationClass() {
+		public Class<? extends T> getImplementationClass() {
 			return implementationClass;
 		}
 

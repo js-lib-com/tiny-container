@@ -209,7 +209,7 @@ public class TinyContainer extends Container implements ServletContextListener, 
 
 		// special handling for this container instance accessed via application context
 		// need to ensure this container instance is reused and not to create a new one
-		IManagedClass appContext = classesPool.get(AppContext.class);
+		IManagedClass<?> appContext = classesPool.get(AppContext.class);
 		// application context can be null on tests
 		// also on tests application context interface can be implemented by mock class not in container hierarchy
 		if (appContext != null && Types.isKindOf(appContext.getImplementationClass(), IContainer.class)) {

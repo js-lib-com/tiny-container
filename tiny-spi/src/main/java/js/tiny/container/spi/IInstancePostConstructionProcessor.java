@@ -20,7 +20,7 @@ public interface IInstancePostConstructionProcessor extends IFlowProcessor {
 	 * @param managedClass managed class,
 	 * @param instance instance of given managed class.
 	 */
-	void onInstancePostConstruction(IManagedClass managedClass, Object instance);
+	<T> void onInstancePostConstruction(IManagedClass<T> managedClass, T instance);
 
 	Priority getPriority();
 

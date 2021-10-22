@@ -37,7 +37,7 @@ public class ServiceInstanceFactory implements InstanceFactory {
 	 */
 	@SuppressWarnings("unchecked")
 	@Override
-	public <I> I newInstance(IManagedClass managedClass, Object... args) {
+	public <I> I newInstance(IManagedClass<I> managedClass, Object... args) {
 		if (args.length > 0) {
 			throw new IllegalArgumentException("Service instances factory does not support arguments.");
 		}

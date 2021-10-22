@@ -4,8 +4,8 @@ import javax.inject.Provider;
 
 import js.tiny.container.cdi.IProviderDecorator;
 
-class SingletonProvider<T> extends ScopedProvider<T> {
-	private SingletonProvider(Provider<T> provider) {
+public class SingletonProvider<T> extends ScopedProvider<T> {
+	public SingletonProvider(Provider<T> provider) {
 		super(provider);
 	}
 

@@ -2,7 +2,7 @@ package js.tiny.container.spi;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
-import java.util.Collection;
+import java.util.Set;
 
 import js.lang.BugError;
 import js.lang.Config;
@@ -10,14 +10,14 @@ import js.lang.Config;
 /**
  * Service provider interface for managed class. Although public, this interface is designed for library internal usage.
  * Application should consider this interface as volatile and subject to change without notice.
- * <p>
+ * 
  * Basically this interface provides utility methods for miscellaneous library needs. Its existing rationale is to hide managed
  * class implementation as much as possible.
  * 
  * @author Iulian Rotaru
- * @version final
  */
-public interface IManagedClass {
+public interface IManagedClass<T> {
+	
 	/**
 	 * Get parent container that created this managed class.
 	 * 
@@ -25,7 +25,12 @@ public interface IManagedClass {
 	 */
 	IContainer getContainer();
 
-	Collection<IContainerService> getServices();
+	/**
+	 * Gets the set of container services configured to this particular managed class.
+	 * 
+	 * @return container services of this managed class.
+	 */
+	Set<IContainerService> getServices();
 
 	/**
 	 * Get the key uniquely identifying this managed class. Returned key is created incrementally, but not necessarily in
@@ -56,7 +61,7 @@ public interface IManagedClass {
 	 * 
 	 * @return managed interface classes.
 	 */
-	Class<?>[] getInterfaceClasses();
+	Class<T>[] getInterfaceClasses();
 
 	/**
 	 * Convenient way to retrieve managed interface class when there is a single one. Useable when managed instance is
@@ -70,7 +75,7 @@ public interface IManagedClass {
 	 * @return managed class interface.
 	 * @throws BugError if attempt to use this getter on a managed class with multiple interfaces.
 	 */
-	Class<?> getInterfaceClass();
+	Class<T> getInterfaceClass();
 
 	/**
 	 * Get optional implementation class, possible null. Not all managed classes require implementation, e.g. managed classes of
@@ -80,7 +85,7 @@ public interface IManagedClass {
 	 * @return managed class implementation, possible null.
 	 * @see InstanceType#requiresImplementation()
 	 */
-	Class<?> getImplementationClass();
+	Class<? extends T> getImplementationClass();
 
 	/**
 	 * Get implementation constructor. Constructor has meaningful value only for local managed classes, that is managed classes
@@ -89,7 +94,7 @@ public interface IManagedClass {
 	 * 
 	 * @return implementation constructor, possible null.
 	 */
-	Constructor<?> getConstructor();
+	Constructor<? extends T> getConstructor();
 
 	/**
 	 * Get managed methods owned by this managed class, sequence with no order guaranteed and possible empty. Note that managed
@@ -133,11 +138,12 @@ public interface IManagedClass {
 	 */
 	String getImplementationURL();
 
-	<T extends Annotation> T getAnnotation(Class<T> type);
+	<A extends Annotation> A getAnnotation(Class<A> type);
 
-	<T extends IServiceMeta> T getServiceMeta(Class<T> type);
+	<S extends IServiceMeta> S getServiceMeta(Class<S> type);
 
 	void setAttribute(Object context, String name, Object value);
 
-	<T> T getAttribute(Object context, String name, Class<T> type);
+	<A> A getAttribute(Object context, String name, Class<A> type);
+	
 }

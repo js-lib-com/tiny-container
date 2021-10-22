@@ -22,7 +22,7 @@ final class ResourceConnector implements IConnector, IServiceMetaScanner {
 	}
 
 	@Override
-	public List<IServiceMeta> scanServiceMeta(IManagedClass managedClass) {
+	public List<IServiceMeta> scanServiceMeta(IManagedClass<?> managedClass) {
 		List<IServiceMeta> serviceMetas = new ArrayList<>();
 
 		Controller controller = managedClass.getAnnotation(Controller.class);

@@ -21,15 +21,15 @@ import js.util.Params;
  * 
  * @author Iulian Rotaru
  */
-public final class ManagedProxyHandler implements InstanceInvocationHandler<Object> {
+public final class ManagedProxyHandler<T> implements InstanceInvocationHandler<T> {
 	/** Class logger. */
 	private static Log log = LogFactory.getLog(ManagedProxyHandler.class);
 
 	/** Wrapped managed class. */
-	private final IManagedClass managedClass;
+	private final IManagedClass<T> managedClass;
 
 	/** Managed instance. */
-	private final Object managedInstance;
+	private final T managedInstance;
 
 	/**
 	 * Construct transactional proxy invocation handler for given managed instance.
@@ -39,7 +39,7 @@ public final class ManagedProxyHandler implements InstanceInvocationHandler<Obje
 	 * @throws IllegalArgumentException if <code>managedClass</code> is null or not transactional or
 	 *             <code>managedInstance</code> is null.
 	 */
-	public ManagedProxyHandler(IManagedClass managedClass, Object managedInstance) {
+	public ManagedProxyHandler(IManagedClass<T> managedClass, T managedInstance) {
 		Params.notNull(managedClass, "Managed class");
 		Params.notNull(managedInstance, "Managed instance");
 		this.managedClass = managedClass;
@@ -53,7 +53,7 @@ public final class ManagedProxyHandler implements InstanceInvocationHandler<Obje
 	 * @see #managedInstance
 	 */
 	@Override
-	public Object getWrappedInstance() {
+	public T getWrappedInstance() {
 		return managedInstance;
 	}
 

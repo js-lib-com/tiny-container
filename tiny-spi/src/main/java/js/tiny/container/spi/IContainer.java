@@ -39,7 +39,7 @@ public interface IContainer extends IFactory {
 	 * @throws BugError if instance post-construction fails due to exception of user defined logic.
 	 * @throws BugError if attempt to assign field to not POJO type.
 	 */
-	<T> T getInstance(IManagedClass managedClass);
+	<T> T getInstance(IManagedClass<T> managedClass);
 
 	/**
 	 * Test if interface class has a managed class bound.
@@ -55,14 +55,14 @@ public interface IContainer extends IFactory {
 	 * @param interfaceClass interface class to retrieve managed class for.
 	 * @return managed class bound to requested interface or null.
 	 */
-	IManagedClass getManagedClass(Class<?> interfaceClass);
+	<T> IManagedClass<T> getManagedClass(Class<T> interfaceClass);
 
 	/**
 	 * Get all managed classes registered to this container.
 	 * 
 	 * @return container managed classes, in no particular order.
 	 */
-	Iterable<IManagedClass> getManagedClasses();
+	Iterable<IManagedClass<?>> getManagedClasses();
 
 	/**
 	 * Get all managed methods, from all managed classes, registered to this container.

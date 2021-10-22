@@ -44,7 +44,7 @@ public class ManagedMethodSpiStub implements IManagedMethod {
 	}
 
 	@Override
-	public IManagedClass getDeclaringClass() {
+	public IManagedClass<?> getDeclaringClass() {
 		throw new UnsupportedOperationException("getDeclaringClass()");
 	}
 

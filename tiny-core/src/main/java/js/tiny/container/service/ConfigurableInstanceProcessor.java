@@ -40,7 +40,7 @@ public class ConfigurableInstanceProcessor implements IInstancePostConstructionP
 	 *             user defined logic.
 	 */
 	@Override
-	public void onInstancePostConstruction(IManagedClass managedClass, Object instance) {
+	public <T> void onInstancePostConstruction(IManagedClass<T> managedClass, T instance) {
 		if (!(instance instanceof Configurable)) {
 			return;
 		}

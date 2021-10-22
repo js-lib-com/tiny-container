@@ -36,7 +36,7 @@ class CalendarTimerService implements IInstancePostConstructionProcessor {
 	}
 
 	@Override
-	public void onInstancePostConstruction(IManagedClass managedClass, Object instance) {
+	public <T> void onInstancePostConstruction(IManagedClass<T> managedClass, T instance) {
 		for (IManagedMethod managedMethod : managedClass.getManagedMethods()) {
 			Schedule schedule = managedMethod.getAnnotation(Schedule.class);
 			if (schedule != null) {

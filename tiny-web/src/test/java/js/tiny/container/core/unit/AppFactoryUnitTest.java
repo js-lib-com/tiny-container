@@ -324,11 +324,11 @@ public class AppFactoryUnitTest {
 				"<fiat class='js.tiny.container.core.unit.AppFactoryUnitTest$Car' />";
 		IFactory factory = TestContext.start(config(descriptor));
 
-		Car audi1 = factory.getInstance("audi", Car.class);
-		Car fiat1 = factory.getInstance("fiat", Car.class);
+		Car audi1 = factory.getInstance(Car.class, "audi");
+		Car fiat1 = factory.getInstance(Car.class, "fiat");
 
-		Car audi2 = factory.getInstance("audi", Car.class);
-		Car fiat2 = factory.getInstance("fiat", Car.class);
+		Car audi2 = factory.getInstance(Car.class, "audi");
+		Car fiat2 = factory.getInstance(Car.class, "fiat");
 
 		assertNotNull(audi1);
 		assertNotNull(fiat1);
@@ -350,8 +350,8 @@ public class AppFactoryUnitTest {
 				"</config>";
 
 		IFactory factory = TestContext.start(config);
-		Car audi = factory.getInstance("audi", Car.class);
-		Car fiat = factory.getInstance("fiat", Car.class);
+		Car audi = factory.getInstance(Car.class, "audi");
+		Car fiat = factory.getInstance(Car.class, "fiat");
 
 		assertNotNull(audi);
 		assertEquals("GERMANY", audi.name);
@@ -364,7 +364,7 @@ public class AppFactoryUnitTest {
 	public void getNamedInstance_NullInstanceName() throws Exception {
 		String descriptor = "<car class='js.tiny.container.core.unit.AppFactoryUnitTest$Car' scope='LOCAL' />";
 		IFactory factory = TestContext.start(config(descriptor));
-		factory.getInstance((String) null, Car.class);
+		factory.getInstance(Car.class, (String) null);
 	}
 
 	/** Null interface class should throw illegal argument. */
@@ -372,7 +372,7 @@ public class AppFactoryUnitTest {
 	public void getNamedInstance_NullInterfaceClass() throws Exception {
 		String descriptor = "<car class='js.tiny.container.core.unit.AppFactoryUnitTest$Car' scope='LOCAL' />";
 		IFactory factory = TestContext.start(config(descriptor));
-		factory.getInstance("car", null);
+		factory.getInstance(null, "car");
 	}
 
 	/** Constructor exception should rise invocation exception. */
@@ -381,43 +381,6 @@ public class AppFactoryUnitTest {
 		String descriptor = "<person class='js.tiny.container.core.unit.AppFactoryUnitTest$ExceptionalObject' scope='LOCAL' />";
 		IFactory factory = TestContext.start(config(descriptor));
 		factory.getOptionalInstance(ExceptionalObject.class);
-	}
-
-	// --------------------------------------------------------------------------------------------
-	// GET REMOTE INSTANCE
-
-	public void getRemoteInstance() throws Exception {
-		IFactory factory = TestContext.start();
-		String implementationURL = "http://server.com/test";
-		Product product = factory.getRemoteInstance(implementationURL, Product.class);
-		assertNotNull(product);
-		assertTrue(Proxy.isProxyClass(product.getClass()));
-	}
-
-	/** Null implementaion URL should throw illegal argument. */
-	@Test(expected = IllegalArgumentException.class)
-	public void getRemoteInstance_NullImplementationURL() throws Exception {
-		IFactory factory = TestContext.start();
-		factory.getRemoteInstance(null, Product.class);
-	}
-
-	/** Null interface class should throw illegal argument. */
-	@Test(expected = IllegalArgumentException.class)
-	public void getRemoteInstance_NullInterfaceClass() throws Exception {
-		IFactory factory = TestContext.start();
-		String implementationURL = "http://server.com/test";
-		factory.getRemoteInstance(implementationURL, null);
-	}
-
-	/** Bad interface class should throw illegal argument. */
-	@SuppressWarnings({ "unchecked", "rawtypes" })
-	@Test(expected = IllegalArgumentException.class)
-	public void getRemoteInstance_BadInterfaceClass() throws Exception {
-		IFactory factory = TestContext.start();
-		String implementationURL = "http://server.com/test";
-		for (Class badInterfaceClass : new Class<?>[] { Car.class, int.class, Product[].class, Void.TYPE }) {
-			factory.getRemoteInstance(implementationURL, badInterfaceClass);
-		}
 	}
 
 	// --------------------------------------------------------------------------------------------

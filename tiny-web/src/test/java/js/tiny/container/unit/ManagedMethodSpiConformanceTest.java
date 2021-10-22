@@ -3,9 +3,9 @@ package js.tiny.container.unit;
 import static org.junit.Assert.assertEquals;
 
 import java.lang.reflect.Method;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
+import java.util.Set;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -82,6 +82,7 @@ public class ManagedMethodSpiConformanceTest {
 		}
 	}
 
+	@SuppressWarnings("rawtypes")
 	private static class MockManagedClassSPI extends ManagedClassSpiStub {
 		@Override
 		public IContainer getContainer() {
@@ -89,7 +90,7 @@ public class ManagedMethodSpiConformanceTest {
 		}
 
 		@Override
-		public Collection<IContainerService> getServices() {
+		public Set<IContainerService> getServices() {
 			return Collections.emptySet();
 		}
 

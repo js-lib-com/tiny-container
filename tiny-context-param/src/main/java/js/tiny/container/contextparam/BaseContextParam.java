@@ -20,7 +20,7 @@ abstract class BaseContextParam {
 		this.container = container;
 	}
 
-	protected void processFields(IManagedClass managedClass, Object instance, Predicate<Field> predicate) {
+	protected void processFields(IManagedClass<?> managedClass, Object instance, Predicate<Field> predicate) {
 		RequestContext requestContext = container.getInstance(RequestContext.class);
 		for (Field field : managedClass.getImplementationClass().getDeclaredFields()) {
 			ContextParam contextParam = field.getAnnotation(ContextParam.class);

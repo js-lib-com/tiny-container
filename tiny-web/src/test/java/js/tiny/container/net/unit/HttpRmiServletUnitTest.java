@@ -61,7 +61,7 @@ public class HttpRmiServletUnitTest {
 	@Test
 	public void getManagedClass() throws Exception {
 		MockContainer container = new MockContainer();
-		IManagedClass managedClass = getManagedClass(container, "java.lang.Object", "/java/lang/Object/toString");
+		IManagedClass<?> managedClass = getManagedClass(container, "java.lang.Object", "/java/lang/Object/toString");
 		assertTrue(managedClass instanceof MockManagedClass);
 	}
 
@@ -80,21 +80,21 @@ public class HttpRmiServletUnitTest {
 
 	@Test
 	public void getManagedMethod() throws Exception {
-		MockManagedClass managedClass = new MockManagedClass();
+		MockManagedClass<?> managedClass = new MockManagedClass<>();
 		IManagedMethod managedMethod = getManagedMethod(managedClass, "toString", "/java/lang/Object/toString");
 		assertTrue(managedMethod instanceof MockManagedMethod);
 	}
 
 	@Test(expected = NoSuchMethodException.class)
 	public void getManagedMethod_NoManagedMethod() throws Exception {
-		MockManagedClass managedClass = new MockManagedClass();
+		MockManagedClass<?> managedClass = new MockManagedClass<>();
 		managedClass.managedMethod = null;
 		getManagedMethod(managedClass, "toString", "/java/lang/Object/toString");
 	}
 
 	@Test(expected = NoSuchMethodException.class)
 	public void getManagedMethod_IsResource() throws Exception {
-		MockManagedClass managedClass = new MockManagedClass();
+		MockManagedClass<?> managedClass = new MockManagedClass<>();
 		managedClass.managedMethod.returnType = Resource.class;
 		getManagedMethod(managedClass, "toString", "/java/lang/Object/toString");
 	}
@@ -106,11 +106,11 @@ public class HttpRmiServletUnitTest {
 		return Classes.invoke(HttpRmiServlet.class, "className", classPath);
 	}
 
-	private static IManagedClass getManagedClass(IContainer container, String interfaceName, String requestURI) throws Exception {
+	private static IManagedClass<?> getManagedClass(IContainer container, String interfaceName, String requestURI) throws Exception {
 		return Classes.invoke(HttpRmiServlet.class, "getManagedClass", container, interfaceName, requestURI);
 	}
 
-	private static IManagedMethod getManagedMethod(IManagedClass managedClass, String methodName, String requestURI) throws Exception {
+	private static IManagedMethod getManagedMethod(IManagedClass<?> managedClass, String methodName, String requestURI) throws Exception {
 		return Classes.invoke(HttpRmiServlet.class, "getManagedMethod", managedClass, methodName, requestURI);
 	}
 
@@ -118,20 +118,22 @@ public class HttpRmiServletUnitTest {
 	// FIXTURE
 
 	private static class MockContainer extends ContainerStub {
-		private MockManagedClass managedClass = new MockManagedClass();
+		private MockManagedClass<?> managedClass = new MockManagedClass<>();
 
+		@SuppressWarnings("unchecked")
 		@Override
-		public IManagedClass getManagedClass(Class<?> interfaceClass) {
-			return managedClass;
+		public <T> IManagedClass<T> getManagedClass(Class<T> interfaceClass) {
+			return (IManagedClass<T>) managedClass;
 		}
 	}
 
-	private static class MockManagedClass extends ManagedClassSpiStub {
+	private static class MockManagedClass<T> extends ManagedClassSpiStub<T> {
 		private MockManagedMethod managedMethod = new MockManagedMethod();
 
+		@SuppressWarnings("unchecked")
 		@Override
-		public Class<?> getInterfaceClass() {
-			return Object.class;
+		public Class<T> getInterfaceClass() {
+			return (Class<T>) Object.class;
 		}
 
 		@Override

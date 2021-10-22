@@ -17,7 +17,6 @@ import org.xml.sax.SAXException;
 
 import js.lang.Config;
 import js.lang.ConfigException;
-import js.tiny.container.servlet.TinyConfigBuilder;
 import js.tiny.container.servlet.TinyConfigBuilder.Loader;
 import js.tiny.container.unit.SaxAttributesStub;
 import js.tiny.container.unit.ServletContextStub;

@@ -29,7 +29,7 @@ class AsyncService implements IMethodInvocationProcessor, IServiceMetaScanner {
 	}
 
 	@Override
-	public List<IServiceMeta> scanServiceMeta(IManagedClass managedClass) {
+	public List<IServiceMeta> scanServiceMeta(IManagedClass<?> managedClass) {
 		List<IServiceMeta> servicesMeta = new ArrayList<>();
 
 		Asynchronous immutable = managedClass.getAnnotation(Asynchronous.class);

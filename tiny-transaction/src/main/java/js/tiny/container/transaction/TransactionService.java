@@ -36,7 +36,7 @@ final class TransactionService implements IMethodInvocationProcessor, IServiceMe
 	}
 
 	@Override
-	public List<IServiceMeta> scanServiceMeta(IManagedClass managedClass) {
+	public List<IServiceMeta> scanServiceMeta(IManagedClass<?> managedClass) {
 		List<IServiceMeta> servicesMeta = new ArrayList<>();
 
 		Transactional transactional = managedClass.getAnnotation(Transactional.class);

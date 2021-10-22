@@ -13,7 +13,7 @@ public interface IClassPostLoadedProcessor extends IFlowProcessor {
 	 * 
 	 * @param managedClass just loaded managed class.
 	 */
-	void onClassPostLoaded(IManagedClass managedClass);
+	<T> void onClassPostLoaded(IManagedClass<T> managedClass);
 
 	Priority getPriority();
 
@@ -23,7 +23,9 @@ public interface IClassPostLoadedProcessor extends IFlowProcessor {
 	 * @author Iulian Rotaru
 	 */
 	enum Priority implements IPriority {
-		/** 0 - inject values to class static fields */
+		/** 0 - register managed class to external services, e.g. CDI */
+		REGISTER,
+		/** 1 - inject values to class static fields */
 		INJECT
 	}
 

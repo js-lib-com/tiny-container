@@ -51,13 +51,13 @@ public class LocalInstanceFactory implements InstanceFactory {
 	 */
 	@SuppressWarnings("unchecked")
 	@Override
-	public <T> T newInstance(IManagedClass managedClass, Object... args) {
-		Constructor<?> constructor = managedClass.getConstructor();
+	public <T> T newInstance(IManagedClass<T> managedClass, Object... args) {
+		Constructor<? extends T> constructor = managedClass.getConstructor();
 		if (constructor == null) {
 			throw new BugError("Local instance factory cannot instantiate |%s|. Missing constructor.", managedClass);
 		}
 
-		Object instance = null;
+		T instance = null;
 		try {
 			instance = constructor.newInstance(args);
 		} catch (IllegalArgumentException e) {
@@ -80,10 +80,10 @@ public class LocalInstanceFactory implements InstanceFactory {
 		if (managedClass.getInstanceType().equals(InstanceType.PROXY)) {
 			final ClassLoader classLoader = managedClass.getImplementationClass().getClassLoader();
 			final Class<?>[] interfaceClasses = managedClass.getInterfaceClasses();
-			final ManagedProxyHandler handler = new ManagedProxyHandler(managedClass, instance);
+			final ManagedProxyHandler<T> handler = new ManagedProxyHandler<T>(managedClass, instance);
 			return (T) Proxy.newProxyInstance(classLoader, interfaceClasses, handler);
 		}
 
-		return (T) instance;
+		return instance;
 	}
 }

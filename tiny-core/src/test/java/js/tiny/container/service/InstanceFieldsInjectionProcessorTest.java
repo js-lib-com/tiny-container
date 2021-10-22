@@ -26,7 +26,7 @@ public class InstanceFieldsInjectionProcessorTest {
 	@Mock
 	private IContainer container;
 	@Mock
-	private IManagedClass managedClass;
+	private IManagedClass<BusinessClass> managedClass;
 
 	private InstanceFieldsInjectionProcessor processor;
 	private BusinessClass instance;

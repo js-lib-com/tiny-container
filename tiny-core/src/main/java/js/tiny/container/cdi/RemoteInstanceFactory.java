@@ -68,13 +68,12 @@ public class RemoteInstanceFactory implements InstanceFactory, RemoteFactory {
 	 * @param args remote instance factory does not support constructor arguments.
 	 * @param <T> managed instance type.
 	 */
-	@SuppressWarnings("unchecked")
 	@Override
-	public <T> T newInstance(IManagedClass managedClass, Object... args) {
+	public <T> T newInstance(IManagedClass<T> managedClass, Object... args) {
 		if (args.length > 0) {
 			throw new IllegalArgumentException("REMOTE instance factory does not support arguments.");
 		}
-		return getRemoteInstance(managedClass.getImplementationURL(), (Class<? super T>) managedClass.getInterfaceClass());
+		return getRemoteInstance((Class<? super T>) managedClass.getInterfaceClass(), managedClass.getImplementationURL());
 	}
 
 	/**
@@ -85,15 +84,15 @@ public class RemoteInstanceFactory implements InstanceFactory, RemoteFactory {
 	 * This factory method does not check arguments validity. Both should be not null and interface class should be an actual
 	 * Java interface.
 	 * 
-	 * @param implementationURL the URL of remote implementation,
-	 * @param interfaceClass interface implemented by remote class.
+	 * @param interfaceClass interface implemented by remote class,
+	 * @param implementationURL the URL of remote implementation.
 	 * @param <T> managed class implementation.
 	 * @return remote class proxy instance.
 	 * @throws UnsupportedProtocolException if URL protocol is not supported or arguments are otherwise not valid or null - in
 	 *             which case root cause has details about erroneous argument.
 	 */
 	@Override
-	public <T> T getRemoteInstance(String implementationURL, Class<? super T> interfaceClass) throws UnsupportedProtocolException {
+	public <T> T getRemoteInstance(Class<? super T> interfaceClass, String implementationURL) throws UnsupportedProtocolException {
 		if (implementationURL == null) {
 			throw new UnsupportedProtocolException(new NullPointerException("Null remote implementation URL."));
 		}
@@ -106,6 +105,6 @@ public class RemoteInstanceFactory implements InstanceFactory, RemoteFactory {
 		if (remoteFactory == null) {
 			throw new UnsupportedProtocolException("No service provider for remote factory on protocol |%s|. Ensure service provider for |%s| interface is deployed on runtime libraries.", protocol, RemoteFactoryProvider.class);
 		}
-		return remoteFactory.getRemoteInstance(implementationURL, interfaceClass);
+		return remoteFactory.getRemoteInstance(interfaceClass, implementationURL);
 	}
 }

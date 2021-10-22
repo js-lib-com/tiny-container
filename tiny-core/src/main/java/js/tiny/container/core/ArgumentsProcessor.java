@@ -32,7 +32,7 @@ class ArgumentsProcessor {
 	 * @param managedClass managed class.
 	 * @return constructor arguments.
 	 */
-	public Object[] getConstructorArguments(IManagedClass managedClass) {
+	public Object[] getConstructorArguments(IManagedClass<?> managedClass) {
 		// arguments can be null if on invocations chain there is Proxy handler invoked with no arguments
 		if (managedClass.getImplementationClass() == null) {
 			return EMPTY_ARGS;
@@ -61,7 +61,7 @@ class ArgumentsProcessor {
 			args = EMPTY_ARGS;
 		}
 
-		final IManagedClass managedClass = managedMethod.getDeclaringClass();
+		final IManagedClass<?> managedClass = managedMethod.getDeclaringClass();
 		final Method method = managedMethod.getMethod();
 		final Class<?>[] types = method.getParameterTypes();
 		return preProcessArguments(managedClass, method, types, args);
@@ -78,7 +78,7 @@ class ArgumentsProcessor {
 	 * @param args constructor or method invocation arguments.
 	 * @return given arguments updated and validated.
 	 */
-	private static Object[] preProcessArguments(IManagedClass managedClass, Member member, Class<?>[] formalParameters, Object... args) {
+	private static Object[] preProcessArguments(IManagedClass<?> managedClass, Member member, Class<?>[] formalParameters, Object... args) {
 		switch (args.length) {
 		case 0:
 			args = new Object[formalParameters.length];

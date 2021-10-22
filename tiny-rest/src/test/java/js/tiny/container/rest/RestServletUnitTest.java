@@ -1,5 +1,6 @@
 package js.tiny.container.rest;
 
+
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertEquals;
@@ -7,6 +8,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -51,7 +53,7 @@ public class RestServletUnitTest {
 	@Mock
 	private IContainerService service;
 	@Mock
-	private IManagedClass managedClass;
+	private IManagedClass<?> managedClass;
 	@Mock
 	private IManagedMethod managedMethod;
 
@@ -80,7 +82,7 @@ public class RestServletUnitTest {
 		when(servletContext.getAttribute(TinyContainer.ATTR_INSTANCE)).thenReturn(container);
 
 		when(managedClass.getServiceMeta(PathMeta.class)).thenReturn(new PathMeta(service, "resource"));
-		when(managedMethod.getDeclaringClass()).thenReturn(managedClass);
+		doReturn(managedClass).when(managedMethod).getDeclaringClass();
 
 		when(httpRequest.getRequestURI()).thenReturn("/test-app/rest/sub-resource");
 		when(httpRequest.getContextPath()).thenReturn("/test-app");

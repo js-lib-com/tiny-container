@@ -151,7 +151,7 @@ public class ScopeFactoryUnitTest {
 	 */
 	@Test
 	public void applicationScopeFactory_StressedConcurentCreation() throws Exception {
-		final IManagedClass managedClass = new MockManagedClassSPI();
+		final IManagedClass<?> managedClass = new MockManagedClassSPI();
 		final InstanceKey instanceKey = new InstanceKey(managedClass.getKey().toString());
 		final ScopeFactory factory = getApplicationScopeFactory();
 
@@ -231,7 +231,7 @@ public class ScopeFactoryUnitTest {
 		factory.persistInstance(instanceKey, new Person());
 		assertNotNull(factory.getInstance(instanceKey));
 
-		Map<IManagedClass, Object> instancesPool = Classes.getFieldValue(factory, "instancesPool");
+		Map<IManagedClass<?>, Object> instancesPool = Classes.getFieldValue(factory, "instancesPool");
 		assertFalse(instancesPool.get(managedClass) instanceof InheritableThreadLocal);
 	}
 
@@ -244,7 +244,7 @@ public class ScopeFactoryUnitTest {
 	 */
 	@Test
 	public void threadScopeFactory_StressedMultipleThreads() throws Exception {
-		final IManagedClass managedClass = new MockManagedClassSPI();
+		final IManagedClass<?> managedClass = new MockManagedClassSPI();
 		final InstanceKey instanceKey = new InstanceKey(managedClass.getKey().toString());
 		final ScopeFactory factory = getThreadScopeFactory();
 
@@ -326,6 +326,7 @@ public class ScopeFactoryUnitTest {
 	public static class Person {
 	}
 
+	@SuppressWarnings("rawtypes")
 	private static class MockManagedClassSPI extends ManagedClassSpiStub {
 		@Override
 		public Integer getKey() {

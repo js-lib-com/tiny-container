@@ -21,13 +21,13 @@ import js.tiny.container.stub.ContainerStub;
 import js.tiny.container.stub.ManagedClassSpiStub;
 
 public class InstanceAlgorithmUnitTest {
-	private MockManagedClassSPI managedClass;
+	private MockManagedClassSPI<?> managedClass;
 	private IContainer container;
 
 	@Before
 	public void beforeTest() {
 		container = new MockContainer();
-		managedClass = new MockManagedClassSPI(container);
+		managedClass = new MockManagedClassSPI<>(container);
 	}
 
 	@Test
@@ -36,7 +36,7 @@ public class InstanceAlgorithmUnitTest {
 		managedClass.scope = InstanceScope.LOCAL;
 		managedClass.type = InstanceType.POJO;
 
-		Person person = container.getInstance(managedClass);
+		Person person = (Person) container.getInstance(managedClass);
 		assertNotNull(person);
 	}
 
@@ -46,8 +46,8 @@ public class InstanceAlgorithmUnitTest {
 		managedClass.scope = InstanceScope.APPLICATION;
 		managedClass.type = InstanceType.POJO;
 
-		Vehicle car1 = container.getInstance(managedClass);
-		Vehicle car2 = container.getInstance(managedClass);
+		Vehicle car1 = (Vehicle) container.getInstance(managedClass);
+		Vehicle car2 = (Vehicle) container.getInstance(managedClass);
 
 		assertNotNull(car1);
 		assertNotNull(car2);
@@ -62,8 +62,8 @@ public class InstanceAlgorithmUnitTest {
 		managedClass.scope = InstanceScope.APPLICATION;
 		managedClass.type = InstanceType.PROXY;
 
-		Vehicle car1 = container.getInstance(managedClass);
-		Vehicle car2 = container.getInstance(managedClass);
+		Vehicle car1 = (Vehicle) container.getInstance(managedClass);
+		Vehicle car2 = (Vehicle) container.getInstance(managedClass);
 
 		assertNotNull(car1);
 		assertNotNull(car2);
@@ -76,8 +76,8 @@ public class InstanceAlgorithmUnitTest {
 		managedClass.scope = InstanceScope.APPLICATION;
 		managedClass.type = InstanceType.SERVICE;
 
-		Vehicle car1 = container.getInstance(managedClass);
-		Vehicle car2 = container.getInstance(managedClass);
+		Vehicle car1 = (Vehicle) container.getInstance(managedClass);
+		Vehicle car2 = (Vehicle) container.getInstance(managedClass);
 
 		assertNotNull(car1);
 		assertNotNull(car2);
@@ -90,8 +90,8 @@ public class InstanceAlgorithmUnitTest {
 		managedClass.scope = InstanceScope.APPLICATION;
 		managedClass.type = InstanceType.REMOTE;
 
-		Vehicle car1 = container.getInstance(managedClass);
-		Vehicle car2 = container.getInstance(managedClass);
+		Vehicle car1 = (Vehicle) container.getInstance(managedClass);
+		Vehicle car2 = (Vehicle) container.getInstance(managedClass);
 
 		assertNotNull(car1);
 		assertNotNull(car2);
@@ -117,7 +117,7 @@ public class InstanceAlgorithmUnitTest {
 	private static class MockContainer extends ContainerStub {
 	}
 
-	private static class MockManagedClassSPI extends ManagedClassSpiStub {
+	private static class MockManagedClassSPI<T> extends ManagedClassSpiStub<T> {
 		private final IContainer container;
 		private Class<?> implementationClass;
 		private InstanceScope scope;
@@ -147,25 +147,29 @@ public class InstanceAlgorithmUnitTest {
 			return null;
 		}
 
+		@SuppressWarnings("unchecked")
 		@Override
-		public Class<?>[] getInterfaceClasses() {
-			return implementationClass.getInterfaces();
+		public Class<T>[] getInterfaceClasses() {
+			return (Class<T>[]) implementationClass.getInterfaces();
 		}
 
+		@SuppressWarnings("unchecked")
 		@Override
-		public Class<?> getInterfaceClass() {
-			return implementationClass.getInterfaces()[0];
+		public Class<T> getInterfaceClass() {
+			return (Class<T>) implementationClass.getInterfaces()[0];
 		}
 
+		@SuppressWarnings("unchecked")
 		@Override
-		public Class<?> getImplementationClass() {
-			return implementationClass;
+		public Class<? extends T> getImplementationClass() {
+			return (Class<? extends T>) implementationClass;
 		}
 
+		@SuppressWarnings("unchecked")
 		@Override
-		public Constructor<?> getConstructor() {
+		public Constructor<? extends T> getConstructor() {
 			try {
-				return implementationClass.getConstructor();
+				return (Constructor<? extends T>) implementationClass.getConstructor();
 			} catch (NoSuchMethodException e) {
 			} catch (SecurityException e) {
 			}
@@ -188,7 +192,7 @@ public class InstanceAlgorithmUnitTest {
 		}
 
 		@Override
-		public <T> T getAttribute(Object context, String name, Class<T> type) {
+		public <A> A getAttribute(Object context, String name, Class<A> type) {
 			return null;
 		}
 	}

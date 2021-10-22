@@ -37,7 +37,6 @@ import js.lang.ManagedPreDestroy;
 import js.lang.NoProviderException;
 import js.log.Log;
 import js.log.LogFactory;
-import js.rmi.RemoteFactory;
 import js.tiny.container.cdi.ApplicationScopeFactory;
 import js.tiny.container.cdi.InstanceFactory;
 import js.tiny.container.cdi.LocalInstanceFactory;
@@ -246,7 +245,7 @@ import js.util.Params;
 public class Container implements IContainer, Configurable {
 	/** Class logger. */
 	private static final Log log = LogFactory.getLog(Container.class);
-
+	
 	/**
 	 * Scope specific factories mapped to related {@link InstanceScope}. A scope factory takes care of managed instance life
 	 * span and reuse it if instance is retrieved in the same scope. It is part of <a href="#instance-retrieval">Instance
@@ -306,7 +305,7 @@ public class Container implements IContainer, Configurable {
 	 * Master cache for all managed classes registered to container. Since an application has one and only one container
 	 * instance, managed classes pool is unique per application. This pool is initialized by {@link #config(Config)} method.
 	 */
-	protected final Map<Class<?>, IManagedClass> classesPool = new HashMap<>();
+	protected final Map<Class<?>, IManagedClass<?>> classesPool = new HashMap<>();
 
 	private final Set<IContainerService> containerServices = new HashSet<>();
 
@@ -454,7 +453,7 @@ public class Container implements IContainer, Configurable {
 			// create managed class, a single one per class descriptor, even if there are multiple interfaces
 			// if multiple interfaces register the same managed class multiple times, once per interface
 			// this way, no mater which interface is used to retrieve the instance it uses in the end the same managed class
-			ManagedClass managedClass = new ManagedClass(this, classDescriptor);
+			ManagedClass<?> managedClass = new ManagedClass<>(this, classDescriptor);
 			log.debug("Register managed class |%s|.", managedClass);
 			for (Class<?> interfaceClass : managedClass.getInterfaceClasses()) {
 				classesPool.put(interfaceClass, managedClass);
@@ -487,6 +486,7 @@ public class Container implements IContainer, Configurable {
 	 * declarations. This ensure {@link App} is destroyed last since App class descriptor is declared first into application
 	 * descriptor.
 	 */
+	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public void destroy() {
 		log.trace("destroy()");
 
@@ -551,8 +551,8 @@ public class Container implements IContainer, Configurable {
 	@Override
 	public <T> T getInstance(Class<? super T> interfaceClass) {
 		Params.notNull(interfaceClass, "Interface class");
-
-		IManagedClass managedClass = classesPool.get(interfaceClass);
+		@SuppressWarnings("unchecked")
+		IManagedClass<T> managedClass = (IManagedClass<T>) classesPool.get(interfaceClass);
 		if (managedClass == null) {
 			throw new BugError("No managed class associated with interface class |%s|.", interfaceClass);
 		}
@@ -563,11 +563,12 @@ public class Container implements IContainer, Configurable {
 	}
 
 	@Override
-	public <T> T getInstance(String instanceName, Class<? super T> interfaceClass) {
-		Params.notNullOrEmpty(instanceName, "Instance name");
+	public <T> T getInstance(Class<? super T> interfaceClass, String instanceName) {
 		Params.notNull(interfaceClass, "Interface class");
+		Params.notNullOrEmpty(instanceName, "Instance name");
 
-		IManagedClass managedClass = classesPool.get(interfaceClass);
+		@SuppressWarnings("unchecked")
+		IManagedClass<T> managedClass = (IManagedClass<T>) classesPool.get(interfaceClass);
 		if (managedClass == null) {
 			throw new BugError("No managed class associated with interface class |%s|.", interfaceClass);
 		}
@@ -581,7 +582,8 @@ public class Container implements IContainer, Configurable {
 	public <T> T getOptionalInstance(Class<? super T> interfaceClass) {
 		Params.notNull(interfaceClass, "Interface class");
 
-		IManagedClass managedClass = classesPool.get(interfaceClass);
+		@SuppressWarnings("unchecked")
+		IManagedClass<T> managedClass = (IManagedClass<T>) classesPool.get(interfaceClass);
 		if (managedClass == null) {
 			return null;
 		}
@@ -602,7 +604,7 @@ public class Container implements IContainer, Configurable {
 	}
 
 	@Override
-	public <T> T getInstance(IManagedClass managedClass) {
+	public <T> T getInstance(IManagedClass<T> managedClass) {
 		// managed class key cannot be null
 		InstanceKey instanceKey = new InstanceKey(managedClass.getKey().toString());
 		return getInstance(managedClass, instanceKey);
@@ -644,7 +646,7 @@ public class Container implements IContainer, Configurable {
 	 * @throws BugError if attempt to assign field to not POJO type.
 	 */
 	@SuppressWarnings("unchecked")
-	private <T> T getInstance(IManagedClass managedClass, InstanceKey instanceKey) {
+	private <T> T getInstance(IManagedClass<T> managedClass, InstanceKey instanceKey) {
 		// if(managedClass.getInstanceType().isREMOTE()) {
 		// return getRemoteInstance(new URL(managedClass.getImplementationURL()), (Class<? super T>)
 		// managedClass.getInterfaceClass());
@@ -658,9 +660,9 @@ public class Container implements IContainer, Configurable {
 		}
 
 		boolean postProcessingEnabled = false;
-		Object instance = null;
+		T instance = null;
 		synchronized (scopeMutex) {
-			instance = scopeFactory.getInstance(instanceKey);
+			instance = (T) scopeFactory.getInstance(instanceKey);
 			if (instance == null) {
 				postProcessingEnabled = true;
 				instance = instanceFactory.newInstance(managedClass, argumentsProcessor.getConstructorArguments(managedClass));
@@ -669,7 +671,7 @@ public class Container implements IContainer, Configurable {
 		}
 
 		if (!postProcessingEnabled) {
-			return (T) instance;
+			return instance;
 		}
 
 		// post-processors operate on bare POJO instances but is possible for instance factory to return a Java Proxy
@@ -677,7 +679,7 @@ public class Container implements IContainer, Configurable {
 		// if instance is a Java Proxy that does not use InstanceInvocationHandler post-processing is not performed at all
 		// if instance is not a Java Proxy execute post-processing on it
 
-		Object pojoInstance = null;
+		T pojoInstance = null;
 		if (instance instanceof Proxy) {
 			if (Proxy.getInvocationHandler(instance) instanceof InstanceInvocationHandler) {
 				InstanceInvocationHandler<T> handler = (InstanceInvocationHandler<T>) Proxy.getInvocationHandler(instance);
@@ -688,7 +690,7 @@ public class Container implements IContainer, Configurable {
 		}
 
 		if (pojoInstance != null) {
-			final Object finalInstance = pojoInstance;
+			final T finalInstance = pojoInstance;
 			instancePostConstructionProcessors.forEach(processor -> {
 				processor.onInstancePostConstruction(managedClass, finalInstance);
 			});
@@ -697,32 +699,11 @@ public class Container implements IContainer, Configurable {
 		return (T) instance;
 	}
 
-	@Override
-	public <T> T getRemoteInstance(String implementationURL, Class<? super T> interfaceClass) {
-		Params.notNull(implementationURL, "Implementation URL");
-		Params.notNull(interfaceClass, "Interface class");
-		Params.isTrue(interfaceClass.isInterface(), "Interface class argument is not actually an interface.");
-
-		InstanceFactory instanceFactory = instanceFactories.get(InstanceType.REMOTE);
-		if (instanceFactory == null) {
-			throw new BugError("No REMOTE instance factory registered.");
-		}
-		if (!(instanceFactory instanceof RemoteFactory)) {
-			throw new BugError("Invalid REMOTE instance factory provider. Does not implement %s interface.", RemoteFactory.class);
-		}
-		return ((RemoteFactory) instanceFactory).getRemoteInstance(implementationURL, interfaceClass);
-	}
-
-	@Override
-	public <T> T loadService(Class<T> serviceInterface) {
-		return Classes.loadService(serviceInterface);
-	}
-
 	// ----------------------------------------------------
 	// CONTAINER SPI
 
 	@Override
-	public Iterable<IManagedClass> getManagedClasses() {
+	public Iterable<IManagedClass<?>> getManagedClasses() {
 		return classesPool.values();
 	}
 
@@ -741,9 +722,10 @@ public class Container implements IContainer, Configurable {
 		return classesPool.containsKey(interfaceClass);
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
-	public IManagedClass getManagedClass(Class<?> interfaceClass) {
-		return classesPool.get(interfaceClass);
+	public <T> IManagedClass<T> getManagedClass(Class<T> interfaceClass) {
+		return (IManagedClass<T>) classesPool.get(interfaceClass);
 	}
 
 	// --------------------------------------------------------------------------------------------
@@ -785,7 +767,7 @@ public class Container implements IContainer, Configurable {
 	 */
 	private class ManagedMethodsIterator implements Iterator<IManagedMethod> {
 		/** Managed classes iterator. */
-		private final Iterator<IManagedClass> classesIterator;
+		private final Iterator<IManagedClass<?>> classesIterator;
 
 		/** Iterator on managed methods from current managed class. */
 		private Iterator<IManagedMethod> currentMethodsIterator;

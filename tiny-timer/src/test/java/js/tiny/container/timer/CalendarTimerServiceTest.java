@@ -33,7 +33,7 @@ public class CalendarTimerServiceTest {
 	@Mock
 	private Object instance;
 	@Mock
-	private IManagedClass managedClass;
+	private IManagedClass<Object> managedClass;
 	@Mock
 	private IManagedMethod managedMethod;
 	@Mock

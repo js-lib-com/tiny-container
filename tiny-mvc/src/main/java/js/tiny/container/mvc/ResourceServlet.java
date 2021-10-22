@@ -258,7 +258,7 @@ public class ResourceServlet extends AppServlet {
 		return key.toString();
 	}
 
-	private static String path(IManagedClass managedClass) {
+	private static String path(IManagedClass<?> managedClass) {
 		ControllerMeta controllerMeta = managedClass.getServiceMeta(ControllerMeta.class);
 		String value = controllerMeta != null ? controllerMeta.value() : null;
 		return value != null && !value.isEmpty() ? value : null;

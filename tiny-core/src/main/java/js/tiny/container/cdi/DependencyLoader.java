@@ -61,7 +61,7 @@ public final class DependencyLoader {
 	 * @throws BugError if dependency value cannot be created or circular dependency is detected.
 	 */
 	@SuppressWarnings("unchecked")
-	public static Object getDependencyValue(IManagedClass hostManagedClass, Class<?> type) {
+	public static Object getDependencyValue(IManagedClass<?> hostManagedClass, Class<?> type) {
 		Stack<Class<?>> stackTrace = dependenciesStack.get();
 		if (stackTrace == null) {
 			stackTrace = new Stack<>();
@@ -93,7 +93,7 @@ public final class DependencyLoader {
 		stackTrace.push(type);
 		try {
 
-			IManagedClass dependencyManagedClass = container.getManagedClass(type);
+			IManagedClass<?> dependencyManagedClass = container.getManagedClass(type);
 			if (isProxyRequired(hostManagedClass, dependencyManagedClass)) {
 				// if scope proxy is required returns a Java Proxy handled by ScopeProxyHandler
 				ScopeProxyHandler<?> handler = new ScopeProxyHandler<>(container, type);
@@ -138,7 +138,7 @@ public final class DependencyLoader {
 	 * @param dependencyManagedClass dependency managed class, possible null.
 	 * @return true if scope proxy is required.
 	 */
-	private static boolean isProxyRequired(IManagedClass hostManagedClass, IManagedClass dependencyManagedClass) {
+	private static boolean isProxyRequired(IManagedClass<?> hostManagedClass, IManagedClass<?> dependencyManagedClass) {
 		if (dependencyManagedClass != null) {
 			InstanceScope dependencyScope = dependencyManagedClass.getInstanceScope();
 			if (InstanceScope.THREAD.equals(dependencyScope)) {

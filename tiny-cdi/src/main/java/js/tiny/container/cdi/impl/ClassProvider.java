@@ -11,7 +11,7 @@ import js.log.Log;
 import js.log.LogFactory;
 import js.tiny.container.cdi.IInjector;
 
-class ClassProvider<T> implements Provider<T> {
+public class ClassProvider<T> implements Provider<T> {
 	private static final Log log = LogFactory.getLog(ClassProvider.class);
 
 	private final IInjector injector;

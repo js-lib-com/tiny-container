@@ -115,7 +115,7 @@ public class InstanceFactoryUnitTest {
 
 	@Test
 	public void localInstanceFactory() throws Exception {
-		MockManagedClassSPI managedClass = new MockManagedClassSPI();
+		MockManagedClassSPI<Person> managedClass = new MockManagedClassSPI<>();
 		managedClass.constructor = Person.class.getConstructor();
 		managedClass.constructor.setAccessible(true);
 
@@ -127,7 +127,7 @@ public class InstanceFactoryUnitTest {
 
 	@Test
 	public void localInstanceFactory_Arguments() throws Exception {
-		MockManagedClassSPI managedClass = new MockManagedClassSPI();
+		MockManagedClassSPI<Person> managedClass = new MockManagedClassSPI<>();
 		managedClass.constructor = Person.class.getConstructor(String.class);
 		managedClass.constructor.setAccessible(true);
 
@@ -139,7 +139,7 @@ public class InstanceFactoryUnitTest {
 
 	@Test
 	public void localInstanceFactory_NewInstanceOnEveryCall() throws Exception {
-		MockManagedClassSPI managedClass = new MockManagedClassSPI();
+		MockManagedClassSPI<?> managedClass = new MockManagedClassSPI<>();
 		managedClass.constructor = Person.class.getConstructor();
 		managedClass.constructor.setAccessible(true);
 
@@ -161,7 +161,7 @@ public class InstanceFactoryUnitTest {
 	/** Null constructor should throw bug error. */
 	@Test(expected = BugError.class)
 	public void localInstanceFactory_NullConstructor() {
-		IManagedClass managedClass = new MockManagedClassSPI_NullConstructor();
+		IManagedClass<?> managedClass = new MockManagedClassSPI_NullConstructor<>();
 		InstanceFactory factory = getLocalInstanceFactory();
 		factory.newInstance(managedClass);
 	}
@@ -169,7 +169,7 @@ public class InstanceFactoryUnitTest {
 	/** Abstract constructor should throw bug error. */
 	@Test(expected = BugError.class)
 	public void localInstanceFactory_AbstractConstructor() throws Exception {
-		MockManagedClassSPI managedClass = new MockManagedClassSPI();
+		MockManagedClassSPI<?> managedClass = new MockManagedClassSPI<>();
 		managedClass.constructor = XMan.class.getConstructor();
 		managedClass.constructor.setAccessible(true);
 
@@ -180,7 +180,7 @@ public class InstanceFactoryUnitTest {
 	/** Not accessible constructor should throw bug error. */
 	@Test(expected = BugError.class)
 	public void localInstanceFactory_NotAccessibleConstructor() throws Exception {
-		MockManagedClassSPI managedClass = new MockManagedClassSPI();
+		MockManagedClassSPI<?> managedClass = new MockManagedClassSPI<>();
 		managedClass.constructor = Person.class.getDeclaredConstructor(int.class);
 
 		InstanceFactory factory = getLocalInstanceFactory();
@@ -190,7 +190,7 @@ public class InstanceFactoryUnitTest {
 	/** Bad number of arguments should throw illegal argument. */
 	@Test(expected = IllegalArgumentException.class)
 	public void localInstanceFactory_BadNumberOfArguments() throws Exception {
-		MockManagedClassSPI managedClass = new MockManagedClassSPI();
+		MockManagedClassSPI<?> managedClass = new MockManagedClassSPI<>();
 		managedClass.constructor = Person.class.getConstructor();
 		managedClass.constructor.setAccessible(true);
 
@@ -201,7 +201,7 @@ public class InstanceFactoryUnitTest {
 	/** Bad type argument should throw illegal argument. */
 	@Test(expected = IllegalArgumentException.class)
 	public void localInstanceFactory_BadTypeArgument() throws Exception {
-		MockManagedClassSPI managedClass = new MockManagedClassSPI();
+		MockManagedClassSPI<?> managedClass = new MockManagedClassSPI<>();
 		managedClass.constructor = Person.class.getConstructor(String.class);
 		managedClass.constructor.setAccessible(true);
 
@@ -212,7 +212,7 @@ public class InstanceFactoryUnitTest {
 	/** Constructor exception should throw invocation exception. */
 	@Test(expected = InvocationException.class)
 	public void localInstanceFactory_ConstructorException() throws Exception {
-		MockManagedClassSPI managedClass = new MockManagedClassSPI();
+		MockManagedClassSPI<?> managedClass = new MockManagedClassSPI<>();
 		managedClass.constructor = Person.class.getConstructor(boolean.class);
 		managedClass.constructor.setAccessible(true);
 
@@ -227,9 +227,10 @@ public class InstanceFactoryUnitTest {
 	// --------------------------------------------------------------------------------------------
 	// SERVICE INSTANCE FACTORY
 
+	@SuppressWarnings("unchecked")
 	@Test
 	public void serviceInstanceFactory() {
-		MockManagedClassSPI managedClass = new MockManagedClassSPI();
+		MockManagedClassSPI<?> managedClass = new MockManagedClassSPI<>();
 		managedClass.interfaceClasses = new Class[] { Human.class };
 		InstanceFactory factory = getServiceInstanceFactory();
 
@@ -257,9 +258,10 @@ public class InstanceFactoryUnitTest {
 	}
 
 	/** Missing service provider should throw no provider exception. */
+	@SuppressWarnings("unchecked")
 	@Test(expected = NoProviderException.class)
 	public void serviceInstanceFactory_NoProvider() {
-		MockManagedClassSPI managedClass = new MockManagedClassSPI();
+		MockManagedClassSPI<?> managedClass = new MockManagedClassSPI<>();
 		managedClass.interfaceClasses = new Class[] { Person.class };
 		InstanceFactory factory = getServiceInstanceFactory();
 		factory.newInstance(managedClass);
@@ -268,24 +270,26 @@ public class InstanceFactoryUnitTest {
 	/** Null interface classes should throw bug error. */
 	@Test(expected = BugError.class)
 	public void serviceInstanceFactory_NullInterfaceClasses() {
-		MockManagedClassSPI managedClass = new MockManagedClassSPI();
+		MockManagedClassSPI<?> managedClass = new MockManagedClassSPI<>();
 		InstanceFactory factory = getServiceInstanceFactory();
 		factory.newInstance(managedClass);
 	}
 
 	/** Empty interface classes should throw bug error. */
+	@SuppressWarnings("unchecked")
 	@Test(expected = BugError.class)
 	public void serviceInstanceFactory_EmptyInterfaceClasses() {
-		MockManagedClassSPI managedClass = new MockManagedClassSPI();
+		MockManagedClassSPI<?> managedClass = new MockManagedClassSPI<>();
 		managedClass.interfaceClasses = new Class[] {};
 		InstanceFactory factory = getServiceInstanceFactory();
 		factory.newInstance(managedClass);
 	}
 
 	/** Invoke with arguments should throw illegal argument. */
+	@SuppressWarnings("unchecked")
 	@Test(expected = IllegalArgumentException.class)
 	public void serviceInstanceFactory_Arguments() {
-		MockManagedClassSPI managedClass = new MockManagedClassSPI();
+		MockManagedClassSPI<?> managedClass = new MockManagedClassSPI<>();
 		managedClass.interfaceClasses = new Class[] { Human.class };
 		InstanceFactory factory = getServiceInstanceFactory();
 		factory.newInstance(managedClass, "John Doe");
@@ -298,8 +302,9 @@ public class InstanceFactoryUnitTest {
 	// --------------------------------------------------------------------------------------------
 	// REMOTE INSTANCE FACTORY
 
+	@SuppressWarnings("unchecked")
 	public void remoteInstanceFactory() throws Exception {
-		MockManagedClassSPI managedClass = new MockManagedClassSPI();
+		MockManagedClassSPI<Human> managedClass = new MockManagedClassSPI<>();
 		managedClass.interfaceClasses = new Class[] { Human.class };
 
 		InstanceFactory factory = getRemoteInstanceFactory();
@@ -310,21 +315,21 @@ public class InstanceFactoryUnitTest {
 
 	@Test(expected = IllegalArgumentException.class)
 	public void remoteInstanceFactory_Arguments() throws Exception {
-		MockManagedClassSPI managedClass = new MockManagedClassSPI();
+		MockManagedClassSPI<?> managedClass = new MockManagedClassSPI<>();
 		InstanceFactory factory = getRemoteInstanceFactory();
 		factory.newInstance(managedClass, "argument");
 	}
 
 	public void remoteInstanceFactory_GetRemoteInstance() throws Exception {
 		RemoteFactory factory = (RemoteFactory) getRemoteInstanceFactory();
-		assertNotNull(factory.getRemoteInstance("http://server/", Human.class));
-		assertNotNull(factory.getRemoteInstance("https://server/", Human.class));
+		assertNotNull(factory.getRemoteInstance(Human.class, "http://server/"));
+		assertNotNull(factory.getRemoteInstance(Human.class, "https://server/"));
 	}
 
 	@Test(expected = UnsupportedProtocolException.class)
 	public void remoteInstanceFactory_NotRegistered() throws Exception {
 		RemoteFactory factory = (RemoteFactory) getRemoteInstanceFactory();
-		assertNotNull(factory.getRemoteInstance("dots://server/", Human.class));
+		assertNotNull(factory.getRemoteInstance(Human.class, "dots://server/"));
 	}
 
 	public void remoteInstanceFactory_RemoteFactories() throws Exception {
@@ -395,22 +400,23 @@ public class InstanceFactoryUnitTest {
 		}
 	}
 
-	private static class MockManagedClassSPI extends ManagedClassSpiStub {
+	private static class MockManagedClassSPI<T> extends ManagedClassSpiStub<T> {
 		private Constructor<?> constructor;
-		private Class<?>[] interfaceClasses;
+		private Class<T>[] interfaceClasses;
 
+		@SuppressWarnings("unchecked")
 		@Override
-		public Constructor<?> getConstructor() {
-			return constructor;
+		public Constructor<? extends T> getConstructor() {
+			return (Constructor<? extends T>) constructor;
 		}
 
 		@Override
-		public Class<?>[] getInterfaceClasses() {
+		public Class<T>[] getInterfaceClasses() {
 			return interfaceClasses;
 		}
 
 		@Override
-		public Class<?> getInterfaceClass() {
+		public Class<T> getInterfaceClass() {
 			return interfaceClasses[0];
 		}
 
@@ -425,9 +431,9 @@ public class InstanceFactoryUnitTest {
 		}
 	}
 
-	private static class MockManagedClassSPI_NullConstructor extends ManagedClassSpiStub {
+	private static class MockManagedClassSPI_NullConstructor<T> extends ManagedClassSpiStub<T> {
 		@Override
-		public Constructor<?> getConstructor() {
+		public Constructor<? extends T> getConstructor() {
 			return null;
 		}
 	}
@@ -449,7 +455,7 @@ public class InstanceFactoryUnitTest {
 
 	private static class MockRemoteFactory implements RemoteFactory {
 		@Override
-		public <T> T getRemoteInstance(String implementationURL, Class<? super T> interfaceClass) throws UnsupportedProtocolException {
+		public <T> T getRemoteInstance(Class<? super T> interfaceClass, String implementationURL) throws UnsupportedProtocolException {
 			return null;
 		}
 	}

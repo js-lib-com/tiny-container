@@ -1,9 +1,10 @@
 package js.tiny.container.mvc;
 
+
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 import java.util.Arrays;
 
@@ -52,7 +53,7 @@ public class ResourceServletHandlerUnitTest {
 	@Mock
 	private IContainerService service;
 	@Mock
-	private IManagedClass managedClass;
+	private IManagedClass<?> managedClass;
 	@Mock
 	private IManagedMethod managedMethod;
 
@@ -79,10 +80,10 @@ public class ResourceServletHandlerUnitTest {
 
 		when(container.getManagedMethods()).thenReturn(Arrays.asList(managedMethod));
 		// when(container.getLoginPage()).thenReturn("login");
-		when(container.getInstance(managedClass)).thenReturn(new Object());
+		doReturn(new Object()).when(container).getInstance(managedClass);
 
 		when(managedClass.getServiceMeta(ControllerMeta.class)).thenReturn(new ControllerMeta(service, "controller"));
-		when(managedMethod.getDeclaringClass()).thenReturn(managedClass);
+		doReturn(managedClass).when(managedMethod).getDeclaringClass();
 
 		when(managedMethod.getServiceMeta(RequestPathMeta.class)).thenReturn(new RequestPathMeta(service, "index"));
 		when(managedMethod.getParameterTypes()).thenReturn(new Class[] { String.class });

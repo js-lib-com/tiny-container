@@ -47,5 +47,5 @@ public interface InstanceFactory {
 	 * @throws InvocationException if implementation is local and constructor execution fails.
 	 * @throws NoProviderException if interface is a service and no provider found on run-time.
 	 */
-	<T> T newInstance(IManagedClass managedClass, Object... args);
+	<T> T newInstance(IManagedClass<T> managedClass, Object... args);
 }

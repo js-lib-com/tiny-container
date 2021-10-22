@@ -10,11 +10,11 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.lang.reflect.Type;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.junit.Before;
 import org.junit.Ignore;
@@ -254,6 +254,7 @@ public class ManagedMethodUnitTest {
 		}
 	}
 
+	@SuppressWarnings("rawtypes")
 	private static class MockManagedClass extends ManagedClassSpiStub {
 		private MockContainer container;
 
@@ -263,7 +264,7 @@ public class ManagedMethodUnitTest {
 		}
 
 		@Override
-		public Collection<IContainerService> getServices() {
+		public Set<IContainerService> getServices() {
 			return Collections.emptySet();
 		}
 

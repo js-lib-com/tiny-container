@@ -1,6 +1,7 @@
 package js.tiny.container.cdi;
 
 import java.lang.annotation.Annotation;
+import java.net.URI;
 
 import javax.inject.Provider;
 
@@ -24,6 +25,8 @@ public interface IBindingBuilder<T> {
 
 	IBindingBuilder<T> provider(Provider<T> provider);
 
-	IBindingBuilder<T> on(String url);
+	IBindingBuilder<T> on(URI hostURI);
+
+	IBindingBuilder<T> on(String hostURI);
 
 }

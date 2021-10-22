@@ -42,14 +42,14 @@ public class InstanceStartupProcessor implements IContainerStartProcessor {
 	@Override
 	public void onContainerStart(IContainer container) {
 		// compare first with second to ensure ascending sorting
-		Set<IManagedClass> startupClasses = new TreeSet<>((o1, o2) -> o1.getKey().compareTo(o2.getKey()));
-		for (IManagedClass managedClass : container.getManagedClasses()) {
+		Set<IManagedClass<?>> startupClasses = new TreeSet<>((o1, o2) -> o1.getKey().compareTo(o2.getKey()));
+		for (IManagedClass<?> managedClass : container.getManagedClasses()) {
 			if (isStartup(managedClass)) {
 				startupClasses.add(managedClass);
 			}
 		}
 
-		for (IManagedClass managedClass : startupClasses) {
+		for (IManagedClass<?> managedClass : startupClasses) {
 			// call getInstance to ensure managed instance with managed life cycle is started
 			// if there are more than one single interface peek one, no matter which; the simple way is to peek the first
 			// getInstance() will create instance only if not already exist; returned value is ignored
@@ -59,7 +59,7 @@ public class InstanceStartupProcessor implements IContainerStartProcessor {
 		}
 	}
 
-	private static boolean isStartup(IManagedClass managedClass) {
+	private static boolean isStartup(IManagedClass<?> managedClass) {
 		for (Class<?> interfaceClass : managedClass.getInterfaceClasses()) {
 			if (Types.isKindOf(interfaceClass, ManagedLifeCycle.class)) {
 				return true;

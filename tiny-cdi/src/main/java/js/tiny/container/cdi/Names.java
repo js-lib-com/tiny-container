@@ -4,7 +4,7 @@ import java.lang.annotation.Annotation;
 
 import javax.inject.Named;
 
-public class Names implements IQualifier {
+public class Names {
 
 	public static Named named(final String value) {
 		return new Named() {
@@ -22,7 +22,7 @@ public class Names implements IQualifier {
 			public int hashCode() {
 				return toString().hashCode();
 			}
-			
+
 			@Override
 			public boolean equals(Object other) {
 				if (other == null || !other.getClass().equals(this.getClass())) {

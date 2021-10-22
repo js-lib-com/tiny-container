@@ -25,8 +25,6 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import js.tiny.container.servlet.RequestContext;
-import js.tiny.container.servlet.RequestPreprocessor;
 import js.tiny.container.spi.IContainer;
 import js.tiny.container.unit.FilterConfigStub;
 import js.tiny.container.unit.HttpServletRequestStub;

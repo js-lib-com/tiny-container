@@ -32,7 +32,7 @@ final class InterceptorService implements IMethodInvocationProcessor, IServiceMe
 	}
 
 	@Override
-	public List<IServiceMeta> scanServiceMeta(IManagedClass managedClass) {
+	public List<IServiceMeta> scanServiceMeta(IManagedClass<?> managedClass) {
 		List<IServiceMeta> servicesMeta = new ArrayList<>();
 
 		Intercepted intercepted = managedClass.getAnnotation(Intercepted.class);

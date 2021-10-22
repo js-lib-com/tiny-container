@@ -128,14 +128,14 @@ public class FactoryTest {
 	public void GivenFactoryBound_WhenGetNamedInstance_ThenDelegateImplementation() {
 		// given
 		Factory.bind(factory);
-		when(factory.getInstance("file-manager", File.class)).thenReturn(instance);
+		when(factory.getInstance(File.class, "file-manager")).thenReturn(instance);
 
 		// when
-		File file = Factory.getInstance("file-manager", File.class);
+		File file = Factory.getInstance(File.class, "file-manager");
 
 		// then
 		assertThat(file, equalTo(instance));
-		verify(factory, times(1)).getInstance("file-manager", File.class);
+		verify(factory, times(1)).getInstance(File.class, "file-manager");
 	}
 
 	@Test
@@ -150,19 +150,5 @@ public class FactoryTest {
 		// then
 		assertThat(file, equalTo(instance));
 		verify(factory, times(1)).getOptionalInstance(File.class);
-	}
-
-	@Test
-	public void GivenFactoryBound_WhenGetRemoteInstance_ThenDelegateImplementation() {
-		// given
-		Factory.bind(factory);
-		when(factory.getRemoteInstance("http://server.com/", File.class)).thenReturn(instance);
-
-		// when
-		File file = Factory.getRemoteInstance("http://server.com/", File.class);
-
-		// then
-		assertThat(file, equalTo(instance));
-		verify(factory, times(1)).getRemoteInstance("http://server.com/", File.class);
 	}
 }

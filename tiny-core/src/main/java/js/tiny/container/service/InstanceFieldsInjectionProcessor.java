@@ -66,7 +66,7 @@ public class InstanceFieldsInjectionProcessor implements IInstancePostConstructi
 	}
 
 	@Override
-	public Iterable<IServiceMeta> scanServiceMeta(IManagedClass managedClass) {
+	public Iterable<IServiceMeta> scanServiceMeta(IManagedClass<?> managedClass) {
 		MANAGED_FIELDS.put(managedClass.getKey(), scanDependencies(managedClass.getImplementationClass()));
 		return Collections.emptyList();
 	}
@@ -85,7 +85,7 @@ public class InstanceFieldsInjectionProcessor implements IInstancePostConstructi
 	 * @throws BugError if a field dependency cannot be resolved.
 	 */
 	@Override
-	public void onInstancePostConstruction(IManagedClass managedClass, Object instance) {
+	public <T> void onInstancePostConstruction(IManagedClass<T> managedClass, T instance) {
 		if (instance == null || !MANAGED_FIELDS.containsKey(managedClass.getKey())) {
 			// null instance and no fields conditions are silently ignored
 			return;

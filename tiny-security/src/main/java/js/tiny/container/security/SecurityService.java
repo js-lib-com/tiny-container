@@ -41,7 +41,7 @@ public class SecurityService implements IMethodInvocationProcessor, IServiceMeta
 	}
 
 	@Override
-	public List<IServiceMeta> scanServiceMeta(IManagedClass managedClass) {
+	public List<IServiceMeta> scanServiceMeta(IManagedClass<?> managedClass) {
 		List<IServiceMeta> servicesMeta = new ArrayList<>();
 
 		RolesAllowed rolesAllowed = managedClass.getAnnotation(RolesAllowed.class);

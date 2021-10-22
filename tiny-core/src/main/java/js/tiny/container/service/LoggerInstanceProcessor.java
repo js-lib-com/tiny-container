@@ -34,7 +34,7 @@ public class LoggerInstanceProcessor implements IInstancePostConstructionProcess
 	 * @param instance instance of managed class.
 	 */
 	@Override
-	public void onInstancePostConstruction(IManagedClass managedClass, Object instance) {
+	public <T> void onInstancePostConstruction(IManagedClass<T> managedClass, T instance) {
 		if (!managedClass.getInstanceScope().equals(InstanceScope.APPLICATION)) {
 			return;
 		}

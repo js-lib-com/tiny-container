@@ -13,12 +13,23 @@ import js.tiny.container.cdi.impl.Providers;
 public class CDI implements IInjector {
 	private static final Log log = LogFactory.getLog(CDI.class);
 
+	private static CDI instance;
+	private static final Object mutex = new Object();
+
 	public static CDI create(IModule... modules) {
 		log.trace("create(Module...)");
-		CDI cdi = new CDI();
-		cdi.configure(modules);
-		return cdi;
+		if (instance == null) {
+			synchronized (mutex) {
+				if (instance == null) {
+					instance = new CDI();
+					instance.configure(modules);
+				}
+			}
+		}
+		return instance;
 	}
+
+	// --------------------------------------------------------------------------------------------
 
 	private final IProviders providers;
 	private final Map<Key<?>, Provider<?>> bindings;
@@ -34,10 +45,17 @@ public class CDI implements IInjector {
 		for (IModule module : modules) {
 			module.setScopeProviders(providers);
 			module.configure();
-			for (IBinding<?> binding : module.getBindings()) {
-				bindings.put(binding.key(), binding.provider());
-			}
+			module.getBindings().forEach(this::bind);
 		}
+	}
+
+	public void bind(IBinding<?> binding) {
+		log.debug("Register |%s| to provider |%s|.", binding.key(), binding.provider());
+		bindings.put(binding.key(), binding.provider());
+	}
+
+	public IProviders getProviders() {
+		return providers;
 	}
 
 	@Override
@@ -59,11 +77,5 @@ public class CDI implements IInjector {
 	@Override
 	public <T> T getInstance(Class<T> type, String name) {
 		return getInstance(type, Names.named(name));
-	}
-
-	public void dump() {
-		bindings.forEach((key, provider) -> {
-			log.debug("Register |%s| to provider |%s|.", key, provider);
-		});
 	}
 }

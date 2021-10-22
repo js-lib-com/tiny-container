@@ -17,7 +17,7 @@ class ClassContextParam extends BaseContextParam implements IClassPostLoadedProc
 	}
 
 	@Override
-	public void onClassPostLoaded(IManagedClass managedClass) {
+	public <T> void onClassPostLoaded(IManagedClass<T> managedClass) {
 		processFields(managedClass, null, field -> Modifier.isStatic(field.getModifiers()));
 	}
 }

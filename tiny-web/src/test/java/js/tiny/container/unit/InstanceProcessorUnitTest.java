@@ -74,7 +74,7 @@ public class InstanceProcessorUnitTest {
 				"</person>";
 		ConfigBuilder builder = new ConfigBuilder(descriptor);
 
-		MockManagedClassSPI managedClass = new MockManagedClassSPI(PersonFields.class);
+		MockManagedClassSPI<PersonFields> managedClass = new MockManagedClassSPI<>(PersonFields.class);
 		managedClass.config = builder.build();
 		IInstancePostConstructionProcessor processor = getInstanceFieldsInitializationProcessor();
 
@@ -89,7 +89,7 @@ public class InstanceProcessorUnitTest {
 
 	@Test
 	public void instanceFieldsInitialization_NoConfig() {
-		MockManagedClassSPI managedClass = new MockManagedClassSPI(PersonFields.class);
+		MockManagedClassSPI<PersonFields> managedClass = new MockManagedClassSPI<>(PersonFields.class);
 		IInstancePostConstructionProcessor processor = getInstanceFieldsInitializationProcessor();
 
 		PersonFields person = new PersonFields();
@@ -104,7 +104,7 @@ public class InstanceProcessorUnitTest {
 	/** Null instance arguments should not throw exception. */
 	@Test
 	public void instanceFieldsInitialization_NullInstance() {
-		MockManagedClassSPI managedClass = new MockManagedClassSPI(Person.class);
+		MockManagedClassSPI<Person> managedClass = new MockManagedClassSPI<>(Person.class);
 		IInstancePostConstructionProcessor processor = getInstanceFieldsInitializationProcessor();
 		processor.onInstancePostConstruction(managedClass, null);
 	}
@@ -118,7 +118,7 @@ public class InstanceProcessorUnitTest {
 				"</person>";
 		ConfigBuilder builder = new ConfigBuilder(descriptor);
 
-		MockManagedClassSPI managedClass = new MockManagedClassSPI(PersonFields.class);
+		MockManagedClassSPI<PersonFields> managedClass = new MockManagedClassSPI<>(PersonFields.class);
 		managedClass.config = builder.build();
 		IInstancePostConstructionProcessor processor = getInstanceFieldsInitializationProcessor();
 		processor.onInstancePostConstruction(managedClass, new PersonFields());
@@ -133,7 +133,7 @@ public class InstanceProcessorUnitTest {
 				"</person>";
 		ConfigBuilder builder = new ConfigBuilder(descriptor);
 
-		MockManagedClassSPI managedClass = new MockManagedClassSPI(Person.class);
+		MockManagedClassSPI<Person> managedClass = new MockManagedClassSPI<>(Person.class);
 		managedClass.config = builder.build();
 		IInstancePostConstructionProcessor processor = getInstanceFieldsInitializationProcessor();
 		processor.onInstancePostConstruction(managedClass, new Person());
@@ -147,7 +147,7 @@ public class InstanceProcessorUnitTest {
 				"</person>";
 		ConfigBuilder builder = new ConfigBuilder(descriptor);
 
-		MockManagedClassSPI managedClass = new MockManagedClassSPI(PersonFields.class);
+		MockManagedClassSPI<PersonFields> managedClass = new MockManagedClassSPI<>(PersonFields.class);
 		managedClass.config = builder.build();
 		managedClass.instanceType = InstanceType.SERVICE;
 		IInstancePostConstructionProcessor processor = getInstanceFieldsInitializationProcessor();
@@ -163,7 +163,7 @@ public class InstanceProcessorUnitTest {
 
 	@Test
 	public void configurable() {
-		MockManagedClassSPI managedClass = new MockManagedClassSPI(Person.class);
+		MockManagedClassSPI<Joker> managedClass = new MockManagedClassSPI<>(Joker.class);
 		managedClass.config = new Config("test");
 		IInstancePostConstructionProcessor processor = getConfigurableInstanceProcessor();
 
@@ -177,7 +177,7 @@ public class InstanceProcessorUnitTest {
 	/** Configuration processor on instance without Configurable interface should do nothing and throw none. */
 	@Test
 	public void configurable_NoConfigurable() {
-		MockManagedClassSPI managedClass = new MockManagedClassSPI(Person.class);
+		MockManagedClassSPI<Person> managedClass = new MockManagedClassSPI<>(Person.class);
 		managedClass.config = new Config("test");
 		IInstancePostConstructionProcessor processor = getConfigurableInstanceProcessor();
 
@@ -188,7 +188,7 @@ public class InstanceProcessorUnitTest {
 	/** Managed class without configuration object should not execute instance configuration. */
 	@Test
 	public void configurable_NoConfigObject() {
-		MockManagedClassSPI managedClass = new MockManagedClassSPI(Person.class);
+		MockManagedClassSPI<Joker> managedClass = new MockManagedClassSPI<>(Joker.class);
 		IInstancePostConstructionProcessor processor = getConfigurableInstanceProcessor();
 
 		Joker joker = new Joker();
@@ -200,7 +200,7 @@ public class InstanceProcessorUnitTest {
 	/** Invalid configuration object should throw bug error. */
 	@Test(expected = BugError.class)
 	public void configurable_Invalid() {
-		MockManagedClassSPI managedClass = new MockManagedClassSPI(Person.class);
+		MockManagedClassSPI<Joker> managedClass = new MockManagedClassSPI<>(Joker.class);
 		managedClass.config = new Config("test");
 		IInstancePostConstructionProcessor processor = getConfigurableInstanceProcessor();
 
@@ -212,7 +212,7 @@ public class InstanceProcessorUnitTest {
 	/** Null instance arguments should not throw exception. */
 	@Test
 	public void configurable_NullInstance() {
-		MockManagedClassSPI managedClass = new MockManagedClassSPI(Person.class);
+		MockManagedClassSPI<Person> managedClass = new MockManagedClassSPI<>(Person.class);
 		managedClass.config = new Config("test");
 		IInstancePostConstructionProcessor processor = getConfigurableInstanceProcessor();
 		processor.onInstancePostConstruction(managedClass, null);
@@ -221,7 +221,7 @@ public class InstanceProcessorUnitTest {
 	/** Exception on configuration execution should throw bug error. */
 	@Test(expected = BugError.class)
 	public void configurable_Exception() {
-		MockManagedClassSPI managedClass = new MockManagedClassSPI(Person.class);
+		MockManagedClassSPI<Joker> managedClass = new MockManagedClassSPI<>(Joker.class);
 		managedClass.config = new Config("test");
 		IInstancePostConstructionProcessor processor = getConfigurableInstanceProcessor();
 
@@ -240,7 +240,7 @@ public class InstanceProcessorUnitTest {
 	@Test
 	public void postConstruct() {
 		MockManagedMethodSPI managedMethod = new MockManagedMethodSPI(Joker.getPostConstructMethod());
-		MockManagedClassSPI managedClass = new MockManagedClassSPI(Joker.class);
+		MockManagedClassSPI<Joker> managedClass = new MockManagedClassSPI<>(Joker.class);
 		managedClass.attribute = managedMethod;
 		IInstancePostConstructionProcessor processor = getPostConstructInstanceProcessor();
 
@@ -252,7 +252,7 @@ public class InstanceProcessorUnitTest {
 
 	@Test
 	public void postConstruct_NoManagedPostConstruct() {
-		MockManagedClassSPI managedClass = new MockManagedClassSPI(Person.class);
+		MockManagedClassSPI<Person> managedClass = new MockManagedClassSPI<>(Person.class);
 		IInstancePostConstructionProcessor processor = getPostConstructInstanceProcessor();
 
 		Person person = new Person();
@@ -262,7 +262,7 @@ public class InstanceProcessorUnitTest {
 	/** Null instance arguments should not throw exception. */
 	@Test
 	public void postConstruct_NullInstance() {
-		MockManagedClassSPI managedClass = new MockManagedClassSPI(Person.class);
+		MockManagedClassSPI<Person> managedClass = new MockManagedClassSPI<>(Person.class);
 		IInstancePostConstructionProcessor processor = getPostConstructInstanceProcessor();
 		processor.onInstancePostConstruction(managedClass, null);
 	}
@@ -270,7 +270,7 @@ public class InstanceProcessorUnitTest {
 	@Test(expected = BugError.class)
 	public void postConstruct_Exception() {
 		MockManagedMethodSPI managedMethod = new MockManagedMethodSPI(Joker.getPostConstructMethod());
-		MockManagedClassSPI managedClass = new MockManagedClassSPI(Joker.class);
+		MockManagedClassSPI<Joker> managedClass = new MockManagedClassSPI<>(Joker.class);
 		managedClass.attribute = managedMethod;
 		IInstancePostConstructionProcessor processor = getPostConstructInstanceProcessor();
 
@@ -288,7 +288,7 @@ public class InstanceProcessorUnitTest {
 
 	@Test
 	public void logger() {
-		MockManagedClassSPI managedClass = new MockManagedClassSPI(Person.class);
+		MockManagedClassSPI<Person> managedClass = new MockManagedClassSPI<>(Person.class);
 		managedClass.instanceScope = InstanceScope.APPLICATION;
 		managedClass.instanceType = InstanceType.PROXY;
 		IInstancePostConstructionProcessor processor = getLoggerInstanceProcessor();
@@ -299,7 +299,7 @@ public class InstanceProcessorUnitTest {
 
 	@Test
 	public void logger_MultipleInterfaces() {
-		MockManagedClassSPI managedClass = new MockManagedClassSPI(Joker.class);
+		MockManagedClassSPI<Joker> managedClass = new MockManagedClassSPI<>(Joker.class);
 		managedClass.instanceScope = InstanceScope.APPLICATION;
 		managedClass.instanceType = InstanceType.PROXY;
 		IInstancePostConstructionProcessor processor = getLoggerInstanceProcessor();
@@ -310,7 +310,7 @@ public class InstanceProcessorUnitTest {
 
 	@Test
 	public void logger_NoDump() {
-		MockManagedClassSPI managedClass = new MockManagedClassSPI(Person.class);
+		MockManagedClassSPI<Person> managedClass = new MockManagedClassSPI<>(Person.class);
 		managedClass.instanceScope = InstanceScope.LOCAL;
 		managedClass.instanceType = InstanceType.POJO;
 		IInstancePostConstructionProcessor processor = getLoggerInstanceProcessor();
@@ -387,15 +387,16 @@ public class InstanceProcessorUnitTest {
 	}
 
 	private static class MockContainer extends ContainerStub {
-		private Map<Class<?>, IManagedClass> classesPool = new HashMap<>();
+		private Map<Class<?>, IManagedClass<?>> classesPool = new HashMap<>();
 
-		private void registerManagedClass(Class<?> interfaceClass, IManagedClass managedClass) {
+		private void registerManagedClass(Class<?> interfaceClass, IManagedClass<?> managedClass) {
 			classesPool.put(interfaceClass, managedClass);
 		}
 
+		@SuppressWarnings("unchecked")
 		@Override
-		public IManagedClass getManagedClass(Class<?> interfaceClass) {
-			return classesPool.get(interfaceClass);
+		public <T> IManagedClass<T> getManagedClass(Class<T> interfaceClass) {
+			return (IManagedClass<T>) classesPool.get(interfaceClass);
 		}
 
 		@SuppressWarnings("unchecked")
@@ -411,7 +412,7 @@ public class InstanceProcessorUnitTest {
 		@SuppressWarnings("unchecked")
 		@Override
 		public <T> T getOptionalInstance(Class<? super T> interfaceClass) {
-			IManagedClass managedClass = classesPool.get(interfaceClass);
+			IManagedClass<T> managedClass = (IManagedClass<T>) classesPool.get(interfaceClass);
 			if (managedClass == null) {
 				return null;
 			}
@@ -419,21 +420,22 @@ public class InstanceProcessorUnitTest {
 		}
 	}
 
-	private static class MockManagedClassSPI extends ManagedClassSpiStub {
+	private static class MockManagedClassSPI<T> extends ManagedClassSpiStub<T> {
 		private static MockContainer container = new MockContainer();
 		private Config config;
 		private List<Field> dependencies = new ArrayList<>();
-		private Class<?>[] interfaceClasses;
-		private Class<?> implementationClass;
+		private Class<T>[] interfaceClasses;
+		private Class<T> implementationClass;
 		private InstanceScope instanceScope = InstanceScope.APPLICATION;
 		private InstanceType instanceType = InstanceType.POJO;
 		private boolean transactional;
 		private Object attribute;
 
-		public MockManagedClassSPI(Class<?> type) {
-			this.interfaceClasses = type.getInterfaces();
+		@SuppressWarnings("unchecked")
+		public MockManagedClassSPI(Class<T> type) {
+			this.interfaceClasses = (Class<T>[]) type.getInterfaces();
 			if (this.interfaceClasses.length == 0) {
-				this.interfaceClasses = new Class<?>[] { type };
+				this.interfaceClasses = new Class[] { type };
 			}
 			this.implementationClass = type;
 			container.registerManagedClass(this.interfaceClasses[0], this);
@@ -458,12 +460,12 @@ public class InstanceProcessorUnitTest {
 		}
 
 		@Override
-		public Class<?>[] getInterfaceClasses() {
+		public Class<T>[] getInterfaceClasses() {
 			return interfaceClasses;
 		}
 
 		@Override
-		public Class<?> getImplementationClass() {
+		public Class<T> getImplementationClass() {
 			return implementationClass;
 		}
 
@@ -479,8 +481,8 @@ public class InstanceProcessorUnitTest {
 
 		@SuppressWarnings("unchecked")
 		@Override
-		public <T> T getAttribute(Object context, String name, Class<T> type) {
-			return (T) attribute;
+		public <A> A getAttribute(Object context, String name, Class<A> type) {
+			return (A)attribute;
 		}
 	}
 

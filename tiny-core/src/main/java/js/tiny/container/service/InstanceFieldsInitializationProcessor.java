@@ -59,7 +59,7 @@ public class InstanceFieldsInitializationProcessor implements IInstancePostConst
 	 * @throws BugError if attempt to assign instance field to not POJO type.
 	 */
 	@Override
-	public void onInstancePostConstruction(IManagedClass managedClass, Object instance) {
+	public <T> void onInstancePostConstruction(IManagedClass<T> managedClass, T instance) {
 		Config config = managedClass.getConfig();
 		if (config == null) {
 			return;

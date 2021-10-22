@@ -476,10 +476,10 @@ public class ContainerUnitTest {
 		String descriptor = "<car class='js.tiny.container.unit.ContainerUnitTest$Car' />";
 		Container container = (Container) TestContext.start(config(descriptor));
 
-		Car opel = container.getInstance("opel", Car.class);
+		Car opel = container.getInstance(Car.class, "opel");
 		assertNotNull(opel);
 
-		Car ford = container.getInstance("ford", Car.class);
+		Car ford = container.getInstance(Car.class, "ford");
 		assertNotNull(ford);
 		assertFalse(opel == ford);
 	}
@@ -487,25 +487,25 @@ public class ContainerUnitTest {
 	@Test(expected = BugError.class)
 	public void getInstanceByName_NoManagedClass() throws Exception {
 		Container container = (Container) TestContext.start();
-		container.getInstance("opel", Car.class);
+		container.getInstance(Car.class, "opel");
 	}
 
 	@Test(expected = IllegalArgumentException.class)
 	public void getInstanceByName_NullName() throws Exception {
 		Container container = (Container) TestContext.start();
-		container.getInstance((String) null, Car.class);
+		container.getInstance(Car.class, null);
 	}
 
 	@Test(expected = IllegalArgumentException.class)
 	public void getInstanceByName_EmptyName() throws Exception {
 		Container container = (Container) TestContext.start();
-		container.getInstance("", Car.class);
+		container.getInstance(Car.class, "");
 	}
 
 	@Test(expected = IllegalArgumentException.class)
 	public void getInstanceByName_NullInterfaceClass() throws Exception {
 		Container container = (Container) TestContext.start();
-		container.getInstance("opel", (Class) null);
+		container.getInstance(null, "opel");
 	}
 
 	@Test
@@ -540,48 +540,6 @@ public class ContainerUnitTest {
 		Container container = (Container) TestContext.start(config(descriptor));
 		Map<Class<?>, IManagedClass> classesPool = Classes.getFieldValue(container, Container.class, "classesPool");
 		assertNotNull(container.getInstance(classesPool.get(Car.class)));
-	}
-
-	public void getRemoteInstance() throws Exception {
-		Container container = (Container) TestContext.start();
-		CarInterface car = container.getRemoteInstance("http://server", CarInterface.class);
-		assertNotNull(car);
-		assertTrue(Proxy.isProxyClass(car.getClass()));
-		assertTrue(car instanceof Proxy);
-	}
-
-	@Test(expected = IllegalArgumentException.class)
-	public void getRemoteInstance_NullImplementationURL() throws Exception {
-		Container container = (Container) TestContext.start();
-		container.getRemoteInstance(null, CarInterface.class);
-	}
-
-	@Test(expected = IllegalArgumentException.class)
-	public void getRemoteInstance_NullInterfaceClass() throws Exception {
-		Container container = (Container) TestContext.start();
-		container.getRemoteInstance("http://server", null);
-	}
-
-	@Test(expected = IllegalArgumentException.class)
-	public void getRemoteInstance_BadInterfaceClass() throws Exception {
-		Container container = (Container) TestContext.start();
-		container.getRemoteInstance("http://server", Car.class);
-	}
-
-	@Test(expected = BugError.class)
-	public void getRemoteIntance_NoInstanceFactory() throws Exception {
-		Container container = (Container) TestContext.start();
-		Map<InstanceType, InstanceFactory> instanceFactories = Classes.getFieldValue(container, Container.class, "instanceFactories");
-		instanceFactories.remove(InstanceType.REMOTE);
-		container.getRemoteInstance("http://server", CarInterface.class);
-	}
-
-	@Test(expected = BugError.class)
-	public void getRemoteIntance_NoRemoteFactory() throws Exception {
-		Container container = (Container) TestContext.start();
-		Map<InstanceType, InstanceFactory> instanceFactories = Classes.getFieldValue(container, Container.class, "instanceFactories");
-		instanceFactories.put(InstanceType.REMOTE, new MockInstanceFactory());
-		container.getRemoteInstance("http://server", CarInterface.class);
 	}
 
 	// --------------------------------------------------------------------------------------------
@@ -632,7 +590,7 @@ public class ContainerUnitTest {
 	@Test(expected = BugError.class)
 	public void getNotRegisteredManagedInstance() throws Exception {
 		IContainer container = (IContainer) TestContext.start();
-		container.getInstance("object", Object.class);
+		container.getInstance(Object.class, "object");
 	}
 
 	@Test
@@ -1089,7 +1047,7 @@ public class ContainerUnitTest {
 		}
 
 		@Override
-		public <T> T newInstance(IManagedClass managedClass, Object... args) {
+		public <T> T newInstance(IManagedClass<T> managedClass, Object... args) {
 			return null;
 		}
 	}

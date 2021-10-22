@@ -6,7 +6,6 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -271,7 +270,7 @@ import js.util.Types;
  * @author Iulian Rotaru
  * @version draft
  */
-public final class ManagedClass implements IManagedClass {
+public final class ManagedClass<T> implements IManagedClass<T> {
 	/** Class logger. */
 	private static final Log log = LogFactory.getLog(ManagedClass.class);
 
@@ -309,16 +308,16 @@ public final class ManagedClass implements IManagedClass {
 	 * Managed class interfaces, usually one but multiple supported. If class descriptor has only <code>class</code> attribute
 	 * this field is initialized from {@link #implementationClass}.
 	 */
-	private final Class<?>[] interfaceClasses;
+	private final Class<T>[] interfaceClasses;
 
 	/**
 	 * Optional managed class implementation has value only if {@link InstanceType#requiresImplementation()} says so. It can be
 	 * null if managed class does not require implementation, for example if is a remote class.
 	 */
-	private final Class<?> implementationClass;
+	private final Class<? extends T> implementationClass;
 
 	/** Cached implementation constructor or null if this managed class has no implementation. */
-	private final Constructor<?> constructor;
+	private final Constructor<? extends T> constructor;
 
 	/**
 	 * Optional remote class implementation URL that can be used if this managed class is {@link InstanceType#REMOTE}. This
@@ -383,7 +382,7 @@ public final class ManagedClass implements IManagedClass {
 	}
 
 	@Override
-	public Collection<IContainerService> getServices() {
+	public Set<IContainerService> getServices() {
 		return services;
 	}
 
@@ -448,12 +447,12 @@ public final class ManagedClass implements IManagedClass {
 	}
 
 	@Override
-	public Class<?>[] getInterfaceClasses() {
+	public Class<T>[] getInterfaceClasses() {
 		return interfaceClasses;
 	}
 
 	@Override
-	public Class<?> getInterfaceClass() {
+	public Class<T> getInterfaceClass() {
 		if (interfaceClasses.length > 1) {
 			// throw new BugError("Attempt to treat multiple interfaces as a single one.");
 		}
@@ -461,12 +460,12 @@ public final class ManagedClass implements IManagedClass {
 	}
 
 	@Override
-	public Class<?> getImplementationClass() {
+	public Class<? extends T> getImplementationClass() {
 		return implementationClass;
 	}
 
 	@Override
-	public Constructor<?> getConstructor() {
+	public Constructor<? extends T> getConstructor() {
 		return constructor;
 	}
 
@@ -509,7 +508,7 @@ public final class ManagedClass implements IManagedClass {
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public <T> T getAttribute(Object context, String name, Class<T> type) {
+	public <A> A getAttribute(Object context, String name, Class<A> type) {
 		String key = key(context, name);
 		Object value = attributes.get(key);
 		if (value == null) {
@@ -518,7 +517,7 @@ public final class ManagedClass implements IManagedClass {
 		if (!Types.isInstanceOf(value, type)) {
 			throw new ClassCastException(String.format("Cannot cast attribute |%s| to type |%s|.", key, type));
 		}
-		return (T) value;
+		return (A) value;
 	}
 
 	private static final String key(Object context, String name) {
@@ -549,7 +548,7 @@ public final class ManagedClass implements IManagedClass {
 	 * @return loaded implementation class or null.
 	 * @throws ConfigException if sanity check fails.
 	 */
-	private Class<?> loadImplementationClass(Config descriptor) throws ConfigException {
+	private Class<? extends T> loadImplementationClass(Config descriptor) throws ConfigException {
 		String implementationName = descriptor.getAttribute("class");
 		if (implementationName == null) {
 			if (instanceType.requiresImplementation()) {
@@ -561,7 +560,7 @@ public final class ManagedClass implements IManagedClass {
 			throw new ConfigException("Managed type |%s| forbids <class> attribute. See class descriptor |%s|.", instanceType, descriptor);
 		}
 
-		Class<?> implementationClass = Classes.forOptionalName(implementationName);
+		Class<? extends T> implementationClass = Classes.forOptionalName(implementationName);
 		if (implementationClass == null) {
 			throw new ConfigException("Managed class implementation |%s| not found.", implementationName);
 		}
@@ -598,7 +597,8 @@ public final class ManagedClass implements IManagedClass {
 	 * @return interface classes array.
 	 * @throws ConfigException if sanity check fails.
 	 */
-	private Class<?>[] loadInterfaceClasses(Config descriptor) throws ConfigException {
+	@SuppressWarnings("unchecked")
+	private Class<T>[] loadInterfaceClasses(Config descriptor) throws ConfigException {
 		List<String> interfaceNames = new ArrayList<>();
 
 		if (!descriptor.hasChildren()) {
@@ -607,7 +607,7 @@ public final class ManagedClass implements IManagedClass {
 					throw new ConfigException("Managed type |%s| requires <interface> attribute. See class descriptor |%s|.", instanceType, descriptor);
 				}
 				// if interface is not required and is missing uses implementation class
-				return new Class<?>[] { implementationClass };
+				return new Class[] { implementationClass };
 			}
 			interfaceNames.add(descriptor.getAttribute("interface"));
 
@@ -630,10 +630,10 @@ public final class ManagedClass implements IManagedClass {
 			}
 		}
 
-		Class<?>[] interfaceClasses = new Class<?>[interfaceNames.size()];
+		Class<T>[] interfaceClasses = new Class[interfaceNames.size()];
 		for (int i = 0; i < interfaceNames.size(); ++i) {
 			final String interfaceName = interfaceNames.get(i);
-			final Class<?> interfaceClass = Classes.forOptionalName(interfaceName);
+			final Class<T> interfaceClass = Classes.forOptionalName(interfaceName);
 
 			if (interfaceClass == null) {
 				throw new ConfigException("Managed class interface |%s| not found.", interfaceName);
@@ -710,18 +710,19 @@ public final class ManagedClass implements IManagedClass {
 	 * @throws BugError if implementation class is an interface, primitive or array and has no constructor at all.
 	 * @throws BugError if implementation class has more constructors with parameters.
 	 */
-	private static Constructor<?> getDeclaredConstructor(Class<?> implementationClass) {
+	private static <T> Constructor<? extends T> getDeclaredConstructor(Class<T> implementationClass) {
 		if (implementationClass == null) {
 			return null;
 		}
-		Constructor<?>[] declaredConstructors = implementationClass.getDeclaredConstructors();
+		@SuppressWarnings("unchecked")
+		Constructor<? extends T>[] declaredConstructors = (Constructor<? extends T>[]) implementationClass.getDeclaredConstructors();
 		if (declaredConstructors.length == 0) {
 			throw new BugError("Invalid implementation class |%s|. Missing constructor.", implementationClass);
 		}
-		Constructor<?> defaultConstructor = null;
-		Constructor<?> constructor = null;
+		Constructor<? extends T> defaultConstructor = null;
+		Constructor<? extends T> constructor = null;
 
-		for (Constructor<?> declaredConstructor : declaredConstructors) {
+		for (Constructor<? extends T> declaredConstructor : declaredConstructors) {
 			// synthetic constructors are created by compiler to circumvent JVM limitations, JVM that is not evolving with
 			// the same speed as the language; for example, to allow outer class to access private members on a nested class
 			// compiler creates a constructor with a single argument of very nested class type
@@ -844,13 +845,13 @@ public final class ManagedClass implements IManagedClass {
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public <T extends IServiceMeta> T getServiceMeta(Class<T> type) {
-		return (T) serviceMetas.get(type);
+	public <S extends IServiceMeta> S getServiceMeta(Class<S> type) {
+		return (S) serviceMetas.get(type);
 	}
 
 	@Override
-	public <T extends Annotation> T getAnnotation(Class<T> type) {
-		T annotation = implementationClass.getAnnotation(type);
+	public <A extends Annotation> A getAnnotation(Class<A> type) {
+		A annotation = implementationClass.getAnnotation(type);
 		if (annotation == null) {
 			for (Class<?> interfaceClass : implementationClass.getInterfaces()) {
 				annotation = interfaceClass.getAnnotation(type);

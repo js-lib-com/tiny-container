@@ -1,25 +1,24 @@
 package js.tiny.container.core;
 
 import js.lang.BugError;
-import js.rmi.UnsupportedProtocolException;
 import js.tiny.container.spi.IFactory;
 
 /**
- * Server global master factory for managed instances. This utility class has JVM level visibility and just delegates requests
- * to {@link IFactory}, application specific factory. All operations described by application factory interface are supported by
- * this master factory. See {@link IFactory} class description for general presentation.
- * <p>
- * In order for master factory to be able to delegate application factory, it should be bound to current thread using
- * {@link #bind(IFactory)}; otherwise {@link BugError} is thrown. One can test if application factory is properly bound using
- * {@link #isValid()}. Also there is convenient helper that retrieve current thread application factory.
+ * Global master factory for managed instances. This utility class has JVM level visibility and just delegates requests to
+ * {@link IFactory}, factory implementation. All operations described by factory interface are supported by this master factory.
+ * See {@link IFactory} class description for general presentation.
+ * 
+ * In order for master factory to be able to delegate factory implementation, it should be bound to current thread using
+ * {@link #bind(IFactory)}. One can test if factory implementation is properly bound using {@link #isValid()}. Also there is
+ * convenient helper that retrieve current thread factory - see {@link #get()}.
  * 
  * @author Iulian Rotaru
  */
 public final class Factory {
 	/**
-	 * Inheritable thread local storage for application specific factories. This field keeps application factory reference on
-	 * current thread; is updated by {@link #bind(IFactory)} and value retrieved by {@link #get()}. Uses inheritable thread
-	 * local storage so that child threads can have access to parent application factory.
+	 * Inheritable thread local storage for factory implementation. This field keeps factory implementation reference on current
+	 * thread; is updated by {@link #bind(IFactory)} and value retrieved by {@link #get()}. Uses inheritable thread local
+	 * storage so that child threads can have access to parent factory.
 	 */
 	private static ThreadLocal<IFactory> tls = new InheritableThreadLocal<>();
 
@@ -28,14 +27,14 @@ public final class Factory {
 	}
 
 	/**
-	 * Bind application specific factory to current thread. Depending on application architecture it can be done on application
-	 * start or, in web contexts, on every new HTTP request. Given application specific factory is saved on current thread local
+	 * Bind a factory implementation to current thread. Depending on application architecture it can be done on application
+	 * start or, in web contexts, on every new HTTP request. Given factory implementation is saved on current thread local
 	 * storage.
 	 * 
-	 * @param appFactory application specific factory.
+	 * @param factory factory implementation.
 	 */
-	public static void bind(IFactory appFactory) {
-		tls.set(appFactory);
+	public static void bind(IFactory factory) {
+		tls.set(factory);
 	}
 
 	/**
@@ -61,8 +60,8 @@ public final class Factory {
 	 * @throws BugError if application factory is not bound to current thread.
 	 * @see IFactory#getInstance(String, Class)
 	 */
-	public static <T> T getInstance(String instanceName, Class<T> interfaceClass) {
-		return get().getInstance(instanceName, interfaceClass);
+	public static <T> T getInstance(Class<T> interfaceClass, String instanceName) {
+		return get().getInstance(interfaceClass, instanceName);
 	}
 
 	/**
@@ -79,38 +78,24 @@ public final class Factory {
 	}
 
 	/**
-	 * Delegates {@link IFactory#getRemoteInstance(String, Class)}.
+	 * Test if current thread has a factory implementation bound. If return true current thread can safely be used for managed
+	 * instances creation. Trying to create managed instances from a thread for which this predicate returns false will throw
+	 * bug error.
 	 * 
-	 * @param implementationURL the URL of remote implementation,
-	 * @param interfaceClass interface implemented by remote class.
-	 * @param <T> managed class implementation.
-	 * @return remote class proxy instance.
-	 * @throws UnsupportedProtocolException if URL protocol is not supported.
-	 * @throws BugError if application factory is not bound to current thread.
-	 * @see AppFactory#getRemoteInstance(String, Class)
-	 */
-	public static <T> T getRemoteInstance(String implementationURL, Class<? super T> interfaceClass) {
-		return get().getRemoteInstance(implementationURL, interfaceClass);
-	}
-
-	/**
-	 * Test if current thread has application specific factory bound. If return true current thread can safely be used for
-	 * managed instances creation. Trying to create managed instances from a thread for which this predicate returns false will
-	 * throw bug error.
-	 * 
-	 * @return true if current thread has application specific factory bound.
+	 * @return true if current thread has factory implementation bound.
 	 */
 	public static boolean isValid() {
 		return tls.get() != null;
 	}
 
 	/**
-	 * Helper method to retrieve application factory bound to current thread. Retrieve application factory from current thread
+	 * Helper method to retrieve factory implementation bound to current thread. Retrieve factory reference from current thread
 	 * local storage. In order to be successfully this method must be preceded by {@link #bind(IFactory)} called from current
 	 * thread; otherwise bug error is thrown.
 	 * 
-	 * @return application factory bound to current thread.
+	 * @return factory bound to current thread.
 	 * @throws BugError if current thread has no application factory bound.
+	 * @implNote package visibility to grant unit tests access.
 	 */
 	static IFactory get() {
 		IFactory factory = tls.get();
@@ -120,6 +105,7 @@ public final class Factory {
 		return factory;
 	}
 
+	/** Unit tests access to factory local thread storage. */
 	static ThreadLocal<IFactory> tls() {
 		return tls;
 	}

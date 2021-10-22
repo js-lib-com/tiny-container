@@ -2,13 +2,13 @@ package js.tiny.container.cdi.impl;
 
 import javax.inject.Provider;
 
-class RemoteProvider<T> implements Provider<T> {
+public class RemoteProvider<T> implements Provider<T> {
 	private final Class<T> type;
-	private final String url;
+	private final String hostURI;
 
-	public RemoteProvider(Class<T> type, String url) {
+	public RemoteProvider(Class<T> type, String hostURI) {
 		this.type = type;
-		this.url = url;
+		this.hostURI = hostURI;
 	}
 
 	@Override

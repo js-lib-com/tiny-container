@@ -22,7 +22,7 @@ public class InstanceContextParamTest {
 	@Mock
 	private IContainer container;
 	@Mock
-	private IManagedClass managedClass;
+	private IManagedClass<BusinessClass> managedClass;
 	@Mock
 	private RequestContext requestContext;
 

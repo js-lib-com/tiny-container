@@ -28,7 +28,7 @@ class PerformanceMonitorService implements IMethodInvocationProcessor, IServiceM
 	}
 
 	@Override
-	public List<IServiceMeta> scanServiceMeta(IManagedClass managedClass) {
+	public List<IServiceMeta> scanServiceMeta(IManagedClass<?> managedClass) {
 		managedClass.getManagedMethods().forEach(managedMethod -> {
 			managedMethod.setAttribute(getClass(), ATTR_METER, new Meter(managedMethod));
 		});

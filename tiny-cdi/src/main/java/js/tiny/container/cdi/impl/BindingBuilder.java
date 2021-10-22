@@ -1,6 +1,7 @@
 package js.tiny.container.cdi.impl;
 
 import java.lang.annotation.Annotation;
+import java.net.URI;
 
 import javax.inject.Provider;
 import javax.inject.Scope;
@@ -81,8 +82,13 @@ class BindingBuilder<T> implements IBindingBuilder<T> {
 	}
 
 	@Override
-	public IBindingBuilder<T> on(String url) {
-		binding.setProvider(providers.getProvider(binding.key().type(), url));
+	public IBindingBuilder<T> on(URI hostURI) {
+		return on(hostURI.toString());
+	}
+
+	@Override
+	public IBindingBuilder<T> on(String hostURI) {
+		binding.setProvider(providers.getProvider(binding.key().type(), hostURI));
 		return this;
 	}
 }

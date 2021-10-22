@@ -2,7 +2,7 @@ package js.tiny.container.stub;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
-import java.util.Collection;
+import java.util.Set;
 
 import js.lang.Config;
 import js.tiny.container.spi.IContainer;
@@ -13,7 +13,7 @@ import js.tiny.container.spi.IServiceMeta;
 import js.tiny.container.spi.InstanceScope;
 import js.tiny.container.spi.InstanceType;
 
-public class ManagedClassSpiStub implements IManagedClass {
+public class ManagedClassSpiStub<T> implements IManagedClass<T> {
 	@Override
 	public String getImplementationURL() {
 		throw new UnsupportedOperationException("getImplementationURL()");
@@ -25,17 +25,17 @@ public class ManagedClassSpiStub implements IManagedClass {
 	}
 
 	@Override
-	public Constructor<?> getConstructor() {
+	public Constructor<? extends T> getConstructor() {
 		throw new UnsupportedOperationException("getConstructor()");
 	}
 
 	@Override
-	public Class<?>[] getInterfaceClasses() {
+	public Class<T>[] getInterfaceClasses() {
 		throw new UnsupportedOperationException("getInterfaceClasses()");
 	}
 
 	@Override
-	public Class<?> getInterfaceClass() {
+	public Class<T> getInterfaceClass() {
 		throw new UnsupportedOperationException("getInterfaceClass()");
 	}
 
@@ -60,7 +60,7 @@ public class ManagedClassSpiStub implements IManagedClass {
 	}
 
 	@Override
-	public Class<?> getImplementationClass() {
+	public Class<? extends T> getImplementationClass() {
 		throw new UnsupportedOperationException("getImplementationClass()");
 	}
 
@@ -75,17 +75,17 @@ public class ManagedClassSpiStub implements IManagedClass {
 	}
 
 	@Override
-	public <T extends IServiceMeta> T getServiceMeta(Class<T> type) {
+	public <S extends IServiceMeta> S getServiceMeta(Class<S> type) {
 		throw new UnsupportedOperationException("getServiceMeta(Class<T> type)");
 	}
 
 	@Override
-	public Collection<IContainerService> getServices() {
+	public Set<IContainerService> getServices() {
 		throw new UnsupportedOperationException("getServices()");
 	}
 
 	@Override
-	public <T extends Annotation> T getAnnotation(Class<T> type) {
+	public <A extends Annotation> A getAnnotation(Class<A> type) {
 		throw new UnsupportedOperationException("getAnnotation(Class<T> type)");
 	}
 
@@ -95,7 +95,7 @@ public class ManagedClassSpiStub implements IManagedClass {
 	}
 
 	@Override
-	public <T> T getAttribute(Object context, String name, Class<T> type) {
+	public <A> A getAttribute(Object context, String name, Class<A> type) {
 		throw new UnsupportedOperationException("getAttribute(Object context, String name, Class<T> type)");
 	}
 }

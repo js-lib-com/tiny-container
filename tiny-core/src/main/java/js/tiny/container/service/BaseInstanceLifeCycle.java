@@ -13,7 +13,7 @@ import js.tiny.container.spi.IManagedMethod;
 import js.util.Classes;
 
 abstract class BaseInstanceLifeCycle {
-	protected void scanLifeCycleInterface(IManagedClass managedClass, Class<?> interfaceClass, String attrName) {
+	protected void scanLifeCycleInterface(IManagedClass<?> managedClass, Class<?> interfaceClass, String attrName) {
 		Class<?> implementationClass = managedClass.getImplementationClass();
 		if (hasLifeCycleInterface(implementationClass, interfaceClass)) {
 			Method method = getInterfaceMethod(implementationClass, interfaceClass);
@@ -26,7 +26,7 @@ abstract class BaseInstanceLifeCycle {
 	protected void scanLifeCycleAnnotation(IManagedMethod managedMethod, Class<? extends Annotation> annotationClass, String attrName) {
 		Annotation annotation = managedMethod.getAnnotation(annotationClass);
 		if (annotation != null) {
-			IManagedClass managedClass = managedMethod.getDeclaringClass();
+			IManagedClass<?> managedClass = managedMethod.getDeclaringClass();
 			if (managedClass.getAttribute(this, attrName, IManagedMethod.class) != null) {
 				throw new BugError("Duplicated %s method |%s|.", annotationClass, managedMethod);
 			}

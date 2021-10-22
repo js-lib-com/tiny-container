@@ -75,7 +75,7 @@ public class ManagedClassSpiConformanceTest {
 				"	</test>" + //
 				"</config>";
 
-		IManagedClass managedClass = getManagedClass(descriptor);
+		IManagedClass<?> managedClass = getManagedClass(descriptor);
 		Config config = managedClass.getConfig();
 
 		assertNotNull(config);
@@ -202,7 +202,7 @@ public class ManagedClassSpiConformanceTest {
 	// --------------------------------------------------------------------------------------------
 	// UTILITY METHODS
 
-	private static IManagedClass getManagedClass(String config) throws Exception {
+	private static IManagedClass<?> getManagedClass(String config) throws Exception {
 		TinyConfigBuilder builder = new TestConfigBuilder(config);
 		Config appDescriptor = builder.build();
 		Container container = new MockContainer();
@@ -215,7 +215,7 @@ public class ManagedClassSpiConformanceTest {
 			}
 		}
 
-		return new ManagedClass(container, classDescriptor);
+		return new ManagedClass<>(container, classDescriptor);
 	}
 
 	private static String config(String classDescriptor) {

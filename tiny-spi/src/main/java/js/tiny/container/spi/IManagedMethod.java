@@ -24,7 +24,7 @@ public interface IManagedMethod extends IMethodInvocationProcessor {
 	 * 
 	 * @return parent managed class.
 	 */
-	IManagedClass getDeclaringClass();
+	IManagedClass<?> getDeclaringClass();
 
 	/**
 	 * Get wrapped Java method.

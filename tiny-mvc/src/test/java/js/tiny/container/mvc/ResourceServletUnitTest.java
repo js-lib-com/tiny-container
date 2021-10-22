@@ -1,7 +1,9 @@
 package js.tiny.container.mvc;
 
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.when;
 
 import java.util.Arrays;
@@ -38,7 +40,7 @@ public class ResourceServletUnitTest {
 	@Mock
 	private IContainerService service;
 	@Mock
-	private IManagedClass managedClass;
+	private IManagedClass<?> managedClass;
 	@Mock
 	private IManagedMethod managedMethod;
 
@@ -51,7 +53,7 @@ public class ResourceServletUnitTest {
 
 		when(container.getManagedMethods()).thenReturn(Arrays.asList(managedMethod));
 		when(managedClass.getServiceMeta(ControllerMeta.class)).thenReturn(new ControllerMeta(service, "controller"));
-		when(managedMethod.getDeclaringClass()).thenReturn(managedClass);
+		doReturn(managedClass).when(managedMethod).getDeclaringClass();
 		when(managedMethod.getName()).thenReturn("resource");
 	}
 

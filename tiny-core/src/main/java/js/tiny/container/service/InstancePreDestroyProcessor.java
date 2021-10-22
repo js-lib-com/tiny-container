@@ -24,7 +24,7 @@ class InstancePreDestroyProcessor extends BaseInstanceLifeCycle implements IInst
 	}
 
 	@Override
-	public Iterable<IServiceMeta> scanServiceMeta(IManagedClass managedClass) {
+	public Iterable<IServiceMeta> scanServiceMeta(IManagedClass<?> managedClass) {
 		scanLifeCycleInterface(managedClass, ManagedPreDestroy.class, ATTR_PRE_DESTROY);
 		return Collections.emptyList();
 	}
@@ -36,7 +36,7 @@ class InstancePreDestroyProcessor extends BaseInstanceLifeCycle implements IInst
 	}
 
 	@Override
-	public void onInstancePreDestruction(IManagedClass managedClass, Object instance) {
+	public <T> void onInstancePreDestruction(IManagedClass<T> managedClass, T instance) {
 		IManagedMethod method = managedClass.getAttribute(this, ATTR_PRE_DESTROY, IManagedMethod.class);
 		if (method == null) {
 			return;

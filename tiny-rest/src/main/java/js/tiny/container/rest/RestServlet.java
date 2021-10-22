@@ -265,7 +265,7 @@ public class RestServlet extends AppServlet {
 		return key.toString();
 	}
 
-	private static String path(IManagedClass managedClass) {
+	private static String path(IManagedClass<?> managedClass) {
 		PathMeta pathMeta = managedClass.getServiceMeta(PathMeta.class);
 		return pathMeta != null ? pathMeta.value() : null;
 	}

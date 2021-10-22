@@ -1,8 +1,10 @@
 package js.tiny.container.transaction;
 
+
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.not;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -32,7 +34,7 @@ public class TransactionServiceTest {
 	@Mock
 	private IContainer container;
 	@Mock
-	private IManagedClass managedClass;
+	private IManagedClass<?> managedClass;
 	@Mock
 	private IManagedMethod managedMethod;
 
@@ -60,7 +62,7 @@ public class TransactionServiceTest {
 		when(transactionalResource.createReadOnlyTransaction(null)).thenReturn(transaction);
 		when(transaction.close()).thenReturn(true);
 
-		when(managedMethod.getDeclaringClass()).thenReturn(managedClass);
+		doReturn(managedClass).when(managedMethod).getDeclaringClass();
 		when(transactional.schema()).thenReturn("");
 		when(methodInvocation.method()).thenReturn(managedMethod);
 

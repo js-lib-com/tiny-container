@@ -29,7 +29,7 @@ public class InterceptedUnitTest {
 	@Test
 	public void interceptedProxyClass() throws Throwable {
 		String descriptor = "<test interface='js.tiny.container.annotation.unit.InterceptedUnitTest$MockInterface'  class='js.tiny.container.annotation.unit.InterceptedUnitTest$MockClass01' type='PROXY' />";
-		IManagedClass managedClass = managedClass(descriptor);
+		IManagedClass<?> managedClass = managedClass(descriptor);
 
 		List<IManagedMethod> managedMethods = list(managedClass.getManagedMethods());
 		assertEquals(1, managedMethods.size());
@@ -42,7 +42,7 @@ public class InterceptedUnitTest {
 	@Test
 	public void interceptedProxyMethod() throws Throwable {
 		String descriptor = "<test interface='js.tiny.container.annotation.unit.InterceptedUnitTest$MockInterface' class='js.tiny.container.annotation.unit.InterceptedUnitTest$MockClass02' type='PROXY' />";
-		IManagedClass managedClass = managedClass(descriptor);
+		IManagedClass<?> managedClass = managedClass(descriptor);
 
 		List<IManagedMethod> managedMethods = list(managedClass.getManagedMethods());
 		assertEquals(1, managedMethods.size());
@@ -55,7 +55,7 @@ public class InterceptedUnitTest {
 	@Test
 	public void interceptedRemoteAccessibleClass() throws Throwable {
 		String descriptor = "<test class='js.tiny.container.annotation.unit.InterceptedUnitTest$MockClass03' />";
-		IManagedClass managedClass = managedClass(descriptor);
+		IManagedClass<?> managedClass = managedClass(descriptor);
 
 		List<IManagedMethod> managedMethods = list(managedClass.getManagedMethods());
 		assertEquals(1, managedMethods.size());
@@ -68,7 +68,7 @@ public class InterceptedUnitTest {
 	@Test
 	public void interceptedControlerClass() throws Throwable {
 		String descriptor = "<test class='js.tiny.container.annotation.unit.InterceptedUnitTest$MockClass04' />";
-		IManagedClass managedClass = managedClass(descriptor);
+		IManagedClass<?> managedClass = managedClass(descriptor);
 
 		List<IManagedMethod> managedMethods = list(managedClass.getManagedMethods());
 		assertEquals(1, managedMethods.size());
@@ -81,7 +81,7 @@ public class InterceptedUnitTest {
 	@Test
 	public void interceptedServiceClass() throws Throwable {
 		String descriptor = "<test class='js.tiny.container.annotation.unit.InterceptedUnitTest$MockClass05' />";
-		IManagedClass managedClass = managedClass(descriptor);
+		IManagedClass<?> managedClass = managedClass(descriptor);
 
 		List<IManagedMethod> managedMethods = list(managedClass.getManagedMethods());
 		assertEquals(1, managedMethods.size());
@@ -94,7 +94,7 @@ public class InterceptedUnitTest {
 	@Test
 	public void interceptedRemoteAccessibleMethod() throws Throwable {
 		String descriptor = "<test class='js.tiny.container.annotation.unit.InterceptedUnitTest$MockClass06' />";
-		IManagedClass managedClass = managedClass(descriptor);
+		IManagedClass<?> managedClass = managedClass(descriptor);
 
 		List<IManagedMethod> managedMethods = list(managedClass.getManagedMethods());
 		assertEquals(1, managedMethods.size());
@@ -107,7 +107,7 @@ public class InterceptedUnitTest {
 	@Test
 	public void interceptedControllerMethod() throws Throwable {
 		String descriptor = "<test class='js.tiny.container.annotation.unit.InterceptedUnitTest$MockClass07' />";
-		IManagedClass managedClass = managedClass(descriptor);
+		IManagedClass<?> managedClass = managedClass(descriptor);
 
 		List<IManagedMethod> managedMethods = list(managedClass.getManagedMethods());
 		assertEquals(1, managedMethods.size());
@@ -120,7 +120,7 @@ public class InterceptedUnitTest {
 	@Test
 	public void interceptedServiceMethod() throws Throwable {
 		String descriptor = "<test class='js.tiny.container.annotation.unit.InterceptedUnitTest$MockClass08' />";
-		IManagedClass managedClass = managedClass(descriptor);
+		IManagedClass<?> managedClass = managedClass(descriptor);
 
 		List<IManagedMethod> managedMethods = list(managedClass.getManagedMethods());
 		assertEquals(1, managedMethods.size());
@@ -133,23 +133,23 @@ public class InterceptedUnitTest {
 	@Test(expected = BugError.class)
 	public void interceptedPojoClass() throws Throwable {
 		String descriptor = "<test class='js.tiny.container.annotation.unit.InterceptedUnitTest$MockClass01' />";
-		IManagedClass managedClass = managedClass(descriptor);
+		IManagedClass<?> managedClass = managedClass(descriptor);
 	}
 
 	@Test(expected = ConfigException.class)
 	public void interceptedPojoMethod() throws Throwable {
 		String descriptor = "<test class='	InterceptedUnitTest$MockClass02' />";
-		IManagedClass managedClass = managedClass(descriptor);
+		IManagedClass<?> managedClass = managedClass(descriptor);
 	}
 
 	// --------------------------------------------------------------------------------------------
 	// UTILITY METHODS
 
-	private static IManagedClass managedClass(String descriptor) throws Throwable {
+	private static IManagedClass<?> managedClass(String descriptor) throws Throwable {
 		Container container = new ContainerStub();
 		String xml = Strings.concat("<?xml version='1.0' encoding='UTF-8' ?><managed-classes>", descriptor, "</managed-classes>");
 		ConfigBuilder builder = new ConfigBuilder(xml);
-		return new ManagedClass(container, builder.build().getChild("test"));
+		return new ManagedClass<>(container, builder.build().getChild("test"));
 	}
 
 	private static <T> List<T> list(Iterable<T> iterable) {
