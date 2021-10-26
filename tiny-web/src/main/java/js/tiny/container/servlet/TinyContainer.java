@@ -28,10 +28,7 @@ import js.log.LogContext;
 import js.log.LogFactory;
 import js.tiny.container.core.Container;
 import js.tiny.container.core.Factory;
-import js.tiny.container.spi.IContainer;
-import js.tiny.container.spi.IManagedClass;
 import js.tiny.container.spi.InstanceScope;
-import js.util.Types;
 
 /**
  * Container specialization for web applications. This class extends {@link Container} adding implementation for
@@ -222,19 +219,6 @@ public class TinyContainer extends Container implements ServletContextListener, 
 	@Override
 	public void config(Config config) throws ConfigException {
 		super.config(config);
-
-		// TODO: decide if keep App class and if yes, redesign instance initialization using CDI support
-		
-		// special handling for this container instance accessed via application context
-		// need to ensure this container instance is reused and not to create a new one
-		IManagedClass<?> appContext = classesPool.get(AppContext.class);
-		// application context can be null on tests
-		// also on tests application context interface can be implemented by mock class not in container hierarchy
-		if (appContext != null && Types.isKindOf(appContext.getImplementationClass(), IContainer.class)) {
-			log.debug("Persist container instance on application scope.");
-			// managed class key cannot be null
-//			scopeFactories.get(InstanceScope.APPLICATION).persistInstance(new InstanceKey(appContext.getKey().toString()), this);
-		}
 
 		// by convention configuration object name is the web application name
 		appName = config.getName();

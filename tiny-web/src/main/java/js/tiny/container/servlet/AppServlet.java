@@ -405,4 +405,19 @@ public abstract class AppServlet extends HttpServlet {
 			return "preview-user";
 		}
 	}
+	
+	// --------------------------------------------------------------------------------------------
+	// unit tests access
+	
+	String servletName() {
+		return servletName;
+	}
+	
+	ITinyContainer container() {
+		return container;
+	}
+	
+	String previewContextPath() {
+		return previewContextPath;
+	}
 }

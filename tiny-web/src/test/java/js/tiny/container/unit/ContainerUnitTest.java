@@ -38,16 +38,12 @@ import js.tiny.container.core.InstanceKey;
 import js.tiny.container.core.ManagedClass;
 import js.tiny.container.net.EventStream;
 import js.tiny.container.net.EventStreamManager;
-import js.tiny.container.servlet.App;
-import js.tiny.container.servlet.AppContext;
-import js.tiny.container.servlet.ITinyContainer;
 import js.tiny.container.servlet.RequestContext;
 import js.tiny.container.spi.IContainer;
 import js.tiny.container.spi.IManagedClass;
 import js.tiny.container.spi.IManagedMethod;
 import js.tiny.container.spi.InstanceScope;
 import js.tiny.container.spi.InstanceType;
-import js.tiny.container.stub.AppContextStub;
 import js.tiny.container.stub.ContainerStub;
 import js.util.Classes;
 
@@ -102,7 +98,6 @@ public class ContainerUnitTest {
 				"<config>" + //
 				"	<managed-classes>" + //
 				"		<test class='js.tiny.container.unit.ContainerUnitTest$NetCar' />" + //
-				"		<app interface='js.tiny.container.servlet.App' class='js.tiny.container.unit.ContainerUnitTest$MockApp' />" + //
 				"	</managed-classes>" + //
 				"</config>";
 		Object container = TestContext.start(config);
@@ -110,7 +105,7 @@ public class ContainerUnitTest {
 
 		// order depends on lib-descriptor; keep this test case and lib-descriptor in sync
 
-		Class<?>[] expectedOrder = new Class<?>[] { App.class, AppContext.class, RequestContext.class, EventStreamManager.class, EventStream.class, NetCar.class };
+		Class<?>[] expectedOrder = new Class<?>[] { RequestContext.class, EventStreamManager.class, EventStream.class, NetCar.class };
 		for (int i = 1; i < expectedOrder.length; ++i) {
 			Integer previousKey = classesPool.get(expectedOrder[i - 1]).getKey();
 			Integer currentKey = classesPool.get(expectedOrder[i]).getKey();
@@ -118,31 +113,6 @@ public class ContainerUnitTest {
 			// current key is after previous key; exception above condition
 			assertThat(currentKey, greaterThanOrEqualTo(previousKey));
 		}
-	}
-
-	@Test
-	public void config_AppSubclass() throws ConfigException {
-		String config = "" + //
-				"<config>" + //
-				"	<managed-classes>" + //
-				"		<app class='js.tiny.container.servlet.App' />" + //
-				"		<app interface='js.tiny.container.servlet.App' class='js.tiny.container.unit.ContainerUnitTest$MockApp' />" + //
-				"	</managed-classes>" + //
-				"</config>";
-		ConfigBuilder builder = new ConfigBuilder(config);
-
-		Container container = new MockContainer();
-		container.config(builder.build());
-
-		Map<Class<?>, IManagedClass> classesPool = Classes.getFieldValue(container, Container.class, "classesPool");
-		assertNotNull(classesPool);
-		assertFalse(classesPool.isEmpty());
-		assertEquals(1, classesPool.size());
-
-		IManagedClass app = classesPool.get(App.class);
-		assertNotNull(app);
-		assertEquals(App.class, app.getInterfaceClass());
-		assertEquals(MockApp.class, app.getImplementationClass());
 	}
 
 	@Test
@@ -230,10 +200,8 @@ public class ContainerUnitTest {
 		String config = "<?xml version='1.0' encoding='UTF-8' ?>" + //
 				"<config>" + //
 				"	<managed-classes>" + //
-				"		<app class='js.tiny.container.servlet.App' />" + //
 				"		<net-car class='js.tiny.container.unit.ContainerUnitTest$NetCar' />" + //
 				"		<managed-car class='js.tiny.container.unit.ContainerUnitTest$ManagedCar' />" + //
-				"		<app interface='js.tiny.container.servlet.App' class='js.tiny.container.unit.ContainerUnitTest$MockApp' />" + //
 				"	</managed-classes>" + //
 				"</config>";
 		ConfigBuilder builder = new ConfigBuilder(config);
@@ -252,9 +220,8 @@ public class ContainerUnitTest {
 		container.config(builder.build());
 		container.start();
 
-		assertEquals(2, container.instantiatedClasses.size());
-		assertEquals("App", container.instantiatedClasses.get(0).getSimpleName());
-		assertEquals("ManagedCar", container.instantiatedClasses.get(1).getSimpleName());
+		assertEquals(1, container.instantiatedClasses.size());
+		assertEquals("ManagedCar", container.instantiatedClasses.get(0).getSimpleName());
 	}
 
 	@Test
@@ -281,11 +248,8 @@ public class ContainerUnitTest {
 		String config = "<?xml version='1.0' encoding='UTF-8' ?>" + //
 				"<config>" + //
 				"	<managed-classes>" + //
-				"		<app class='js.tiny.container.servlet.App' />" + //
-				"		<app-context interface='js.tiny.container.servlet.AppContext' class='js.tiny.container.unit.ContainerUnitTest$MockAppContext' />" + //
 				"		<net-car class='js.tiny.container.unit.ContainerUnitTest$NetCar' />" + //
 				"		<managed-car class='js.tiny.container.unit.ContainerUnitTest$ManagedCar' />" + //
-				"		<app interface='js.tiny.container.servlet.App' class='js.tiny.container.unit.ContainerUnitTest$MockApp' />" + //
 				"	</managed-classes>" + //
 				"</config>";
 		ConfigBuilder builder = new ConfigBuilder(config);
@@ -294,13 +258,11 @@ public class ContainerUnitTest {
 		container.config(builder.build());
 		container.start();
 
-		MockApp app = container.getInstance(App.class);
 		ManagedCar car = container.getInstance(ManagedCar.class);
 
 		container.destroy();
 
 		assertTrue(car.destroyTimestamp > 0);
-		assertTrue(app.destroyTimestamp >= car.destroyTimestamp);
 	}
 
 	/** Exception on pre-destroy execution should not be signaled to container destroy but just dumped to logger. */
@@ -452,7 +414,7 @@ public class ContainerUnitTest {
 			++classesCount;
 		}
 		// this hard coded value depends on lib-descriptor.xml
-		assertEquals(7, classesCount);
+		assertEquals(5, classesCount);
 	}
 
 	@Test
@@ -894,26 +856,5 @@ public class ContainerUnitTest {
 		public <T> T getOptionalInstance(Class<? super T> interfaceClass) {
 			return null;
 		}
-	}
-
-	private static class MockApp extends App {
-		private long destroyTimestamp;
-
-		public MockApp(ITinyContainer context) {
-			super(context);
-		}
-
-		@Override
-		public void preDestroy() throws Exception {
-			destroyTimestamp = System.nanoTime();
-		}
-	}
-
-	private static class MockAppContext extends AppContextStub {
-		@Override
-		public String getAppName() {
-			return "Test App";
-		}
-
 	}
 }

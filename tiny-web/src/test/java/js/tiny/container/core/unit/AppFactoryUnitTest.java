@@ -18,7 +18,6 @@ import org.junit.Test;
 import js.lang.BugError;
 import js.lang.InvocationException;
 import js.lang.NoProviderException;
-import js.tiny.container.servlet.AppContext;
 import js.tiny.container.spi.IFactory;
 import js.tiny.container.unit.TestContext;
 
@@ -256,14 +255,6 @@ public class AppFactoryUnitTest {
 		assertEquals("AS1234", product.getSerial());
 		assertEquals("Opel Corsa", car.getModel());
 		assertEquals("Opel Corsa", vehicle.getModel());
-	}
-
-	@Test
-	public void getInstance_AppContext() throws Exception {
-		IFactory factory = TestContext.start();
-		AppContext context = factory.getInstance(AppContext.class);
-		assertNotNull(context);
-		assertEquals(factory, context);
 	}
 
 	/** Attempting to get instance for a not registered managed class should rise bug exception. */

@@ -6,31 +6,31 @@ import java.util.Properties;
 
 import js.lang.Config;
 import js.tiny.container.core.Factory;
-import js.tiny.container.servlet.AppContext;
+import js.tiny.container.servlet.ITinyContainer;
 import js.tiny.container.servlet.TinyContainer;
 
 public final class TestContext {
-	public static AppContext start() throws Exception {
+	public static ITinyContainer start() throws Exception {
 		return init(new TestConfigBuilder().build());
 	}
 
-	public static AppContext start(File config) throws Exception {
+	public static ITinyContainer start(File config) throws Exception {
 		return init(new TestConfigBuilder(config).build());
 	}
 
-	public static AppContext start(String config) throws Exception {
+	public static ITinyContainer start(String config) throws Exception {
 		return init(new TestConfigBuilder(config).build());
 	}
 
-	public static AppContext start(String config, Properties properties) throws Exception {
+	public static ITinyContainer start(String config, Properties properties) throws Exception {
 		return init(new TestConfigBuilder(config, properties).build());
 	}
 
-	public static AppContext start(InputStream config) throws Exception {
+	public static ITinyContainer start(InputStream config) throws Exception {
 		return init(new TestConfigBuilder(config).build());
 	}
 	
-	private static AppContext init(Config config) throws Exception {
+	private static ITinyContainer init(Config config) throws Exception {
 		String catalinaBase = "fixture/tomcat";
 		System.setProperty("catalina.base", catalinaBase);
 
@@ -46,6 +46,6 @@ public final class TestContext {
 		Factory.bind(container);
 		container.start();
 
-		return (AppContext) container;
+		return container;
 	}
 }

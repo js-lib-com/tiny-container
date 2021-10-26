@@ -45,8 +45,6 @@ import js.tiny.container.http.form.Part;
 import js.tiny.container.http.form.UploadStream;
 import js.tiny.container.http.form.UploadedFile;
 import js.tiny.container.mvc.annotation.Controller;
-import js.tiny.container.servlet.App;
-import js.tiny.container.servlet.ITinyContainer;
 import js.tiny.container.servlet.RequestContext;
 import js.tiny.container.servlet.TinyContainer;
 import js.tiny.container.spi.IContainer;
@@ -67,7 +65,7 @@ public class ResourceServletIntegrationTest {
 			"<?xml version='1.0' encoding='UTF-8'?>" + //
 			"<test-config>" + //
 			"	<managed-classes>" + //
-			"		<app interface='js.tiny.container.core.App' class='js.tiny.container.mvc.ResourceServletIntegrationTest$MockApp' />" + //
+			"		<app class='js.tiny.container.mvc.ResourceServletIntegrationTest$MockApp' />" + //
 			"		<controller class='js.tiny.container.mvc.ResourceServletIntegrationTest$DefaultController' />" + //
 			"		<controller interface='js.tiny.container.mvc.ResourceServletIntegrationTest$ControllerInterface' class='js.tiny.container.mvc.ResourceServletIntegrationTest$ControllerImpl' type='PROXY' />" + //
 			"	</managed-classes>" + //
@@ -90,7 +88,7 @@ public class ResourceServletIntegrationTest {
 	public void beforeTest() throws Exception {
 		container = (IContainer) TestContext.start(DESCRIPTOR);
 
-		app = (MockApp) Factory.getInstance(App.class);
+		app = (MockApp) Factory.getInstance(MockApp.class);
 
 		servletContext = new MockServletContext();
 		servletContext.attributes.put(TinyContainer.ATTR_INSTANCE, container);
@@ -375,12 +373,8 @@ public class ResourceServletIntegrationTest {
 	// --------------------------------------------------------------------------------------------
 	// FIXTURE
 
-	private static class MockApp extends App {
+	private static class MockApp  {
 		Object content;
-
-		public MockApp(ITinyContainer context) {
-			super(context);
-		}
 	}
 
 	private static class Person {
@@ -448,7 +442,7 @@ public class ResourceServletIntegrationTest {
 			p.profession = profession;
 			p.age = age;
 
-			MockApp app = (MockApp) Factory.getInstance(App.class);
+			MockApp app = Factory.getInstance(MockApp.class);
 			app.content = p;
 			return new MockView();
 		}
@@ -460,7 +454,7 @@ public class ResourceServletIntegrationTest {
 			p.profession = form.getValue("profession");
 			p.age = form.getValue("age", Integer.class);
 
-			MockApp app = (MockApp) Factory.getInstance(App.class);
+			MockApp app = Factory.getInstance(MockApp.class);
 			app.content = p;
 			return new MockView();
 		}
@@ -481,14 +475,14 @@ public class ResourceServletIntegrationTest {
 				}
 			}
 
-			MockApp app = (MockApp) Factory.getInstance(App.class);
+			MockApp app = Factory.getInstance(MockApp.class);
 			app.content = p;
 			return new MockView();
 		}
 
 		@Override
 		public View processFormObject(Person person) {
-			MockApp app = (MockApp) Factory.getInstance(App.class);
+			MockApp app = Factory.getInstance(MockApp.class);
 			app.content = person;
 			return new MockView();
 		}
@@ -503,7 +497,7 @@ public class ResourceServletIntegrationTest {
 				return view;
 			StringWriter writer = new StringWriter();
 			Files.copy(new FileReader(upload.getFile()), writer);
-			MockApp app = (MockApp) Factory.getInstance(App.class);
+			MockApp app = Factory.getInstance(MockApp.class);
 			app.content = writer.toString();
 			return view;
 		}
@@ -522,7 +516,7 @@ public class ResourceServletIntegrationTest {
 					}
 					StringWriter writer = new StringWriter();
 					Files.copy(new InputStreamReader(upload.openStream(), "UTF-8"), writer);
-					MockApp app = (MockApp) Factory.getInstance(App.class);
+					MockApp app = Factory.getInstance(MockApp.class);
 					app.content = writer.toString();
 				}
 			}

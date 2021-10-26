@@ -22,7 +22,6 @@ import org.junit.Test;
 import js.lang.BugError;
 import js.lang.InvocationException;
 import js.tiny.container.core.Container;
-import js.tiny.container.servlet.AppContext;
 import js.tiny.container.spi.IContainer;
 import js.tiny.container.spi.IFactory;
 import js.tiny.container.spi.IManagedClass;
@@ -49,7 +48,7 @@ public class DependencyProcessorUnitTest {
 	public void getDependencyValue_AppFactory() throws Exception {
 		MockManagedClassSPI<?> managedClass = new MockManagedClassSPI<>(Person.class);
 
-		for (Class<?> clazz : new Class<?>[] { IFactory.class, AppContext.class, IContainer.class, Container.class }) {
+		for (Class<?> clazz : new Class<?>[] { IFactory.class, IContainer.class, Container.class }) {
 			Object value = Classes.invoke(processorClass(), "getDependencyValue", managedClass, clazz);
 			assertNotNull(value);
 			assertTrue(value instanceof IFactory);

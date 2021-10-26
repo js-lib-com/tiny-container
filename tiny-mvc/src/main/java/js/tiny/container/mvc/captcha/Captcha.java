@@ -20,8 +20,8 @@ import js.tiny.container.http.NoSuchResourceException;
 import js.tiny.container.http.Resource;
 import js.tiny.container.mvc.FileResource;
 import js.tiny.container.mvc.ResourceServlet;
-import js.tiny.container.servlet.AppContext;
 import js.tiny.container.servlet.RequestContext;
+import js.tiny.container.spi.IContainer;
 import js.util.Params;
 
 /**
@@ -67,8 +67,8 @@ final class Captcha implements Configurable {
 	/** Web session key name for stored challenge instances. */
 	private static final String CHALENGES_KEY = "challenges-key";
 
-	/** Application context. */
-	private final AppContext context;
+	/** Parent container back reference. */
+	private final IContainer container;
 
 	/** Challenge images directory configured from application descriptor. */
 	private File imagesRepositoryDir;
@@ -79,10 +79,10 @@ final class Captcha implements Configurable {
 	/**
 	 * Create CAPTCHA manager instance with injected application context.
 	 * 
-	 * @param context application context.
+	 * @param container parent container back reference.
 	 */
-	public Captcha(AppContext context) {
-		this.context = context;
+	public Captcha(IContainer container) {
+		this.container = container;
 	}
 
 	/**
@@ -209,7 +209,7 @@ final class Captcha implements Configurable {
 		// here is a circular package dependency that is hard to avoid
 		// js.servlet package depends on js.http packages and this js.http.captcha package depends on js.servlet
 		// as a consequence js.http.captcha package cannot be used externally without js.servlet
-		HttpSession session = context.getInstance(RequestContext.class).getSession(true);
+		HttpSession session = container.getInstance(RequestContext.class).getSession(true);
 
 		@SuppressWarnings("unchecked")
 		Map<Integer, Challenge> challenges = (Map<Integer, Challenge>) session.getAttribute(CHALENGES_KEY);

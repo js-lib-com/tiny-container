@@ -242,6 +242,14 @@ public class Container implements IContainer, Configurable {
 
 	protected final CDI cdi = CDI.create();
 
+	private final Set<IContainerService> containerServices = new HashSet<>();
+
+	/**
+	 * Master cache for all managed classes registered to container. Since an application has one and only one container
+	 * instance, managed classes pool is unique per application. This pool is initialized by {@link #config(Config)} method.
+	 */
+	private final Map<Class<?>, IManagedClass<?>> classesPool = new HashMap<>();
+
 	private final FlowProcessorsSet<IContainerStartProcessor> containerStartProcessors = new FlowProcessorsSet<>();
 
 	/**
@@ -263,14 +271,6 @@ public class Container implements IContainer, Configurable {
 	private final FlowProcessorsSet<IInstancePostConstructionProcessor> instancePostConstructionProcessors = new FlowProcessorsSet<>();
 
 	private final FlowProcessorsSet<IInstancePreDestructionProcessor> instancePreDestructionProcessors = new FlowProcessorsSet<>();
-
-	/**
-	 * Master cache for all managed classes registered to container. Since an application has one and only one container
-	 * instance, managed classes pool is unique per application. This pool is initialized by {@link #config(Config)} method.
-	 */
-	protected final Map<Class<?>, IManagedClass<?>> classesPool = new HashMap<>();
-
-	private final Set<IContainerService> containerServices = new HashSet<>();
 
 	// --------------------------------------------------------------------------------------------
 	// CONTAINER LIFE CYCLE

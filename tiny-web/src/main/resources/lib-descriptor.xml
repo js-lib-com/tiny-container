@@ -1,14 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <config>
 	<managed-classes>
-		<!-- App should be declared first to be initialized before the other managed classes with managed life cycle. -->
-		<app class="js.tiny.container.servlet.App" />
-		<app-context interface="js.tiny.container.servlet.AppContext" class="js.tiny.container.servlet.TinyContainer" />
-
 		<request-context class="js.tiny.container.servlet.RequestContext" scope="THREAD" />
-		
-		<!--<views interface="js.tiny.container.mvc.ViewManager" class="js.tiny.container.mvc.ViewManagerImpl" />-->
-		<!--<captcha class="js.tiny.container.http.captcha.Captcha" />-->
 
 		<event-stream-manager interface="js.tiny.container.net.EventStreamManager" class="js.tiny.container.net.EventStreamManagerImpl" />
 		<event-stream class="js.tiny.container.net.EventStream" scope="LOCAL" />

@@ -1,9 +1,45 @@
 package js.tiny.container.servlet;
 
+import java.io.File;
+import java.util.Locale;
+
 import js.converter.ConverterException;
 import js.tiny.container.spi.IContainer;
 
-public interface ITinyContainer extends IContainer, SecurityContext, AppContext {
+public interface ITinyContainer extends IContainer, SecurityContext {
+
+	/**
+	 * Get application name. Returned application name is rather for application identification than for displaying on user
+	 * interface.
+	 * 
+	 * @return application name.
+	 */
+	String getAppName();
+
+	/**
+	 * Get absolute file for a path relative to application private storage.
+	 * 
+	 * @param path path relative to application private storage.
+	 * @return application private file.
+	 */
+	File getAppFile(String path);
+
+	/**
+	 * Get current request preferred locale that the client will accept content in, based on the <code>Accept-Language</code>
+	 * header. If the client request does not provide an <code>Accept-Language</code> header, this method returns the default
+	 * locale for the server. Current request is that bound to current thread.
+	 * 
+	 * @return current request locale.
+	 */
+	Locale getRequestLocale();
+
+	/**
+	 * Returns the Internet Protocol (IP) address of the client or last proxy that sent current request. Current request is that
+	 * bound to current thread.
+	 * 
+	 * @return current request remote address.
+	 */
+	String getRemoteAddr();
 
 	/**
 	 * Get basic authentication realm. If realm is not defined into application descriptor uses context name.

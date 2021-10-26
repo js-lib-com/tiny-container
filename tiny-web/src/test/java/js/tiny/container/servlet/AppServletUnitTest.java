@@ -5,10 +5,13 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.times;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.*;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+
+import static org.hamcrest.Matchers.*;
+import static org.hamcrest.MatcherAssert.*;
 
 import java.io.IOException;
 import java.io.StringReader;
@@ -21,6 +24,7 @@ import java.util.Iterator;
 import java.util.Locale;
 import java.util.Map;
 
+import javax.servlet.ServletConfig;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.ServletOutputStream;
@@ -35,22 +39,16 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
 import js.json.Json;
 import js.lang.InvocationException;
 import js.rmi.BusinessException;
-import js.tiny.container.core.Factory;
-import js.tiny.container.servlet.AppServlet;
-import js.tiny.container.servlet.ITinyContainer;
-import js.tiny.container.servlet.RequestContext;
-import js.tiny.container.servlet.TinyContainer;
-import js.tiny.container.spi.IContainer;
 import js.tiny.container.unit.HttpServletRequestStub;
 import js.tiny.container.unit.HttpServletResponseStub;
 import js.tiny.container.unit.ServletContextStub;
-import js.tiny.container.unit.TestContext;
 import js.util.Classes;
 import js.util.Files;
 import junit.framework.TestCase;
@@ -74,202 +72,215 @@ public class AppServletUnitTest {
 	public static void beforeClass() {
 		System.setProperty("catalina.base", "fixture/server/tomcat");
 	}
-	
+
 	@Mock
 	private ITinyContainer container;
 	@Mock
-	private RequestContext context;
-	@Mock
 	private Json json;
-	
-	private IContainer containerSPI;
-	private MockHttpServletRequest httpRequest;
-	private MockHttpServletResponse httpResponse;
-	private MockRequestContext requestContext;
+
+	@Mock
+	private RequestContext requestContext;
+
+	@Mock
+	private ServletConfig servletConfig;
+	@Mock
+	private ServletContext servletContext;
+	@Mock
+	private HttpServletRequest httpRequest;
+	@Mock
+	private HttpServletResponse httpResponse;
+	@Mock
+	private ServletOutputStream responseStream;
 
 	@Before
 	public void beforeTest() throws Exception {
-		containerSPI = (IContainer) TestContext.start(DESCRIPTOR);
-		httpRequest = new MockHttpServletRequest();
-		httpResponse = new MockHttpServletResponse();
-		requestContext = (MockRequestContext) Factory.getInstance(RequestContext.class);
-		
+		when(container.getInstance(RequestContext.class)).thenReturn(requestContext);
+		when(requestContext.getContainer()).thenReturn(container);
+		when(requestContext.getRequest()).thenReturn(httpRequest);
+		when(requestContext.getResponse()).thenReturn(httpResponse);
+		when(requestContext.getLocale()).thenReturn(Locale.getDefault());
+
 		when(container.getInstance(Json.class)).thenReturn(json);
-		when(context.getContainer()).thenReturn(container);
-		//when(context.getRequest()).thenReturn(httpRequest);
-		when(context.getResponse()).thenReturn(httpResponse);
-		when(context.getLocale()).thenReturn(Locale.getDefault());
+
+		when(servletConfig.getServletName()).thenReturn("ServletName");
+		when(servletConfig.getServletContext()).thenReturn(servletContext);
+		when(servletContext.getServletContextName()).thenReturn("test-app");
+		when(servletContext.getAttribute(TinyContainer.ATTR_INSTANCE)).thenReturn(container);
+
+		when(httpRequest.getMethod()).thenReturn("POST");
+		when(httpRequest.getContextPath()).thenReturn("test");
+		when(httpRequest.getRequestURI()).thenReturn("test/service");
+
+		when(httpResponse.getOutputStream()).thenReturn(responseStream);
 	}
 
 	@Test
-	public void init() throws ServletException {
+	public void GivenAppServlet_WhenInit_ThenFields() throws ServletException {
+		// given
 		AppServlet servlet = new AppServlet() {
 			@Override
-			protected void handleRequest(RequestContext context) throws IOException, ServletException {
+			protected void handleRequest(RequestContext requestContext) throws IOException, ServletException {
 			}
 		};
 
-		MockServletContext context = new MockServletContext();
-		context.attributes.put(TinyContainer.ATTR_INSTANCE, containerSPI);
+		// when
+		servlet.init(servletConfig);
 
-		MockServletConfig config = new MockServletConfig();
-		config.servletName = "ServletName";
-		config.servletContext = context;
-
-		servlet.init(config);
-
-		assertEquals("test-app#ServletName", Classes.getFieldValue(servlet, AppServlet.class, "servletName"));
-		assertNotNull(Classes.getFieldValue(servlet, AppServlet.class, "container"));
-		assertEquals(containerSPI, Classes.getFieldValue(servlet, AppServlet.class, "container"));
+		// then
+		assertThat(servlet.servletName(), equalTo("test-app#ServletName"));
+		assertThat(servlet.container(), notNullValue());
+		assertThat(servlet.container(), equalTo(container));
 	}
 
 	@Test(expected = UnavailableException.class)
-	public void init_NullApp() throws ServletException {
+	public void GivenAttrInstance_WhenInit_ThenException() throws ServletException {
+		// given
 		AppServlet servlet = new AppServlet() {
 			@Override
-			protected void handleRequest(RequestContext context) throws IOException, ServletException {
+			protected void handleRequest(RequestContext requestContext) throws IOException, ServletException {
 			}
 		};
+		when(servletContext.getAttribute(TinyContainer.ATTR_INSTANCE)).thenReturn(null);
 
-		MockServletContext context = new MockServletContext();
-		MockServletConfig config = new MockServletConfig();
-		config.servletName = "ServletName";
-		config.servletContext = context;
+		// when
+		servlet.init(servletConfig);
 
-		servlet.init(config);
+		// then
 	}
 
 	@Test
-	public void destroy() {
+	public void GivenServlet_WhenDestroy_Then() {
+		// given
 		AppServlet servlet = new AppServlet() {
 			@Override
-			protected void handleRequest(RequestContext context) throws IOException, ServletException {
+			protected void handleRequest(RequestContext requestContext) throws IOException, ServletException {
 			}
 		};
+
+		// when
 		servlet.destroy();
+
+		// then
 	}
 
 	@Test
-	public void service() throws Exception {
+	public void GivenServlet_WhenService_ThenRequestContext() throws Exception {
+		// given
 		AppServlet servlet = new AppServlet() {
 			@Override
-			protected void handleRequest(RequestContext context) throws IOException, ServletException {
-				TestCase.assertEquals(httpRequest, context.getRequest());
-				TestCase.assertEquals(httpResponse, context.getResponse());
-				TestCase.assertEquals("test/service", context.getRequest().getRequestURI());
-				TestCase.assertNotNull(container);
-			}
-		};
-		exerciseService(servlet);
-
-		assertEquals(1, requestContext.attachProbe);
-		assertEquals(1, requestContext.detachProbe);
-		assertEquals(0, requestContext.dumpProbe);
-	}
-
-	@Test
-	public void service_EmptyUriRequest() throws Exception {
-		AppServlet servlet = new AppServlet() {
-			@Override
-			protected void handleRequest(RequestContext context) throws IOException, ServletException {
-				TestCase.assertEquals(httpRequest, context.getRequest());
-				TestCase.assertEquals(httpResponse, context.getResponse());
-				TestCase.assertEquals("test/service", context.getRequest().getRequestURI());
-				TestCase.assertNotNull(container);
+			protected void handleRequest(RequestContext requestContext) throws IOException, ServletException {
 			}
 		};
 
-		httpRequest.requestURI = "/test/service";
-		httpRequest.method = "GET";
-		httpRequest.headers.put("Referer", "/test/service");
-
+		// when
 		exerciseService(servlet);
 
-		assertEquals(0, requestContext.attachProbe);
-		assertEquals(0, requestContext.detachProbe);
-		assertEquals(0, requestContext.dumpProbe);
+		// then
+		verify(requestContext, times(1)).attach(httpRequest, httpResponse);
+		verify(requestContext, times(1)).detach();
+		verify(requestContext, times(0)).dump();
 	}
 
 	@Test
-	public void serviceIOException() throws Exception {
+	public void GivenEmptyUriRequest_WhenService_Then() throws Exception {
+		// given
 		AppServlet servlet = new AppServlet() {
 			@Override
-			protected void handleRequest(RequestContext context) throws IOException, ServletException {
+			protected void handleRequest(RequestContext requestContext) throws IOException, ServletException {
+			}
+		};
+
+		when(httpRequest.getRequestURI()).thenReturn("");
+
+		// when
+		exerciseService(servlet);
+
+		// then
+		verify(requestContext, times(1)).attach(httpRequest, httpResponse);
+		verify(requestContext, times(1)).detach();
+		verify(requestContext, times(0)).dump();
+	}
+
+	@Test
+	public void GivenIOException_WhenService_Then() throws Exception {
+		// given
+		AppServlet servlet = new AppServlet() {
+			@Override
+			protected void handleRequest(RequestContext requestContext) throws IOException, ServletException {
 				throw new IOException("test exception");
 			}
 		};
+
+		// when
 		try {
 			exerciseService(servlet);
 		} catch (IOException e) {
 			assertEquals("test exception", e.getMessage());
 		}
 
-		assertEquals(1, requestContext.attachProbe);
-		assertEquals(1, requestContext.detachProbe);
-		assertEquals(1, requestContext.dumpProbe);
+		// then
+		verify(requestContext, times(1)).attach(httpRequest, httpResponse);
+		verify(requestContext, times(1)).detach();
+		verify(requestContext, times(1)).dump();
 	}
 
 	@Test
-	public void service_Throwable() throws Exception {
+	public void GivenRuntimeException_WhenService_Then() throws Exception {
+		// given
 		AppServlet servlet = new AppServlet() {
 			@Override
-			protected void handleRequest(RequestContext context) throws IOException, ServletException {
+			protected void handleRequest(RequestContext requestContext) throws IOException, ServletException {
 				throw new IllegalArgumentException("test exception");
 			}
 		};
+
+		// when
 		try {
 			exerciseService(servlet);
 		} catch (IllegalArgumentException e) {
 			assertEquals("test exception", e.getMessage());
 		}
 
-		assertEquals(1, requestContext.attachProbe);
-		assertEquals(1, requestContext.detachProbe);
-		assertEquals(1, requestContext.dumpProbe);
+		// then
+		verify(requestContext, times(1)).attach(httpRequest, httpResponse);
+		verify(requestContext, times(1)).detach();
+		verify(requestContext, times(1)).dump();
 	}
 
 	@Test
 	public void emptyUriRequest() throws Exception {
-		httpRequest.method = "POST";
+		when(httpRequest.getMethod()).thenReturn("POST");
 		assertFalse(isEmptyUriRequest(httpRequest));
 
-		httpRequest.requestURI = "/test/query";
-		httpRequest.method = "GET";
-		httpRequest.headers.put("Referer", "test/service");
+		when(httpRequest.getMethod()).thenReturn("GET");
+		when(httpRequest.getHeader("Referer")).thenReturn("/test/service");
+
+		when(httpRequest.getRequestURI()).thenReturn("/test/query");
 		assertFalse(isEmptyUriRequest(httpRequest));
 
-		httpRequest.requestURI = "/test/service";
-		httpRequest.method = "GET";
-		httpRequest.headers.put("Referer", "/test/service");
+		when(httpRequest.getRequestURI()).thenReturn("/test/service");
 		assertTrue(isEmptyUriRequest(httpRequest));
 
-		httpRequest.requestURI = "/test/service?qqq";
-		httpRequest.method = "GET";
-		httpRequest.headers.put("Referer", "/test/service?qqq");
+		when(httpRequest.getRequestURI()).thenReturn("/test/service");
+		when(httpRequest.getHeader("Accept")).thenReturn("text/xml");
 		assertTrue(isEmptyUriRequest(httpRequest));
 
-		httpRequest.requestURI = "/test/service?qqq";
-		httpRequest.queryString = "qqq";
-		httpRequest.method = "GET";
-		httpRequest.headers.put("Referer", "/test/service?qqq");
+		when(httpRequest.getRequestURI()).thenReturn("/test/service");
+		when(httpRequest.getHeader("Accept")).thenReturn("image/jpg");
 		assertTrue(isEmptyUriRequest(httpRequest));
-		httpRequest.queryString = null;
 
-		httpRequest.requestURI = "/test/service?qqq";
-		httpRequest.method = "GET";
-		httpRequest.headers.put("Referer", null);
+		// ------------------------------------------------------------------------------
+
+		when(httpRequest.getRequestURI()).thenReturn("/test/service?qqq");
+		when(httpRequest.getHeader("Referer")).thenReturn("/test/service?qqq");
+		assertTrue(isEmptyUriRequest(httpRequest));
+
+		when(httpRequest.getRequestURI()).thenReturn("/test/service?qqq");
+		when(httpRequest.getQueryString()).thenReturn("qqq");
+		when(httpRequest.getHeader("Referer")).thenReturn("/test/service?qqq");
 		assertFalse(isEmptyUriRequest(httpRequest));
 
-		httpRequest.requestURI = "/test/service";
-		httpRequest.method = "GET";
-		httpRequest.headers.put("Referer", "/test/service");
-		httpRequest.headers.put("Accept", "image/jpg");
-		assertTrue(isEmptyUriRequest(httpRequest));
-
-		httpRequest.requestURI = "/test/service";
-		httpRequest.method = "GET";
-		httpRequest.headers.put("Referer", "/test/service");
-		httpRequest.headers.put("Accept", "text/html");
+		when(httpRequest.getHeader("Referer")).thenReturn(null);
 		assertFalse(isEmptyUriRequest(httpRequest));
 	}
 
@@ -279,27 +290,30 @@ public class AppServletUnitTest {
 
 	/** For non XHR request unauthorized access send 401 and WWW-Authenticate set to basic. */
 	@Test
-	public void sendUnauthorized() throws Exception {
-		httpRequest.requestURI = "/test/service";
-		requestContext.attach(httpRequest, httpResponse);
-		Classes.invoke(AppServlet.class, "sendUnauthorized", requestContext);
+	public void GivenLoginRealm_WhenSendUnauthorized_ThenBasicRealm() throws Exception {
+		when(container.getLoginRealm()).thenReturn("Test App");
 
-		assertEquals(401, httpResponse.status);
-		assertEquals("Basic realm=Test App", httpResponse.headers.get("WWW-Authenticate"));
-		assertEquals(0, requestContext.dumpProbe);
+		// when
+		AppServlet.sendUnauthorized(requestContext);
+
+		// then
+		verify(httpResponse, times(1)).setStatus(401);
+		verify(httpResponse, times(1)).setHeader("WWW-Authenticate", "Basic realm=Test App");
+		verify(requestContext, times(0)).dump();
 	}
 
 	@Test
-	public void sendUnauthorized_ResponseCommited() throws Exception {
-		httpRequest.requestURI = "/test/service";
-		Files.copy(new StringReader("response"), httpResponse.stringWriter);
+	public void Given_WhenSendUnauthorized_ThenResponseCommited() throws Exception {
+		// given
 		requestContext.attach(httpRequest, httpResponse);
-		Classes.invoke(AppServlet.class, "sendUnauthorized", requestContext);
 
-		assertEquals(0, httpResponse.status);
-		assertNull(httpResponse.headers.get("WWW-Authenticate"));
-		assertEquals(0, requestContext.dumpProbe);
-		assertEquals("response", httpResponse.getBody());
+		// when
+		AppServlet.sendUnauthorized(requestContext);
+
+		// then
+		verify(httpResponse, times(1)).setStatus(401);
+		verify(httpResponse, times(1)).setHeader(eq("WWW-Authenticate"), anyString());
+		verify(requestContext, times(0)).dump();
 	}
 
 	/**
@@ -307,415 +321,204 @@ public class AppServletUnitTest {
 	 * login page.
 	 */
 	@Test
-	public void sendXhrUnauthorized() throws Exception {
-		httpRequest.requestURI = "/test/service";
-		httpRequest.headers.put("X-Requested-With", "XMLHttpRequest");
-		requestContext.attach(httpRequest, httpResponse);
-		Classes.invoke(AppServlet.class, "sendUnauthorized", requestContext);
+	public void GivenXMLHttpRequestAndLoginPage_WhenSendUnauthorized_ThenJsLibRedirectToLogin() throws Exception {
+		// given
+		when(container.getLoginPage()).thenReturn("/test-app/login.xsp");
+		when(httpRequest.getHeader("X-Requested-With")).thenReturn("XMLHttpRequest");
 
-		assertEquals(200, httpResponse.status);
-		assertEquals("/test-app/login.xsp", httpResponse.headers.get("X-JSLIB-Location"));
-		assertEquals(0, requestContext.dumpProbe);
+		// when
+		AppServlet.sendUnauthorized(requestContext);
+
+		// then
+		verify(httpResponse, times(1)).setStatus(200);
+		verify(httpResponse, times(1)).setHeader("X-JSLIB-Location", "/test-app/login.xsp");
+		verify(requestContext, times(0)).dump();
 	}
 
 	/** For XHR request on application without login page unauthorized access send 401 and WWW-Authenticate set to basic. */
 	@Test
-	public void sendXhrUnauthorized_NoLoginPage() throws Exception {
-		Classes.setFieldValue(containerSPI, TinyContainer.class, "loginPage", null);
-		httpRequest.requestURI = "/test/service";
-		httpRequest.headers.put("X-Requested-With", "XMLHttpRequest");
-		requestContext.attach(httpRequest, httpResponse);
-		Classes.invoke(AppServlet.class, "sendUnauthorized", requestContext);
+	public void GivenNullLoginPage_WhenSendUnauthorized_ThenNoJsLibRedirectToLogin() throws Exception {
+		// given
+		when(container.getLoginRealm()).thenReturn("Test App");
+		when(container.getLoginPage()).thenReturn(null);
+		when(httpRequest.getHeader("X-Requested-With")).thenReturn("XMLHttpRequest");
 
-		assertEquals(401, httpResponse.status);
-		assertEquals("Basic realm=Test App", httpResponse.headers.get("WWW-Authenticate"));
-		assertEquals(0, requestContext.dumpProbe);
+		// when
+		AppServlet.sendUnauthorized(requestContext);
+
+		// then
+		verify(httpResponse, times(1)).setStatus(401);
+		verify(httpResponse, times(1)).setHeader("WWW-Authenticate", "Basic realm=Test App");
+		verify(requestContext, times(0)).dump();
 	}
 
 	@Test
-	public void sendNotFound() throws Exception {
-		when(json.stringify(any())).thenReturn("{\"cause\":\"java.lang.NoSuchMethodException\",\"message\":\"js.test.Class#method\"}");
+	public void Given_WhenSendNotFound_Then() throws Exception {
+		// given
+		String response = "{\"cause\":\"java.lang.NoSuchMethodException\",\"message\":\"js.test.Class#method\"}";
+		when(json.stringify(any())).thenReturn(response);
 
-		httpRequest.requestURI = "/test/service";
-		requestContext.attach(httpRequest, httpResponse);
-		Classes.invoke(AppServlet.class, "sendNotFound", context, new NoSuchMethodException("js.test.Class#method"));
+		// when
+		AppServlet.sendNotFound(requestContext, new NoSuchMethodException("js.test.Class#method"));
 
-		assertEquals(404, httpResponse.status);
-		assertEquals("{\"cause\":\"java.lang.NoSuchMethodException\",\"message\":\"js.test.Class#method\"}", httpResponse.getBody());
-		assertEquals(0, requestContext.dumpProbe);
+		// then
+		verify(httpResponse, times(1)).setStatus(404);
+		verify(requestContext, times(0)).dump();
+
+		ArgumentCaptor<byte[]> bytesArg = ArgumentCaptor.forClass(byte[].class);
+		verify(responseStream).write(bytesArg.capture());
+		assertThat(new String(bytesArg.getValue()), equalTo(response));
 	}
 
 	@Test
-	public void sendError() throws Exception {
-		when(json.stringify(any())).thenReturn("{\"cause\":\"java.io.IOException\",\"message\":\"test exception\"}");
+	public void Given_WhenSendError_Then() throws Exception {
+		// given
+		String response = "{\"cause\":\"java.io.IOException\",\"message\":\"test exception\"}"; 
+		when(json.stringify(any())).thenReturn(response);
 
-		httpRequest.requestURI = "/test/service";
-		requestContext.attach(httpRequest, httpResponse);
-		Classes.invoke(AppServlet.class, "sendError", context, new IOException("test exception"));
+		// when
+		AppServlet.sendError(requestContext, new IOException("test exception"));
 
-		assertEquals(500, httpResponse.status);
-		assertEquals("{\"cause\":\"java.io.IOException\",\"message\":\"test exception\"}", httpResponse.getBody());
-		
-		verify(context, times(1)).dump();
+		// then
+		verify(httpResponse, times(1)).setStatus(500);
+		verify(requestContext, times(1)).dump();
+
+		ArgumentCaptor<byte[]> bytesArg = ArgumentCaptor.forClass(byte[].class);
+		verify(responseStream).write(bytesArg.capture());
+		assertThat(new String(bytesArg.getValue()), equalTo(response));
 	}
 
 	@Test
-	public void sendError_InvocationException() throws Exception {
-		when(json.stringify(any())).thenReturn("{\"cause\":\"java.io.IOException\",\"message\":\"test exception\"}");
+	public void Given_WhenSendError_ThenInvocationException() throws Exception {
+		// given
+		String response = "{\"cause\":\"java.io.IOException\",\"message\":\"test exception\"}";
+		when(json.stringify(any())).thenReturn(response);
 
-		httpRequest.requestURI = "/test/service";
-		requestContext.attach(httpRequest, httpResponse);
-		Classes.invoke(AppServlet.class, "sendError", context, new InvocationException(new IOException("test exception")));
+		// when
+		AppServlet.sendError(requestContext, new InvocationException(new IOException("test exception")));
 
-		assertEquals(500, httpResponse.status);
-		assertEquals("{\"cause\":\"java.io.IOException\",\"message\":\"test exception\"}", httpResponse.getBody());
-		
-		verify(context, times(1)).dump();
+		// then
+		verify(httpResponse, times(1)).setStatus(500);
+		verify(requestContext, times(1)).dump();
+
+		ArgumentCaptor<byte[]> bytesArg = ArgumentCaptor.forClass(byte[].class);
+		verify(responseStream).write(bytesArg.capture());
+		assertThat(new String(bytesArg.getValue()), equalTo(response));
 	}
 
 	@Test
-	public void sendError_InvocationException_NullCause() throws Exception {
-		when(json.stringify(any())).thenReturn("{\"cause\":\"java.lang.Exception\",\"message\":\"exception\"}");
+	public void Given_WhenSendError_ThenInvocationException_NullCause() throws Exception {
+		// given
+		String response = "{\"cause\":\"java.lang.Exception\",\"message\":\"exception\"}";
+		when(json.stringify(any())).thenReturn(response);
 
-		httpRequest.requestURI = "/test/service";
-		requestContext.attach(httpRequest, httpResponse);
-		Classes.invoke(AppServlet.class, "sendError", context, new InvocationException(new Exception("exception")));
+		// when
+		AppServlet.sendError(requestContext, new InvocationException(new Exception("exception")));
 
-		assertEquals(500, httpResponse.status);
-		assertEquals("{\"cause\":\"java.lang.Exception\",\"message\":\"exception\"}", httpResponse.getBody());
-		
-		verify(context, times(1)).dump();
+		// then
+		verify(httpResponse, times(1)).setStatus(500);
+		verify(requestContext, times(1)).dump();
+
+		ArgumentCaptor<byte[]> bytesArg = ArgumentCaptor.forClass(byte[].class);
+		verify(responseStream).write(bytesArg.capture());
+		assertThat(new String(bytesArg.getValue()), equalTo(response));
 	}
 
 	@Test
-	public void sendError_InvocationTargetException() throws Exception {
-		when(json.stringify(any())).thenReturn("{\"cause\":\"java.io.IOException\",\"message\":\"test exception\"}");
+	public void Given_WhenSendError_ThenInvocationTargetException() throws Exception {
+		// given
+		String response = "{\"cause\":\"java.io.IOException\",\"message\":\"test exception\"}";
+		when(json.stringify(any())).thenReturn(response);
 
-		httpRequest.requestURI = "/test/service";
-		requestContext.attach(httpRequest, httpResponse);
-		Classes.invoke(AppServlet.class, "sendError", context, new InvocationTargetException(new IOException("test exception")));
+		// when
+		AppServlet.sendError(requestContext, new InvocationTargetException(new IOException("test exception")));
 
-		assertEquals(500, httpResponse.status);
-		assertEquals("{\"cause\":\"java.io.IOException\",\"message\":\"test exception\"}", httpResponse.getBody());
-		
-		verify(context, times(1)).dump();
+		// then
+		verify(httpResponse, times(1)).setStatus(500);
+		verify(requestContext, times(1)).dump();
+
+		ArgumentCaptor<byte[]> bytesArg = ArgumentCaptor.forClass(byte[].class);
+		verify(responseStream).write(bytesArg.capture());
+		assertThat(new String(bytesArg.getValue()), equalTo(response));
 	}
 
 	@Test
-	public void sendError_ResponseCommited() throws Exception {
-		httpRequest.requestURI = "/test/service";
-		Files.copy(new StringReader("response"), httpResponse.stringWriter);
-		requestContext.attach(httpRequest, httpResponse);
-		Classes.invoke(AppServlet.class, "sendError", requestContext, new IOException("test exception"));
+	public void Given_WhenSendError_ThenResponseCommited() throws Exception {
+		// given
+		when(json.stringify(any())).thenReturn("{}");
 
-		assertEquals(0, httpResponse.status);
-		assertEquals("response", httpResponse.getBody());
-		assertEquals(1, requestContext.dumpProbe);
+		// when
+		AppServlet.sendError(requestContext, new IOException("test exception"));
+
+		// then
+		verify(httpResponse, times(1)).setStatus(500);
+		verify(requestContext, times(1)).dump();
 	}
 
 	@Test
-	public void sendBusinessConstrain() throws Exception {
-		when(json.stringify(any())).thenReturn("{\"errorCode\":6500}");
+	public void Given_WhenSendError_ThendBusinessConstrain() throws Exception {
+		// given
+		String response = "{\"errorCode\":6500}";
+		when(json.stringify(any())).thenReturn(response);
 
-		httpRequest.requestURI = "/test/service";
-		requestContext.attach(httpRequest, httpResponse);
-		Classes.invoke(AppServlet.class, "sendError", context, new BusinessException(0x1964));
+		// when
+		AppServlet.sendError(requestContext, new BusinessException(0x1964));
 
-		assertEquals(400, httpResponse.status);
-		assertEquals("{\"errorCode\":6500}", httpResponse.getBody());
-		assertEquals(0, requestContext.dumpProbe);
+		// then
+		verify(httpResponse, times(1)).setStatus(400);
+		verify(requestContext, times(0)).dump();
+
+		ArgumentCaptor<byte[]> bytesArg = ArgumentCaptor.forClass(byte[].class);
+		verify(responseStream).write(bytesArg.capture());
+		assertThat(new String(bytesArg.getValue()), equalTo(response));
 	}
 
 	@Test
-	public void sendJsonObject() throws Exception {
-		when(json.stringify(any())).thenReturn("{\"text\":\"message text\"}");
+	public void Given_WhenSendJsonObject_ThenResponse() throws Exception {
+		// given
+		String response = "{\"text\":\"message text\"}";
+		when(json.stringify(any())).thenReturn(response);
 
 		class Message {
 			private String text = "message text";
 		}
 
-		httpRequest.requestURI = "/test/service";
-		requestContext.attach(httpRequest, httpResponse);
-		Classes.invoke(AppServlet.class, "sendJsonObject", context, new Message(), 200);
+		// when
+		AppServlet.sendJsonObject(requestContext, new Message(), 200);
 
-		assertEquals(200, httpResponse.status);
-		assertEquals(23, httpResponse.contentLegth);
-		assertEquals("application/json", httpResponse.getContentType());
-		assertEquals("en-US", httpResponse.getHeader("Content-Language"));
-		assertEquals("{\"text\":\"message text\"}", httpResponse.getBody());
-		assertEquals(0, requestContext.dumpProbe);
+		// then
+		verify(httpResponse, times(1)).setStatus(200);
+		verify(httpResponse, times(1)).setContentLength(23);
+		verify(httpResponse, times(1)).setContentType("application/json");
+		verify(httpResponse, times(1)).setHeader("Content-Language", "en-US");
+		verify(requestContext, times(0)).dump();
+
+		ArgumentCaptor<byte[]> bytesArg = ArgumentCaptor.forClass(byte[].class);
+		verify(responseStream).write(bytesArg.capture());
+		assertThat(new String(bytesArg.getValue()), equalTo(response));
 	}
 
 	@Test
-	public void sendJsonObject_ResponseCommited() throws Exception {
-		httpRequest.requestURI = "/test/service";
-		Files.copy(new StringReader("response"), httpResponse.stringWriter);
-		requestContext.attach(httpRequest, httpResponse);
-		Classes.invoke(AppServlet.class, "sendJsonObject", requestContext, new Object(), 200);
+	public void GivenResponseCommited_WhenSendJsonObject_ThenNoResponse() throws Exception {
+		// given
+		when(httpResponse.isCommitted()).thenReturn(true);
 
-		assertEquals(0, httpResponse.status);
-		assertEquals(0, httpResponse.contentLegth);
-		assertNull(httpResponse.getContentType());
-		assertNull(httpResponse.getHeader("Content-Language"));
-		assertEquals("response", httpResponse.getBody());
-		assertEquals(0, requestContext.dumpProbe);
+		// when
+		AppServlet.sendJsonObject(requestContext, new Object(), 200);
+
+		// then
+		verify(httpResponse, times(0)).setStatus(anyInt());
+		verify(httpResponse, times(0)).setContentLength(anyInt());
+		verify(httpResponse, times(0)).setContentType(anyString());
+		verify(httpResponse, times(0)).setHeader(eq("Content-Language"), anyString());
+		verify(requestContext, times(0)).dump();
 	}
 
 	// --------------------------------------------------------------------------------------------
 	// UTILITY METHODS
 
 	private void exerciseService(AppServlet servlet) throws ServletException, IOException {
-		MockServletContext context = new MockServletContext();
-		context.attributes.put(TinyContainer.ATTR_INSTANCE, containerSPI);
-
-		MockServletConfig config = new MockServletConfig();
-		config.servletName = "ServletName";
-		config.servletContext = context;
-
-		servlet.init(config);
-
-		if (httpRequest.method == null) {
-			httpRequest.method = "POST";
-		}
-		if (httpRequest.requestURI == null) {
-			httpRequest.requestURI = "test/service";
-		}
+		servlet.init(servletConfig);
 		servlet.service(httpRequest, httpResponse);
-	}
-
-	// --------------------------------------------------------------------------------------------
-	// FIXTURE
-
-	private static class MockHttpServletRequest extends HttpServletRequestStub {
-		private HttpServletResponse httpResponse;
-		private ServletContext servletContext;
-
-		private String method;
-		private String requestURI;
-		private String queryString;
-		private Map<String, String> headers = new HashMap<>();
-		private HttpSession session;
-		private String content;
-
-		@Override
-		public String getRemoteHost() {
-			return "localhost";
-		}
-
-		@Override
-		public String getMethod() {
-			return method;
-		}
-
-		@Override
-		public String getHeader(String name) {
-			return headers.get(name);
-		}
-
-		@Override
-		public String getQueryString() {
-			if (queryString != null) {
-				return queryString;
-			}
-			if (requestURI == null) {
-				return null;
-			}
-			int beginIndex = requestURI.lastIndexOf('?');
-			if (beginIndex == -1) {
-				return null;
-			}
-			return requestURI.substring(beginIndex);
-		}
-
-		@Override
-		public String getContextPath() {
-			if (requestURI == null) {
-				return null;
-			}
-			int beginIndex = 0;
-			if (requestURI.startsWith("/")) {
-				beginIndex++;
-			}
-			int endIndex = requestURI.indexOf("/", beginIndex);
-			if (endIndex == -1) {
-				return "";
-			}
-			return requestURI.substring(0, endIndex);
-		}
-
-		@Override
-		public Enumeration<String> getHeaderNames() {
-			return new Headers(headers.keySet());
-		}
-
-		@Override
-		public String getRequestURI() {
-			if (requestURI == null) {
-				return null;
-			}
-			int index = requestURI.lastIndexOf('?');
-			if (index == -1) {
-				index = requestURI.length();
-			}
-			return requestURI.substring(0, index);
-		}
-
-		@Override
-		public Locale getLocale() {
-			return Locale.getDefault();
-		}
-
-		@Override
-		public Cookie[] getCookies() {
-			return null;
-		}
-
-		@Override
-		public Object getAttribute(String name) {
-			return null;
-		}
-	}
-
-	private static class MockHttpServletResponse extends HttpServletResponseStub {
-		private int status;
-		private int contentLegth;
-		private Map<String, String> headers = new HashMap<>();
-		private StringWriter stringWriter = new StringWriter();
-
-		public String getBody() {
-			return stringWriter.toString();
-		}
-
-		@Override
-		public boolean isCommitted() {
-			return stringWriter.getBuffer().length() > 0;
-		}
-
-		@Override
-		public void setStatus(int status) {
-			this.status = status;
-		}
-
-		@Override
-		public void setContentType(String contentType) {
-			headers.put("Content-Type", contentType);
-		}
-
-		@Override
-		public void setContentLength(int contentLegth) {
-			this.contentLegth = contentLegth;
-		}
-
-		@Override
-		public void setHeader(String header, String value) {
-			headers.put(header, value);
-		}
-
-		@Override
-		public ServletOutputStream getOutputStream() throws IOException {
-			return new OutputStream(stringWriter);
-		}
-
-		@Override
-		public String getHeader(String header) {
-			return headers.get(header);
-		}
-
-		@Override
-		public String getContentType() {
-			return headers.get("Content-Type");
-		}
-	}
-
-	private static class MockRequestContext extends RequestContext {
-		private int attachProbe;
-		private int detachProbe;
-		private int dumpProbe;
-
-		public MockRequestContext(ITinyContainer container) {
-			super(container);
-		}
-
-		@Override
-		public void attach(HttpServletRequest httpRequest, HttpServletResponse httpResponse) {
-			super.attach(httpRequest, httpResponse);
-			++attachProbe;
-		}
-
-		@Override
-		public void detach() {
-			super.detach();
-			++detachProbe;
-		}
-
-		@Override
-		public void dump() {
-			super.dump();
-			++dumpProbe;
-		}
-	}
-
-	private static class MockServletContext extends ServletContextStub {
-		private Map<String, Object> attributes = new HashMap<String, Object>();
-
-		@Override
-		public String getServletContextName() {
-			return "test-app";
-		}
-
-		@Override
-		public String getRealPath(String resource) {
-			return ".";
-		}
-
-		@Override
-		public Object getAttribute(String name) {
-			return attributes.get(name);
-		}
-
-		@Override
-		public String getInitParameter(String name) {
-			return null;
-		}
-	}
-
-	private static class Headers implements Enumeration<String> {
-		private Iterator<String> headerNames;
-
-		public Headers(Collection<String> headerNames) {
-			this.headerNames = headerNames.iterator();
-		}
-
-		@Override
-		public boolean hasMoreElements() {
-			return headerNames.hasNext();
-		}
-
-		@Override
-		public String nextElement() {
-			return headerNames.next();
-		}
-	}
-
-	private static class OutputStream extends ServletOutputStream {
-		private StringWriter stringWriter;
-
-		public OutputStream(StringWriter stringWriter) {
-			this.stringWriter = stringWriter;
-		}
-
-		@Override
-		public void write(int b) throws IOException {
-			stringWriter.append((char) b);
-		}
-
-		@Override
-		public boolean isReady() {
-			return true;
-		}
-
-		@Override
-		public void setWriteListener(WriteListener writeListener) {
-		}
 	}
 }

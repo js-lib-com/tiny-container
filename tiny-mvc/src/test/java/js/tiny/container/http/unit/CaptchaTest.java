@@ -26,8 +26,8 @@ import js.lang.ConfigException;
 import js.lang.Configurable;
 import js.tiny.container.http.NoSuchResourceException;
 import js.tiny.container.mvc.captcha.Challenge;
-import js.tiny.container.servlet.AppContext;
 import js.tiny.container.servlet.RequestContext;
+import js.tiny.container.spi.IContainer;
 import js.util.Classes;
 import js.util.Files;
 import js.util.Strings;
@@ -38,7 +38,7 @@ public class CaptchaTest {
 	private static final String CHALLENGE = "js.tiny.container.mvc.captcha.Challenge";
 
 	@Mock
-	private AppContext context;
+	private IContainer context;
 
 	@Mock
 	private RequestContext request;
@@ -349,10 +349,10 @@ public class CaptchaTest {
 		if (args.length < 3) {
 			return captcha(String.format(config, path, size), null);
 		}
-		return captcha(String.format(config, path, size), (AppContext) args[2]);
+		return captcha(String.format(config, path, size), (IContainer) args[2]);
 	}
 
-	private static Object captcha(String config, AppContext context) throws Exception {
+	private static Object captcha(String config, IContainer context) throws Exception {
 		ConfigBuilder builder = new ConfigBuilder(config);
 		Configurable captcha = Classes.newInstance(CAPTCHA, context);
 		captcha.config(builder.build());
