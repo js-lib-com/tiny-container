@@ -14,6 +14,10 @@ import javax.servlet.ServletContextListener;
 import javax.servlet.http.HttpSessionEvent;
 import javax.servlet.http.HttpSessionListener;
 
+import com.jslib.injector.IBinding;
+import com.jslib.injector.Key;
+import com.jslib.injector.SessionScoped;
+
 import js.converter.ConverterRegistry;
 import js.lang.BugError;
 import js.lang.Config;
@@ -22,9 +26,6 @@ import js.lang.ConfigException;
 import js.log.Log;
 import js.log.LogContext;
 import js.log.LogFactory;
-import js.tiny.container.cdi.IBinding;
-import js.tiny.container.cdi.Key;
-import js.tiny.container.cdi.SessionScoped;
 import js.tiny.container.core.Container;
 import js.tiny.container.core.Factory;
 import js.tiny.container.spi.IContainer;

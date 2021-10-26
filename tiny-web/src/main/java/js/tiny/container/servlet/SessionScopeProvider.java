@@ -2,7 +2,7 @@ package js.tiny.container.servlet;
 
 import javax.inject.Provider;
 
-import js.tiny.container.cdi.ScopedProvider;
+import com.jslib.injector.ScopedProvider;
 
 public class SessionScopeProvider<T> extends ScopedProvider<T> {
 

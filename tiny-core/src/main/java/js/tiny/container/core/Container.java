@@ -23,6 +23,9 @@ import javax.interceptor.Interceptors;
 
 import org.omg.PortableInterceptor.Interceptor;
 
+import com.jslib.injector.IBinding;
+import com.jslib.injector.Key;
+
 import js.converter.Converter;
 import js.converter.ConverterException;
 import js.converter.ConverterRegistry;
@@ -37,9 +40,7 @@ import js.lang.ManagedPreDestroy;
 import js.lang.NoProviderException;
 import js.log.Log;
 import js.log.LogFactory;
-import js.tiny.container.cdi.IBinding;
-import js.tiny.container.cdi.Key;
-import js.tiny.container.cdi.service.CDI;
+import js.tiny.container.cdi.CDI;
 import js.tiny.container.service.ConfigurableInstanceProcessor;
 import js.tiny.container.service.FlowProcessorsSet;
 import js.tiny.container.service.InstanceFieldsInitializationProcessor;
