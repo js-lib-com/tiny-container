@@ -2,23 +2,28 @@ package js.tiny.container.cdi.service;
 
 import javax.inject.Provider;
 
-import js.tiny.container.cdi.CDI;
+import js.log.Log;
+import js.log.LogFactory;
 import js.tiny.container.cdi.IBinding;
+import js.tiny.container.cdi.IScope;
 import js.tiny.container.cdi.Key;
+import js.tiny.container.cdi.SessionScoped;
 import js.tiny.container.cdi.impl.ClassProvider;
-import js.tiny.container.cdi.impl.ProxyProvider;
 import js.tiny.container.cdi.impl.RemoteProvider;
-import js.tiny.container.cdi.impl.ServiceProvider;
-import js.tiny.container.cdi.impl.SingletonProvider;
+import js.tiny.container.cdi.impl.SingletonScopeProvider;
+import js.tiny.container.cdi.impl.ThreadScopeProvider;
 import js.tiny.container.spi.IClassPostLoadedProcessor;
 import js.tiny.container.spi.IManagedClass;
 import js.tiny.container.spi.InstanceScope;
 import js.tiny.container.spi.InstanceType;
 
 public class ContainerService implements IClassPostLoadedProcessor {
+	private static final Log log = LogFactory.getLog(ContainerService.class);
+
 	private final CDI cdi;
 
 	public ContainerService() {
+		log.trace("ContainerService()");
 		this.cdi = CDI.create();
 	}
 
@@ -29,34 +34,46 @@ public class ContainerService implements IClassPostLoadedProcessor {
 
 	@Override
 	public <T> void onClassPostLoaded(IManagedClass<T> managedClass) {
-		final Class<T> type = managedClass.getInterfaceClass();
+		log.debug("CDI register managed class |%s|.", managedClass);
 
-		final Key<T> key = Key.get(type);
-
+		final Key<T> key = Key.get(managedClass.getInterfaceClass());
 		Provider<T> provider = null;
 
 		final InstanceType instanceType = managedClass.getInstanceType();
-		if (instanceType == InstanceType.POJO) {
-			provider = new ClassProvider<>(cdi, type);
-		} else if (instanceType == InstanceType.PROXY) {
-			provider = new ProxyProvider<>(new ClassProvider<>(cdi, type));
-		} else if (instanceType == InstanceType.REMOTE) {
-			provider = new RemoteProvider<>(type, managedClass.getImplementationURL());
-		} else if (instanceType == InstanceType.SERVICE) {
-			provider = new ServiceProvider<>(type);
+		if (instanceType.isPOJO()) {
+			provider = new ClassProvider<>(cdi, managedClass.getImplementationClass());
+			// at this point provider is a provisioning provider, that is, one that create new instances
+			// add it to provided classes cache before provider scope decoration
+			cdi.bindProvidedClass(provider, managedClass);
+		} else if (instanceType.isPROXY()) {
+			provider = new ClassProvider<>(cdi, managedClass.getImplementationClass());
+			// at this point provider is a provisioning provider, that is, one that create new instances
+			// add it to provided classes cache before provider scope decoration
+			cdi.bindProvidedClass(provider, managedClass);
+			provider = new ProxyProvider<>(managedClass, provider);
+		} else if (instanceType.isREMOTE()) {
+			provider = new RemoteProvider<>(managedClass.getInterfaceClass(), managedClass.getImplementationURL());
+		} else if (instanceType.isSERVICE()) {
+			provider = new ServiceProvider<>(cdi, managedClass.getInterfaceClass());
+			// at this point provider is a provisioning provider, that is, one that create new instances
+			// add it to provided classes cache before provider scope decoration
+			cdi.bindProvidedClass(provider, managedClass);
 		} else {
 			throw new IllegalStateException("No provider for instance type " + instanceType);
 		}
 
 		final InstanceScope instanceScope = managedClass.getInstanceScope();
-		if (instanceScope == InstanceScope.LOCAL) {
-
-		} else if (instanceScope == InstanceScope.APPLICATION) {
-			provider = new SingletonProvider<>(provider);
-		} else if (instanceScope == InstanceScope.THREAD) {
-
-		} else if (instanceScope == InstanceScope.SESSION) {
-
+		if (instanceScope.isLOCAL()) {
+			// local scope always creates a new instance
+		} else if (instanceScope.isAPPLICATION()) {
+			provider = new SingletonScopeProvider<>(provider);
+		} else if (instanceScope.isTHREAD()) {
+			provider = new ThreadScopeProvider<>(provider);
+		} else if (instanceScope.isSESSION()) {
+			IScope scope = cdi.getScope(SessionScoped.class);
+			if (scope != null) {
+				provider = scope.scope(provider);
+			}
 		} else {
 			throw new IllegalStateException("No provider for instance scope " + instanceScope);
 		}
@@ -79,7 +96,7 @@ public class ContainerService implements IClassPostLoadedProcessor {
 		}
 
 		@Override
-		public Provider<? extends T> provider() {
+		public Provider<T> provider() {
 			return provider;
 		}
 	}

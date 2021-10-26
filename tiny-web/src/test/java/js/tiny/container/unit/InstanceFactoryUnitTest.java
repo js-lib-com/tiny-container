@@ -16,6 +16,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import js.converter.Converter;
@@ -42,6 +43,7 @@ import js.util.Classes;
  * @author Iulian Rotaru
  */
 @SuppressWarnings("unused")
+@Ignore
 public class InstanceFactoryUnitTest {
 	@BeforeClass
 	public static void beforeClass() {
@@ -408,11 +410,6 @@ public class InstanceFactoryUnitTest {
 		@Override
 		public Constructor<? extends T> getConstructor() {
 			return (Constructor<? extends T>) constructor;
-		}
-
-		@Override
-		public Class<T>[] getInterfaceClasses() {
-			return interfaceClasses;
 		}
 
 		@Override

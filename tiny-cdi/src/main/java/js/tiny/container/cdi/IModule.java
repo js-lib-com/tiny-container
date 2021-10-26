@@ -2,12 +2,12 @@ package js.tiny.container.cdi;
 
 import java.util.List;
 
+import js.tiny.container.cdi.service.CDI;
+
 public interface IModule {
-
-	void setScopeProviders(IProviders scopeProviders);
 	
-	void configure();
+	IModule configure(CDI parentContainer);
 
-	List<IBinding<?>> getBindings();
+	List<IBinding<?>> bindings();
 
 }

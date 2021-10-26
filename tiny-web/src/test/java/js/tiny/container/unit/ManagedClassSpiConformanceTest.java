@@ -83,38 +83,6 @@ public class ManagedClassSpiConformanceTest {
 	}
 
 	@Test
-	public void getInterfceClasses_NoInterfaces() throws Exception {
-		String config = "<test class='js.tiny.container.unit.ManagedClassSpiConformanceTest$CarImpl' />";
-		Class<?>[] interfaceClasses = getManagedClass(config(config)).getInterfaceClasses();
-		assertNotNull(interfaceClasses);
-		assertEquals(1, interfaceClasses.length);
-		assertEquals(CarImpl.class, interfaceClasses[0]);
-	}
-
-	@Test
-	public void getInterfceClasses_SingleInterfaces() throws Exception {
-		String config = "<test interface='js.tiny.container.unit.ManagedClassSpiConformanceTest$Car' class='js.tiny.container.unit.ManagedClassSpiConformanceTest$CarImpl' />";
-		Class<?>[] interfaceClasses = getManagedClass(config(config)).getInterfaceClasses();
-		assertNotNull(interfaceClasses);
-		assertEquals(1, interfaceClasses.length);
-		assertEquals(Car.class, interfaceClasses[0]);
-	}
-
-	@Test
-	public void getInterfceClasses_MultipleInterfaces() throws Exception {
-		String config = "" + //
-				"<test class='js.tiny.container.unit.ManagedClassSpiConformanceTest$CarImpl'>" + //
-				"	<interface name='js.lang.Configurable' />" + //
-				"	<interface name='js.tiny.container.unit.ManagedClassSpiConformanceTest$Car' />" + //
-				"</test>";
-		Class<?>[] interfaceClasses = getManagedClass(config(config)).getInterfaceClasses();
-		assertNotNull(interfaceClasses);
-		assertEquals(2, interfaceClasses.length);
-		assertEquals(Configurable.class, interfaceClasses[0]);
-		assertEquals(Car.class, interfaceClasses[1]);
-	}
-
-	@Test
 	public void getInterfaceClass() throws Exception {
 		String config = "<test class='js.tiny.container.unit.ManagedClassSpiConformanceTest$CarImpl' />";
 		assertEquals(CarImpl.class, getManagedClass(config(config)).getInterfaceClass());

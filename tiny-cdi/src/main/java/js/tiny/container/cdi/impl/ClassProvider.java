@@ -9,15 +9,16 @@ import javax.inject.Provider;
 import js.lang.BugError;
 import js.log.Log;
 import js.log.LogFactory;
-import js.tiny.container.cdi.IInjector;
+import js.tiny.container.cdi.IProvisionInvocation;
+import js.tiny.container.cdi.service.CDI;
 
 public class ClassProvider<T> implements Provider<T> {
 	private static final Log log = LogFactory.getLog(ClassProvider.class);
 
-	private final IInjector injector;
+	private final CDI injector;
 	private final Class<? extends T> type;
 
-	public ClassProvider(IInjector injector, Class<? extends T> type) {
+	public ClassProvider(CDI injector, Class<? extends T> type) {
 		this.injector = injector;
 		this.type = type;
 	}
@@ -31,11 +32,14 @@ public class ClassProvider<T> implements Provider<T> {
 			Object[] parameters = new Object[constructor.getParameterCount()];
 			Class<?>[] parameterTypes = constructor.getParameterTypes();
 			for (int i = 0; i < parameters.length; ++i) {
+				// TODO: circular dependency
 				parameters[i] = injector.getInstance(parameterTypes[i]);
 			}
 
-			return constructor.newInstance(parameters);
-			
+			T instance = constructor.newInstance(parameters);
+			injector.fireEvent(IProvisionInvocation.event(this, instance));
+			return instance;
+
 		} catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
 			log.error(e);
 		}
@@ -44,7 +48,7 @@ public class ClassProvider<T> implements Provider<T> {
 
 	@Override
 	public String toString() {
-		return "ClassProvider:" + type.getCanonicalName();
+		return type.getCanonicalName() + ":CLASS";
 	}
 
 	private static <T> Constructor<T> getDeclaredConstructor(Class<T> type) {

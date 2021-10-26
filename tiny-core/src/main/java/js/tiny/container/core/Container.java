@@ -19,6 +19,7 @@ import javax.annotation.security.PermitAll;
 import javax.ejb.Asynchronous;
 import javax.ejb.Remote;
 import javax.inject.Inject;
+import javax.inject.Provider;
 import javax.interceptor.Interceptors;
 
 import org.omg.PortableInterceptor.Interceptor;
@@ -38,12 +39,15 @@ import js.lang.NoProviderException;
 import js.log.Log;
 import js.log.LogFactory;
 import js.tiny.container.cdi.ApplicationScopeFactory;
+import js.tiny.container.cdi.IBinding;
 import js.tiny.container.cdi.InstanceFactory;
+import js.tiny.container.cdi.Key;
 import js.tiny.container.cdi.LocalInstanceFactory;
 import js.tiny.container.cdi.RemoteInstanceFactory;
 import js.tiny.container.cdi.ScopeFactory;
 import js.tiny.container.cdi.ServiceInstanceFactory;
 import js.tiny.container.cdi.ThreadScopeFactory;
+import js.tiny.container.cdi.service.CDI;
 import js.tiny.container.service.ConfigurableInstanceProcessor;
 import js.tiny.container.service.FlowProcessorsSet;
 import js.tiny.container.service.InstanceFieldsInitializationProcessor;
@@ -245,7 +249,9 @@ import js.util.Params;
 public class Container implements IContainer, Configurable {
 	/** Class logger. */
 	private static final Log log = LogFactory.getLog(Container.class);
-	
+
+	protected final CDI cdi = CDI.create();
+
 	/**
 	 * Scope specific factories mapped to related {@link InstanceScope}. A scope factory takes care of managed instance life
 	 * span and reuse it if instance is retrieved in the same scope. It is part of <a href="#instance-retrieval">Instance
@@ -319,6 +325,18 @@ public class Container implements IContainer, Configurable {
 	public Container() {
 		log.trace("Container()");
 
+		cdi.bind(new IBinding<IContainer>() {
+			@Override
+			public Key<IContainer> key() {
+				return Key.get(IContainer.class);
+			}
+
+			@Override
+			public Provider<? extends IContainer> provider() {
+				return () -> Container.this;
+			}
+		});
+		
 		// register scope and instance factories
 		// first register external factories in order to avoid overriding built-in factories
 
@@ -455,9 +473,7 @@ public class Container implements IContainer, Configurable {
 			// this way, no mater which interface is used to retrieve the instance it uses in the end the same managed class
 			ManagedClass<?> managedClass = new ManagedClass<>(this, classDescriptor);
 			log.debug("Register managed class |%s|.", managedClass);
-			for (Class<?> interfaceClass : managedClass.getInterfaceClasses()) {
-				classesPool.put(interfaceClass, managedClass);
-			}
+			classesPool.put(managedClass.getInterfaceClass(), managedClass);
 
 			classPostLoadedProcessors.forEach(processor -> {
 				processor.onClassPostLoaded(managedClass);
@@ -503,10 +519,14 @@ public class Container implements IContainer, Configurable {
 		}
 
 		for (IManagedClass managedClass : sortedClasses) {
+			/*
 			ScopeFactory scopeFactory = scopeFactories.get(managedClass.getInstanceScope());
 			// managed class key cannot be null
 			InstanceKey instanceKey = new InstanceKey(managedClass.getKey().toString());
 			Object instance = scopeFactory.getInstance(instanceKey);
+			*/
+			
+			Object instance = cdi.getScopeInstance(managedClass.getInterfaceClass());
 			if (instance == null) {
 				log.debug("Cannot obtain instance for pre-destroy method for class |%s|.", managedClass);
 				continue;
@@ -652,11 +672,16 @@ public class Container implements IContainer, Configurable {
 		// managedClass.getInterfaceClass());
 		// }
 
-		ScopeFactory scopeFactory = scopeFactories.get(managedClass.getInstanceScope());
+		ScopeFactory scopeFactory = null;// scopeFactories.get(managedClass.getInstanceScope());
 		InstanceFactory instanceFactory = instanceFactories.get(managedClass.getInstanceType());
 
 		if (scopeFactory == null) {
-			return instanceFactory.newInstance(managedClass, argumentsProcessor.getConstructorArguments(managedClass));
+			// return instanceFactory.newInstance(managedClass, argumentsProcessor.getConstructorArguments(managedClass));
+			return cdi.getInstance(managedClass.getInterfaceClass(), (instanceManagedClass, instance) -> {
+				instancePostConstructionProcessors.forEach(processor -> {
+					processor.onInstancePostConstruction(instanceManagedClass, instance);
+				});
+			});
 		}
 
 		boolean postProcessingEnabled = false;
@@ -696,7 +721,7 @@ public class Container implements IContainer, Configurable {
 			});
 		}
 
-		return (T) instance;
+		return instance;
 	}
 
 	// ----------------------------------------------------

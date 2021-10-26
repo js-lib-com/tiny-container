@@ -102,6 +102,18 @@ public class InstanceScope implements Converter {
 		return value;
 	}
 
+	public boolean isAPPLICATION() {
+		return "APPLICATION".equals(value);
+	}
+
+	public boolean isTHREAD() {
+		return "THREAD".equals(value);
+	}
+
+	public boolean isSESSION() {
+		return "SESSION".equals(value);
+	}
+
 	public boolean isLOCAL() {
 		return "LOCAL".equals(value);
 	}

@@ -10,7 +10,7 @@ class Binding<T> implements IBinding<T> {
 	private Provider<? extends T> provider;
 
 	public Binding(Class<T> type, Provider<? extends T> provider) {
-		this.key = new Key<T>(type);
+		this.key = Key.get(type);
 		this.provider = provider;
 	}
 

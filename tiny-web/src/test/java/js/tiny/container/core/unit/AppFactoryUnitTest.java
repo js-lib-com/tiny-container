@@ -12,6 +12,7 @@ import java.net.URL;
 import java.util.Enumeration;
 
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import js.lang.BugError;
@@ -21,6 +22,7 @@ import js.tiny.container.servlet.AppContext;
 import js.tiny.container.spi.IFactory;
 import js.tiny.container.unit.TestContext;
 
+@Ignore
 public class AppFactoryUnitTest {
 	@BeforeClass
 	public static void beforeClass() {

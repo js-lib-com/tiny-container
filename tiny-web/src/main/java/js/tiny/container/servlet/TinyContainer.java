@@ -7,6 +7,7 @@ import java.util.Locale;
 import java.util.Properties;
 import java.util.ServiceLoader;
 
+import javax.inject.Provider;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
@@ -21,6 +22,9 @@ import js.lang.ConfigException;
 import js.log.Log;
 import js.log.LogContext;
 import js.log.LogFactory;
+import js.tiny.container.cdi.IBinding;
+import js.tiny.container.cdi.Key;
+import js.tiny.container.cdi.SessionScoped;
 import js.tiny.container.core.Container;
 import js.tiny.container.core.Factory;
 import js.tiny.container.core.InstanceKey;
@@ -96,7 +100,7 @@ import js.util.Types;
  * @author Iulian Rotaru
  * @version final
  */
-public class TinyContainer extends Container implements ServletContextListener, HttpSessionListener, ITinyContainer, AppContext {
+public class TinyContainer extends Container implements ServletContextListener, HttpSessionListener, ITinyContainer {
 	/** Server global state and applications logger initialization. */
 	private static final Server server = new Server();
 
@@ -188,7 +192,21 @@ public class TinyContainer extends Container implements ServletContextListener, 
 	public TinyContainer() {
 		super();
 		log.trace("TinyContainer()");
+
+		cdi.bind(new IBinding<ITinyContainer>() {
+			@Override
+			public Key<ITinyContainer> key() {
+				return Key.get(ITinyContainer.class);
+			}
+
+			@Override
+			public Provider<? extends ITinyContainer> provider() {
+				return () -> TinyContainer.this;
+			}
+		});
+
 		registerScopeFactory(new SessionScopeFactory(this));
+		cdi.bind(SessionScoped.class, new SessionScope());
 
 		for (SecurityContextProvider accessControl : ServiceLoader.load(SecurityContextProvider.class)) {
 			log.info("Found access control implementation |%s|.", accessControl.getClass());

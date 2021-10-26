@@ -38,7 +38,7 @@ public class EventStreamServlet extends AppServlet {
 	private static final Log log = LogFactory.getLog(EventStreamServlet.class);
 
 	/** Event stream manager reference. It is a managed instance with application scope. */
-	private EventStreamManagerSPI eventStreamManager;
+	private EventStreamManager eventStreamManager;
 
 	/** Default constructor. */
 	public EventStreamServlet() {

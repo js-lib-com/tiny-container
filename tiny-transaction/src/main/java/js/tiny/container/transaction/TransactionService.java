@@ -9,15 +9,16 @@ import js.log.Log;
 import js.log.LogFactory;
 import js.tiny.container.spi.IContainer;
 import js.tiny.container.spi.IInvocation;
-import js.tiny.container.spi.IMethodInvocationProcessor;
 import js.tiny.container.spi.IInvocationProcessorsChain;
 import js.tiny.container.spi.IManagedClass;
 import js.tiny.container.spi.IManagedMethod;
+import js.tiny.container.spi.IMethodInvocationProcessor;
 import js.tiny.container.spi.IServiceMeta;
 import js.tiny.container.spi.IServiceMetaScanner;
 import js.transaction.Immutable;
 import js.transaction.Mutable;
 import js.transaction.Transaction;
+import js.transaction.TransactionContext;
 import js.transaction.Transactional;
 
 final class TransactionService implements IMethodInvocationProcessor, IServiceMetaScanner {
@@ -81,7 +82,7 @@ final class TransactionService implements IMethodInvocationProcessor, IServiceMe
 			return chain.invokeNextProcessor(invocation);
 		}
 
-		ITransactionalResource transactionalResource = container.getInstance(ITransactionalResource.class);
+		ITransactionalResource transactionalResource = (ITransactionalResource) container.getInstance(TransactionContext.class);
 		if (isMutable(managedMethod)) {
 			return executeMutableTransaction(transactionalResource, chain, invocation);
 		}

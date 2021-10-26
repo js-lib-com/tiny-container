@@ -25,8 +25,8 @@ public interface IBindingBuilder<T> {
 
 	IBindingBuilder<T> provider(Provider<T> provider);
 
-	IBindingBuilder<T> on(URI hostURI);
+	IBindingBuilder<T> on(URI implementationURL);
 
-	IBindingBuilder<T> on(String hostURI);
+	IBindingBuilder<T> on(String implementationURL);
 
 }

@@ -24,8 +24,8 @@ import org.mockito.junit.MockitoJUnitRunner;
 import js.tiny.container.net.EventGuest;
 import js.tiny.container.net.EventStream;
 import js.tiny.container.net.EventStreamConfig;
+import js.tiny.container.net.EventStreamManager;
 import js.tiny.container.net.EventStreamManagerImpl;
-import js.tiny.container.net.EventStreamManagerSPI;
 import js.tiny.container.spi.IContainer;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -41,7 +41,7 @@ public class EventStreamManagerSPITest {
 	@Mock
 	private EventStreamConfig config;
 
-	private EventStreamManagerSPI manager;
+	private EventStreamManager manager;
 
 	@Before
 	public void beforeTest() {

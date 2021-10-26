@@ -4,47 +4,54 @@ import java.lang.annotation.Annotation;
 import java.net.URI;
 
 import javax.inject.Provider;
+import javax.inject.Qualifier;
 import javax.inject.Scope;
 
 import js.tiny.container.cdi.IBindingBuilder;
-import js.tiny.container.cdi.IProviderDecorator;
-import js.tiny.container.cdi.IProviders;
+import js.tiny.container.cdi.IScope;
 import js.tiny.container.cdi.Names;
+import js.tiny.container.cdi.service.CDI;
 
 class BindingBuilder<T> implements IBindingBuilder<T> {
-	private final IProviders providers;
+	private final CDI cdi;
 	private final Binding<T> binding;
 
-	public BindingBuilder(IProviders providers, Binding<T> binding) {
-		this.providers = providers;
+	public BindingBuilder(CDI cdi, Binding<T> binding) {
+		this.cdi = cdi;
 		this.binding = binding;
 	}
 
 	@Override
 	public IBindingBuilder<T> to(Class<? extends T> type) {
-		binding.setProvider(providers.getProvider(type));
+		binding.setProvider(new ClassProvider<>(cdi, type));
 		return this;
 	}
 
 	@Override
-	public IBindingBuilder<T> annotatedWith(Annotation annotation) {
-		return with(annotation);
+	public IBindingBuilder<T> annotatedWith(Annotation qualifier) {
+		return with(qualifier);
 	}
 
 	@Override
-	public IBindingBuilder<T> annotatedWith(Class<? extends Annotation> annotationType) {
-		return with(annotationType);
+	public IBindingBuilder<T> annotatedWith(Class<? extends Annotation> qualifierType) {
+		return with(qualifierType);
 	}
 
 	@Override
-	public IBindingBuilder<T> with(Annotation annotation) {
-		binding.key().setQualifier(annotation);
+	public IBindingBuilder<T> with(Annotation qualifier) {
+		if (!qualifier.annotationType().isAnnotationPresent(Qualifier.class)) {
+			throw new IllegalArgumentException("Not a qualifier annotation: " + qualifier);
+		}
+		binding.key().setQualifier(qualifier);
 		return this;
 	}
 
 	@Override
-	public IBindingBuilder<T> with(Class<? extends Annotation> annotationType) {
-		binding.key().setQualifier(annotationType);
+	public IBindingBuilder<T> with(Class<? extends Annotation> qualifierType) {
+		if (!qualifierType.isAnnotationPresent(Qualifier.class)) {
+			throw new IllegalArgumentException("Not a qualifier annotation: " + qualifierType);
+		}
+		binding.key().setQualifier(qualifierType);
 		return this;
 	}
 
@@ -53,20 +60,18 @@ class BindingBuilder<T> implements IBindingBuilder<T> {
 		return with(Names.named(name));
 	}
 
-	@SuppressWarnings("unchecked")
 	@Override
-	public IBindingBuilder<T> in(Class<? extends Annotation> scope) {
-		if (!scope.isAnnotationPresent(Scope.class)) {
-			throw new IllegalArgumentException("Not a scope annotation: " + scope);
+	public IBindingBuilder<T> in(Class<? extends Annotation> annotation) {
+		if (!annotation.isAnnotationPresent(Scope.class)) {
+			throw new IllegalArgumentException("Not a scope annotation: " + annotation);
+		}
+
+		IScope scope = cdi.getScope(annotation);
+		if (scope == null) {
+			throw new IllegalStateException("No scope for annotation " + annotation);
 		}
 		
-		@SuppressWarnings("rawtypes")
-		IProviderDecorator decorator = providers.getScopedProviderDecorator(scope);
-		if (decorator == null) {
-			throw new IllegalStateException("No provider for scope " + scope);
-		}
-		
-		binding.setProvider(decorator.decorate(binding.provider()));
+		binding.setProvider(scope.scope(binding.provider()));
 		return this;
 	}
 
@@ -82,13 +87,13 @@ class BindingBuilder<T> implements IBindingBuilder<T> {
 	}
 
 	@Override
-	public IBindingBuilder<T> on(URI hostURI) {
-		return on(hostURI.toString());
+	public IBindingBuilder<T> on(URI implementationURL) {
+		return on(implementationURL.toString());
 	}
 
 	@Override
-	public IBindingBuilder<T> on(String hostURI) {
-		binding.setProvider(providers.getProvider(binding.key().type(), hostURI));
+	public IBindingBuilder<T> on(String implementationURL) {
+		binding.setProvider(new RemoteProvider<>(binding.key().type(), implementationURL));
 		return this;
 	}
 }

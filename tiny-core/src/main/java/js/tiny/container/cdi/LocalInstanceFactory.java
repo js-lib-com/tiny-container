@@ -79,7 +79,7 @@ public class LocalInstanceFactory implements InstanceFactory {
 		// TODO: is quite possible to get rid of proxy from container core
 		if (managedClass.getInstanceType().equals(InstanceType.PROXY)) {
 			final ClassLoader classLoader = managedClass.getImplementationClass().getClassLoader();
-			final Class<?>[] interfaceClasses = managedClass.getInterfaceClasses();
+			final Class<?>[] interfaceClasses = new Class[] { managedClass.getInterfaceClass() };
 			final ManagedProxyHandler<T> handler = new ManagedProxyHandler<T>(managedClass, instance);
 			return (T) Proxy.newProxyInstance(classLoader, interfaceClasses, handler);
 		}

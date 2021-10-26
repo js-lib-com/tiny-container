@@ -57,8 +57,8 @@ public class ManagedMethod implements IManagedMethod {
 
 	/**
 	 * Join point processors attached to {@link #invoke(Object, Object...)} method. When this method is executed all processors
-	 * hold by this join point are executed followed by {@link #onMethodInvocation(IInvocationProcessorsChain, IInvocation)} that
-	 * does the actual method invocation.
+	 * hold by this join point are executed followed by {@link #onMethodInvocation(IInvocationProcessorsChain, IInvocation)}
+	 * that does the actual method invocation.
 	 */
 	private final FlowProcessorsSet<IMethodInvocationProcessor> invocationProcessors = new FlowProcessorsSet<>();
 
@@ -148,10 +148,10 @@ public class ManagedMethod implements IManagedMethod {
 	}
 
 	/**
-	 * Managed method implements {@link IMethodInvocationProcessor} interface so that it can be part of invocation processors chain,
-	 * created and executed by {@link #invoke(Object, Object...)}. This managed method also inherits default priority value -
-	 * see {@link #getPriority()}; its value guarantees that managed method is executed last, after all container services were
-	 * executed.
+	 * Managed method implements {@link IMethodInvocationProcessor} interface so that it can be part of invocation processors
+	 * chain, created and executed by {@link #invoke(Object, Object...)}. This managed method also inherits default priority
+	 * value - see {@link #getPriority()}; its value guarantees that managed method is executed last, after all container
+	 * services were executed.
 	 * 
 	 * This method gets invocation processors chain parameter, mandated by interface signature. Anyway, it is not unused; this
 	 * method does not call {@link IInvocationProcessorsChain#invokeNextProcessor(IInvocation)}, and as a consequence processing
@@ -175,14 +175,12 @@ public class ManagedMethod implements IManagedMethod {
 			} catch (NoSuchMethodException | SecurityException e) {
 			}
 			if (annotation == null) {
-				for (Class<?> interfaceClass : declaringClass.getInterfaceClasses()) {
-					try {
-						annotation = interfaceClass.getMethod(method.getName(), method.getParameterTypes()).getAnnotation(type);
-						if (annotation != null) {
-							return annotation;
-						}
-					} catch (NoSuchMethodException unused) {
+				try {
+					annotation = declaringClass.getInterfaceClass().getMethod(method.getName(), method.getParameterTypes()).getAnnotation(type);
+					if (annotation != null) {
+						return annotation;
 					}
+				} catch (NoSuchMethodException unused) {
 				}
 			}
 		}

@@ -20,6 +20,7 @@ import js.tiny.container.spi.InstanceScope;
  * 
  * @author Iulian Rotaru
  */
+@Deprecated
 final class SessionScopeFactory implements ScopeFactory {
 	/** Reference to parent container. */
 	private IContainer container;

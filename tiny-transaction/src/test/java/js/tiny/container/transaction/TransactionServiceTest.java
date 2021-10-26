@@ -27,6 +27,7 @@ import js.tiny.container.spi.IManagedClass;
 import js.tiny.container.spi.IManagedMethod;
 import js.tiny.container.spi.IServiceMeta;
 import js.transaction.Transaction;
+import js.transaction.TransactionContext;
 import js.transaction.Transactional;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -57,7 +58,7 @@ public class TransactionServiceTest {
 
 	@Before
 	public void beforeTest() {
-		when(container.getInstance(ITransactionalResource.class)).thenReturn(transactionalResource);
+		when(container.getInstance(TransactionContext.class)).thenReturn(transactionalResource);
 		when(transactionalResource.createTransaction(null)).thenReturn(transaction);
 		when(transactionalResource.createReadOnlyTransaction(null)).thenReturn(transaction);
 		when(transaction.close()).thenReturn(true);

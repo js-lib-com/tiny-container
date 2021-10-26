@@ -11,7 +11,7 @@ import java.security.Principal;
  * @author Iulian Rotaru
  * @version final
  */
-public interface EventStreamManagerSPI {
+public interface EventStreamManagerSPIEOL {
 
 	/**
 	 * Create a new event stream for given user principal and configure it from given configuration object. This method is

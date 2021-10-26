@@ -46,7 +46,7 @@ import js.tiny.container.http.form.UploadStream;
 import js.tiny.container.http.form.UploadedFile;
 import js.tiny.container.mvc.annotation.Controller;
 import js.tiny.container.servlet.App;
-import js.tiny.container.servlet.AppContext;
+import js.tiny.container.servlet.ITinyContainer;
 import js.tiny.container.servlet.RequestContext;
 import js.tiny.container.servlet.TinyContainer;
 import js.tiny.container.spi.IContainer;
@@ -378,7 +378,7 @@ public class ResourceServletIntegrationTest {
 	private static class MockApp extends App {
 		Object content;
 
-		public MockApp(AppContext context) {
+		public MockApp(ITinyContainer context) {
 			super(context);
 		}
 	}

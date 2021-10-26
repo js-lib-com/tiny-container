@@ -5,10 +5,8 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -305,10 +303,10 @@ public final class ManagedClass<T> implements IManagedClass<T> {
 	private final InstanceType instanceType;
 
 	/**
-	 * Managed class interfaces, usually one but multiple supported. If class descriptor has only <code>class</code> attribute
-	 * this field is initialized from {@link #implementationClass}.
+	 * Managed class interface. If class descriptor has only <code>class</code> attribute this field is initialized from
+	 * {@link #implementationClass}.
 	 */
-	private final Class<T>[] interfaceClasses;
+	private final Class<T> interfaceClass;
 
 	/**
 	 * Optional managed class implementation has value only if {@link InstanceType#requiresImplementation()} says so. It can be
@@ -355,7 +353,7 @@ public final class ManagedClass<T> implements IManagedClass<T> {
 		this.instanceScope = loadInstanceScope(descriptor);
 		this.instanceType = loadInstanceType(descriptor);
 		this.implementationClass = loadImplementationClass(descriptor);
-		this.interfaceClasses = loadInterfaceClasses(descriptor);
+		this.interfaceClass = loadInterfaceClass(descriptor);
 		this.implementationURL = loadImplementationURL(descriptor);
 
 		this.key = KEY_SEED.getAndIncrement();
@@ -447,16 +445,8 @@ public final class ManagedClass<T> implements IManagedClass<T> {
 	}
 
 	@Override
-	public Class<T>[] getInterfaceClasses() {
-		return interfaceClasses;
-	}
-
-	@Override
 	public Class<T> getInterfaceClass() {
-		if (interfaceClasses.length > 1) {
-			// throw new BugError("Attempt to treat multiple interfaces as a single one.");
-		}
-		return interfaceClasses[0];
+		return interfaceClass;
 	}
 
 	@Override
@@ -580,10 +570,10 @@ public final class ManagedClass<T> implements IManagedClass<T> {
 	}
 
 	/**
-	 * Load interface classes from class descriptor. Attempt to load interface classes from <code>interface</code> attribute or
-	 * child elements. If none found returns implementation class that should be already initialized.
+	 * Load interface class from class descriptor. Attempt to load interface class from <code>interface</code> attribute. If not
+	 * found returns implementation class that should be already initialized.
 	 * <p>
-	 * Perform sanity checks on loaded interface classes and throws configuration exception is:
+	 * Perform sanity checks on loaded interface class and throws configuration exception if:
 	 * <ul>
 	 * <li>instance type requires interface but none found,
 	 * <li><code>name</code> attribute is missing from child element,
@@ -598,56 +588,39 @@ public final class ManagedClass<T> implements IManagedClass<T> {
 	 * @throws ConfigException if sanity check fails.
 	 */
 	@SuppressWarnings("unchecked")
-	private Class<T>[] loadInterfaceClasses(Config descriptor) throws ConfigException {
-		List<String> interfaceNames = new ArrayList<>();
-
-		if (!descriptor.hasChildren()) {
-			if (!descriptor.hasAttribute("interface")) {
-				if (instanceType.requiresInterface()) {
-					throw new ConfigException("Managed type |%s| requires <interface> attribute. See class descriptor |%s|.", instanceType, descriptor);
-				}
-				// if interface is not required and is missing uses implementation class
-				return new Class[] { implementationClass };
+	private Class<T> loadInterfaceClass(Config descriptor) throws ConfigException {
+		if (!descriptor.hasAttribute("interface")) {
+			if (instanceType.requiresInterface()) {
+				throw new ConfigException("Managed type |%s| requires <interface> attribute. See class descriptor |%s|.", instanceType, descriptor);
 			}
-			interfaceNames.add(descriptor.getAttribute("interface"));
+			// if interface is not required and is missing uses implementation class
+			return (Class<T>) implementationClass;
+		}
 
-			if ("REMOTE".equals(descriptor.getAttribute("type"))) {
-				String url = descriptor.getAttribute("url");
-				if (url == null || url.isEmpty()) {
-					throw new ConfigException("Managed type REMOTE requires <url> attribute. See class descriptor |%s|.", descriptor);
-				}
-				if (url.startsWith("${")) {
-					throw new ConfigException("Remote implementation <url> property not resolved. See class descriptor |%s|.", descriptor);
-				}
+		if ("REMOTE".equals(descriptor.getAttribute("type"))) {
+			String url = descriptor.getAttribute("url");
+			if (url == null || url.isEmpty()) {
+				throw new ConfigException("Managed type REMOTE requires <url> attribute. See class descriptor |%s|.", descriptor);
 			}
-		} else {
-			for (int i = 0; i < descriptor.getChildrenCount(); ++i) {
-				String interfaceName = descriptor.getChild(i).getAttribute("name");
-				if (interfaceName == null) {
-					throw new ConfigException("Missing <name> attribute from interface declaration. See class descriptor |%s|.", descriptor);
-				}
-				interfaceNames.add(interfaceName);
+			if (url.startsWith("${")) {
+				throw new ConfigException("Remote implementation <url> property not resolved. See class descriptor |%s|.", descriptor);
 			}
 		}
 
-		Class<T>[] interfaceClasses = new Class[interfaceNames.size()];
-		for (int i = 0; i < interfaceNames.size(); ++i) {
-			final String interfaceName = interfaceNames.get(i);
-			final Class<T> interfaceClass = Classes.forOptionalName(interfaceName);
+		String interfaceName = descriptor.getAttribute("interface");
+		final Class<T> interfaceClass = Classes.forOptionalName(interfaceName);
 
-			if (interfaceClass == null) {
-				throw new ConfigException("Managed class interface |%s| not found.", interfaceName);
-			}
-			if (instanceType.requiresInterface() && !interfaceClass.isInterface()) {
-				throw new ConfigException("Managed type |%s| requires interface to make Java Proxy happy but got |%s|.", instanceType, interfaceClass);
-			}
-			if (implementationClass != null && !Types.isKindOf(implementationClass, interfaceClass)) {
-				throw new ConfigException("Implementation |%s| is not a kind of interface |%s|.", implementationClass, interfaceClass);
-			}
-
-			interfaceClasses[i] = interfaceClass;
+		if (interfaceClass == null) {
+			throw new ConfigException("Managed class interface |%s| not found.", interfaceName);
 		}
-		return interfaceClasses;
+		if (instanceType.requiresInterface() && !interfaceClass.isInterface()) {
+			throw new ConfigException("Managed type |%s| requires interface to make Java Proxy happy but got |%s|.", instanceType, interfaceClass);
+		}
+		if (implementationClass != null && !Types.isKindOf(implementationClass, interfaceClass)) {
+			throw new ConfigException("Implementation |%s| is not a kind of interface |%s|.", implementationClass, interfaceClass);
+		}
+
+		return interfaceClass;
 	}
 
 	/**
@@ -826,7 +799,7 @@ public final class ManagedClass<T> implements IManagedClass<T> {
 			builder.append(implementationClass.getName());
 			builder.append(':');
 		}
-		for (Class<?> interfaceClass : interfaceClasses) {
+		if (interfaceClass != null) {
 			builder.append(interfaceClass.getName());
 			builder.append(':');
 		}

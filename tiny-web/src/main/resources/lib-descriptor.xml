@@ -10,10 +10,7 @@
 		<!--<views interface="js.tiny.container.mvc.ViewManager" class="js.tiny.container.mvc.ViewManagerImpl" />-->
 		<!--<captcha class="js.tiny.container.http.captcha.Captcha" />-->
 
-		<event-stream-manager class="js.tiny.container.net.EventStreamManagerImpl">
-			<interface name="js.tiny.container.net.EventStreamManager" />
-			<interface name="js.tiny.container.net.EventStreamManagerSPI" />
-		</event-stream-manager>
+		<event-stream-manager interface="js.tiny.container.net.EventStreamManager" class="js.tiny.container.net.EventStreamManagerImpl" />
 		<event-stream class="js.tiny.container.net.EventStream" scope="LOCAL" />
 
 		<json interface="js.json.Json" type="SERVICE" />

@@ -16,9 +16,9 @@ import js.util.Types;
 /**
  * Base class for all processors dealing with dependencies. Supplies utility method for dependency instance retrieval with guard
  * against circular dependencies. Usually {@link #getDependencyValue(IManagedClass, Class)} expect as dependency type a managed
- * class and just delegate container for instance retrieval, see {@link IFactory#getOptionalInstance(Class, Object...)}.
- * Anyway, if dependency type is not a managed class tries to instantiate it with standard {@link Class#newInstance()}; of
- * course type should be concrete class and have default constructor. Otherwise throws bug error.
+ * class and just delegate container for instance retrieval, see {@link IFactory#getOptionalInstance(Class, Object...)}. Anyway,
+ * if dependency type is not a managed class tries to instantiate it with standard {@link Class#newInstance()}; of course type
+ * should be concrete class and have default constructor. Otherwise throws bug error.
  * <p>
  * Depending on host and dependency managed classes scope is possible that dependency value to be replaced by a scope proxy, see
  * {@link ScopeProxyHandler}. This is to adapt dependency with shorted life span into host with larger life span; otherwise
@@ -97,7 +97,7 @@ public final class DependencyLoader {
 			if (isProxyRequired(hostManagedClass, dependencyManagedClass)) {
 				// if scope proxy is required returns a Java Proxy handled by ScopeProxyHandler
 				ScopeProxyHandler<?> handler = new ScopeProxyHandler<>(container, type);
-				return Proxy.newProxyInstance(dependencyManagedClass.getImplementationClass().getClassLoader(), dependencyManagedClass.getInterfaceClasses(), handler);
+				return Proxy.newProxyInstance(dependencyManagedClass.getImplementationClass().getClassLoader(), new Class[] { dependencyManagedClass.getInterfaceClass() }, handler);
 			}
 
 			Object value = container.getOptionalInstance((Class<? super Object>) type);

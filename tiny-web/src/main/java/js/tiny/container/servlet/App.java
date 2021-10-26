@@ -27,7 +27,7 @@ public class App implements ManagedLifeCycle {
 	 * 
 	 * @param context application context.
 	 */
-	public App(AppContext context) {
+	public App(ITinyContainer context) {
 		log.trace("App(AppContext)");
 		this.context = context;
 	}

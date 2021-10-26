@@ -54,7 +54,7 @@ import js.tiny.container.spi.IContainer;
  * @author Iulian Rotaru
  * @version final
  */
-public class EventStreamManagerImpl implements EventStreamManager, ManagedPreDestroy, EventStreamManagerSPI {
+public class EventStreamManagerImpl implements EventStreamManager, ManagedPreDestroy {
 	private static final Log log = LogFactory.getLog(EventStreamManagerImpl.class);
 
 	/** Parent container back reference. */

@@ -3,7 +3,7 @@ package js.tiny.container.servlet;
 import js.converter.ConverterException;
 import js.tiny.container.spi.IContainer;
 
-public interface ITinyContainer extends IContainer, SecurityContext {
+public interface ITinyContainer extends IContainer, SecurityContext, AppContext {
 
 	/**
 	 * Get basic authentication realm. If realm is not defined into application descriptor uses context name.

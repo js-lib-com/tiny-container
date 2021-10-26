@@ -1,6 +1,5 @@
 package js.tiny.container.cdi;
 
-import js.lang.BugError;
 import js.lang.NoProviderException;
 import js.tiny.container.spi.IManagedClass;
 import js.tiny.container.spi.InstanceType;
@@ -35,19 +34,11 @@ public class ServiceInstanceFactory implements InstanceFactory {
 	 * @throws IllegalArgumentException if <code>args</code> argument is not empty.
 	 * @throws NoProviderException if no service provider found on run-time for requested interface.
 	 */
-	@SuppressWarnings("unchecked")
 	@Override
 	public <I> I newInstance(IManagedClass<I> managedClass, Object... args) {
 		if (args.length > 0) {
 			throw new IllegalArgumentException("Service instances factory does not support arguments.");
 		}
-		Class<?>[] interfaceClasses = managedClass.getInterfaceClasses();
-		if (interfaceClasses == null) {
-			throw new BugError("Invalid managed class. Null interface classes.");
-		}
-		if (interfaceClasses.length != 1) {
-			throw new BugError("Invalid managed class. It should have exactly one interface class.");
-		}
-		return (I) Classes.loadService(interfaceClasses[0]);
+		return (I) Classes.loadService(managedClass.getInterfaceClass());
 	}
 }

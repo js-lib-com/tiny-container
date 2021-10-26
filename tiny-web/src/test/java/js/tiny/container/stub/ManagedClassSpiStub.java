@@ -30,11 +30,6 @@ public class ManagedClassSpiStub<T> implements IManagedClass<T> {
 	}
 
 	@Override
-	public Class<T>[] getInterfaceClasses() {
-		throw new UnsupportedOperationException("getInterfaceClasses()");
-	}
-
-	@Override
 	public Class<T> getInterfaceClass() {
 		throw new UnsupportedOperationException("getInterfaceClass()");
 	}

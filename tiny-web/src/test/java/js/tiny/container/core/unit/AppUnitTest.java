@@ -12,8 +12,9 @@ import js.lang.ConfigException;
 import js.lang.Configurable;
 import js.tiny.container.servlet.App;
 import js.tiny.container.servlet.AppContext;
+import js.tiny.container.servlet.ITinyContainer;
 import js.tiny.container.servlet.TinyContainer;
-import js.tiny.container.stub.AppContextStub;
+import js.tiny.container.stub.TinyContainerStub;
 
 @SuppressWarnings("hiding")
 public class AppUnitTest {
@@ -33,7 +34,7 @@ public class AppUnitTest {
 		class MockApp extends App {
 			private int onCreateProbe;
 
-			public MockApp(AppContext context) {
+			public MockApp(ITinyContainer context) {
 				super(context);
 			}
 
@@ -54,7 +55,7 @@ public class AppUnitTest {
 		class MockApp extends App {
 			private int onDestroyProbe;
 
-			public MockApp(AppContext context) {
+			public MockApp(ITinyContainer context) {
 				super(context);
 			}
 
@@ -142,7 +143,7 @@ public class AppUnitTest {
 	// --------------------------------------------------------------------------------------------
 	// FIXTURE
 
-	private static class MockAppContext extends AppContextStub {
+	private static class MockAppContext extends TinyContainerStub {
 		public MockAppContext() {
 		}
 
@@ -157,7 +158,7 @@ public class AppUnitTest {
 		private int preDestroyProbe;
 		private int configProbe;
 
-		public MockApp(AppContext context) {
+		public MockApp(ITinyContainer context) {
 			super(context);
 		}
 

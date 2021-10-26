@@ -42,17 +42,11 @@ public class LoggerInstanceProcessor implements IInstancePostConstructionProcess
 			return;
 		}
 
-		Class<?>[] interfaceClasses = managedClass.getInterfaceClasses();
-		StringBuilder interfaceNames = new StringBuilder(interfaceClasses[0].getName());
-		for (int i = 1; i < interfaceClasses.length; ++i) {
-			interfaceNames.append(", ");
-			interfaceNames.append(interfaceClasses[i].getName());
-		}
-
 		log.debug("Create managed container proxy:\r\n" + //
+				"\t- interface: %s\r\n" + //
 				"\t- implementation: %s\r\n" + //
-				"\t- interface(s): %s\r\n" + //
 				"\t- scope: %s\r\n" + //
-				"\t- type: %s", managedClass.getImplementationClass(), interfaceNames.toString(), managedClass.getInstanceScope(), managedClass.getInstanceType());
+				"\t- type: %s", //
+				managedClass.getInterfaceClass(), managedClass.getImplementationClass(), managedClass.getInstanceScope(), managedClass.getInstanceType());
 	}
 }

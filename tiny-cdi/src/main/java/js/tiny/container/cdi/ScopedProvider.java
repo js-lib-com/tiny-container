@@ -1,9 +1,9 @@
-package js.tiny.container.cdi.impl;
+package js.tiny.container.cdi;
 
 import javax.inject.Provider;
 
 public abstract class ScopedProvider<T> implements Provider<T> {
-	private final Provider<T> provider;
+	protected final Provider<T> provider;
 
 	protected ScopedProvider(Provider<T> provider) {
 		this.provider = provider;
@@ -13,4 +13,6 @@ public abstract class ScopedProvider<T> implements Provider<T> {
 	public T get() {
 		return provider.get();
 	}
+
+	public abstract T getScopeInstance();
 }

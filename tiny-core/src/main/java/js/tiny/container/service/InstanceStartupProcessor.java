@@ -60,10 +60,8 @@ public class InstanceStartupProcessor implements IContainerStartProcessor {
 	}
 
 	private static boolean isStartup(IManagedClass<?> managedClass) {
-		for (Class<?> interfaceClass : managedClass.getInterfaceClasses()) {
-			if (Types.isKindOf(interfaceClass, ManagedLifeCycle.class)) {
-				return true;
-			}
+		if (Types.isKindOf(managedClass.getInterfaceClass(), ManagedLifeCycle.class)) {
+			return true;
 		}
 		if (!managedClass.getInstanceType().requiresImplementation()) {
 			return false;

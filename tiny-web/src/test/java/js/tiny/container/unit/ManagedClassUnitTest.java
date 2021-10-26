@@ -51,7 +51,7 @@ public class ManagedClassUnitTest {
 		String config = "<test class='js.tiny.container.unit.ManagedClassUnitTest$PojoImpl' interface='js.tiny.container.unit.ManagedClassUnitTest$Pojo' />";
 		IManagedClass<?> managedClass = getManagedClass(config(config));
 
-		assertEquals(Pojo.class, managedClass.getInterfaceClasses()[0]);
+		assertEquals(Pojo.class, managedClass.getInterfaceClass());
 		assertEquals(PojoImpl.class, managedClass.getImplementationClass());
 		assertNotNull(managedClass.getContainer());
 		assertNull(managedClass.getConfig());
@@ -73,7 +73,7 @@ public class ManagedClassUnitTest {
 		String config = "<test class='js.tiny.container.unit.ManagedClassUnitTest$PojoImpl' interface='js.tiny.container.unit.ManagedClassUnitTest$Pojo' type='PROXY' />";
 		IManagedClass<?> managedClass = getManagedClass(config(config));
 
-		assertEquals(Pojo.class, managedClass.getInterfaceClasses()[0]);
+		assertEquals(Pojo.class, managedClass.getInterfaceClass());
 		assertEquals(PojoImpl.class, managedClass.getImplementationClass());
 		assertNotNull(managedClass.getContainer());
 		assertNull(managedClass.getConfig());
@@ -226,15 +226,6 @@ public class ManagedClassUnitTest {
 	@Test(expected = ConfigException.class)
 	public void missingClassAttribute() throws Exception {
 		String config = "<test implementation='js.tiny.container.unit.ManagedClassUnitTest$PojoImpl' interface='js.tiny.container.unit.ManagedClassUnitTest$Pojo' />";
-		getManagedClass(config(config));
-	}
-
-	@Test(expected = ConfigException.class)
-	public void missingInterfaceName() throws Exception {
-		String config = "" + //
-				"<test class='js.tiny.container.unit.ManagedClassSpiConformanceTest$CarImpl'>" + //
-				"	<interface names='js.lang.Configurable' />" + //
-				"</test>";
 		getManagedClass(config(config));
 	}
 

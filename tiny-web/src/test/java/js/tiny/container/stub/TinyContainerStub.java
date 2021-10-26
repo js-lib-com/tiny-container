@@ -1,6 +1,8 @@
 package js.tiny.container.stub;
 
+import java.io.File;
 import java.security.Principal;
+import java.util.Locale;
 
 import js.tiny.container.servlet.ITinyContainer;
 import js.tiny.container.spi.IManagedClass;
@@ -90,5 +92,29 @@ public class TinyContainerStub implements ITinyContainer {
 	@Override
 	public String getLoginPage() {
 		throw new UnsupportedOperationException("getLoginPage()");
+	}
+
+	@Override
+	public String getAppName() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public File getAppFile(String path) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public Locale getRequestLocale() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public String getRemoteAddr() {
+		// TODO Auto-generated method stub
+		return null;
 	}
 }

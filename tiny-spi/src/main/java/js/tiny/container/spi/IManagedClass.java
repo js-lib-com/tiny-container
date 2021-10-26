@@ -4,7 +4,6 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
 import java.util.Set;
 
-import js.lang.BugError;
 import js.lang.Config;
 
 /**
@@ -17,7 +16,7 @@ import js.lang.Config;
  * @author Iulian Rotaru
  */
 public interface IManagedClass<T> {
-	
+
 	/**
 	 * Get parent container that created this managed class.
 	 * 
@@ -54,26 +53,12 @@ public interface IManagedClass<T> {
 	Config getConfig();
 
 	/**
-	 * Get managed interface classes. Note that returned classes are not mandatory Java interfaces. Here term
-	 * <code>interface</code> denotes a class that identify managed class and usually is Java interface. Anyway, it can be as
-	 * well an abstract or a concrete base class. The point is, managed class implementation must implement or extend this
+	 * Get managed interface class. Note that returned class is not mandatory Java interface. Here term <code>interface</code>
+	 * denotes a class that identify managed class and indeed usually is Java interface. Anyway, it can be as well an abstract
+	 * or a concrete base class. The point is, managed class implementation must implement or extend this
 	 * <code>interface</code>.
 	 * 
-	 * @return managed interface classes.
-	 */
-	Class<T>[] getInterfaceClasses();
-
-	/**
-	 * Convenient way to retrieve managed interface class when there is a single one. Useable when managed instance is
-	 * guaranteed to have a single interface, e.g. a managed class of {@link InstanceType#REMOTE} type has always a single
-	 * interface.
-	 * <p>
-	 * As with {@link #getInterfaceClasses()} returned class is not mandatory to be an actual Java interface. It can be for
-	 * example an abstract or even concrete base class. {@link IManagedClass} uses <code>interface</code> term in a broader
-	 * sense: it is the class that identify the managed class.
-	 * 
 	 * @return managed class interface.
-	 * @throws BugError if attempt to use this getter on a managed class with multiple interfaces.
 	 */
 	Class<T> getInterfaceClass();
 
@@ -145,5 +130,5 @@ public interface IManagedClass<T> {
 	void setAttribute(Object context, String name, Object value);
 
 	<A> A getAttribute(Object context, String name, Class<A> type);
-	
+
 }

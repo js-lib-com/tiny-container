@@ -460,8 +460,8 @@ public class InstanceProcessorUnitTest {
 		}
 
 		@Override
-		public Class<T>[] getInterfaceClasses() {
-			return interfaceClasses;
+		public Class<T> getInterfaceClass() {
+			return interfaceClasses[0];
 		}
 
 		@Override
