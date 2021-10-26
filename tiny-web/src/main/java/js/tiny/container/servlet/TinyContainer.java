@@ -27,7 +27,6 @@ import js.tiny.container.cdi.Key;
 import js.tiny.container.cdi.SessionScoped;
 import js.tiny.container.core.Container;
 import js.tiny.container.core.Factory;
-import js.tiny.container.core.InstanceKey;
 import js.tiny.container.spi.IContainer;
 import js.tiny.container.spi.IManagedClass;
 import js.tiny.container.spi.InstanceScope;
@@ -204,8 +203,6 @@ public class TinyContainer extends Container implements ServletContextListener, 
 				return () -> TinyContainer.this;
 			}
 		});
-
-		registerScopeFactory(new SessionScopeFactory(this));
 		cdi.bind(SessionScoped.class, new SessionScope());
 
 		for (SecurityContextProvider accessControl : ServiceLoader.load(SecurityContextProvider.class)) {
@@ -225,6 +222,8 @@ public class TinyContainer extends Container implements ServletContextListener, 
 	public void config(Config config) throws ConfigException {
 		super.config(config);
 
+		// TODO: decide if keep App class and if yes, redesign instance initialization using CDI support
+		
 		// special handling for this container instance accessed via application context
 		// need to ensure this container instance is reused and not to create a new one
 		IManagedClass<?> appContext = classesPool.get(AppContext.class);
@@ -233,7 +232,7 @@ public class TinyContainer extends Container implements ServletContextListener, 
 		if (appContext != null && Types.isKindOf(appContext.getImplementationClass(), IContainer.class)) {
 			log.debug("Persist container instance on application scope.");
 			// managed class key cannot be null
-			scopeFactories.get(InstanceScope.APPLICATION).persistInstance(new InstanceKey(appContext.getKey().toString()), this);
+//			scopeFactories.get(InstanceScope.APPLICATION).persistInstance(new InstanceKey(appContext.getKey().toString()), this);
 		}
 
 		// by convention configuration object name is the web application name

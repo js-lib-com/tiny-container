@@ -32,8 +32,6 @@ import js.lang.Configurable;
 import js.lang.ManagedLifeCycle;
 import js.log.Log;
 import js.log.LogFactory;
-import js.tiny.container.cdi.InstanceFactory;
-import js.tiny.container.cdi.ScopeFactory;
 import js.tiny.container.spi.IContainer;
 import js.tiny.container.spi.IContainerService;
 import js.tiny.container.spi.IFactory;
@@ -68,8 +66,8 @@ import js.util.Types;
  * element,
  * <li>{@link #implementationClass} used to create instances when managed class is local - initialized from <code>class</code>
  * attribute,
- * <li>{@link #instanceType} selector for {@link InstanceFactory} strategy - initialized from <code>type</code> attribute,
- * <li>{@link #instanceScope} selector for {@link ScopeFactory} strategy - initialized from <code>scope</code> attribute.
+ * <li>{@link #instanceType} selector for CDI provisioning providers strategy - initialized from <code>type</code> attribute,
+ * <li>{@link #instanceScope} selector for CDI scoped providers strategy - initialized from <code>scope</code> attribute.
  * </ul>
  * <p>
  * Container uses interface classes to identify managed classes in classes pool. For this reason is not possible to use the same
@@ -299,7 +297,7 @@ public final class ManagedClass<T> implements IManagedClass<T> {
 	/** Managed instance scope used for life span management. */
 	private final InstanceScope instanceScope;
 
-	/** Managed instance type used to select {@link InstanceFactory}. */
+	/** Managed instance type used to select CDI instance provider. */
 	private final InstanceType instanceType;
 
 	/**
@@ -324,8 +322,8 @@ public final class ManagedClass<T> implements IManagedClass<T> {
 	private final String implementationURL;
 
 	/**
-	 * Managed methods pool for managed classes of type {@link InstanceType#PROXY}. Used by {@link ManagedProxyHandler} to find
-	 * out managed method bound to interface method.
+	 * Managed methods pool for managed classes of type {@link InstanceType#PROXY}. Used to find out managed method bound to
+	 * interface method.
 	 */
 	private final Map<String, IManagedMethod> methodsPool = new HashMap<>();
 
@@ -350,8 +348,8 @@ public final class ManagedClass<T> implements IManagedClass<T> {
 		this.config = descriptor.getRoot().getChild(descriptor.getName());
 
 		// loading order matters; do not change it
-		this.instanceScope = loadInstanceScope(descriptor);
-		this.instanceType = loadInstanceType(descriptor);
+		this.instanceScope = descriptor.getAttribute("scope", InstanceScope.class, InstanceScope.APPLICATION);
+		this.instanceType = descriptor.getAttribute("type", InstanceType.class, InstanceType.POJO);
 		this.implementationClass = loadImplementationClass(descriptor);
 		this.interfaceClass = loadInterfaceClass(descriptor);
 		this.implementationURL = loadImplementationURL(descriptor);
@@ -621,38 +619,6 @@ public final class ManagedClass<T> implements IManagedClass<T> {
 		}
 
 		return interfaceClass;
-	}
-
-	/**
-	 * Return instance scope loaded from class descriptor, <code>scope</code> attribute. If scope is not defined use
-	 * {@link InstanceScope#APPLICATION} as default value.
-	 * 
-	 * @param descriptor managed class descriptor.
-	 * @return loaded instance scope.
-	 * @throws ConfigException if there is no {@link ScopeFactory} registered for loaded instance scope.
-	 */
-	private InstanceScope loadInstanceScope(Config descriptor) throws ConfigException {
-		InstanceScope instanceScope = descriptor.getAttribute("scope", InstanceScope.class, InstanceScope.APPLICATION);
-		if (!container.hasScopeFactory(instanceScope)) {
-			throw new ConfigException("Not registered managed instance scope value |%s|. See class descriptor |%s|.", instanceScope, descriptor);
-		}
-		return instanceScope;
-	}
-
-	/**
-	 * Return instance type loaded from class descriptor, <code>type</code> attribute. If type is not defined uses
-	 * {@link InstanceType#POJO} as default value.
-	 * 
-	 * @param descriptor managed class descriptor.
-	 * @return loaded instance type.
-	 * @throws ConfigException if there is no {@link InstanceFactory} registered for loaded instance type.
-	 */
-	private InstanceType loadInstanceType(Config descriptor) throws ConfigException {
-		InstanceType instanceType = descriptor.getAttribute("type", InstanceType.class, InstanceType.POJO);
-		if (!container.hasInstanceFactory(instanceType)) {
-			throw new ConfigException("Not registered managed instance type value |%s|. See class descriptor |%s|.", instanceType, descriptor);
-		}
-		return instanceType;
 	}
 
 	/**

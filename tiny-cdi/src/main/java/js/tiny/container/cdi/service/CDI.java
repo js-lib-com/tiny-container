@@ -155,4 +155,9 @@ public class CDI implements IInjector {
 	public <T> T getInstance(Class<T> type, String name) {
 		return getInstance(type, Names.named(name));
 	}
+
+	public void clear() {
+		// TODO Auto-generated method stub
+		
+	}
 }

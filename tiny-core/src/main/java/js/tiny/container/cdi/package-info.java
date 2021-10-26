@@ -1,1 +1,0 @@
-package js.tiny.container.cdi;

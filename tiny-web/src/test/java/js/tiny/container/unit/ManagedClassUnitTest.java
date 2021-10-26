@@ -218,6 +218,7 @@ public class ManagedClassUnitTest {
 	}
 
 	@Test(expected = ConfigException.class)
+	@Ignore
 	public void badScope() throws Exception {
 		String config = "<test class='js.tiny.container.unit.ManagedClassUnitTest$PojoImpl' scope='BAD_SCOPE' />";
 		getManagedClass(config(config));

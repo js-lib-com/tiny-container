@@ -1,4 +1,4 @@
-package js.tiny.container.cdi;
+package js.tiny.container.cdi.service;
 
 import java.lang.reflect.Proxy;
 import java.util.Stack;

@@ -4,7 +4,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
 import js.lang.BugError;
-import js.tiny.container.cdi.ScopeFactory;
 import js.tiny.container.core.InstanceKey;
 import js.tiny.container.spi.IContainer;
 import js.tiny.container.spi.InstanceScope;
@@ -21,7 +20,7 @@ import js.tiny.container.spi.InstanceScope;
  * @author Iulian Rotaru
  */
 @Deprecated
-final class SessionScopeFactory implements ScopeFactory {
+final class SessionScopeFactory {
 	/** Reference to parent container. */
 	private IContainer container;
 
@@ -34,7 +33,6 @@ final class SessionScopeFactory implements ScopeFactory {
 		this.container = container;
 	}
 
-	@Override
 	public InstanceScope getInstanceScope() {
 		return InstanceScope.SESSION;
 	}
@@ -53,7 +51,6 @@ final class SessionScopeFactory implements ScopeFactory {
 	 * @return managed instance or null.
 	 * @throws BugError if attempt to use this method outside a HTTP request.
 	 */
-	@Override
 	public Object getInstance(InstanceKey instanceKey) {
 		// at this point managed instance key is guaranteed to be non null
 
@@ -80,7 +77,6 @@ final class SessionScopeFactory implements ScopeFactory {
 	 * @param instance managed instance.
 	 * @throws BugError if attempt to use this method outside a HTTP request.
 	 */
-	@Override
 	public void persistInstance(InstanceKey instanceKey, Object instance) {
 		// at this point key and instance arguments are guaranteed to be non null
 
@@ -108,7 +104,6 @@ final class SessionScopeFactory implements ScopeFactory {
 	}
 
 	/** This method does nothing and leaves session instances release on servlet container. */
-	@Override
 	public void clear() {
 	}
 }

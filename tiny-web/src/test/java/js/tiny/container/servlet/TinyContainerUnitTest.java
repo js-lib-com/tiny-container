@@ -31,14 +31,8 @@ import js.lang.BugError;
 import js.lang.Config;
 import js.lang.ConfigBuilder;
 import js.lang.ConfigException;
-import js.tiny.container.cdi.ScopeFactory;
 import js.tiny.container.core.Container;
-import js.tiny.container.servlet.ITinyContainer;
-import js.tiny.container.servlet.NonceUser;
-import js.tiny.container.servlet.RequestContext;
-import js.tiny.container.servlet.TinyContainer;
 import js.tiny.container.spi.IManagedClass;
-import js.tiny.container.spi.InstanceScope;
 import js.tiny.container.unit.HttpServletRequestStub;
 import js.tiny.container.unit.HttpServletResponseStub;
 import js.tiny.container.unit.HttpSessionStub;
@@ -62,14 +56,6 @@ public class TinyContainerUnitTest {
 	@Test
 	public void constructor() {
 		TinyContainer container = new TinyContainer();
-
-		Map<InstanceScope, ScopeFactory> scopeFactories = Classes.getFieldValue(container, Container.class, "scopeFactories");
-		assertNotNull(scopeFactories);
-		assertEquals(4, scopeFactories.size());
-		assertClass("ApplicationScopeFactory", scopeFactories.get(InstanceScope.APPLICATION));
-		assertClass("ThreadScopeFactory", scopeFactories.get(InstanceScope.THREAD));
-		assertClass("SessionScopeFactory", scopeFactories.get(InstanceScope.SESSION));
-		assertNull(scopeFactories.get(InstanceScope.LOCAL));
 
 		Map<Class<?>, IManagedClass> classesPool = Classes.getFieldValue(container, Container.class, "classesPool");
 		assertNotNull(classesPool);

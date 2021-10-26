@@ -6,7 +6,7 @@ import java.lang.reflect.Method;
 
 import js.lang.IllegalArgumentException;
 import js.lang.VarArgs;
-import js.tiny.container.cdi.DependencyLoader;
+import js.tiny.container.cdi.service.DependencyLoader;
 import js.tiny.container.spi.IManagedClass;
 import js.tiny.container.spi.IManagedMethod;
 import js.tiny.container.spi.InstanceType;

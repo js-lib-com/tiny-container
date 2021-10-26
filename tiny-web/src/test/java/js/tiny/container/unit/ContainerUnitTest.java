@@ -8,14 +8,11 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
 import java.io.File;
-import java.io.IOException;
 import java.lang.reflect.Proxy;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Enumeration;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -36,8 +33,6 @@ import js.lang.ConfigBuilder;
 import js.lang.ConfigException;
 import js.lang.InstanceInvocationHandler;
 import js.lang.ManagedLifeCycle;
-import js.tiny.container.cdi.InstanceFactory;
-import js.tiny.container.cdi.ScopeFactory;
 import js.tiny.container.core.Container;
 import js.tiny.container.core.InstanceKey;
 import js.tiny.container.core.ManagedClass;
@@ -70,83 +65,9 @@ public class ContainerUnitTest {
 	@Test
 	public void constructor() {
 		Container container = new ContainerStub();
-
-		Map<InstanceScope, ScopeFactory> scopeFactories = Classes.getFieldValue(container, Container.class, "scopeFactories");
-		assertNotNull(scopeFactories);
-		assertEquals(3, scopeFactories.size());
-		assertClass("ApplicationScopeFactory", scopeFactories.get(InstanceScope.APPLICATION));
-		assertClass("ThreadScopeFactory", scopeFactories.get(InstanceScope.THREAD));
-		assertNull(scopeFactories.get(InstanceScope.LOCAL));
-		assertNotNull(Classes.getFieldValue(container, Container.class, "scopeMutex"));
-
-		Map<InstanceType, InstanceFactory> instanceFactories = Classes.getFieldValue(container, Container.class, "instanceFactories");
-		assertNotNull(instanceFactories);
-		assertEquals(4, instanceFactories.size());
-		assertClass("LocalInstanceFactory", instanceFactories.get(InstanceType.POJO));
-		assertClass("LocalInstanceFactory", instanceFactories.get(InstanceType.PROXY));
-		assertClass("ServiceInstanceFactory", instanceFactories.get(InstanceType.SERVICE));
-		assertClass("RemoteInstanceFactory", instanceFactories.get(InstanceType.REMOTE));
-
-//		List<IInstancePostConstruct> instanceProcessors = Classes.getFieldValue(container, Container.class, "instanceProcessors");
-//		assertNotNull(instanceProcessors);
-//		assertClass("InstanceFieldsInjectionProcessor", instanceProcessors.get(0));
-//		assertClass("InstanceFieldsInitializationProcessor", instanceProcessors.get(1));
-//		assertClass("ConfigurableInstanceProcessor", instanceProcessors.get(2));
-//		assertClass("PostConstructInstanceProcessor", instanceProcessors.get(3));
-//		assertClass("LoggerInstanceProcessor", instanceProcessors.get(4));
-
-		assertNotNull(Classes.getFieldValue(container, Container.class, "argumentsProcessor"));
-		assertClass("ArgumentsProcessor", Classes.getFieldValue(container, Container.class, "argumentsProcessor"));
-
 		Map<Class<?>, IManagedClass> classesPool = Classes.getFieldValue(container, Container.class, "classesPool");
 		assertNotNull(classesPool);
 		assertTrue(classesPool.isEmpty());
-	}
-
-	/** Constructor initialization with custom scope factory. */
-	@Test
-	public void constructorCustomScopeFactory() {
-		ClassLoader contextClassLoader = Thread.currentThread().getContextClassLoader();
-		Thread.currentThread().setContextClassLoader(new ClassLoader() {
-			@Override
-			public Enumeration<URL> getResources(String name) throws IOException {
-				if (name.contains("ScopeFactory")) {
-					name = "js/tiny/container/unit/scope-factory";
-				}
-				return super.getResources(name);
-			}
-		});
-		try {
-			Container container = new ContainerStub();
-			Map<InstanceScope, ScopeFactory> scopeFactories = Classes.getFieldValue(container, Container.class, "scopeFactories");
-			assertNotNull(scopeFactories.get(new InstanceScope("MOCK")));
-			assertClass("MockScopeFactory", scopeFactories.get(new InstanceScope("MOCK")));
-		} finally {
-			Thread.currentThread().setContextClassLoader(contextClassLoader);
-		}
-	}
-
-	/** Constructor initialization with custom instance factory. */
-	@Test
-	public void constructorCustomInstanceFactory() {
-		ClassLoader contextClassLoader = Thread.currentThread().getContextClassLoader();
-		Thread.currentThread().setContextClassLoader(new ClassLoader() {
-			@Override
-			public Enumeration<URL> getResources(String name) throws IOException {
-				if (name.contains("InstanceFactory")) {
-					name = "js/tiny/container/unit/instance-factory";
-				}
-				return super.getResources(name);
-			}
-		});
-		try {
-			Container container = new ContainerStub();
-			Map<InstanceType, InstanceFactory> instanceFactories = Classes.getFieldValue(container, Container.class, "instanceFactories");
-			assertNotNull(instanceFactories.get(new InstanceType("MOCK")));
-			assertClass("MockInstanceFactory", instanceFactories.get(new InstanceType("MOCK")));
-		} finally {
-			Thread.currentThread().setContextClassLoader(contextClassLoader);
-		}
 	}
 
 	private static void assertClass(String expected, Object object) {
@@ -258,7 +179,7 @@ public class ContainerUnitTest {
 	}
 
 	/** Invalid managed scope should throw configuration exception. */
-	@Test(expected = ConfigException.class)
+	@Test(expected = IllegalStateException.class)
 	public void config_InvalidScopeInstance() throws Exception {
 		String descriptor = "<car class='js.tiny.container.unit.ContainerUnitTest$Car' scope='INVALID' />";
 		TestContext.start(config(descriptor));
@@ -397,32 +318,6 @@ public class ContainerUnitTest {
 		mock.preDestroyException = true;
 
 		container.destroy();
-	}
-
-	/** Successful and overriding scope factory registration. */
-	@Test
-	public void registerScopeFactory() {
-		final InstanceScope MOCK = new InstanceScope("MOCK");
-
-		class MockContainer extends ContainerStub {
-			@Override
-			public void registerScopeFactory(ScopeFactory scopeFactory) {
-				super.registerScopeFactory(scopeFactory);
-			}
-		}
-
-		MockContainer container = new MockContainer();
-		container.registerScopeFactory(new MockScopeFactory());
-
-		try {
-			container.registerScopeFactory(new MockScopeFactory());
-			fail("Overriding instance scope should throw exception.");
-		} catch (BugError unused) {
-		}
-
-		Map<InstanceScope, ScopeFactory> scopeFactories = Classes.getFieldValue(container, Container.class, "scopeFactories");
-		assertNotNull(scopeFactories.get(MOCK));
-		assertTrue(scopeFactories.get(MOCK) instanceof MockScopeFactory);
 	}
 
 	// --------------------------------------------------------------------------------------------
@@ -1020,39 +915,5 @@ public class ContainerUnitTest {
 			return "Test App";
 		}
 
-	}
-
-	// must be public to be instantiable by service loader
-	public static class MockScopeFactory implements ScopeFactory {
-		@Override
-		public InstanceScope getInstanceScope() {
-			return new InstanceScope("MOCK");
-		}
-
-		@Override
-		public Object getInstance(InstanceKey instanceKey) {
-			return null;
-		}
-
-		@Override
-		public void persistInstance(InstanceKey instanceKey, Object instance) {
-		}
-
-		@Override
-		public void clear() {
-		}
-	}
-
-	// must be public to be instantiable by service loader
-	public static class MockInstanceFactory implements InstanceFactory {
-		@Override
-		public InstanceType getInstanceType() {
-			return new InstanceType("MOCK");
-		}
-
-		@Override
-		public <T> T newInstance(IManagedClass<T> managedClass, Object... args) {
-			return null;
-		}
 	}
 }

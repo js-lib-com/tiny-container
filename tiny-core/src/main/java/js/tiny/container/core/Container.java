@@ -2,7 +2,6 @@ package js.tiny.container.core;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
-import java.lang.reflect.Proxy;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -38,15 +37,8 @@ import js.lang.ManagedPreDestroy;
 import js.lang.NoProviderException;
 import js.log.Log;
 import js.log.LogFactory;
-import js.tiny.container.cdi.ApplicationScopeFactory;
 import js.tiny.container.cdi.IBinding;
-import js.tiny.container.cdi.InstanceFactory;
 import js.tiny.container.cdi.Key;
-import js.tiny.container.cdi.LocalInstanceFactory;
-import js.tiny.container.cdi.RemoteInstanceFactory;
-import js.tiny.container.cdi.ScopeFactory;
-import js.tiny.container.cdi.ServiceInstanceFactory;
-import js.tiny.container.cdi.ThreadScopeFactory;
 import js.tiny.container.cdi.service.CDI;
 import js.tiny.container.service.ConfigurableInstanceProcessor;
 import js.tiny.container.service.FlowProcessorsSet;
@@ -64,8 +56,6 @@ import js.tiny.container.spi.IInstancePostConstructionProcessor;
 import js.tiny.container.spi.IInstancePreDestructionProcessor;
 import js.tiny.container.spi.IManagedClass;
 import js.tiny.container.spi.IManagedMethod;
-import js.tiny.container.spi.InstanceScope;
-import js.tiny.container.spi.InstanceType;
 import js.util.Classes;
 import js.util.Params;
 
@@ -106,8 +96,7 @@ import js.util.Params;
  * Implementation bind cannot be hot changed.</dd>
  * <dt>Life span management for managed instances, e.g. application, thread or local scope.</dt>
  * <dd>A new managed instance can be created at every request or can be reused from a cache, depending on managed class scope.
- * Instance scope is declared on managed class descriptor. New managed instances are created by {@link InstanceFactory} whereas
- * life span is controlled by {@link ScopeFactory} class.</dd>
+ * Instance scope is declared on managed class descriptor. </dd>
  * <dt>External configuration of managed instances from application descriptor.</dt>
  * <dd>If a managed instance implements {@link js.lang.Configurable} interface container takes care to configure it from managed
  * class configuration section. Every managed class has an alias into application descriptor that identify configurable section.
@@ -252,33 +241,6 @@ public class Container implements IContainer, Configurable {
 
 	protected final CDI cdi = CDI.create();
 
-	/**
-	 * Scope specific factories mapped to related {@link InstanceScope}. A scope factory takes care of managed instance life
-	 * span and reuse it if instance is retrieved in the same scope. It is part of <a href="#instance-retrieval">Instance
-	 * Retrieval Algorithm</a>.
-	 * <p>
-	 * There are a number of built-in scope factories created by constructor but subclass may register new ones via
-	 * {@link #registerScopeFactory(ScopeFactory)}.
-	 */
-	protected final Map<InstanceScope, ScopeFactory> scopeFactories = new HashMap<>();
-
-	/**
-	 * Mutex for scope factory access. Instance retrieval algorithm uses scope factories in two steps: first try to retrieve an
-	 * instance already existing on scope and if null persist a newly created one. These steps are synchronized using this
-	 * mutex.
-	 */
-	private final Object scopeMutex = new Object();
-
-	/**
-	 * Instance factories mapped to related {@link InstanceType}. An instance factory deals with actual instance creation and is
-	 * enacted by <a href="#instance-retrieval">Instance Retrieval Algorithm</a> only if on current scope there is not an
-	 * already created managed instance.
-	 * <p>
-	 * There are a number of built-in instance factories created by constructor but subclass may register new ones via
-	 * {@link #registerInstanceFactory(InstanceType, InstanceFactory)}.
-	 */
-	private final Map<InstanceType, InstanceFactory> instanceFactories = new HashMap<>();
-
 	private final FlowProcessorsSet<IContainerStartProcessor> containerStartProcessors = new FlowProcessorsSet<>();
 
 	/**
@@ -300,12 +262,6 @@ public class Container implements IContainer, Configurable {
 	private final FlowProcessorsSet<IInstancePostConstructionProcessor> instancePostConstructionProcessors = new FlowProcessorsSet<>();
 
 	private final FlowProcessorsSet<IInstancePreDestructionProcessor> instancePreDestructionProcessors = new FlowProcessorsSet<>();
-
-	/**
-	 * Processor for managed constructor and method invocation arguments. Takes care of dependency injection on arguments and
-	 * some insanity checks.
-	 */
-	private final ArgumentsProcessor argumentsProcessor = new ArgumentsProcessor();
 
 	/**
 	 * Master cache for all managed classes registered to container. Since an application has one and only one container
@@ -336,28 +292,6 @@ public class Container implements IContainer, Configurable {
 				return () -> Container.this;
 			}
 		});
-		
-		// register scope and instance factories
-		// first register external factories in order to avoid overriding built-in factories
-
-		for (ScopeFactory scopeFactory : ServiceLoader.load(ScopeFactory.class)) {
-			registerScopeFactory(scopeFactory);
-		}
-		registerScopeFactory(new ApplicationScopeFactory());
-		registerScopeFactory(new ThreadScopeFactory());
-		// local instances have no managed scope; simple creates a new instance for every call
-		registerScopeFactory(null);
-
-		for (InstanceFactory instanceFactory : ServiceLoader.load(InstanceFactory.class)) {
-			registerInstanceFactory(instanceFactory.getInstanceType(), instanceFactory);
-		}
-
-		InstanceFactory localFactory = new LocalInstanceFactory();
-		registerInstanceFactory(InstanceType.POJO, localFactory);
-		registerInstanceFactory(InstanceType.PROXY, localFactory);
-
-		registerInstanceFactory(InstanceType.SERVICE, new ServiceInstanceFactory());
-		registerInstanceFactory(InstanceType.REMOTE, new RemoteInstanceFactory());
 
 		// load external and built-in container services
 
@@ -387,40 +321,6 @@ public class Container implements IContainer, Configurable {
 		instancePostConstructionProcessors.add(new ConfigurableInstanceProcessor());
 		instancePostConstructionProcessors.add(new InstancePostConstructProcessor());
 		instancePostConstructionProcessors.add(new LoggerInstanceProcessor());
-	}
-
-	/**
-	 * Register scope factory for the instance scope returned by {@link ScopeFactory#getInstanceScope()}.
-	 * 
-	 * @param scopeFactory scope factory instance, possible null for local scope.
-	 * @throws BugError if instance scope is already registered.
-	 */
-	protected void registerScopeFactory(ScopeFactory scopeFactory) {
-		if (scopeFactory == null) {
-			log.debug("Register null scope factory to |%s|.", InstanceScope.LOCAL);
-			scopeFactories.put(InstanceScope.LOCAL, null);
-			return;
-		}
-
-		final InstanceScope instanceScope = scopeFactory.getInstanceScope();
-		log.debug("Register scope factory |%s| to |%s|.", scopeFactory.getClass(), instanceScope);
-		if (scopeFactories.put(instanceScope, scopeFactory) != null) {
-			throw new BugError("Attempt to override instance scope |%s|.", instanceScope);
-		}
-	}
-
-	/**
-	 * Register instance factory to requested instance type.
-	 * 
-	 * @param instanceType instance type used as key for instance factory,
-	 * @param instanceFactory instance factory.
-	 * @throws BugError if instance type is already registered.
-	 */
-	private void registerInstanceFactory(InstanceType instanceType, InstanceFactory instanceFactory) {
-		log.debug("Register instance factory |%s| to |%s|.", instanceFactory.getClass(), instanceType);
-		if (instanceFactories.put(instanceType, instanceFactory) != null) {
-			throw new BugError("Attempt to override instance type |%s|.", instanceType);
-		}
 	}
 
 	/**
@@ -519,13 +419,6 @@ public class Container implements IContainer, Configurable {
 		}
 
 		for (IManagedClass managedClass : sortedClasses) {
-			/*
-			ScopeFactory scopeFactory = scopeFactories.get(managedClass.getInstanceScope());
-			// managed class key cannot be null
-			InstanceKey instanceKey = new InstanceKey(managedClass.getKey().toString());
-			Object instance = scopeFactory.getInstance(instanceKey);
-			*/
-			
 			Object instance = cdi.getScopeInstance(managedClass.getInterfaceClass());
 			if (instance == null) {
 				log.debug("Cannot obtain instance for pre-destroy method for class |%s|.", managedClass);
@@ -550,19 +443,11 @@ public class Container implements IContainer, Configurable {
 			containerService.destroy();
 		}
 
-		for (ScopeFactory scopeFactory : scopeFactories.values()) {
-			// local scope has null factory
-			if (scopeFactory != null) {
-				scopeFactory.clear();
-			}
-		}
-
 		classesPool.clear();
 		classPostLoadedProcessors.clear();
 		instancePostConstructionProcessors.clear();
 		instancePreDestructionProcessors.clear();
-		scopeFactories.clear();
-		instanceFactories.clear();
+		cdi.clear();
 	}
 
 	// --------------------------------------------------------------------------------------------
@@ -665,63 +550,12 @@ public class Container implements IContainer, Configurable {
 	 * @throws BugError if instance post-construction fails due to exception of user defined logic.
 	 * @throws BugError if attempt to assign field to not POJO type.
 	 */
-	@SuppressWarnings("unchecked")
 	private <T> T getInstance(IManagedClass<T> managedClass, InstanceKey instanceKey) {
-		// if(managedClass.getInstanceType().isREMOTE()) {
-		// return getRemoteInstance(new URL(managedClass.getImplementationURL()), (Class<? super T>)
-		// managedClass.getInterfaceClass());
-		// }
-
-		ScopeFactory scopeFactory = null;// scopeFactories.get(managedClass.getInstanceScope());
-		InstanceFactory instanceFactory = instanceFactories.get(managedClass.getInstanceType());
-
-		if (scopeFactory == null) {
-			// return instanceFactory.newInstance(managedClass, argumentsProcessor.getConstructorArguments(managedClass));
-			return cdi.getInstance(managedClass.getInterfaceClass(), (instanceManagedClass, instance) -> {
-				instancePostConstructionProcessors.forEach(processor -> {
-					processor.onInstancePostConstruction(instanceManagedClass, instance);
-				});
-			});
-		}
-
-		boolean postProcessingEnabled = false;
-		T instance = null;
-		synchronized (scopeMutex) {
-			instance = (T) scopeFactory.getInstance(instanceKey);
-			if (instance == null) {
-				postProcessingEnabled = true;
-				instance = instanceFactory.newInstance(managedClass, argumentsProcessor.getConstructorArguments(managedClass));
-				scopeFactory.persistInstance(instanceKey, instance);
-			}
-		}
-
-		if (!postProcessingEnabled) {
-			return instance;
-		}
-
-		// post-processors operate on bare POJO instances but is possible for instance factory to return a Java Proxy
-		// if instance is a Java Proxy that uses InstanceInvocationHandler extract wrapped POJO instance
-		// if instance is a Java Proxy that does not use InstanceInvocationHandler post-processing is not performed at all
-		// if instance is not a Java Proxy execute post-processing on it
-
-		T pojoInstance = null;
-		if (instance instanceof Proxy) {
-			if (Proxy.getInvocationHandler(instance) instanceof InstanceInvocationHandler) {
-				InstanceInvocationHandler<T> handler = (InstanceInvocationHandler<T>) Proxy.getInvocationHandler(instance);
-				pojoInstance = handler.getWrappedInstance();
-			}
-		} else {
-			pojoInstance = instance;
-		}
-
-		if (pojoInstance != null) {
-			final T finalInstance = pojoInstance;
+		return cdi.getInstance(managedClass.getInterfaceClass(), (instanceManagedClass, instance) -> {
 			instancePostConstructionProcessors.forEach(processor -> {
-				processor.onInstancePostConstruction(managedClass, finalInstance);
+				processor.onInstancePostConstruction(instanceManagedClass, instance);
 			});
-		}
-
-		return instance;
+		});
 	}
 
 	// ----------------------------------------------------
@@ -755,26 +589,6 @@ public class Container implements IContainer, Configurable {
 
 	// --------------------------------------------------------------------------------------------
 	// PACKAGE LEVEL METHODS
-
-	/**
-	 * Test if instance scope has a {@link ScopeFactory} registered on this container.
-	 * 
-	 * @param instanceScope instance scope to test for factory registration.
-	 * @return true if instance scope has factory.
-	 */
-	boolean hasScopeFactory(InstanceScope instanceScope) {
-		return scopeFactories.containsKey(instanceScope);
-	}
-
-	/**
-	 * Test if instance type has a {@link InstanceFactory} registered on this container.
-	 * 
-	 * @param instanceType instance type to test for factory registration.
-	 * @return true if instance type has factory.
-	 */
-	boolean hasInstanceFactory(InstanceType instanceType) {
-		return instanceFactories.containsKey(instanceType);
-	}
 
 	Collection<IContainerService> getServices() {
 		return containerServices;
