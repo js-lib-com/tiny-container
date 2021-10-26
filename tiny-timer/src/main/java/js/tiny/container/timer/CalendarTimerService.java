@@ -1,7 +1,12 @@
 package js.tiny.container.timer;
 
+import java.util.Collections;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -13,12 +18,17 @@ import js.log.LogFactory;
 import js.tiny.container.spi.IInstancePostConstructionProcessor;
 import js.tiny.container.spi.IManagedClass;
 import js.tiny.container.spi.IManagedMethod;
+import js.tiny.container.spi.IServiceMeta;
+import js.tiny.container.spi.IServiceMetaScanner;
+import js.util.Params;
 
-class CalendarTimerService implements IInstancePostConstructionProcessor {
+class CalendarTimerService implements IInstancePostConstructionProcessor, IServiceMetaScanner {
 	private static final Log log = LogFactory.getLog(CalendarTimerService.class);
 
 	private static final int SCHEDULERS_THREAD_POLL = 2;
 	private final ScheduledExecutorService scheduler;
+
+	private final Map<Integer, Set<IManagedMethod>> classTimers = new HashMap<>();
 
 	public CalendarTimerService() {
 		log.trace("CalendarTimerService()");
@@ -31,29 +41,52 @@ class CalendarTimerService implements IInstancePostConstructionProcessor {
 	}
 
 	@Override
+	public Iterable<IServiceMeta> scanServiceMeta(IManagedClass<?> managedClass) {
+		return Collections.emptyList();
+	}
+
+	@Override
+	public Iterable<IServiceMeta> scanServiceMeta(IManagedMethod managedMethod) {
+		Schedule schedule = managedMethod.getAnnotation(Schedule.class);
+		if (schedule != null) {
+			Set<IManagedMethod> timerMethods = classTimers.get(managedMethod.getDeclaringClass().getKey());
+			if (timerMethods == null) {
+				timerMethods = new HashSet<>();
+				classTimers.put(managedMethod.getDeclaringClass().getKey(), timerMethods);
+			}
+			timerMethods.add(managedMethod);
+		}
+		return Collections.emptyList();
+	}
+
+	@Override
 	public Priority getPriority() {
 		return Priority.TIMER;
 	}
 
 	@Override
-	public <T> void onInstancePostConstruction(IManagedClass<T> managedClass, T instance) {
-		for (IManagedMethod managedMethod : managedClass.getManagedMethods()) {
-			Schedule schedule = managedMethod.getAnnotation(Schedule.class);
-			if (schedule != null) {
-				// computed remaining time can be zero in which case managed method is executed instantly
-				schedule(new TimerTask(this, instance, managedMethod), computeDelay(schedule));
-			}
+	public <T> void onInstancePostConstruction(IManagedClass<T> managedClass, final T instance) {
+		Set<IManagedMethod> timerMethods = classTimers.get(managedClass.getKey());
+		if (timerMethods == null) {
+			return;
 		}
+		// computed remaining time can be zero in which case managed method is executed instantly
+		timerMethods.forEach(managedMethod -> {
+			schedule(new TimerTask(this, instance, managedMethod), computeDelay(managedMethod.getAnnotation(Schedule.class)));
+		});
 	}
 
 	@Override
 	public void destroy() {
 		log.trace("destroy()");
+		classTimers.clear();
 		List<Runnable> timers = scheduler.shutdownNow();
 		log.debug("Shutdown %d unprocessed timer(s).", timers.size());
 	}
 
-	public void schedule(TimerTask task, long delay) {
+	public void schedule(TimerTask task, Long delay) {
+		Params.notNull(task, "Timer task");
+		Params.notNull(delay, "Delay");
 		scheduler.schedule(task, delay, TimeUnit.MILLISECONDS);
 	}
 

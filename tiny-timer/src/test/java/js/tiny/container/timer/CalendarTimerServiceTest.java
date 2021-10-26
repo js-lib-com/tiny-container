@@ -5,11 +5,11 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.greaterThan;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import java.util.Arrays;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
@@ -43,7 +43,7 @@ public class CalendarTimerServiceTest {
 
 	@Before
 	public void beforeTest() {
-		when(managedClass.getManagedMethods()).thenReturn(Arrays.asList(managedMethod));
+		doReturn(managedClass).when(managedMethod).getDeclaringClass();
 		when(managedMethod.getAnnotation(Schedule.class)).thenReturn(schedule);
 
 		when(schedule.second()).thenReturn("0");
@@ -58,8 +58,9 @@ public class CalendarTimerServiceTest {
 	}
 
 	@Test
-	public void GivenDefaults_WhenPostConstructInstance_ThenInvokeScheduler() {
+	public void GivenTimerMethod_WhenPostConstructInstance_ThenInvokeScheduler() {
 		// given
+		service.scanServiceMeta(managedMethod);
 
 		// when
 		service.onInstancePostConstruction(managedClass, instance);
