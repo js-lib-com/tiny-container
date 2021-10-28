@@ -9,10 +9,5 @@ public abstract class ScopedProvider<T> implements Provider<T> {
 		this.provider = provider;
 	}
 
-	@Override
-	public T get() {
-		return provider.get();
-	}
-
 	public abstract T getScopeInstance();
 }

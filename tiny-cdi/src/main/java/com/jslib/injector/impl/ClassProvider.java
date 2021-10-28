@@ -6,20 +6,22 @@ import java.lang.reflect.InvocationTargetException;
 import javax.inject.Inject;
 import javax.inject.Provider;
 
+import com.jslib.injector.IInjector;
 import com.jslib.injector.IProvisionInvocation;
 
 import js.lang.BugError;
 import js.log.Log;
 import js.log.LogFactory;
-import js.tiny.container.cdi.CDI;
+import js.util.Params;
 
-public class ClassProvider<T> implements Provider<T> {
+class ClassProvider<T> implements Provider<T> {
 	private static final Log log = LogFactory.getLog(ClassProvider.class);
 
-	private final CDI injector;
+	private final IInjector injector;
 	private final Class<? extends T> type;
 
-	public ClassProvider(CDI injector, Class<? extends T> type) {
+	public ClassProvider(IInjector injector, Class<? extends T> type) {
+		Params.isNotInterface(type, "Type");
 		this.injector = injector;
 		this.type = type;
 	}
@@ -38,7 +40,7 @@ public class ClassProvider<T> implements Provider<T> {
 			}
 
 			T instance = constructor.newInstance(parameters);
-			injector.fireEvent(IProvisionInvocation.event(this, instance));
+			injector.fireEvent(IProvisionInvocation.create(this, instance));
 			return instance;
 
 		} catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {

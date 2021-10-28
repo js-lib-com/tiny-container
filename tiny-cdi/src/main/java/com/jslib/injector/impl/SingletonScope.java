@@ -3,8 +3,9 @@ package com.jslib.injector.impl;
 import javax.inject.Provider;
 
 import com.jslib.injector.IScope;
+import com.jslib.injector.Key;
 
-public class SingletonScope implements IScope {
+class SingletonScope implements IScope {
 
 	@Override
 	public <T> Provider<T> scope(Provider<T> provider) {

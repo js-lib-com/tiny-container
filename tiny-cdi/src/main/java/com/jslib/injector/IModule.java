@@ -2,11 +2,9 @@ package com.jslib.injector;
 
 import java.util.List;
 
-import js.tiny.container.cdi.CDI;
-
 public interface IModule {
-	
-	IModule configure(CDI parentContainer);
+
+	IModule configure(IInjector injector);
 
 	List<IBinding<?>> bindings();
 

@@ -7,16 +7,11 @@ import java.util.Locale;
 import java.util.Properties;
 import java.util.ServiceLoader;
 
-import javax.inject.Provider;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
 import javax.servlet.http.HttpSessionEvent;
 import javax.servlet.http.HttpSessionListener;
-
-import com.jslib.injector.IBinding;
-import com.jslib.injector.Key;
-import com.jslib.injector.SessionScoped;
 
 import js.converter.ConverterRegistry;
 import js.lang.BugError;
@@ -26,6 +21,7 @@ import js.lang.ConfigException;
 import js.log.Log;
 import js.log.LogContext;
 import js.log.LogFactory;
+import js.tiny.container.cdi.SessionScoped;
 import js.tiny.container.core.Container;
 import js.tiny.container.core.Factory;
 import js.tiny.container.spi.InstanceScope;
@@ -65,7 +61,7 @@ import js.tiny.container.spi.InstanceScope;
  * <li>initialize {@link #contextParameters} from external descriptors,
  * <li>create {@link TinyConfigBuilder} that parses application descriptor,
  * <li>configure tiny container with created configuration object, see {@link #config(Config)},
- * <li>bind tiny container instance to master factory, see {@link Factory#bind(js.tiny.container.core.AppFactory)},
+ * <li>bind tiny container instance to master factory, see {@link Factory#bind(IFactory)},
  * <li>finalize tiny container creation by calling {@link #start()}.
  * </ul>
  * <p>
@@ -190,18 +186,8 @@ public class TinyContainer extends Container implements ServletContextListener, 
 		super();
 		log.trace("TinyContainer()");
 
-		cdi.bind(new IBinding<ITinyContainer>() {
-			@Override
-			public Key<ITinyContainer> key() {
-				return Key.get(ITinyContainer.class);
-			}
-
-			@Override
-			public Provider<? extends ITinyContainer> provider() {
-				return () -> TinyContainer.this;
-			}
-		});
-		cdi.bind(SessionScoped.class, new SessionScope());
+		cdi.bindInstance(ITinyContainer.class, this);
+		cdi.bindScope(SessionScoped.class, new SessionScope());
 
 		for (SecurityContextProvider accessControl : ServiceLoader.load(SecurityContextProvider.class)) {
 			log.info("Found access control implementation |%s|.", accessControl.getClass());

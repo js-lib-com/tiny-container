@@ -7,25 +7,19 @@ import javax.inject.Provider;
 import javax.inject.Qualifier;
 import javax.inject.Scope;
 
+import com.jslib.injector.IBinding;
 import com.jslib.injector.IBindingBuilder;
+import com.jslib.injector.IInjector;
 import com.jslib.injector.IScope;
 import com.jslib.injector.Names;
 
-import js.tiny.container.cdi.CDI;
-
 class BindingBuilder<T> implements IBindingBuilder<T> {
-	private final CDI cdi;
+	private final IInjector injector;
 	private final Binding<T> binding;
 
-	public BindingBuilder(CDI cdi, Binding<T> binding) {
-		this.cdi = cdi;
+	public BindingBuilder(IInjector injector, Binding<T> binding) {
+		this.injector = injector;
 		this.binding = binding;
-	}
-
-	@Override
-	public IBindingBuilder<T> to(Class<? extends T> type) {
-		binding.setProvider(new ClassProvider<>(cdi, type));
-		return this;
 	}
 
 	@Override
@@ -62,16 +56,33 @@ class BindingBuilder<T> implements IBindingBuilder<T> {
 	}
 
 	@Override
+	public IBindingBuilder<T> to(Class<? extends T> type) {
+		binding.setProvider(new ClassProvider<>(injector, type));
+		return this;
+	}
+
+	@Override
+	public IBindingBuilder<T> toInstance(T instance) {
+		return instance(instance);
+	}
+
+	@Override
+	public IBindingBuilder<T> instance(T instance) {
+		binding.setProvider(new InstanceProvider<>(instance));
+		return this;
+	}
+
+	@Override
 	public IBindingBuilder<T> in(Class<? extends Annotation> annotation) {
 		if (!annotation.isAnnotationPresent(Scope.class)) {
 			throw new IllegalArgumentException("Not a scope annotation: " + annotation);
 		}
 
-		IScope scope = cdi.getScope(annotation);
+		IScope scope = injector.getScope(annotation);
 		if (scope == null) {
 			throw new IllegalStateException("No scope for annotation " + annotation);
 		}
-		
+
 		binding.setProvider(scope.scope(binding.provider()));
 		return this;
 	}
@@ -96,5 +107,15 @@ class BindingBuilder<T> implements IBindingBuilder<T> {
 	public IBindingBuilder<T> on(String implementationURL) {
 		binding.setProvider(new RemoteProvider<>(binding.key().type(), implementationURL));
 		return this;
+	}
+
+	@Override
+	public Provider<T> getProvider() {
+		return binding.provider();
+	}
+
+	@Override
+	public IBinding<T> getBinding() {
+		return binding;
 	}
 }

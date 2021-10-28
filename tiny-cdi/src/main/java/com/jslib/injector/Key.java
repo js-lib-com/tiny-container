@@ -75,6 +75,10 @@ public class Key<T> {
 		return type;
 	}
 
+	public String key() {
+		return type.getCanonicalName() + qualifier.toString();
+	}
+
 	public void setQualifier(Annotation qualifier) {
 		this.qualifier = qualifier;
 	}

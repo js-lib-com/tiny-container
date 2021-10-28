@@ -15,7 +15,6 @@ import javax.annotation.security.DenyAll;
 import javax.annotation.security.PermitAll;
 import javax.ejb.Asynchronous;
 import javax.ejb.Remote;
-import javax.ejb.Singleton;
 import javax.ejb.Startup;
 import javax.ejb.Stateful;
 import javax.ejb.Stateless;

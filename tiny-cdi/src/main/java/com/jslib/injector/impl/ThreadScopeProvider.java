@@ -4,7 +4,7 @@ import javax.inject.Provider;
 
 import com.jslib.injector.ScopedProvider;
 
-public class ThreadScopeProvider<T> extends ScopedProvider<T> {
+class ThreadScopeProvider<T> extends ScopedProvider<T> {
 	private final ThreadLocal<T> tls = new InheritableThreadLocal<>();
 
 	public ThreadScopeProvider(Provider<T> provider) {
@@ -20,7 +20,7 @@ public class ThreadScopeProvider<T> extends ScopedProvider<T> {
 	public T get() {
 		T instance = tls.get();
 		if (instance == null) {
-			instance = super.get();
+			instance = provider.get();
 			tls.set(instance);
 		}
 		return instance;

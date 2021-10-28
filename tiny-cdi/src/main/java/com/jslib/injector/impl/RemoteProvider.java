@@ -15,7 +15,7 @@ import js.rmi.RemoteFactoryProvider;
 import js.rmi.UnsupportedProtocolException;
 import js.util.Strings;
 
-public class RemoteProvider<T> implements Provider<T> {
+class RemoteProvider<T> implements Provider<T> {
 	private static final Log log = LogFactory.getLog(RemoteProvider.class);
 
 	private static final Map<String, RemoteFactory> remoteFactories = new HashMap<>();

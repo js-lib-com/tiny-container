@@ -1,34 +1,30 @@
 package js.tiny.container.cdi;
 
 import java.lang.annotation.Annotation;
-import java.util.Collections;
+import java.util.Collection;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 
 import javax.inject.Provider;
-import javax.inject.Scope;
 import javax.inject.Singleton;
 
-import com.jslib.injector.IBinding;
+import com.jslib.injector.IBindingBuilder;
 import com.jslib.injector.IInjector;
 import com.jslib.injector.IModule;
-import com.jslib.injector.IProvisionInvocation;
 import com.jslib.injector.IProvisionListener;
 import com.jslib.injector.IScope;
 import com.jslib.injector.Key;
-import com.jslib.injector.Names;
-import com.jslib.injector.ScopedProvider;
 import com.jslib.injector.ThreadScoped;
-import com.jslib.injector.impl.SingletonScope;
-import com.jslib.injector.impl.ThreadScope;
+import com.jslib.injector.impl.AbstractModule;
+import com.jslib.injector.impl.Injector;
 
 import js.log.Log;
 import js.log.LogFactory;
 import js.tiny.container.spi.IManagedClass;
+import js.tiny.container.spi.InstanceScope;
+import js.tiny.container.spi.InstanceType;
 
-public class CDI implements IInjector {
+public class CDI {
 	private static final Log log = LogFactory.getLog(CDI.class);
 
 	private static CDI instance;
@@ -40,7 +36,6 @@ public class CDI implements IInjector {
 			synchronized (mutex) {
 				if (instance == null) {
 					instance = new CDI();
-					instance.configure(modules);
 				}
 			}
 		}
@@ -49,116 +44,94 @@ public class CDI implements IInjector {
 
 	// --------------------------------------------------------------------------------------------
 
-	private final Map<Class<? extends Annotation>, IScope> scopes;
-	private final Map<Key<?>, Provider<?>> bindings;
+	private final IInjector injector;
 
 	private CDI() {
 		log.trace("CDI()");
-
-		this.scopes = new HashMap<>();
-		bind(Singleton.class, new SingletonScope());
-		bind(ThreadScoped.class, new ThreadScope());
-
-		this.bindings = new HashMap<>();
+		injector = new Injector();
 	}
 
-	private void configure(IModule... modules) {
-		log.trace("configure(Module...)");
-		for (IModule module : modules) {
-			module.configure(this).bindings().forEach(this::bind);
-		}
+	public void configure(Collection<IManagedClass<?>> managedClasses) {
+		injector.configure(new DescriptorModule(managedClasses));
 	}
 
-	public void bind(IBinding<?> binding) {
-		log.debug("Bind |%s| to provider |%s|.", binding.key(), binding.provider());
-		bindings.put(binding.key(), binding.provider());
+	public <T> void bindInstance(Class<T> interfaceClass, T instance) {
+		injector.bindInstance(Key.get(interfaceClass), instance);
 	}
 
-	public void bind(Class<? extends Annotation> annotation, IScope scope) {
-		if (!annotation.isAnnotationPresent(Scope.class)) {
-			throw new IllegalArgumentException("Not a scope annotation: " + annotation);
-		}
-		log.debug("Register |%s| to scope |%s|.", annotation, scope);
-		scopes.put(annotation, scope);
-	}
-
-	public IScope getScope(Class<? extends Annotation> annotation) {
-		return scopes.get(annotation);
-	}
-
-	@Override
-	public <T> T getInstance(Class<T> type, Annotation qualifier) {
-		Key<T> key = Key.get(type, qualifier);
-		@SuppressWarnings("unchecked")
-		Provider<T> provider = (Provider<T>) bindings.get(key);
-		if (provider == null) {
-			throw new IllegalStateException("No provider for " + key);
-		}
-		return provider.get();
-	}
-
-	@Override
-	public <T> T getInstance(Class<T> type) {
-		return getInstance(type, (Annotation) null);
+	public void bindScope(Class<? extends Annotation> annotation, IScope scope) {
+		injector.bindScope(annotation, scope);
 	}
 
 	public <T> T getScopeInstance(Class<T> type) {
-		Key<T> key = Key.get(type);
-		@SuppressWarnings("unchecked")
-		Provider<T> provider = (Provider<T>) bindings.get(key);
-		if (provider == null) {
-			throw new IllegalStateException("No provider for " + key);
-		}
-		if(!(provider instanceof ScopedProvider)) {
-			throw new IllegalStateException("Not a scoped provider " + provider);
-		}
-		ScopedProvider<T> scopedProvider = (ScopedProvider<T>)provider;
-		return scopedProvider.getScopeInstance();
+		return injector.getScopeInstance(type);
 	}
 
 	private final Map<Provider<?>, IManagedClass<?>> providedClasses = new HashMap<>();
-
-	public <T> void bindProvidedClass(Provider<T> provider, IManagedClass<T> managedClass) {
-		providedClasses.put(provider, managedClass);
-	}
 
 	@SuppressWarnings("unchecked")
 	public <T> T getInstance(Class<T> type, IInstancePostConstructionListener<T> instanceListener) {
 		IProvisionListener<T> provisionListener = invocation -> {
 			instanceListener.onInstancePostConstruction((IManagedClass<T>) providedClasses.get(invocation.provider()), (T) invocation.instance());
 		};
-		bindListener(provisionListener);
+		injector.bindListener(provisionListener);
 		try {
-			return getInstance(type, (Annotation) null);
+			return injector.getInstance(type, (Annotation) null);
 		} finally {
-			unbindListener(provisionListener);
+			injector.unbindListener(provisionListener);
 		}
-	}
-
-	private final Set<IProvisionListener<?>> provisionListeners = Collections.synchronizedSet(new HashSet<>());
-
-	public <T> void bindListener(IProvisionListener<T> listener) {
-		provisionListeners.add(listener);
-	}
-
-	private <T> void unbindListener(IProvisionListener<T> listener) {
-		provisionListeners.remove(listener);
-	}
-
-	@SuppressWarnings("unchecked")
-	public <T> void fireEvent(IProvisionInvocation<T> event) {
-		provisionListeners.forEach(listener -> {
-			((IProvisionListener<T>)listener).onProvision(event);
-		});
-	}
-
-	@Override
-	public <T> T getInstance(Class<T> type, String name) {
-		return getInstance(type, Names.named(name));
 	}
 
 	public void clear() {
 		// TODO Auto-generated method stub
-		
+
+	}
+
+	private class DescriptorModule extends AbstractModule {
+		private final Collection<IManagedClass<?>> managedClasses;
+
+		public DescriptorModule(Collection<IManagedClass<?>> managedClasses) {
+			this.managedClasses = managedClasses;
+		}
+
+		@SuppressWarnings({ "unchecked", "rawtypes" })
+		@Override
+		protected void configure() {
+			managedClasses.forEach(managedClass -> {
+				log.debug("CDI register managed class |%s|.", managedClass);
+
+				IBindingBuilder bindingBuilder = bind(managedClass.getInterfaceClass());
+
+				final InstanceType instanceType = managedClass.getInstanceType();
+				if (instanceType.isPOJO()) {
+					bindingBuilder.to(managedClass.getImplementationClass());
+					providedClasses.put(bindingBuilder.getProvider(), managedClass);
+				} else if (instanceType.isPROXY()) {
+					bindingBuilder.to(managedClass.getImplementationClass());
+					providedClasses.put(bindingBuilder.getProvider(), managedClass);
+					bindingBuilder.toProvider(new ProxyProvider(managedClass, bindingBuilder.getProvider()));
+				} else if (instanceType.isREMOTE()) {
+					bindingBuilder.on(managedClass.getImplementationURL());
+				} else if (instanceType.isSERVICE()) {
+					bindingBuilder.toProvider(new ServiceProvider<>(injector, managedClass.getInterfaceClass()));
+					providedClasses.put(bindingBuilder.getProvider(), managedClass);
+				} else {
+					throw new IllegalStateException("No provider for instance type " + instanceType);
+				}
+
+				final InstanceScope instanceScope = managedClass.getInstanceScope();
+				if (instanceScope.isLOCAL()) {
+					// local scope always creates a new instance
+				} else if (instanceScope.isAPPLICATION()) {
+					bindingBuilder.in(Singleton.class);
+				} else if (instanceScope.isTHREAD()) {
+					bindingBuilder.in(ThreadScoped.class);
+				} else if (instanceScope.isSESSION()) {
+					bindingBuilder.in(SessionScoped.class);
+				} else {
+					throw new IllegalStateException("No provider for instance scope " + instanceScope);
+				}
+			});
+		}
 	}
 }

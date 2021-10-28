@@ -18,13 +18,9 @@ import javax.annotation.security.PermitAll;
 import javax.ejb.Asynchronous;
 import javax.ejb.Remote;
 import javax.inject.Inject;
-import javax.inject.Provider;
 import javax.interceptor.Interceptors;
 
 import org.omg.PortableInterceptor.Interceptor;
-
-import com.jslib.injector.IBinding;
-import com.jslib.injector.Key;
 
 import js.converter.Converter;
 import js.converter.ConverterException;
@@ -282,17 +278,7 @@ public class Container implements IContainer, Configurable {
 	public Container() {
 		log.trace("Container()");
 
-		cdi.bind(new IBinding<IContainer>() {
-			@Override
-			public Key<IContainer> key() {
-				return Key.get(IContainer.class);
-			}
-
-			@Override
-			public Provider<? extends IContainer> provider() {
-				return () -> Container.this;
-			}
-		});
+		cdi.bindInstance(IContainer.class, this);
 
 		// load external and built-in container services
 
@@ -381,6 +367,8 @@ public class Container implements IContainer, Configurable {
 			});
 		}
 
+		cdi.configure(classesPool.values());
+		
 		convertersInitialization(config);
 		pojoStaticInitialization(config);
 	}

@@ -5,9 +5,12 @@ import java.net.URI;
 
 import javax.inject.Provider;
 
+/**
+ * Chained builder used by module configuration to collect binding parameters.
+ * 
+ * @author Iulian Rotaru
+ */
 public interface IBindingBuilder<T> {
-
-	IBindingBuilder<T> to(Class<? extends T> type);
 
 	IBindingBuilder<T> annotatedWith(Annotation qualifier);
 
@@ -19,7 +22,11 @@ public interface IBindingBuilder<T> {
 
 	IBindingBuilder<T> named(String name);
 
-	IBindingBuilder<T> in(Class<? extends Annotation> scopeType);
+	IBindingBuilder<T> to(Class<? extends T> type);
+
+	IBindingBuilder<T> toInstance(T instance);
+
+	IBindingBuilder<T> instance(T instance);
 
 	IBindingBuilder<T> toProvider(Provider<T> provider);
 
@@ -29,4 +36,9 @@ public interface IBindingBuilder<T> {
 
 	IBindingBuilder<T> on(String implementationURL);
 
+	IBindingBuilder<T> in(Class<? extends Annotation> scopeType);
+
+	Provider<T> getProvider();
+
+	IBinding<T> getBinding();
 }

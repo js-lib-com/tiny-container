@@ -7,18 +7,20 @@ import javax.inject.Provider;
 
 import com.jslib.injector.ScopedProvider;
 
-public class SingletonScopeProvider<T> extends ScopedProvider<T> {
+class SingletonScopeProvider<T> extends ScopedProvider<T> {
 	private static final Map<Provider<?>, Object> cache = new HashMap<>();
 
 	public SingletonScopeProvider(Provider<T> provider) {
 		super(provider);
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
 	public T getScopeInstance() {
 		return (T) cache.get(provider);
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
 	public T get() {
 		Object instance = cache.get(provider);
@@ -26,7 +28,7 @@ public class SingletonScopeProvider<T> extends ScopedProvider<T> {
 			synchronized (this) {
 				instance = cache.get(provider);
 				if (instance == null) {
-					instance = super.get();
+					instance = provider.get();
 					cache.put(provider, instance);
 				}
 			}
