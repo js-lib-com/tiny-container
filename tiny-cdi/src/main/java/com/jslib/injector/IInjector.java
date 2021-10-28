@@ -17,7 +17,7 @@ public interface IInjector {
 	
 	<T> T getInstance(Class<T> type);
 
-	<T> T getInstance(Class<T> type, Annotation qualifier);
+	<T> T getInstance(Key<T> key);
 
 	<T> T getInstance(Class<T> type, String name);
 	

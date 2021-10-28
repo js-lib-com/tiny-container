@@ -76,7 +76,7 @@ public class CDI {
 		};
 		injector.bindListener(provisionListener);
 		try {
-			return injector.getInstance(type, (Annotation) null);
+			return injector.getInstance(Key.get(type));
 		} finally {
 			injector.unbindListener(provisionListener);
 		}

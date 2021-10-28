@@ -69,12 +69,11 @@ public class Injector implements IInjector {
 
 	@Override
 	public <T> T getInstance(Class<T> type) {
-		return getInstance(type, (Annotation) null);
+		return getInstance(Key.get(type));
 	}
 
 	@Override
-	public <T> T getInstance(Class<T> type, Annotation qualifier) {
-		Key<T> key = Key.get(type, qualifier);
+	public <T> T getInstance(Key<T> key) {
 		@SuppressWarnings("unchecked")
 		Provider<T> provider = (Provider<T>) bindings.get(key);
 		if (provider == null) {
@@ -85,7 +84,7 @@ public class Injector implements IInjector {
 
 	@Override
 	public <T> T getInstance(Class<T> type, String name) {
-		return getInstance(type, Names.named(name));
+		return getInstance(Key.get(type, Names.named(name)));
 	}
 
 	@Override
