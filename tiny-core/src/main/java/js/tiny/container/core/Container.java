@@ -436,7 +436,6 @@ public class Container implements IContainer, Configurable {
 		classPostLoadedProcessors.clear();
 		instancePostConstructionProcessors.clear();
 		instancePreDestructionProcessors.clear();
-		cdi.clear();
 	}
 
 	// --------------------------------------------------------------------------------------------
