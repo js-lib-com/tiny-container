@@ -18,7 +18,7 @@ public class SessionScopeProvider<T> extends ScopedProvider<T> {
 	@Override
 	public T getScopeInstance() {
 		HttpSession httpSession = getSession();
-		return (T) httpSession.getAttribute(provider.getClass().getCanonicalName());
+		return (T) httpSession.getAttribute(key(provider));
 	}
 
 	@Override
@@ -33,7 +33,7 @@ public class SessionScopeProvider<T> extends ScopedProvider<T> {
 			synchronized (this) {
 				if (instance == null) {
 					instance = provider.get();
-					getSession().setAttribute(provider.getClass().getCanonicalName(), instance);
+					getSession().setAttribute(key(provider), instance);
 				}
 			}
 		}
@@ -63,4 +63,8 @@ public class SessionScopeProvider<T> extends ScopedProvider<T> {
 		// create HTTP session if missing; accordingly API httpSession is never null if 'create' flag is true
 		return httpRequest.getSession(true);
 	}
+	
+	private static String key(Provider<?> provider) {
+		return provider.getClass().getCanonicalName(); 
+	}	
 }

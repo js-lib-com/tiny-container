@@ -1,12 +1,15 @@
 package js.tiny.container.servlet;
 
+
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.notNullValue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import javax.inject.Provider;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
@@ -17,12 +20,11 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
 import js.lang.BugError;
-import js.tiny.container.core.InstanceKey;
+import js.tiny.container.core.Factory;
 import js.tiny.container.spi.IContainer;
-import js.tiny.container.spi.InstanceScope;
 
 @RunWith(MockitoJUnitRunner.class)
-public class SessionScopeFactoryTest {
+public class SessionScopeProviderTest {
 	@Mock
 	private IContainer container;
 	@Mock
@@ -31,60 +33,46 @@ public class SessionScopeFactoryTest {
 	private HttpServletRequest httpRequest;
 	@Mock
 	private HttpSession httpSession;
+	@Mock
+	private Provider<?> provider;
 
-	private SessionScopeFactory factory;
+	private SessionScopeProvider<?> scopeProvider;
 
 	@Before
 	public void beforeTest() {
+		Factory.bind(container);
+
 		when(container.getInstance(RequestContext.class)).thenReturn(requestContext);
 		when(requestContext.getRequest()).thenReturn(httpRequest);
 		when(httpRequest.getSession(true)).thenReturn(httpSession);
 
-		factory = new SessionScopeFactory(container);
+		scopeProvider = new SessionScopeProvider<>(provider);
 	}
 
 	@Test
-	public void GivenDefaults_WhenGetInstanceScope_ThenSESSION() {
+	public void GivenCacheMissing_WhenGetInstance_ThenSetSessionAttribute() {
 		// given
 
 		// when
-		InstanceScope scope = factory.getInstanceScope();
+		scopeProvider.get();
 
 		// then
-		assertThat(scope, equalTo(InstanceScope.SESSION));
+		verify(httpSession, times(1)).getAttribute(anyString());
+		verify(httpSession, times(1)).setAttribute(anyString(), any());
 	}
 
 	@Test
-	public void GivenDefaults_WhenGetInstance_ThenGetSessionAttribute() {
-		// given
-
-		// when
-		factory.getInstance(new InstanceKey("1"));
-
-		// then
-		verify(httpSession, times(1)).getAttribute("1");
-	}
-
-	@Test
-	public void GivenDefaults_WhenPersistInstance_ThenSetSessionAttribute() {
+	public void GivenCachePresent_WhenGetInstance_ThenNotSetSessionAttribute() {
 		// given
 		Object instance = new Object();
+		when(httpSession.getAttribute(anyString())).thenReturn(instance).thenReturn(instance);
 
 		// when
-		factory.persistInstance(new InstanceKey("1"), instance);
+		scopeProvider.get();
 
 		// then
-		verify(httpSession, times(1)).setAttribute("1", instance);
-	}
-
-	@Test
-	public void GivenDefaults_WhenClear_ThenDoesNothing() {
-		// given
-
-		// when
-		factory.clear();
-
-		// then
+		verify(httpSession, times(1)).getAttribute(anyString());
+		verify(httpSession, times(0)).setAttribute(anyString(), any());
 	}
 
 	@Test
@@ -92,7 +80,7 @@ public class SessionScopeFactoryTest {
 		// given
 
 		// when
-		HttpSession session = factory.getSession(new InstanceKey("1"));
+		HttpSession session = scopeProvider.getSession();
 
 		// then
 		assertThat(session, notNullValue());
@@ -105,7 +93,7 @@ public class SessionScopeFactoryTest {
 		when(requestContext.getRequest()).thenReturn(null);
 
 		// when
-		factory.getSession(new InstanceKey("1"));
+		scopeProvider.getSession();
 
 		// then
 	}
