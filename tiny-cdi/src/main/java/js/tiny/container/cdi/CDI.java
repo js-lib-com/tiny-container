@@ -22,7 +22,6 @@ import js.log.Log;
 import js.log.LogFactory;
 import js.tiny.container.spi.IManagedClass;
 import js.tiny.container.spi.InstanceScope;
-import js.tiny.container.spi.InstanceType;
 import js.util.Params;
 
 /**
@@ -190,21 +189,29 @@ public class CDI {
 
 				IBindingBuilder bindingBuilder = bind(managedClass.getInterfaceClass());
 
-				final InstanceType instanceType = managedClass.getInstanceType();
-				if (instanceType.isPOJO()) {
+				switch (managedClass.getInstanceType()) {
+				case POJO:
 					bindingBuilder.to(managedClass.getImplementationClass());
 					providedClasses.put(bindingBuilder.getProvider(), managedClass);
-				} else if (instanceType.isPROXY()) {
+					break;
+
+				case PROXY:
 					bindingBuilder.to(managedClass.getImplementationClass());
 					providedClasses.put(bindingBuilder.getProvider(), managedClass);
 					bindingBuilder.toProvider(new ProxyProvider(managedClass, bindingBuilder.getProvider()));
-				} else if (instanceType.isREMOTE()) {
+					break;
+
+				case REMOTE:
 					bindingBuilder.on(managedClass.getImplementationURL());
-				} else if (instanceType.isSERVICE()) {
+					break;
+
+				case SERVICE:
 					bindingBuilder.toProvider(new ServiceProvider<>(injector, managedClass.getInterfaceClass()));
 					providedClasses.put(bindingBuilder.getProvider(), managedClass);
-				} else {
-					throw new IllegalStateException("No provider for instance type " + instanceType);
+					break;
+
+				default:
+					throw new IllegalStateException("No provider for instance type " + managedClass.getInstanceType());
 				}
 
 				final InstanceScope instanceScope = managedClass.getInstanceScope();

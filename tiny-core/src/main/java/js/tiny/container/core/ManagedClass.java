@@ -348,7 +348,7 @@ public final class ManagedClass<T> implements IManagedClass<T> {
 
 		// loading order matters; do not change it
 		this.instanceScope = descriptor.getAttribute("scope", InstanceScope.class, InstanceScope.APPLICATION);
-		this.instanceType = descriptor.getAttribute("type", InstanceType.class, InstanceType.POJO);
+		this.instanceType = descriptor.getAttribute("type", InstanceType.class, InstanceType.POJO, ConfigException.class);
 		this.implementationClass = loadImplementationClass(descriptor);
 		this.interfaceClass = loadInterfaceClass(descriptor);
 		this.implementationURL = loadImplementationURL(descriptor);

@@ -28,6 +28,8 @@
 	</scm>
 
 	<modules>
+		<module>tiny-spi</module>
+		<module>tiny-cdi</module>
 		<module>tiny-core</module>
 		<module>tiny-web</module>
 		<module>tiny-rest</module>
@@ -39,8 +41,6 @@
 		<module>tiny-context-param</module>
 		<module>tiny-interceptor</module>
 		<module>tiny-security</module>
-		<module>tiny-spi</module>
-		<module>tiny-cdi</module>
 	</modules>
 
 	<properties>
