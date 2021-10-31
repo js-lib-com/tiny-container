@@ -25,7 +25,7 @@ import js.tiny.container.spi.InstanceScope;
 import js.util.Params;
 
 /**
- * Connector for injection implementation.
+ * Facade for injection implementation.
  * 
  * @author Iulian Rotaru
  */
@@ -63,9 +63,9 @@ public class CDI {
 
 	private CDI() {
 		log.trace("CDI()");
-		explicitBindings = new ExplicitBindingModule();
-		injector = new Injector();
-		providedClasses = new HashMap<>();
+		this.explicitBindings = new ExplicitBindingModule();
+		this.injector = new Injector();
+		this.providedClasses = new HashMap<>();
 	}
 
 	/**

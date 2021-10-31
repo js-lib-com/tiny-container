@@ -8,7 +8,6 @@ import java.lang.reflect.Proxy;
 import javax.inject.Provider;
 
 import js.lang.BugError;
-import js.lang.InstanceInvocationHandler;
 import js.lang.InvocationException;
 import js.log.Log;
 import js.log.LogFactory;
@@ -21,7 +20,7 @@ import js.tiny.container.spi.IManagedMethod;
  * 
  * @author Iulian Rotaru
  */
-public class ProxyProvider<T> implements Provider<T> {
+class ProxyProvider<T> implements Provider<T> {
 	private static final Log log = LogFactory.getLog(ProxyProvider.class);
 
 	private final IManagedClass<T> managedClass;
@@ -58,7 +57,7 @@ public class ProxyProvider<T> implements Provider<T> {
 	 * 
 	 * @author Iulian Rotaru
 	 */
-	private static class ProxyHandler<T> implements InstanceInvocationHandler<T> {
+	private static class ProxyHandler<T> implements InvocationHandler {
 		private final IManagedClass<T> managedClass;
 		private final T managedInstance;
 
@@ -68,21 +67,21 @@ public class ProxyProvider<T> implements Provider<T> {
 		}
 
 		@Override
-		public T getWrappedInstance() {
-			return managedInstance;
-		}
-
-		@Override
 		public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+			if(method.getDeclaringClass().equals(Object.class)) {
+				return method.invoke(managedInstance, args);
+			}
+			
 			final IManagedMethod managedMethod = managedClass.getManagedMethod(method.getName());
 			if (managedMethod == null) {
 				throw new BugError("Attempt to use not managed method |%s|.", method);
 			}
 			log.trace("Invoke |%s|.", managedMethod);
+			
 			try {
 				return managedMethod.invoke(managedInstance, args);
 			} catch (Throwable t) {
-				throw throwable(t, "Non transactional method |%s| invocation fails.", managedMethod);
+				throw throwable(t, "Method |%s| invocation fails.", managedMethod);
 			}
 		}
 

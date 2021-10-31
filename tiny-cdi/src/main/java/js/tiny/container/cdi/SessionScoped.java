@@ -7,9 +7,13 @@ import java.lang.annotation.Target;
 
 import javax.inject.Scope;
 
+/**
+ * Scope annotation to mark instances with HTTP session scope.
+ * 
+ * @author Iulian Rotaru
+ */
 @Scope
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
 public @interface SessionScoped {
-
 }
