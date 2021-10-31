@@ -125,10 +125,6 @@ public class ViewManagerUnitTest {
 		HttpServletRequest request = mock(HttpServletRequest.class);
 		HttpServletResponse response = mock(HttpServletResponse.class);
 
-		when(request.getRequestURI()).thenReturn("/test-app/page.htm");
-		when(request.getContextPath()).thenReturn("/test-app");
-		when(request.getLocale()).thenReturn(Locale.US);
-
 		IFactory factory = TestContext.start();
 		RequestContext context = factory.getInstance(RequestContext.class);
 		context.attach(request, response);

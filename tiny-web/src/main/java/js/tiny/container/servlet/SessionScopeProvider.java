@@ -11,7 +11,7 @@ import com.jslib.injector.ScopedProvider;
 import js.lang.BugError;
 
 public class SessionScopeProvider<T> extends ScopedProvider<T> {
-	
+
 	private final Key<T> key;
 
 	protected SessionScopeProvider(Key<T> key, Provider<T> provider) {
@@ -68,12 +68,12 @@ public class SessionScopeProvider<T> extends ScopedProvider<T> {
 		// create HTTP session if missing; accordingly API httpSession is never null if 'create' flag is true
 		return httpRequest.getSession(true);
 	}
-	
+
 	// --------------------------------------------------------------------------------------------
-	
-	public static class Factory implements IScope {
+
+	public static class Factory<T> implements IScope<T> {
 		@Override
-		public <T> Provider<T> scope(Key<T> key, Provider<T> provider) {
+		public Provider<T> scope(Key<T> key, Provider<T> provider) {
 			return new SessionScopeProvider<>(key, provider);
 		}
 	}

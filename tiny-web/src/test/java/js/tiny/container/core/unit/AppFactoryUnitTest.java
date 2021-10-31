@@ -78,40 +78,6 @@ public class AppFactoryUnitTest {
 		assertEquals(runnable.car, factory.getInstance(Car.class));
 	}
 
-	/**
-	 * Instances of the same managed class with THREAD scope should be equal if created from the same thread and should be
-	 * different if created from different threads.
-	 */
-	@Test
-	public void getInstance_ThreadScope() throws Exception {
-		String descriptor = "<car class='js.tiny.container.core.unit.AppFactoryUnitTest$Car' scope='THREAD' />";
-		final IFactory factory = TestContext.start(config(descriptor));
-
-		Car car1 = factory.getInstance(Car.class);
-		Car car2 = factory.getInstance(Car.class);
-
-		class TestRunnable implements Runnable {
-			private Car car1;
-			private Car car2;
-
-			@Override
-			public void run() {
-				car1 = factory.getInstance(Car.class);
-				car2 = factory.getInstance(Car.class);
-			}
-		}
-
-		TestRunnable runnable = new TestRunnable();
-		Thread thread = new Thread(runnable);
-		thread.start();
-		join(thread);
-
-		assertTrue(car1 == car2);
-		assertTrue(runnable.car1 == runnable.car2);
-		assertTrue(car1 != runnable.car1);
-		assertTrue(car2 != runnable.car2);
-	}
-
 	/** Instances of the same managed class with LOCAL scope should always be different. */
 	@Test
 	public void getInstance_LocalScope() throws Exception {

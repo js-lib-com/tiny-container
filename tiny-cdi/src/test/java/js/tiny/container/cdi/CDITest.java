@@ -1,5 +1,6 @@
 package js.tiny.container.cdi;
 
+
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.not;
@@ -30,6 +31,7 @@ import com.jslib.injector.Key;
 
 import js.tiny.container.fixture.IService;
 import js.tiny.container.fixture.Service;
+import js.tiny.container.fixture.ThreadData;
 import js.tiny.container.spi.IManagedClass;
 import js.tiny.container.spi.InstanceScope;
 import js.tiny.container.spi.InstanceType;
@@ -161,6 +163,28 @@ public class CDITest {
 	}
 
 	@Test
+	public void GivenScopeAPPLICATION_WhenGetInstanceFromDifferentThreads_ThenEqual() throws InterruptedException {
+		// given
+		when(managedClass.getInstanceScope()).thenReturn(InstanceScope.APPLICATION);
+		cdi.configure(Arrays.asList(managedClass));
+
+		// when
+		Object instance = cdi.getInstance(Object.class, instanceListener);
+		
+		final ThreadData<Object> threadData = new ThreadData<>();
+		Thread thread = new Thread(() -> {
+			threadData.instance = cdi.getInstance(Object.class, instanceListener);
+		});
+		thread.start();
+		thread.join();
+
+		// then
+		assertThat(instance, notNullValue());
+		assertThat(threadData.instance, notNullValue());
+		assertThat(instance, equalTo(threadData.instance));
+	}
+
+	@Test
 	public void GivenScopeTHREAD_WhenGetInstanceTwice_ThenEqual() {
 		// given
 		when(managedClass.getInstanceScope()).thenReturn(InstanceScope.THREAD);
@@ -174,6 +198,28 @@ public class CDITest {
 		assertThat(instance1, notNullValue());
 		assertThat(instance2, notNullValue());
 		assertThat(instance1, equalTo(instance2));
+	}
+
+	@Test
+	public void GivenScopeTHREAD_WhenGetInstanceFromDifferentThreads_ThenNotEqual() throws InterruptedException {
+		// given
+		when(managedClass.getInstanceScope()).thenReturn(InstanceScope.THREAD);
+		cdi.configure(Arrays.asList(managedClass));
+
+		// when
+		Object instance = cdi.getInstance(Object.class, instanceListener);
+
+		final ThreadData<Object> threadData = new ThreadData<>();
+		Thread thread = new Thread(() -> {
+			threadData.instance = cdi.getInstance(Object.class, instanceListener);
+		});
+		thread.start();
+		thread.join();
+
+		// then
+		assertThat(instance, notNullValue());
+		assertThat(threadData.instance, notNullValue());
+		assertThat(instance, not(equalTo(threadData.instance)));
 	}
 
 	@Test(expected = IllegalStateException.class)
@@ -270,7 +316,7 @@ public class CDITest {
 		cdi.configure(Arrays.asList(managedClass));
 		// get instance to fill scope provider cache
 		cdi.getInstance(Object.class, instanceListener);
-		
+
 		// when
 		Object instance = cdi.getScopeInstance(Object.class);
 
@@ -283,7 +329,7 @@ public class CDITest {
 		// given
 		when(managedClass.getInstanceScope()).thenReturn(InstanceScope.APPLICATION);
 		cdi.configure(Arrays.asList(managedClass));
-		
+
 		// when
 		Object instance = cdi.getScopeInstance(Object.class);
 
@@ -301,8 +347,7 @@ public class CDITest {
 		// when
 		Object instance1 = cdi.getInstance(Object.class, instanceListener);
 		Object instance2 = cdi.getInstance(Object.class, instanceListener);
-		
-		
+
 		// then
 		assertThat(instance1, equalTo(instance));
 		assertThat(instance2, equalTo(instance));
@@ -311,9 +356,9 @@ public class CDITest {
 	@Test
 	public void GivenBindScope_WhenGetInstance_Then() {
 		// given
-		cdi.bindScope(SessionScoped.class, new IScope() {
+		cdi.bindScope(SessionScoped.class, new IScope<Object>() {
 			@Override
-			public <T> Provider<T> scope(Key<T> key, Provider<T> provisioningProvider) {
+			public Provider<Object> scope(Key<Object> key, Provider<Object> provisioningProvider) {
 				return provisioningProvider;
 			}
 		});
@@ -326,14 +371,5 @@ public class CDITest {
 
 		// then
 		assertThat(instance, notNullValue());
-	}
-
-	@Test
-	public void Given_When_Then() {
-		// given
-
-		// when
-
-		// then
 	}
 }
