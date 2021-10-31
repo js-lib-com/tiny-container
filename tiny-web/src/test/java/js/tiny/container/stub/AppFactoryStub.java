@@ -9,11 +9,6 @@ public class AppFactoryStub implements IFactory {
 	}
 
 	@Override
-	public <T> T getInstance(Class<? super T> interfaceClass, String instanceName) {
-		throw new UnsupportedOperationException("getInstance(String, Class<? super T>)");
-	}
-
-	@Override
 	public <T> T getOptionalInstance(Class<? super T> interfaceClass) {
 		throw new UnsupportedOperationException("getOptionalInstance(Class<? super T>)");
 	}

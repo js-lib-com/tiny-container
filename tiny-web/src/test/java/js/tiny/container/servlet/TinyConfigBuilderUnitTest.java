@@ -34,7 +34,8 @@ public class TinyConfigBuilderUnitTest {
 	public void constructor() throws ConfigException {
 		MockServletContext context = new MockServletContext();
 		context.contextPath = "/test-app";
-		TinyConfigBuilder builder = new TinyConfigBuilder(context, properties);
+		TinyConfigBuilder builder = new TinyConfigBuilder();
+		builder.configure(context, properties);
 		Config config = builder.build();
 
 		assertNotNull(config);
@@ -47,7 +48,8 @@ public class TinyConfigBuilderUnitTest {
 	public void constructor_MissingAppDescriptor() throws ConfigException {
 		MockServletContext context = new MockServletContext();
 		context.contextPath = "/null-app";
-		TinyConfigBuilder builder = new TinyConfigBuilder(context, properties);
+		TinyConfigBuilder builder = new TinyConfigBuilder();
+		builder.configure(context, properties);
 		Config config = builder.build();
 
 		assertNotNull(config);
@@ -60,7 +62,8 @@ public class TinyConfigBuilderUnitTest {
 	public void constructor_BadAppDescriptor() throws ConfigException {
 		MockServletContext context = new MockServletContext();
 		context.contextPath = "/bad-app";
-		new TinyConfigBuilder(context, properties);
+		TinyConfigBuilder builder = new TinyConfigBuilder();
+		builder.configure(context, properties);
 	}
 
 	@Test

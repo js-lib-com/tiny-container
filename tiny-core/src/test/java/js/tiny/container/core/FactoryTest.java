@@ -125,20 +125,6 @@ public class FactoryTest {
 	}
 
 	@Test
-	public void GivenFactoryBound_WhenGetNamedInstance_ThenDelegateImplementation() {
-		// given
-		Factory.bind(factory);
-		when(factory.getInstance(File.class, "file-manager")).thenReturn(instance);
-
-		// when
-		File file = Factory.getInstance(File.class, "file-manager");
-
-		// then
-		assertThat(file, equalTo(instance));
-		verify(factory, times(1)).getInstance(File.class, "file-manager");
-	}
-
-	@Test
 	public void GivenFactoryBound_WhenGetOptionalInstance_ThenDelegateImplementation() {
 		// given
 		Factory.bind(factory);

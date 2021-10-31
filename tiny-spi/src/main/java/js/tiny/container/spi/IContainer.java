@@ -7,9 +7,7 @@ import js.lang.NoProviderException;
 
 /**
  * Container services for framework internals and plugins. This interface is a service provider interface and is not intended
- * for applications consumption.
- * <p>
- * Beside services provided by inherited interfaces container SPI deals mainly with managed classes and methods.
+ * for applications consumption. It deals with container extensions, and managed classes and methods. 
  * 
  * @author Iulian Rotaru
  */

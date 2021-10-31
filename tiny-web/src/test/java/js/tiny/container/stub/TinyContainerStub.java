@@ -15,11 +15,6 @@ public class TinyContainerStub implements ITinyContainer {
 	}
 
 	@Override
-	public <T> T getInstance(Class<? super T> interfaceClass, String instanceName) {
-		throw new UnsupportedOperationException("getInstance(String instanceName, Class<? super T> interfaceClass)");
-	}
-
-	@Override
 	public <T> T getOptionalInstance(Class<? super T> interfaceClass) {
 		throw new UnsupportedOperationException("getOptionalInstance(Class<? super T> interfaceClass)");
 	}

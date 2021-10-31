@@ -98,34 +98,5 @@ public interface IFactory {
 	 * @throws BugError if attempt to assign field to not POJO type.
 	 */
 	<T> T getOptionalInstance(Class<? super T> interfaceClass);
-
-	/**
-	 * Alternative for instance retrieval that allows for multiple instances per scope. Usually, for a given scope - except
-	 * {@link InstanceScope#LOCAL}, there can be a single managed instance. If {@link #getInstance(Class)} is called multiple
-	 * times in a given scope the same managed instance is reused. Named instances allow for multiple instances of a given
-	 * interface class but still reused by name in its scope. It is clearly that does not make sense to use names on local
-	 * instances, although there is no formal restriction.
-	 * 
-	 * When used on a managed class with {@link InstanceType#REMOTE} type, instance name is used for discovery, even if remote
-	 * class URL is defined into class descriptor.
-	 * 
-	 * In other respects this method behaves identically {@link #getInstance(Class)}.
-	 * 
-	 * @param interfaceClass requested interface class,
-	 * @param instanceName instance name.
-	 * @param <T> managed class implementation.
-	 * @return managed instance, created on the fly or reused from caches, but never null.
-	 * @throws IllegalArgumentException if <code>instanceName</code> argument is null or empty or <code>interfaceClass</code>
-	 *             argument is null.
-	 * @throws NoProviderException if interface is a service and no provider found on run-time.
-	 * @throws BugError if no implementation found for requested interface class.
-	 * @throws InvocationException if instance is local and constructor fails.
-	 * @throws ConverterException if attempt to initialize a field with a type for which there is no converter,
-	 * @throws BugError if dependency value cannot be created or circular dependency is detected.
-	 * @throws BugError if instance configuration fails either due to bad configuration object or fail on configuration user
-	 *             defined logic.
-	 * @throws BugError if instance post-construction fails due to exception of user defined logic.
-	 * @throws BugError if attempt to assign field to not POJO type.
-	 */
-	<T> T getInstance(Class<? super T> interfaceClass, String instanceName);
+	
 }

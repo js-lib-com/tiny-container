@@ -307,67 +307,6 @@ public class AppFactoryUnitTest {
 		assertNull(factory.getOptionalInstance(Vehicle.class));
 	}
 
-	// --------------------------------------------------------------------------------------------
-	// GET NAMED INSTANCE
-
-	@Test
-	public void getNamedInstance() throws Exception {
-		String descriptor = "" + //
-				"<audi class='js.tiny.container.core.unit.AppFactoryUnitTest$Car' />" + //
-				"<fiat class='js.tiny.container.core.unit.AppFactoryUnitTest$Car' />";
-		IFactory factory = TestContext.start(config(descriptor));
-
-		Car audi1 = factory.getInstance(Car.class, "audi");
-		Car fiat1 = factory.getInstance(Car.class, "fiat");
-
-		Car audi2 = factory.getInstance(Car.class, "audi");
-		Car fiat2 = factory.getInstance(Car.class, "fiat");
-
-		assertNotNull(audi1);
-		assertNotNull(fiat1);
-		assertTrue(audi1 != fiat1);
-		assertTrue(audi1 == audi2);
-		assertTrue(fiat1 == fiat2);
-	}
-
-	@Test
-	public void getNamedInstance_InstanceFieldInject() throws Exception {
-		String config = "<?xml version='1.0' ?>" + //
-				"<config>" + //
-				"   <managed-classes>" + //
-				"       <car class='js.tiny.container.core.unit.AppFactoryUnitTest$Car' />" + //
-				"   </managed-classes>" + //
-				"	<car>" + //
-				"		<instance-field name='name' value='GERMANY' />" + //
-				"	</car>" + //
-				"</config>";
-
-		IFactory factory = TestContext.start(config);
-		Car audi = factory.getInstance(Car.class, "audi");
-		Car fiat = factory.getInstance(Car.class, "fiat");
-
-		assertNotNull(audi);
-		assertEquals("GERMANY", audi.name);
-		assertNotNull(fiat);
-		assertEquals("GERMANY", fiat.name);
-	}
-
-	/** Null instance name should throw illegal argument. */
-	@Test(expected = IllegalArgumentException.class)
-	public void getNamedInstance_NullInstanceName() throws Exception {
-		String descriptor = "<car class='js.tiny.container.core.unit.AppFactoryUnitTest$Car' scope='LOCAL' />";
-		IFactory factory = TestContext.start(config(descriptor));
-		factory.getInstance(Car.class, (String) null);
-	}
-
-	/** Null interface class should throw illegal argument. */
-	@Test(expected = IllegalArgumentException.class)
-	public void getNamedInstance_NullInterfaceClass() throws Exception {
-		String descriptor = "<car class='js.tiny.container.core.unit.AppFactoryUnitTest$Car' scope='LOCAL' />";
-		IFactory factory = TestContext.start(config(descriptor));
-		factory.getInstance(null, "car");
-	}
-
 	/** Constructor exception should rise invocation exception. */
 	@Test(expected = InvocationException.class)
 	public void getOptionalInstance_ConstructorInvocationException() throws Exception {

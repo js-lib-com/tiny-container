@@ -24,8 +24,8 @@ public class TinySecurityContext implements SecurityContextProvider {
 		Params.notNullOrEmpty(password, "Password");
 
 		// container login occurs in two steps:
-		// 1. verify credentials - throw exception if credentials are rejected
-		// 2. open authenticated session on cookie
+		// 1. verify credentials - throw exception if credentials are rejected: request.login
+		// 2. open authenticated session on cookie: request.authenticate
 
 		final HttpServletRequest request = request(context);
 		try {
@@ -60,7 +60,7 @@ public class TinySecurityContext implements SecurityContextProvider {
 		} catch (IllegalStateException e) {
 			// improbable condition: exception due to invalid session that was just created
 			// it may occur only if another thread temper with login and somehow invalidates the session
-			// while is arguable hard to believe it can theoretically happen an need to be handled
+			// while is arguable hard to believe, it can theoretically happen an need to be handled
 			// anyway, is not a security breach; if storing principal on session fails, session is not authenticated
 			log.debug(e);
 		}

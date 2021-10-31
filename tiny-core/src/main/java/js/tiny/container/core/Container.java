@@ -1,13 +1,9 @@
 package js.tiny.container.core;
 
-import java.lang.reflect.Field;
-import java.lang.reflect.Modifier;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 import java.util.Observer;
 import java.util.ServiceLoader;
@@ -22,18 +18,16 @@ import javax.interceptor.Interceptors;
 
 import org.omg.PortableInterceptor.Interceptor;
 
+import com.jslib.injector.ProvisionException;
+
 import js.converter.Converter;
-import js.converter.ConverterException;
-import js.converter.ConverterRegistry;
 import js.lang.BugError;
 import js.lang.Config;
 import js.lang.ConfigException;
 import js.lang.Configurable;
 import js.lang.InstanceInvocationHandler;
-import js.lang.InvocationException;
 import js.lang.ManagedLifeCycle;
 import js.lang.ManagedPreDestroy;
-import js.lang.NoProviderException;
 import js.log.Log;
 import js.log.LogFactory;
 import js.tiny.container.cdi.CDI;
@@ -93,7 +87,7 @@ import js.util.Params;
  * Implementation bind cannot be hot changed.</dd>
  * <dt>Life span management for managed instances, e.g. application, thread or local scope.</dt>
  * <dd>A new managed instance can be created at every request or can be reused from a cache, depending on managed class scope.
- * Instance scope is declared on managed class descriptor. </dd>
+ * Instance scope is declared on managed class descriptor.</dd>
  * <dt>External configuration of managed instances from application descriptor.</dt>
  * <dd>If a managed instance implements {@link js.lang.Configurable} interface container takes care to configure it from managed
  * class configuration section. Every managed class has an alias into application descriptor that identify configurable section.
@@ -236,7 +230,7 @@ public class Container implements IContainer, Configurable {
 	/** Class logger. */
 	private static final Log log = LogFactory.getLog(Container.class);
 
-	protected final CDI cdi = CDI.create();
+	protected final CDI cdi;
 
 	private final Set<IContainerService> containerServices = new HashSet<>();
 
@@ -271,14 +265,17 @@ public class Container implements IContainer, Configurable {
 	// --------------------------------------------------------------------------------------------
 	// CONTAINER LIFE CYCLE
 
+	public Container() {
+		this(CDI.create());
+	}
+
 	/**
 	 * Create factories and processors for instance retrieval but leave classes pool loading for {@link #config(Config)}. This
 	 * constructor creates built-in factories and processors but subclass may add its own.
 	 */
-	public Container() {
-		log.trace("Container()");
-
-		cdi.bindInstance(IContainer.class, this);
+	public Container(CDI cdi) {
+		this.cdi = cdi;
+		this.cdi.bindInstance(IContainer.class, this);
 
 		// load external and built-in container services
 
@@ -311,66 +308,36 @@ public class Container implements IContainer, Configurable {
 	}
 
 	/**
-	 * Create all managed instances registered to this container via external application descriptor. See
-	 * <a href="#descriptors">Descriptors</a> for details about application and class descriptors.
+	 * Create all managed classes registered to this container via external application descriptor. For every found managed
+	 * class execute {@link #classPostLoadedProcessors}. After managed classes initialization configure CDI.
 	 * 
 	 * @param config container configuration object.
 	 * @throws ConfigException if container configuration fails.
-	 * @throws BugError for insane condition that prevent managed classes initialization.
 	 */
 	@Override
 	public void config(Config config) throws ConfigException {
 		log.trace("config(Config)");
 
-		// normalized class descriptors with overrides resolves; should preserve order from external files
-
-		// it is legal for application descriptor to override already defined class descriptor
-		// for example user defined ro.gnotis.Fax2MailApp overrides library declared js.core.App
-		// <app interface='js.core.App' class='ro.gnotis.Fax2MailApp' />
-
-		// when found an overridden class descriptor replace it with most recent version
-		// only class descriptors with single interface can be overridden
-
-		List<Config> classDescriptors = new ArrayList<>();
-
-		for (Config descriptorsSection : config.findChildren("managed-classes", "web-sockets")) {
-			CLASS_DESCRIPTORS: for (Config classDescriptor : descriptorsSection.getChildren()) {
-				if (!classDescriptor.hasChildren()) {
-					if (!classDescriptor.hasAttribute("interface")) {
-						classDescriptor.setAttribute("interface", classDescriptor.getAttribute("class"));
-					}
-					String interfaceClass = classDescriptor.getAttribute("interface");
-					for (int i = 0; i < classDescriptors.size(); ++i) {
-						if (classDescriptors.get(i).hasAttribute("interface", interfaceClass)) {
-							log.debug("Override class descriptor for interface |%s|.", interfaceClass);
-							classDescriptors.set(i, classDescriptor);
-							continue CLASS_DESCRIPTORS;
-						}
-					}
+		log.debug("Load managed classes from application descriptor.");
+		Config managedClassesSection = config.getChild("managed-classes");
+		if (managedClassesSection != null) {
+			for (Config classDescriptor : managedClassesSection.getChildren()) {
+				if (!classDescriptor.hasAttribute("interface")) {
+					classDescriptor.setAttribute("interface", classDescriptor.getAttribute("class"));
 				}
-				classDescriptors.add(classDescriptor);
+
+				ManagedClass<?> managedClass = new ManagedClass<>(this, classDescriptor);
+				log.debug("Register managed class |%s|.", managedClass);
+				classesPool.put(managedClass.getInterfaceClass(), managedClass);
+
+				classPostLoadedProcessors.forEach(processor -> {
+					processor.onClassPostLoaded(managedClass);
+				});
 			}
 		}
 
-		// second step is to actually populate the classes pool from normalized class descriptors list
-
-		for (Config classDescriptor : classDescriptors) {
-			// create managed class, a single one per class descriptor, even if there are multiple interfaces
-			// if multiple interfaces register the same managed class multiple times, once per interface
-			// this way, no mater which interface is used to retrieve the instance it uses in the end the same managed class
-			ManagedClass<?> managedClass = new ManagedClass<>(this, classDescriptor);
-			log.debug("Register managed class |%s|.", managedClass);
-			classesPool.put(managedClass.getInterfaceClass(), managedClass);
-
-			classPostLoadedProcessors.forEach(processor -> {
-				processor.onClassPostLoaded(managedClass);
-			});
-		}
-
+		log.debug("Configure CDI.");
 		cdi.configure(classesPool.values());
-		
-		convertersInitialization(config);
-		pojoStaticInitialization(config);
 	}
 
 	/** Execute container services registered to {@link #containerStartProcessors}. */
@@ -395,7 +362,7 @@ public class Container implements IContainer, Configurable {
 	public void destroy() {
 		log.trace("destroy()");
 
-		// classes pool is not sorted; also, a managed class may appear multiple times if have multiple interfaces
+		// classes pool is not sorted
 		// bellow sorted set is used to ensure reverse order on managed classes destruction
 
 		// comparison is based on managed class key that is created incrementally
@@ -439,26 +406,10 @@ public class Container implements IContainer, Configurable {
 	}
 
 	// --------------------------------------------------------------------------------------------
-	// INSTANCE RETRIEVAL ALGORITHM
 
 	@Override
 	public <T> T getInstance(Class<? super T> interfaceClass) {
 		Params.notNull(interfaceClass, "Interface class");
-		@SuppressWarnings("unchecked")
-		IManagedClass<T> managedClass = (IManagedClass<T>) classesPool.get(interfaceClass);
-		if (managedClass == null) {
-			throw new BugError("No managed class associated with interface class |%s|.", interfaceClass);
-		}
-
-		// managed class key cannot be null
-		InstanceKey instanceKey = new InstanceKey(managedClass.getKey().toString());
-		return getInstance(managedClass, instanceKey);
-	}
-
-	@Override
-	public <T> T getInstance(Class<? super T> interfaceClass, String instanceName) {
-		Params.notNull(interfaceClass, "Interface class");
-		Params.notNullOrEmpty(instanceName, "Instance name");
 
 		@SuppressWarnings("unchecked")
 		IManagedClass<T> managedClass = (IManagedClass<T>) classesPool.get(interfaceClass);
@@ -466,9 +417,7 @@ public class Container implements IContainer, Configurable {
 			throw new BugError("No managed class associated with interface class |%s|.", interfaceClass);
 		}
 
-		// instance name should be unique and can be used as uniqueness indicator
-		InstanceKey key = new InstanceKey(instanceName);
-		return getInstance(managedClass, key);
+		return getInstance(managedClass);
 	}
 
 	@Override
@@ -485,12 +434,10 @@ public class Container implements IContainer, Configurable {
 		// ServiceInstanceFactory should throw exception that propagates to AppFactory and application code
 		// on the other hand this getOptionalInstance() should return null for missing service provider
 
-		// managed class key cannot be null
-		InstanceKey instanceKey = new InstanceKey(managedClass.getKey().toString());
 		try {
-			return getInstance(managedClass, instanceKey);
-		} catch (NoProviderException e) {
-			// is not an error since application code is prepared for missing provider
+			return getInstance(managedClass);
+		} catch (ProvisionException e) {
+			// log record is not an error since exception is expected
 			log.debug(e);
 			return null;
 		}
@@ -498,47 +445,6 @@ public class Container implements IContainer, Configurable {
 
 	@Override
 	public <T> T getInstance(IManagedClass<T> managedClass) {
-		// managed class key cannot be null
-		InstanceKey instanceKey = new InstanceKey(managedClass.getKey().toString());
-		return getInstance(managedClass, instanceKey);
-	}
-
-	/**
-	 * Utility method that implements the core of managed instances retrieval algorithm. This method gets existing managed
-	 * instance from container caches or creates a new instance. If instance is fresh created add instance services via
-	 * registered instance processors.
-	 * <p>
-	 * Here is managed instance retrieval algorithm part implemented by this method.
-	 * <ol>
-	 * <li>get scope and instance factories for managed class instance scope and type; if managed class instance scope is local
-	 * there is no scope factory,
-	 * <li>if scope factory is null execute local instance factory, that creates a new instance, and returns it; applies
-	 * arguments processing on local instance but not instance processors,
-	 * <li>if there is scope factory do next steps into synchronized block,
-	 * <li>try to retrieve instance from scope factory cache,
-	 * <li>if no cached instance pre-process arguments, create a new instance using instance factory and persist instance on
-	 * scope factory,
-	 * <li>end synchronized block,
-	 * <li>arguments pre-processing takes care to inject constructor dependencies,
-	 * <li>if new instance is created execute instance post-processors into registration order.
-	 * </ol>
-	 * 
-	 * @param managedClass managed class for which instance is to be retrieved,
-	 * @param instanceKey managed instance key,
-	 * @param args optional constructor arguments, used only if new local instance is created.
-	 * @param <T> managed instance type.
-	 * @return managed instance, created on the fly or reused from caches, but never null.
-	 * 
-	 * @throws InvocationException if instance is local and constructor fails.
-	 * @throws NoProviderException if interface is a service and no provider found on run-time.
-	 * @throws ConverterException if attempt to initialize a field with a type for which there is no converter,
-	 * @throws BugError if dependency value cannot be created or circular dependency is detected.
-	 * @throws BugError if instance configuration fails either due to bad configuration object or fail on configuration user
-	 *             defined logic.
-	 * @throws BugError if instance post-construction fails due to exception of user defined logic.
-	 * @throws BugError if attempt to assign field to not POJO type.
-	 */
-	private <T> T getInstance(IManagedClass<T> managedClass, InstanceKey instanceKey) {
 		return cdi.getInstance(managedClass.getInterfaceClass(), (instanceManagedClass, instance) -> {
 			instancePostConstructionProcessors.forEach(processor -> {
 				processor.onInstancePostConstruction(instanceManagedClass, instance);
@@ -555,16 +461,6 @@ public class Container implements IContainer, Configurable {
 	}
 
 	@Override
-	public Iterable<IManagedMethod> getManagedMethods() {
-		return new Iterable<IManagedMethod>() {
-			@Override
-			public Iterator<IManagedMethod> iterator() {
-				return new ManagedMethodsIterator();
-			}
-		};
-	}
-
-	@Override
 	public boolean isManagedClass(Class<?> interfaceClass) {
 		return classesPool.containsKey(interfaceClass);
 	}
@@ -575,11 +471,14 @@ public class Container implements IContainer, Configurable {
 		return (IManagedClass<T>) classesPool.get(interfaceClass);
 	}
 
-	// --------------------------------------------------------------------------------------------
-	// PACKAGE LEVEL METHODS
-
-	Collection<IContainerService> getServices() {
-		return containerServices;
+	@Override
+	public Iterable<IManagedMethod> getManagedMethods() {
+		return new Iterable<IManagedMethod>() {
+			@Override
+			public Iterator<IManagedMethod> iterator() {
+				return new ManagedMethodsIterator();
+			}
+		};
 	}
 
 	// --------------------------------------------------------------------------------------------
@@ -590,7 +489,6 @@ public class Container implements IContainer, Configurable {
 	 * {@link Container#classesPool}. There is no guarantee for a particular order.
 	 * 
 	 * @author Iulian Rotaru
-	 * @version final
 	 */
 	private class ManagedMethodsIterator implements Iterator<IManagedMethod> {
 		/** Managed classes iterator. */
@@ -632,126 +530,18 @@ public class Container implements IContainer, Configurable {
 	}
 
 	// --------------------------------------------------------------------------------------------
-	// UTILITY METHODS
 
-	/**
-	 * Declarative converters registration. This utility scans for <code>converters</code> section into given configuration
-	 * object and register converters via {@link ConverterRegistry#registerConverter(Class, Class)}.
-	 * <p>
-	 * Configuration converter section should respect below syntax.
-	 * 
-	 * <pre>
-	 *  &lt;converters&gt;
-	 *      &lt;type class="java.io.File" converter="js.converter.FileConverter" /&gt;
-	 *      &lt;type class="java.net.URL" converter="js.converter.UrlConverter" /&gt;
-	 *      . . .
-	 *      &lt;type class="java.util.TimeZone" converter="js.converter.TimeZoneConverter" /&gt;
-	 *  &lt;/converters&gt;
-	 * </pre>
-	 * 
-	 * @param config configuration object.
-	 * @throws ConfigException if declared <code>class</code> or <code>converter</code> not found on run-time class path.
-	 */
-	private static void convertersInitialization(Config config) throws ConfigException {
-		Config section = config.getChild("converters");
-		if (section == null) {
-			return;
-		}
-		for (Config el : section.findChildren("type")) {
-			String className = el.getAttribute("class");
-			Class<?> valueType = Classes.forOptionalName(className);
-			if (valueType == null) {
-				throw new ConfigException("Invalid converter configuration. Value type class |%s| not found.", className);
-			}
-
-			String converterName = el.getAttribute("converter");
-			Class<? extends Converter> converterClass = Classes.forOptionalName(converterName);
-			if (converterClass == null) {
-				throw new ConfigException("Invalid converter configuration. Converter class |%s| not found.", converterName);
-			}
-
-			ConverterRegistry.getInstance().registerConverter(valueType, converterClass);
+	public void config(IManagedClass<?>... managedClasses) {
+		for (IManagedClass<?> managedClass : managedClasses) {
+			classesPool.put(managedClass.getInterfaceClass(), managedClass);
 		}
 	}
 
-	/**
-	 * Plain Java objects static initialization. Inject static fields value into arbitrary Java classes. Note that this
-	 * mechanism is not related to managed classes; it acts on regular Java classes and only on static fields.
-	 * <p>
-	 * Here is a sample configuration for Java objects static injection. There is <code>pojo-classes</code> section that list
-	 * all involved classes, with aliases. For every Java class alias there is a section with the same name that has
-	 * <code>static</code> name / value elements related by name to class static fields.
-	 * 
-	 * <pre>
-	 * &lt;pojo-classes&gt;
-	 * 	&lt;email-reader class="com.mobile.EmailReader" /&gt;
-	 * &lt;/pojo-classes&gt;
-	 * ...
-	 * &lt;email-reader&gt;
-	 * 	&lt;static-field name="USER_NAME" value="johndoe" /&gt;
-	 * 	&lt;static-field name="PASSWORD" value="secret" /&gt;
-	 * &lt;/email-reader&gt;
-	 * </pre>
-	 * <p>
-	 * Static values from above configuration sample are injected into class static fields with the same name. String value from
-	 * configuration object is converted to field type.
-	 * 
-	 * <pre>
-	 * public class EmailReader {
-	 * 	private static String USER_NAME;
-	 * 	private static String PASSWORD;
-	 * 	...
-	 * }
-	 * </pre>
-	 * 
-	 * This initializer has side effects: it loads configured Java classes at container startup.
-	 * 
-	 * @param config configuration object.
-	 * @throws ConfigException if configuration object is not valid or class or field not found.
-	 * @throws ConverterException if there is no converter registered for a specific field type.
-	 */
-	private static void pojoStaticInitialization(Config config) throws ConfigException {
-		Config pojoClassesSection = config.getChild("pojo-classes");
-		if (pojoClassesSection == null) {
-			return;
-		}
+	Map<Class<?>, IManagedClass<?>> classesPool() {
+		return classesPool;
+	}
 
-		for (Config pojoClassElement : pojoClassesSection.getChildren()) {
-			String pojoClassName = pojoClassElement.getAttribute("class");
-			if (pojoClassName == null) {
-				throw new ConfigException("Invalid POJO class element. Missing <class> attribute.");
-			}
-			Config configSection = config.getChild(pojoClassElement.getName());
-			Class<?> pojoClass = Classes.forOptionalName(pojoClassName);
-			if (pojoClass == null) {
-				throw new ConfigException("Missing configured POJO class |%s|.", pojoClassName);
-			}
-			if (configSection == null) {
-				continue;
-			}
-
-			for (Config staticElement : configSection.findChildren("static-field")) {
-				String fieldName = staticElement.getAttribute("name");
-				if (fieldName == null) {
-					throw new ConfigException("Missing <name> attribute from static field initialization |%s|.", configSection);
-				}
-				if (!staticElement.hasAttribute("value")) {
-					throw new ConfigException("Missing <value> attribute from static field initialization |%s|.", configSection);
-				}
-
-				Field staticField = Classes.getOptionalField(pojoClass, fieldName);
-				if (staticField == null) {
-					throw new ConfigException("Missing POJO static field |%s#%s|.", pojoClassName, fieldName);
-				}
-				int modifiers = staticField.getModifiers();
-				if (!Modifier.isStatic(modifiers)) {
-					throw new ConfigException("Attempt to execute POJO |%s| static initialization on instance field |%s|.", pojoClassName, fieldName);
-				}
-
-				Object value = staticElement.getAttribute("value", staticField.getType());
-				log.debug("Intialize static field |%s#%s| |%s|", pojoClassName, fieldName, value);
-				Classes.setFieldValue(null, staticField, value);
-			}
-		}
+	Collection<IContainerService> getServices() {
+		return containerServices;
 	}
 }

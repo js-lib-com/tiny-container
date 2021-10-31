@@ -334,7 +334,7 @@ public final class ManagedClass<T> implements IManagedClass<T> {
 	private final Set<IContainerService> services = new HashSet<>();
 
 	/**
-	 * Loads this managed class state from class descriptor then delegates {@link #scanAnnotations()}. Annotations scanning is
+	 * Loads this managed class state from class descriptor then delegates {@link #scan()}. Annotations scanning is
 	 * performed only if this managed class type requires implementation, see {@link InstanceType#requiresImplementation()}.
 	 * 
 	 * @param container parent container,
@@ -360,7 +360,7 @@ public final class ManagedClass<T> implements IManagedClass<T> {
 		this.constructor = getDeclaredConstructor(this.implementationClass);
 
 		if (this.instanceType.requiresImplementation()) {
-			scanAnnotations();
+			scan();
 			initializeStaticFields();
 		}
 	}
@@ -389,7 +389,7 @@ public final class ManagedClass<T> implements IManagedClass<T> {
 	 * 
 	 * @throws BugError for insane conditions.
 	 */
-	private void scanAnnotations() {
+	private void scan() {
 		for (Method method : implementationClass.getDeclaredMethods()) {
 			Method interfaceMethod = getInterfaceMethod(method);
 			IManagedMethod managedMethod = new ManagedMethod(this, interfaceMethod);

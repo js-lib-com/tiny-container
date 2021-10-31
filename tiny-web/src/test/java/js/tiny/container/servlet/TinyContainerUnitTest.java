@@ -1,10 +1,10 @@
 package js.tiny.container.servlet;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.when;
 
 import java.io.File;
 import java.io.IOException;
@@ -24,13 +24,18 @@ import javax.servlet.http.HttpSession;
 import javax.servlet.http.HttpSessionEvent;
 
 import org.junit.AfterClass;
+import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.Mock;
+import org.mockito.junit.MockitoJUnitRunner;
 
-import js.lang.BugError;
 import js.lang.Config;
 import js.lang.ConfigBuilder;
 import js.lang.ConfigException;
+import js.tiny.container.cdi.CDI;
+import js.tiny.container.cdi.IInstancePostConstructionListener;
 import js.tiny.container.core.Container;
 import js.tiny.container.spi.IManagedClass;
 import js.tiny.container.unit.HttpServletRequestStub;
@@ -41,7 +46,27 @@ import js.util.Classes;
 import js.util.Files;
 
 @SuppressWarnings({ "unused", "rawtypes" })
+@RunWith(MockitoJUnitRunner.class)
 public class TinyContainerUnitTest {
+
+	@Mock
+	private RequestContext requestContext;
+
+	@Mock
+	private IManagedClass<RequestContext> requestContextManagedClass;
+	
+	@Mock
+	private CDI cdi;
+	@Mock
+	private IInstancePostConstructionListener instanceListener;
+	
+	@Mock
+	private TinyConfigBuilder configBuilder;
+	@Mock
+	private SecurityContextProvider securityProvider;
+
+	private TinyContainer container;
+
 	@BeforeClass
 	public static void beforeClass() {
 		System.setProperty("catalina.base", "fixture/server/tomcat");
@@ -51,6 +76,16 @@ public class TinyContainerUnitTest {
 	public static void afterClass() {
 		new File("test-app").delete();
 		new File("fixture/tomcat/work/Applications/test-app").delete();
+	}
+
+	@Before
+	public void beforeTest() {
+		//when(cdi.getInstance(RequestContext.class, instanceListener)).thenReturn(requestContext);
+		
+		container = new TinyContainer(cdi, configBuilder, securityProvider);
+		
+		when(requestContextManagedClass.getInterfaceClass()).thenReturn(RequestContext.class);
+		container.config(requestContextManagedClass);
 	}
 
 	@Test
@@ -343,291 +378,6 @@ public class TinyContainerUnitTest {
 		String config = "<context interface='js.tiny.container.servlet.RequestContext' class='js.tiny.container.servlet.TinyContainerUnitTest$MockRequestContext' />";
 		TinyContainer container = getContainer(config);
 		assertEquals("1.2.3.4", container.getRemoteAddr());
-	}
-
-	// --------------------------------------------------------------------------------------------
-	// SECURITY CONTEXT INTERFACE
-
-	/**
-	 * Login for servlet container provided authentication should send username and password to HTTP request and should not
-	 * store anything on session attributes.
-	 */
-	@Test
-	public void login_ServletContainer() throws ConfigException {
-		String config = "<context interface='js.tiny.container.servlet.RequestContext' class='js.tiny.container.servlet.TinyContainerUnitTest$MockRequestContext' />";
-		TinyContainer container = getContainer(config);
-
-		assertTrue(container.login("username", "password"));
-
-		MockRequestContext context = container.getInstance(RequestContext.class);
-		MockHttpServletRequest request = context.request;
-
-		assertEquals(1, request.loginProbe);
-		assertEquals("username", request.loginUsername);
-		assertEquals("password", request.loginPassword);
-		assertNull(request.session.attributes.get("principal"));
-	}
-
-	@Test
-	public void login_ServletContainer_Fail() throws ConfigException {
-		String config = "<context interface='js.tiny.container.servlet.RequestContext' class='js.tiny.container.servlet.TinyContainerUnitTest$MockRequestContext' />";
-		TinyContainer container = getContainer(config);
-
-		MockRequestContext context = container.getInstance(RequestContext.class);
-		MockHttpServletRequest request = context.request;
-		request.exception = true;
-
-		assertFalse(container.login("username", "password"));
-
-		assertEquals(0, request.loginProbe);
-		assertNull(request.loginUsername);
-		assertNull(request.loginPassword);
-		assertNull(request.session.attributes.get("principal"));
-	}
-
-	@Test
-	public void login_Application() throws ConfigException {
-		String config = "<context interface='js.tiny.container.servlet.RequestContext' class='js.tiny.container.servlet.TinyContainerUnitTest$MockRequestContext' />";
-		TinyContainer container = getContainer(config);
-
-		class User implements Principal {
-			@Override
-			public String getName() {
-				return "username";
-			}
-		}
-
-		MockRequestContext context = container.getInstance(RequestContext.class);
-		MockHttpServletRequest request = context.request;
-
-		container.login(new User());
-
-		assertEquals(0, request.loginProbe);
-		assertNull(request.loginUsername);
-		assertNull(request.loginPassword);
-
-		Object user = request.session.attributes.get(TinyContainer.ATTR_PRINCIPAL);
-		assertNotNull(user);
-		assertTrue(user instanceof User);
-		assertEquals("username", ((User) user).getName());
-	}
-
-	@Test
-	public void login_Application_Nonce() throws ConfigException {
-		String config = "<context interface='js.tiny.container.servlet.RequestContext' class='js.tiny.container.servlet.TinyContainerUnitTest$MockRequestContext' />";
-		TinyContainer container = getContainer(config);
-
-		MockRequestContext context = container.getInstance(RequestContext.class);
-		MockHttpServletRequest request = context.request;
-		MockHttpSession session = request.session;
-
-		container.login(new NonceUser(10));
-
-		assertEquals(1, session.setMaxInactiveIntervalProbe);
-		assertEquals(10, session.maxInactiveInterval);
-
-		assertEquals(0, request.loginProbe);
-		assertNull(request.loginUsername);
-		assertNull(request.loginPassword);
-
-		Object user = session.attributes.get(TinyContainer.ATTR_PRINCIPAL);
-		assertNotNull(user);
-		assertTrue(user instanceof NonceUser);
-		assertEquals("nonce", ((NonceUser) user).getName());
-	}
-
-	@Test
-	public void login_Application_InvalidateException() throws ConfigException {
-		String config = "<context interface='js.tiny.container.servlet.RequestContext' class='js.tiny.container.servlet.TinyContainerUnitTest$MockRequestContext' />";
-		TinyContainer container = getContainer(config);
-
-		class User implements Principal {
-			@Override
-			public String getName() {
-				return "username";
-			}
-		}
-
-		MockRequestContext context = container.getInstance(RequestContext.class);
-		MockHttpServletRequest request = context.request;
-		MockHttpSession session = request.session;
-		session.exception = true;
-
-		container.login(new User());
-
-		assertEquals(0, request.loginProbe);
-		assertNull(request.loginUsername);
-		assertNull(request.loginPassword);
-		assertNull(request.session.attributes.get("principal"));
-	}
-
-	@Test
-	public void logout() throws ConfigException {
-		String config = "<context interface='js.tiny.container.servlet.RequestContext' class='js.tiny.container.servlet.TinyContainerUnitTest$MockRequestContext' />";
-		TinyContainer container = getContainer(config);
-
-		MockRequestContext context = container.getInstance(RequestContext.class);
-		MockHttpServletRequest request = context.request;
-		MockHttpSession session = request.session;
-
-		container.logout();
-
-		assertEquals(1, request.logoutProbe);
-		assertEquals(1, session.removeAttributeProbe);
-		assertEquals(1, session.invalidateProbe);
-		assertNull(session.attributes.get("principal"));
-	}
-
-	@Test
-	public void logout_OutsideSession() throws ConfigException {
-		String config = "<context interface='js.tiny.container.servlet.RequestContext' class='js.tiny.container.servlet.TinyContainerUnitTest$MockRequestContext' />";
-		TinyContainer container = getContainer(config);
-
-		MockRequestContext context = container.getInstance(RequestContext.class);
-		MockHttpServletRequest request = context.request;
-		request.session = null;
-
-		container.logout();
-		assertEquals(1, request.logoutProbe);
-	}
-
-	@Test
-	public void logout_ServletException() throws ConfigException {
-		String config = "<context interface='js.tiny.container.servlet.RequestContext' class='js.tiny.container.servlet.TinyContainerUnitTest$MockRequestContext' />";
-		TinyContainer container = getContainer(config);
-
-		MockRequestContext context = container.getInstance(RequestContext.class);
-		MockHttpServletRequest request = context.request;
-		request.exception = true;
-		MockHttpSession session = request.session;
-
-		container.logout();
-
-		assertEquals(0, request.logoutProbe);
-		assertEquals(1, session.removeAttributeProbe);
-		assertEquals(1, session.invalidateProbe);
-		assertNull(session.attributes.get("principal"));
-	}
-
-	@Test
-	public void logout_InvalidateException() throws ConfigException {
-		String config = "<context interface='js.tiny.container.servlet.RequestContext' class='js.tiny.container.servlet.TinyContainerUnitTest$MockRequestContext' />";
-		TinyContainer container = getContainer(config);
-
-		MockRequestContext context = container.getInstance(RequestContext.class);
-		MockHttpServletRequest request = context.request;
-		MockHttpSession session = request.session;
-		session.exception = true;
-
-		container.logout();
-
-		assertEquals(1, request.logoutProbe);
-		assertEquals(1, session.removeAttributeProbe);
-		assertEquals(0, session.invalidateProbe);
-		assertNull(session.attributes.get("principal"));
-	}
-
-	@Test(expected = BugError.class)
-	public void login_OutsideHttpRequest() throws ConfigException {
-		String config = "<context interface='js.tiny.container.servlet.RequestContext' class='js.tiny.container.servlet.TinyContainerUnitTest$MockRequestContext' />";
-		TinyContainer container = getContainer(config);
-
-		MockRequestContext context = container.getInstance(RequestContext.class);
-		context.request = null;
-
-		container.login(new NonceUser(10));
-	}
-
-	@Test(expected = BugError.class)
-	public void logout_OutsideHttpRequest() throws ConfigException {
-		String config = "<context interface='js.tiny.container.servlet.RequestContext' class='js.tiny.container.servlet.TinyContainerUnitTest$MockRequestContext' />";
-		TinyContainer container = getContainer(config);
-
-		MockRequestContext context = container.getInstance(RequestContext.class);
-		context.request = null;
-
-		container.logout();
-	}
-
-	@Test
-	public void getUserPrincipal_Application() throws ConfigException {
-		String config = "<context interface='js.tiny.container.servlet.RequestContext' class='js.tiny.container.servlet.TinyContainerUnitTest$MockRequestContext' />";
-		TinyContainer container = getContainer(config);
-		container.login("username", "passsword");
-
-		Principal principal = container.getUserPrincipal();
-		assertNotNull(principal);
-		assertEquals("username", principal.getName());
-	}
-
-	@Test
-	public void getUserPrincipal_Container() throws ConfigException {
-		String config = "<context interface='js.tiny.container.servlet.RequestContext' class='js.tiny.container.servlet.TinyContainerUnitTest$MockRequestContext' />";
-		TinyContainer container = getContainer(config);
-
-		class User implements Principal {
-			@Override
-			public String getName() {
-				return "username";
-			}
-		}
-		container.login(new User());
-
-		Principal principal = container.getUserPrincipal();
-		assertNotNull(principal);
-		assertEquals("username", principal.getName());
-	}
-
-	@Test
-	public void getUserPrincipal_Container_NoSession() throws ConfigException {
-		String config = "<context interface='js.tiny.container.servlet.RequestContext' class='js.tiny.container.servlet.TinyContainerUnitTest$MockRequestContext' />";
-		TinyContainer container = getContainer(config);
-
-		MockRequestContext context = container.getInstance(RequestContext.class);
-		MockHttpServletRequest request = context.request;
-
-		class User implements Principal {
-			@Override
-			public String getName() {
-				return "username";
-			}
-		}
-		container.login(new User());
-
-		// invalidate session after login
-		request.session = null;
-		assertNull(container.getUserPrincipal());
-	}
-
-	@Test
-	public void getUserPrincipal_Application_OutsideSession() throws ConfigException {
-		String config = "<context interface='js.tiny.container.servlet.RequestContext' class='js.tiny.container.servlet.TinyContainerUnitTest$MockRequestContext' />";
-		TinyContainer container = getContainer(config);
-
-		MockRequestContext context = container.getInstance(RequestContext.class);
-		MockHttpServletRequest request = context.request;
-
-		class User implements Principal {
-			@Override
-			public String getName() {
-				return "username";
-			}
-		}
-		container.login(new User());
-
-		// invalidate session after login to emulate multithread session tampering
-		request.session.exception = true;
-		assertNull(container.getUserPrincipal());
-	}
-
-	@Test
-	public void isAuthneticated() throws ConfigException {
-		String config = "<context interface='js.tiny.container.servlet.RequestContext' class='js.tiny.container.servlet.TinyContainerUnitTest$MockRequestContext' />";
-		TinyContainer container = getContainer(config);
-
-		assertFalse(container.isAuthenticated());
-		container.login("username", "passsword");
-		assertTrue(container.isAuthenticated());
 	}
 
 	// --------------------------------------------------------------------------------------------

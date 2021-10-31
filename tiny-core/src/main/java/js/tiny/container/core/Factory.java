@@ -51,20 +51,6 @@ public final class Factory {
 	}
 
 	/**
-	 * Delegates {@link IFactory#getInstance(String, Class)}.
-	 * 
-	 * @param instanceName instance name,
-	 * @param interfaceClass requested interface class.
-	 * @param <T> managed class implementation.
-	 * @return managed instance, created on the fly or reused from caches, but never null.
-	 * @throws BugError if application factory is not bound to current thread.
-	 * @see IFactory#getInstance(String, Class)
-	 */
-	public static <T> T getInstance(Class<T> interfaceClass, String instanceName) {
-		return get().getInstance(interfaceClass, instanceName);
-	}
-
-	/**
 	 * Delegates {@link IFactory#getOptionalInstance(Class)}.
 	 * 
 	 * @param interfaceClass requested interface class.

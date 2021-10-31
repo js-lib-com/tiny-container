@@ -4,21 +4,26 @@ import javax.inject.Provider;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
+import com.jslib.injector.IScope;
+import com.jslib.injector.Key;
 import com.jslib.injector.ScopedProvider;
 
 import js.lang.BugError;
-import js.tiny.container.core.Factory;
 
 public class SessionScopeProvider<T> extends ScopedProvider<T> {
-	protected SessionScopeProvider(Provider<T> provider) {
+	
+	private final Key<T> key;
+
+	protected SessionScopeProvider(Key<T> key, Provider<T> provider) {
 		super(provider);
+		this.key = key;
 	}
 
 	@SuppressWarnings("unchecked")
 	@Override
 	public T getScopeInstance() {
 		HttpSession httpSession = getSession();
-		return (T) httpSession.getAttribute(key(provider));
+		return (T) httpSession.getAttribute(key.toScope());
 	}
 
 	@Override
@@ -33,7 +38,7 @@ public class SessionScopeProvider<T> extends ScopedProvider<T> {
 			synchronized (this) {
 				if (instance == null) {
 					instance = provider.get();
-					getSession().setAttribute(key(provider), instance);
+					getSession().setAttribute(key.toScope(), instance);
 				}
 			}
 		}
@@ -54,7 +59,7 @@ public class SessionScopeProvider<T> extends ScopedProvider<T> {
 	 */
 	HttpSession getSession() {
 		// TODO: replace global factory
-		RequestContext requestContext = Factory.getInstance(RequestContext.class);
+		RequestContext requestContext = js.tiny.container.core.Factory.getInstance(RequestContext.class);
 		HttpServletRequest httpRequest = requestContext.getRequest();
 		if (httpRequest == null) {
 			throw new BugError("Invalid web context due to null HTTP request. Cannot create managed instance for |%s| with scope SESSION.", provider.getClass().getCanonicalName());
@@ -64,7 +69,13 @@ public class SessionScopeProvider<T> extends ScopedProvider<T> {
 		return httpRequest.getSession(true);
 	}
 	
-	private static String key(Provider<?> provider) {
-		return provider.getClass().getCanonicalName(); 
-	}	
+	// --------------------------------------------------------------------------------------------
+	
+	public static class Factory implements IScope {
+		@Override
+		public <T> Provider<T> scope(Key<T> key, Provider<T> provider) {
+			return new SessionScopeProvider<>(key, provider);
+		}
+	}
+
 }

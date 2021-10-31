@@ -16,14 +16,15 @@ import javax.servlet.http.HttpSessionListener;
 import js.converter.ConverterRegistry;
 import js.lang.BugError;
 import js.lang.Config;
-import js.lang.ConfigBuilder;
 import js.lang.ConfigException;
 import js.log.Log;
 import js.log.LogContext;
 import js.log.LogFactory;
+import js.tiny.container.cdi.CDI;
 import js.tiny.container.cdi.SessionScoped;
 import js.tiny.container.core.Container;
 import js.tiny.container.core.Factory;
+import js.tiny.container.spi.IFactory;
 import js.tiny.container.spi.InstanceScope;
 
 /**
@@ -181,14 +182,24 @@ public class TinyContainer extends Container implements ServletContextListener, 
 
 	private SecurityContextProvider securityProvider;
 
-	/** Create tiny container instance. */
+	private final TinyConfigBuilder configBuilder;
+
 	public TinyContainer() {
-		super();
-		log.trace("TinyContainer()");
+		this(CDI.create(), new TinyConfigBuilder(), new TinySecurityContext());
+	}
 
-		cdi.bindInstance(ITinyContainer.class, this);
-		cdi.bindScope(SessionScoped.class, new SessionScope());
+	/**
+	 * Test constructor.
+	 */
+	public TinyContainer(CDI cdi, TinyConfigBuilder configBuilder, SecurityContextProvider securityProvider) {
+		super(cdi);
+		log.trace("TinyContainer(CDI)");
+		this.configBuilder = configBuilder;
 
+		this.cdi.bindInstance(ITinyContainer.class, this);
+		this.cdi.bindScope(SessionScoped.class, new SessionScopeProvider.Factory());
+
+		// TODO: remove?
 		for (SecurityContextProvider accessControl : ServiceLoader.load(SecurityContextProvider.class)) {
 			log.info("Found access control implementation |%s|.", accessControl.getClass());
 			if (this.securityProvider != null) {
@@ -197,9 +208,7 @@ public class TinyContainer extends Container implements ServletContextListener, 
 			this.securityProvider = accessControl;
 		}
 
-		if (this.securityProvider == null) {
-			this.securityProvider = new TinySecurityContext();
-		}
+		this.securityProvider = securityProvider;
 	}
 
 	@Override
@@ -276,8 +285,8 @@ public class TinyContainer extends Container implements ServletContextListener, 
 		developmentContext = contextParameters.getProperty("js.tiny.container.dev.context");
 
 		try {
-			ConfigBuilder builder = new TinyConfigBuilder(servletContext, contextParameters);
-			config(builder.build());
+			configBuilder.configure(servletContext, contextParameters);
+			config(configBuilder.build());
 
 			Factory.bind(this);
 			start();

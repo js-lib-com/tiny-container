@@ -48,6 +48,9 @@ public class TinyConfigBuilder extends ConfigBuilder {
 	 */
 	private Config config;
 
+	public TinyConfigBuilder() {
+	}
+
 	/**
 	 * Test constructor creates and empty configuration object with given name.
 	 * 
@@ -64,7 +67,7 @@ public class TinyConfigBuilder extends ConfigBuilder {
 	 * @param properties context properties defining variables to inject on descriptors.
 	 * @throws ConfigException if application descriptor is not well formed or invalid.
 	 */
-	public TinyConfigBuilder(ServletContext context, Properties properties) throws ConfigException {
+	public void configure(ServletContext context, Properties properties) throws ConfigException {
 		config = new Config(getAppName(context.getContextPath()));
 
 		File contextDir = new File(context.getRealPath(""));
