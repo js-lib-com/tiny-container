@@ -3,6 +3,7 @@ package js.tiny.container.core;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 
+import js.tiny.container.service.InstanceFieldsInjectionProcessor;
 import js.tiny.container.spi.IContainer;
 import js.tiny.container.spi.IFactory;
 import js.tiny.container.spi.InstanceScope;

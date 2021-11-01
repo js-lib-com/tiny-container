@@ -10,11 +10,6 @@
 	<dependencies>
 		<dependency>
 			<groupId>${project.parent.groupId}</groupId>
-			<artifactId>tiny-spi</artifactId>
-			<version>${project.parent.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>${project.parent.groupId}</groupId>
 			<artifactId>tiny-cdi</artifactId>
 			<version>${project.parent.version}</version>
 		</dependency>

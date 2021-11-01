@@ -197,7 +197,7 @@ public class TinyContainer extends Container implements ServletContextListener, 
 		this.configBuilder = configBuilder;
 
 		this.cdi.bindInstance(ITinyContainer.class, this);
-		this.cdi.bindScope(SessionScoped.class, new SessionScopeProvider.Factory());
+		this.cdi.bindScope(SessionScoped.class, new SessionScopeProvider.Factory<>());
 
 		// TODO: remove?
 		for (SecurityContextProvider accessControl : ServiceLoader.load(SecurityContextProvider.class)) {

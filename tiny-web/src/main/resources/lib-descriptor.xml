@@ -7,6 +7,6 @@
 		<event-stream class="js.tiny.container.net.EventStream" scope="LOCAL" />
 
 		<json interface="js.json.Json" type="SERVICE" />
-		<template-engine interface="js.template.TemplateEngine" type="SERVICE" />
+		<!--<template-engine interface="js.template.TemplateEngine" type="SERVICE" />-->
 	</managed-classes>
 </config>

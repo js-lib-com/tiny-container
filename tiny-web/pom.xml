@@ -13,5 +13,25 @@
 			<artifactId>tiny-core</artifactId>
 			<version>${project.parent.version}</version>
 		</dependency>
+		<dependency>
+			<groupId>com.js-lib</groupId>
+			<artifactId>tiny-servlet-api</artifactId>
+			<version>1.0-SNAPSHOT</version>
+		</dependency>
+		<dependency>
+			<groupId>com.js-lib</groupId>
+			<artifactId>js-dom-api</artifactId>
+			<version>1.2-SNAPSHOT</version>
+		</dependency>
+		<dependency>
+			<groupId>com.js-lib</groupId>
+			<artifactId>js-json-api</artifactId>
+			<version>2.1-SNAPSHOT</version>
+		</dependency>
+		<dependency>
+			<groupId>commons-fileupload</groupId>
+			<artifactId>commons-fileupload</artifactId>
+			<version>1.3.3</version>
+		</dependency>
 	</dependencies>
 </project>

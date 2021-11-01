@@ -86,7 +86,7 @@ public class CDI {
 		explicitBindings.instances.put(interfaceClass, instance);
 	}
 
-	public void bindScope(Class<? extends Annotation> annotation, IScope scope) {
+	public void bindScope(Class<? extends Annotation> annotation, IScope<?> scope) {
 		if (configured.get()) {
 			throw new IllegalStateException("Attempt to bind scope after injector configuration: " + annotation);
 		}
@@ -151,7 +151,7 @@ public class CDI {
 	 */
 	private class ExplicitBindingModule extends AbstractModule {
 		final Map<Class<?>, Object> instances = new HashMap<>();
-		final Map<Class<? extends Annotation>, IScope> scopes = new HashMap<>();
+		final Map<Class<? extends Annotation>, IScope<?>> scopes = new HashMap<>();
 
 		@SuppressWarnings("unchecked")
 		@Override
