@@ -7,6 +7,9 @@ import javax.annotation.PreDestroy;
 import js.lang.ManagedPreDestroy;
 import js.log.Log;
 import js.log.LogFactory;
+import js.tiny.container.spi.IContainer;
+import js.tiny.container.spi.IContainerService;
+import js.tiny.container.spi.IContainerServiceProvider;
 import js.tiny.container.spi.IInstancePreDestructionProcessor;
 import js.tiny.container.spi.IManagedClass;
 import js.tiny.container.spi.IManagedMethod;
@@ -49,4 +52,14 @@ class InstancePreDestroyProcessor extends BaseInstanceLifeCycle implements IInst
 			log.dump(String.format("Managed instance |%s| pre-destroy fail:", instance.getClass()), t);
 		}
 	}
+	
+	// --------------------------------------------------------------------------------------------
+	
+	/** Java service loader declared on META-INF/services */
+	public static class Service implements IContainerServiceProvider {
+		@Override
+		public IContainerService getService(IContainer container) {
+			return new InstancePreDestroyProcessor();
+		}
+	}	
 }

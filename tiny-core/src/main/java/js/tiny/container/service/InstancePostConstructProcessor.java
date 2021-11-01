@@ -8,6 +8,9 @@ import js.lang.BugError;
 import js.lang.ManagedPostConstruct;
 import js.log.Log;
 import js.log.LogFactory;
+import js.tiny.container.spi.IContainer;
+import js.tiny.container.spi.IContainerService;
+import js.tiny.container.spi.IContainerServiceProvider;
 import js.tiny.container.spi.IInstancePostConstructionProcessor;
 import js.tiny.container.spi.IManagedClass;
 import js.tiny.container.spi.IManagedMethod;
@@ -62,6 +65,16 @@ public class InstancePostConstructProcessor extends BaseInstanceLifeCycle implem
 			method.invoke(instance);
 		} catch (Throwable t) {
 			throw new BugError("Managed instance |%s| post-construct fail: %s", instance, t);
+		}
+	}
+	
+	// --------------------------------------------------------------------------------------------
+	
+	/** Java service loader declared on META-INF/services */
+	public static class Service implements IContainerServiceProvider {
+		@Override
+		public IContainerService getService(IContainer container) {
+			return new InstancePostConstructProcessor();
 		}
 	}
 }
