@@ -51,7 +51,7 @@ public class ManagedMethod implements IManagedMethod {
 	private final String signature;
 
 	/** Method invocation arguments processor. */
-	private final ArgumentsProcessor argumentsProcessor = new ArgumentsProcessor();
+	private final ArgumentsValidator argumentsProcessor = new ArgumentsValidator();
 
 	private final Map<Class<? extends IServiceMeta>, IServiceMeta> serviceMetas = new HashMap<>();
 
@@ -162,7 +162,7 @@ public class ManagedMethod implements IManagedMethod {
 	 */
 	@Override
 	public Object onMethodInvocation(IInvocationProcessorsChain chain, IInvocation invocation) throws Exception {
-		Object[] arguments = argumentsProcessor.preProcessArguments(this, invocation.arguments());
+		Object[] arguments = argumentsProcessor.validateArguments(this, invocation.arguments());
 		return method.invoke(invocation.instance(), arguments);
 	}
 

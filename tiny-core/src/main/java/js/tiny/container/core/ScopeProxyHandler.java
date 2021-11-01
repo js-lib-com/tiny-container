@@ -21,7 +21,7 @@ import js.tiny.container.spi.InstanceScope;
  * This class is designed specifically for {@link InstanceFieldsInjectionProcessor}.
  * 
  * @author Iulian Rotaru
- * @param <T> managed class type.
+ * @param <T> generic managed class type.
  */
 class ScopeProxyHandler<T> implements InvocationHandler {
 	/** Parent container reference. */

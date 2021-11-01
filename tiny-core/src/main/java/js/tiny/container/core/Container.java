@@ -5,28 +5,17 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.Observer;
 import java.util.ServiceLoader;
 import java.util.Set;
 import java.util.TreeSet;
 
-import javax.annotation.security.PermitAll;
-import javax.ejb.Asynchronous;
-import javax.ejb.Remote;
-import javax.inject.Inject;
-import javax.interceptor.Interceptors;
-
-import org.omg.PortableInterceptor.Interceptor;
-
 import com.jslib.injector.ProvisionException;
 
-import js.converter.Converter;
 import js.lang.BugError;
 import js.lang.Config;
 import js.lang.ConfigException;
 import js.lang.Configurable;
 import js.lang.InstanceInvocationHandler;
-import js.lang.ManagedLifeCycle;
 import js.lang.ManagedPreDestroy;
 import js.log.Log;
 import js.log.LogFactory;
@@ -51,183 +40,11 @@ import js.util.Classes;
 import js.util.Params;
 
 /**
- * Container creates managed classes and handle managed instances life cycle, that is, instances creation and caching. Basic
- * container functionality is managed methods invocation, methods that implement application defined logic for dynamic resources
- * generation and services. One can view container as a bridge between servlets and application defined resources and services
- * or as an environment in which an application runs.
- * <p>
- * At is core container deals with managed classes. Container has a pool of managed classes and every managed class has a pool
- * of managed methods. Beside managed life cycle container provides a host of declarative services to managed instances. Anyway,
- * Container class does not implement managed instances services by itself but delegates factories and processors, implemented
- * by js.container package or as plug-ins.
- * 
- * <pre>
- *     +-------------------------------------------------------------------+
- *     | Tiny Container                                                    |
- *     |    +------------+                              +---------------+  | 
- *     |    | Interfaces |                          +---&gt; ManagedMethod |  |
- *     |    +-----^------+       +--------------+   |   +---------------+  |
- *     |          |          +---&gt; ManagedClass +---+                      |
- *     |          |          |   +--------------+   |   +---------------+  |
- *     |    +-----+------+   |                      +---&gt; ManagedMethod |  |
- *  ---O----&gt; Container  +---+                          +---------------+  |
- *     |    +------------+   |                                             |
- *     |                     ~                      +---...                |
- *     |                     |   +--------------+   |                      |
- *     |                     +---&gt; ManagedClass +---+                      |
- *     |                         +--------------+   |                      |
- *     +-------------------------------------------------------------------+
- * </pre>
- * <p>
- * Here is a quick list of services provided, actually orchestrated, by container:
- * <dl>
- * <dt>Declarative implementation binding for managed classes.</dt>
- * <dd>Managed class has interface used by caller to invoke methods on managed instance. Managed instance is create by factory
- * instead of new operator. The actual implementation is declared into class descriptor and bound at container creation.
- * Implementation bind cannot be hot changed.</dd>
- * <dt>Life span management for managed instances, e.g. application, thread or local scope.</dt>
- * <dd>A new managed instance can be created at every request or can be reused from a cache, depending on managed class scope.
- * Instance scope is declared on managed class descriptor.</dd>
- * <dt>External configuration of managed instances from application descriptor.</dt>
- * <dd>If a managed instance implements {@link js.lang.Configurable} interface container takes care to configure it from managed
- * class configuration section. Every managed class has an alias into application descriptor that identify configurable section.
- * </dd>
- * <dt>Managed life cycle for managed instances.</dt>
- * <dd>For managed instances implementing {@link ManagedLifeCycle} interface container invokes post-create and pre-destroy
- * methods after managed instance creation, respective before destroying.</dd>
- * <dt>Declarative transactions, both mutable and immutable.</dt>
- * <dd>A managed class can be marked as transactional, see {@link Transaction} annotation. Container creates a Java Proxy
- * handler and execute managed method inside transaction boundaries.</dd>
- * <dt>Dependency injection for fields and constructor parameters.</dt>
- * <dd>Current container supports two types of dependency injection: field injection using {@link Inject} annotation and
- * constructor injection. Injected instance should be managed instance on its turn or instantiable plain Java class.</dd>
- * <dt>Managed classes static fields initialization from application descriptor.</dt>
- * <dd>Inject value objects declared in application descriptor into static fields from managed class implementation. Container
- * uses {@link Converter} to convert string to value type. Of course static field should not be final.</dd>
- * <dt>Authenticated remote access to managed methods; authentication occurs at method invocation.</dt>
- * <dd>A method annotated with, or owned by a class annotated with {@link Remote} is named net method and is accessible from
- * remote. Remote access is controller by {@link PermitAll} and {@link Private} annotations. A private net method can be
- * accessed only after authentication.</dd>
- * <dt>Declarative asynchronous execution mode for long running logic, executed in separated thread.</dt>
- * <dd>If a managed method is annotated with {@link Asynchronous} container creates a separated thread and execute method
- * asynchronously. Asynchronous method should return void.</dd>
- * <dt>Method invocation listeners. There are interceptors for before, after and around method invocation.</dt>
- * <dd>Invocation listeners provide a naive, but still useful AOP. There is {@link Interceptors} annotation for tagging methods
- * - declaring join points, and related interface to be implemented by interceptors, aka AOP advice. See {@link Interceptor}
- * interface for sample usage.</dd>
- * <dt>Method instrumentation. Uses {@link IInvocationMeter} to monitor method invocations.</dt>
- * <dd>Every managed method has a meter that updates internal counters about execution time, invocation and exceptions count.
- * Invocation meter interface is used to collect counter values. Instrumentation manager, {@link Observer}, collects
- * periodically all managed methods counters and create report on server logger.</dd>
- * </dl>
- * 
- * <h3 id="descriptors">Descriptors</h3>
- * <p>
- * Every application has a descriptor for declarative services and state initialization. Application descriptor is a XML file,
- * with root child elements named <code>sections</code>. Tiny Container uses these <code>sections</code> to group related
- * configurations and here we will focus only on container specific ones.
- * <p>
- * Container adds supplementary semantics to application descriptor: a section element name is known as <code>alias</code> and
- * this alias can be use to refer other section, known as <code>linked</code> section. There are predefined sections, like
- * <code>managed-class</code> and user defined sections, that need to be declared as linked sections into a predefined section,
- * for example <code>processor</code> section.
- * <p>
- * Here are predefined container descriptor sections.
- * <table border="1" style="border-collapse:collapse;" summary="Predefined Sections">
- * <tr>
- * <th>Name
- * <th>Description
- * <th>Linked Section
- * <tr>
- * <td>managed-classes
- * <td>Managed class descriptors.
- * <td>Managed class configuration object.
- * <tr>
- * <td>pojo-classes
- * <td>Plain Java classes static field initialization.
- * <td>List of static fields and respective intial values.
- * <tr>
- * <td>converters
- * <td>Declarative converters.
- * <td>N/A
- * </table>
- * <p>
- * In sample below there is a predefined section <code>managed-class</code> that has element <code>processor</code>. Element is
- * a class descriptor and its name is related to linked section <code>processor</code>, section that is the managed class
- * configuration object. For details about managed classes descriptors see {@link ManagedClass}.
- * 
- * <pre>
- * &lt;managed-classes&gt;
- * 	&lt;processor interface="js.email.Processor" class="js.email.ProcessorImpl" scope="APPLICATION" /&gt;
- * 	...
- * &lt;/managed-classes&gt;
- * 
- * &lt;pojo-classes&gt;
- * 	&lt;email-reader class="com.mobile.EmailReader" /&gt;
- * 	...
- * &lt;/pojo-classes&gt;
- * 
- * &lt;processor repository="/var/www/vhosts/kids-cademy.com/email" files-pattern="*.htm" &gt;
- * 	&lt;property name="mail.transport.protocol" value="smtp" /&gt;
- * 	...
- * &lt;/processor&gt;
- * 
- * &lt;email-reader&gt;
- * 	&lt;static-field name="ACCOUNT" value="john.doe@email.com" /&gt;
- * 	...
- * &lt;/email-reader&gt;
- * 
- * &lt;converters&gt;
- * 	&lt;type class="js.email.MessageID" converter="js.email.MessageIDConverter" /&gt;
- * 	...
- * &lt;/converters&gt;
- * </pre>
- * 
- * For <code>pojo-classes</code> and <code>converters</code> predefined sections see {@link #pojoStaticInitialization(Config)},
- * respective {@link #convertersInitialization(Config)}.
- * 
- * <h3 id="life-cycle">Life Cycle</h3>
- * <p>
- * Container has a managed life cycle on its own. This means it is created automatically, initialized and configured,
- * post-constructed and just before ending its life, pre-destroyed. Accordingly, container's life passes five phases:
- * <ol>
- * <li>Construct container - create factories and processors for instance management but leave classes pool loading for next
- * step, see {@link #Container()},
- * <li>Create managed classes pool - scans application and class descriptors and creates all managed classes described there,
- * see {@link #config(Config)},
- * <li>Start managed classes with managed life cycle - this step should occur after all managed classes were loaded and
- * container is fully initialized, see {@link #start()}; this is because a managed instance may have dependencies on other
- * managed classes for injection,
- * <li>Container is running - this stage has no single entry point; it is the sum of all services container provide while is up
- * and running,
- * <li>Destroy container - destroy and release caches, factories and processors; this is container global clean-up invoked at
- * application unload, see {@link #destroy()}.
- * </ol>
- * 
- * <h3 id="instance-retrieval">Instance Retrieval Algorithm</h3> Instance retrieval is the process of obtaining a managed
- * instance, be it from scope factories caches or fresh created by specialized instance factories.
- * <ol>
- * <li>obtain an instance key based on {@link IManagedClass#getKey()} or instance name,
- * <li>use interface class to retrieve managed class from container classes pool,
- * <li>if managed class not found exit with bug error; if {@link #getOptionalInstance(Class, Object...)} returns null,
- * <li>get scope and instance factories for managed class instance scope and type; if managed class instance scope is local
- * there is no scope factory,
- * <li>if scope factory is null execute local instance factory, that creates a new instance, and returns it; applies arguments
- * processing on local instance but not instance processors,
- * <li>if there is scope factory do next steps into synchronized block,
- * <li>try to retrieve instance from scope factory cache,
- * <li>if no cached instance pre-process arguments, create a new instance using instance factory and persist instance on scope
- * factory,
- * <li>end synchronized block,
- * <li>arguments pre-processing takes care to inject constructor dependencies,
- * <li>if new instance is created execute instance post-processors into registration order.
- * </ol>
- * 
+ * Container core implementation.
+ *  
  * @author Iulian Rotaru
- * @version draft
  */
 public class Container implements IContainer, Configurable {
-	/** Class logger. */
 	private static final Log log = LogFactory.getLog(Container.class);
 
 	protected final CDI cdi;
@@ -261,9 +78,6 @@ public class Container implements IContainer, Configurable {
 	private final FlowProcessorsSet<IInstancePostConstructionProcessor> instancePostConstructionProcessors = new FlowProcessorsSet<>();
 
 	private final FlowProcessorsSet<IInstancePreDestructionProcessor> instancePreDestructionProcessors = new FlowProcessorsSet<>();
-
-	// --------------------------------------------------------------------------------------------
-	// CONTAINER LIFE CYCLE
 
 	public Container() {
 		this(CDI.create());
