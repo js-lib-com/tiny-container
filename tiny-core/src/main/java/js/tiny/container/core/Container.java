@@ -23,7 +23,7 @@ import js.tiny.container.cdi.CDI;
 import js.tiny.container.service.ConfigurableInstanceProcessor;
 import js.tiny.container.service.FlowProcessorsSet;
 import js.tiny.container.service.InstanceFieldsInitializationProcessor;
-import js.tiny.container.service.InstanceFieldsInjectionProcessor;
+import js.tiny.container.service.ResourcesInjectionProcessor;
 import js.tiny.container.service.InstancePostConstructProcessor;
 import js.tiny.container.service.InstanceStartupProcessor;
 import js.tiny.container.service.LoggerInstanceProcessor;
@@ -114,7 +114,7 @@ public class Container implements IContainer, Configurable {
 
 		containerStartProcessors.add(new InstanceStartupProcessor());
 
-		instancePostConstructionProcessors.add(new InstanceFieldsInjectionProcessor());
+		instancePostConstructionProcessors.add(new ResourcesInjectionProcessor());
 		instancePostConstructionProcessors.add(new InstanceFieldsInitializationProcessor());
 		instancePostConstructionProcessors.add(new ConfigurableInstanceProcessor());
 		instancePostConstructionProcessors.add(new InstancePostConstructProcessor());

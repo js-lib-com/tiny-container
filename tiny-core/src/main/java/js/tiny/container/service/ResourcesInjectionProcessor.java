@@ -9,7 +9,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import javax.annotation.Resource;
-import javax.inject.Inject;
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
@@ -17,7 +16,6 @@ import javax.naming.NamingException;
 import js.lang.BugError;
 import js.log.Log;
 import js.log.LogFactory;
-import js.tiny.container.core.DependencyLoader;
 import js.tiny.container.spi.IContainer;
 import js.tiny.container.spi.IContainerService;
 import js.tiny.container.spi.IContainerServiceProvider;
@@ -30,16 +28,23 @@ import js.util.Classes;
 import js.util.Strings;
 
 /**
- * Post processor for instance fields injection. Fields are discovered by managed class based on {@link Inject} annotation and
- * provided to this processor by {@link IManagedClass#getDependencies()}. This class inherits dependency processor and delegates
- * {@link DependencyLoader#getDependencyValue(IManagedClass, Class)} for dependency value processing.
- * <p>
- * In essence this processor scans all dependencies detected by managed class and for every field retrieve its dependency value
- * and inject it reflexively.
+ * Post processor for instance resources injection. Remember that a resource is a service external to container for which there
+ * is a connector. Also term <code>resource</code> refers to simple environment entries, as defined by EJB specification. This
+ * processor injects both resource objects and simple environment entries but is not allowed to inject resources into static
+ * fields.
+ * 
+ * In essence this processor scans for {@link Resource} annotation on managed classes, and for every field retrieves its value
+ * from JNDI and injects it reflexively. Note that only fields from managed class implementation are scanned but not super
+ * classes.
+ * 
+ * {@link Resource} annotation has two means to retrieve objects from JNDI: {@link Resource#lookup()} and
+ * {@link Resource#name()}. For <code>lookup</code> this implementation uses global environment <code>java:global/env</code>
+ * whereas for <code>name</code> uses component relative environment, <code>java:comp/env</code>. If {@link Resource} annotation
+ * has no attribute uses class canonical name followed by field name, separated by slash ('/').
  * 
  * @author Iulian Rotaru
  */
-public class InstanceFieldsInjectionProcessor implements IInstancePostConstructionProcessor, IServiceMetaScanner {
+public class ResourcesInjectionProcessor implements IInstancePostConstructionProcessor, IServiceMetaScanner {
 	private static final Log log = LogFactory.getLog(InstanceFieldsInitializationProcessor.class);
 
 	private static final Map<Integer, Collection<Field>> MANAGED_FIELDS = new HashMap<>();
@@ -47,7 +52,7 @@ public class InstanceFieldsInjectionProcessor implements IInstancePostConstructi
 	private final Context globalEnvironment;
 	private final Context componentEnvironment;
 
-	public InstanceFieldsInjectionProcessor() {
+	public ResourcesInjectionProcessor() {
 		this.globalEnvironment = environment("java:global/env");
 		this.componentEnvironment = environment("java:comp/env");
 	}
@@ -63,6 +68,11 @@ public class InstanceFieldsInjectionProcessor implements IInstancePostConstructi
 		return context;
 	}
 
+	ResourcesInjectionProcessor(Context globalEnvironment, Context componentEnvironment) {
+		this.globalEnvironment = globalEnvironment;
+		this.componentEnvironment = componentEnvironment;
+	}
+
 	@Override
 	public Priority getPriority() {
 		return Priority.INJECT;
@@ -70,7 +80,7 @@ public class InstanceFieldsInjectionProcessor implements IInstancePostConstructi
 
 	@Override
 	public Iterable<IServiceMeta> scanServiceMeta(IManagedClass<?> managedClass) {
-		MANAGED_FIELDS.put(managedClass.getKey(), scanDependencies(managedClass.getImplementationClass()));
+		MANAGED_FIELDS.put(managedClass.getKey(), scanFields(managedClass.getImplementationClass()));
 		return Collections.emptyList();
 	}
 
@@ -80,12 +90,10 @@ public class InstanceFieldsInjectionProcessor implements IInstancePostConstructi
 	}
 
 	/**
-	 * Inject dependencies described by given managed class into related managed instance. For every dependency field retrieve
-	 * its value using {@link DependencyLoader#getDependencyValue(IManagedClass, Class)} and inject it reflexively.
+	 * Initialize resource fields from managed class with value retrieved from JNDI.
 	 * 
 	 * @param managedClass managed class,
 	 * @param instance instance of given managed class.
-	 * @throws BugError if a field dependency cannot be resolved.
 	 */
 	@Override
 	public <T> void onInstancePostConstruction(IManagedClass<T> managedClass, T instance) {
@@ -103,11 +111,8 @@ public class InstanceFieldsInjectionProcessor implements IInstancePostConstructi
 			Object value = null;
 			Resource resourceAnnotation = field.getAnnotation(Resource.class);
 			if (resourceAnnotation != null) {
-				value = getEnvEntryValue(field, resourceAnnotation);
-			} else {
-				value = DependencyLoader.getDependencyValue(managedClass, field.getType());
+				value = getJndiValue(resourceAnnotation, field);
 			}
-
 			if (value == null) {
 				log.debug("Null dependency for field |%s|. Leave it unchanged.", field);
 				continue;
@@ -118,10 +123,23 @@ public class InstanceFieldsInjectionProcessor implements IInstancePostConstructi
 		}
 	}
 
-	private Object getEnvEntryValue(Field field, Resource resourceAnnotation) {
+	/**
+	 * Load JNDI object or simple environment entry identified by {@link Resource} annotation. Returns null if JNDI value is not
+	 * found.
+	 * 
+	 * {@link Resource} annotation has two means to retrieve objects from JNDI: {@link Resource#lookup()} and
+	 * {@link Resource#name()}. For <code>lookup</code> this implementation uses global environment <code>java:global/env</code>
+	 * whereas for <code>name</code> uses component relative environment, <code>java:comp/env</code>. If {@link Resource}
+	 * annotation has no attribute uses class canonical name followed by field name, separated by slash ('/').
+	 * 
+	 * @param resourceAnnotation resource annotation,
+	 * @param field annotated class field, used to infer resource name when resource annotation is empty.
+	 * @return JNDI object or simple environment entry or null if not found.
+	 */
+	private Object getJndiValue(Resource resourceAnnotation, Field field) {
 		String lookupName = resourceAnnotation.lookup();
 		if (!lookupName.isEmpty()) {
-			return getEnvEntryValue(globalEnvironment, lookupName, field.getType());
+			return jndiLookup(globalEnvironment, lookupName);
 		}
 
 		String name = resourceAnnotation.name();
@@ -131,41 +149,48 @@ public class InstanceFieldsInjectionProcessor implements IInstancePostConstructi
 		if (name.startsWith("java:")) {
 			throw new IllegalArgumentException("Resource name should be relative to component environment: " + name);
 		}
-		return getEnvEntryValue(componentEnvironment, name, field.getType());
+		return jndiLookup(componentEnvironment, name);
 	}
 
-	private static Object getEnvEntryValue(Context context, String name, Class<?> type) {
-		if (context == null) {
+	/**
+	 * Perform JNDI object lookup on given naming context. If naming context is null this method silently returns null.
+	 * 
+	 * @param namingContext naming context, possible null,
+	 * @param name JNDI object name relative to naming context.
+	 * @return JNDI object or null if not found.
+	 */
+	private static Object jndiLookup(Context namingContext, String name) {
+		if (namingContext == null) {
 			return null;
 		}
 		Object value = null;
 		try {
-			value = context.lookup(name);
-			log.info("Load environment entry |java:comp/env/%s| of type |%s|.", name, type);
+			value = namingContext.lookup(name);
+			log.info("Load JDNI object |%s/%s| of type |%s|.", namingContext.toString(), name, value.getClass());
 		} catch (NamingException e) {
-			log.warn("Missing environment entry |java:comp/env/%s|.", name);
+			log.warn("Missing JNDI object |%s/%s|.", namingContext.toString(), name);
 		}
 		return value;
 	}
 
 	/**
-	 * Scan class dependencies declared by {@link Inject} annotation. This method scans all fields, no matter private, protected
-	 * or public. Anyway it is considered a bug if inject annotation is found on final or static field.
-	 * <p>
-	 * Returns a collection of reflective fields with accessibility set but in not particular order. If given class argument is
+	 * Scan class resources dependencies declared by {@link Resource} annotation. This method scans all fields, no matter
+	 * private, protected or public. Anyway it is considered a bug if resource annotation is found on final or static field.
+	 * 
+	 * Returns a collection of reflective fields with accessibility set but in not particular order. If given type argument is
 	 * null returns empty collection.
 	 * 
-	 * @param clazz class to scan dependencies for, null tolerated.
+	 * @param type class to scan dependencies for, null tolerated.
 	 * @return dependencies collection, in no particular order.
 	 * @throws BugError if annotation is used on final or static field.
 	 */
-	private static Collection<Field> scanDependencies(Class<?> clazz) {
-		if (clazz == null) {
+	private static Collection<Field> scanFields(Class<?> type) {
+		if (type == null) {
 			return Collections.emptyList();
 		}
 		Collection<Field> dependencies = new ArrayList<>();
-		for (Field field : clazz.getDeclaredFields()) {
-			if (!field.isAnnotationPresent(Inject.class) && !field.isAnnotationPresent(Resource.class)) {
+		for (Field field : type.getDeclaredFields()) {
+			if (!field.isAnnotationPresent(Resource.class)) {
 				continue;
 			}
 			if (Modifier.isFinal(field.getModifiers())) {
@@ -181,19 +206,19 @@ public class InstanceFieldsInjectionProcessor implements IInstancePostConstructi
 	}
 
 	// --------------------------------------------------------------------------------------------
-	// tests access
-
-	Collection<Field> getManagedFields(Integer key) {
-		return MANAGED_FIELDS.get(key);
-	}
-
-	// --------------------------------------------------------------------------------------------
 
 	/** Java service loader declared on META-INF/services */
 	public static class Service implements IContainerServiceProvider {
 		@Override
 		public IContainerService getService(IContainer container) {
-			return new InstanceFieldsInjectionProcessor();
+			return new ResourcesInjectionProcessor();
 		}
+	}
+
+	// --------------------------------------------------------------------------------------------
+	// tests access
+
+	Collection<Field> getManagedFields(Integer key) {
+		return MANAGED_FIELDS.get(key);
 	}
 }
