@@ -1,7 +1,6 @@
 package js.tiny.container.spi;
 
 import java.lang.annotation.Annotation;
-import java.lang.reflect.Constructor;
 import java.util.Set;
 
 import js.lang.Config;
@@ -71,15 +70,6 @@ public interface IManagedClass<T> {
 	 * @see InstanceType#requiresImplementation()
 	 */
 	Class<? extends T> getImplementationClass();
-
-	/**
-	 * Get implementation constructor. Constructor has meaningful value only for local managed classes, that is managed classes
-	 * with implementation. Anyway, if {@link #getImplementationClass()} returns not null this getter should also return not
-	 * null value.
-	 * 
-	 * @return implementation constructor, possible null.
-	 */
-	Constructor<? extends T> getConstructor();
 
 	/**
 	 * Get managed methods owned by this managed class, sequence with no order guaranteed and possible empty. Note that managed

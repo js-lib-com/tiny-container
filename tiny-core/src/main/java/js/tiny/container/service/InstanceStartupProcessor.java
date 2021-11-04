@@ -38,7 +38,6 @@ public class InstanceStartupProcessor implements IContainerStartProcessor {
 	 * Note that this method does not explicitly execute {@link ManagedLifeCycle#postConstruct()} hooks; this hooks are actually
 	 * executed by instance processor, see {link {@link InstancePostConstructProcessor}.
 	 */
-	@SuppressWarnings("unchecked")
 	@Override
 	public void onContainerStart(IContainer container) {
 		// compare first with second to ensure ascending sorting
@@ -51,11 +50,10 @@ public class InstanceStartupProcessor implements IContainerStartProcessor {
 
 		for (IManagedClass<?> managedClass : startupClasses) {
 			// call getInstance to ensure managed instance with managed life cycle is started
-			// if there are more than one single interface peek one, no matter which; the simple way is to peek the first
 			// getInstance() will create instance only if not already exist; returned value is ignored
 
-			log.debug("Create managed instance with managed life cycle |%s|.", managedClass.getInterfaceClass());
-			container.getInstance((Class<? super Object>) managedClass.getInterfaceClass());
+			log.debug("Create managed instance with managed life cycle |%s|.", managedClass);
+			container.getInstance(managedClass);
 		}
 	}
 

@@ -8,6 +8,8 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
+import java.util.Collection;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -89,6 +91,7 @@ public class ContainerLifeCycleTest {
 		assertThat(container.classesPool(), anEmptyMap());
 	}
 
+	@SuppressWarnings("unchecked")
 	@Test
 	public void GivenDefaults_WhenConfig_ThenCDIConfigure() throws ConfigException {
 		// given
@@ -97,7 +100,7 @@ public class ContainerLifeCycleTest {
 		container.config(Mockito.mock(Config.class));
 
 		// then
-		verify(cdi, times(1)).configure(any());
+		verify(cdi, times(1)).configure(any(Collection.class));
 	}
 
 	@Test

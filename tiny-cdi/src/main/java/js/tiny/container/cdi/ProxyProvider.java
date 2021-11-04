@@ -7,6 +7,8 @@ import java.lang.reflect.Proxy;
 
 import javax.inject.Provider;
 
+import com.jslib.injector.IProvider;
+
 import js.lang.BugError;
 import js.lang.InvocationException;
 import js.log.Log;
@@ -20,7 +22,7 @@ import js.tiny.container.spi.IManagedMethod;
  * 
  * @author Iulian Rotaru
  */
-class ProxyProvider<T> implements Provider<T> {
+class ProxyProvider<T> implements IProvider<T> {
 	private static final Log log = LogFactory.getLog(ProxyProvider.class);
 
 	private final IManagedClass<T> managedClass;
@@ -36,6 +38,11 @@ class ProxyProvider<T> implements Provider<T> {
 		log.trace("ProxyProvider(IManagedClass<T>, T)");
 		this.managedClass = managedClass;
 		this.provider = provider;
+	}
+
+	@Override
+	public Class<? extends T> type() {
+		return managedClass.getImplementationClass();
 	}
 
 	@SuppressWarnings("unchecked")

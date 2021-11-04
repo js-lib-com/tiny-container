@@ -23,7 +23,7 @@ import js.lang.BugError;
 import js.lang.InvocationException;
 import js.tiny.container.core.Container;
 import js.tiny.container.spi.IContainer;
-import js.tiny.container.spi.IFactory;
+import js.tiny.container.spi.IContainer;
 import js.tiny.container.spi.IManagedClass;
 import js.tiny.container.spi.InstanceScope;
 import js.tiny.container.stub.ContainerStub;
@@ -48,10 +48,10 @@ public class DependencyProcessorUnitTest {
 	public void getDependencyValue_AppFactory() throws Exception {
 		MockManagedClassSPI<?> managedClass = new MockManagedClassSPI<>(Person.class);
 
-		for (Class<?> clazz : new Class<?>[] { IFactory.class, IContainer.class, Container.class }) {
+		for (Class<?> clazz : new Class<?>[] { IContainer.class, IContainer.class, Container.class }) {
 			Object value = Classes.invoke(processorClass(), "getDependencyValue", managedClass, clazz);
 			assertNotNull(value);
-			assertTrue(value instanceof IFactory);
+			assertTrue(value instanceof IContainer);
 		}
 	}
 
@@ -153,7 +153,7 @@ public class DependencyProcessorUnitTest {
 
 	/**
 	 * ScopeProxyHandler is used by dependency processor to adapt dependencies scopes. Scope proxy handler invoke
-	 * {@link IFactory#getInstance(Class, Object...)} on every method invocation.
+	 * {@link IContainer#getInstance(Class, Object...)} on every method invocation.
 	 */
 	@Test
 	public void scopeProxyHandler() throws Throwable {
@@ -169,7 +169,7 @@ public class DependencyProcessorUnitTest {
 			Human person = new Human();
 
 			@Override
-			public <T> T getInstance(Class<? super T> interfaceClass) {
+			public <T> T getInstance(Class<T> interfaceClass) {
 				assertEquals(Human.class, interfaceClass);
 				return (T) person;
 			}
@@ -202,7 +202,7 @@ public class DependencyProcessorUnitTest {
 	// FIXTURE
 
 	private static class Person {
-		private IFactory factory;
+		private IContainer factory;
 		private Vehicle car;
 		private Pojo pojo;
 	}
@@ -241,7 +241,7 @@ public class DependencyProcessorUnitTest {
 		}
 
 		@Override
-		public <T> T getOptionalInstance(Class<? super T> interfaceClass) {
+		public <T> T getOptionalInstance(Class<T> interfaceClass) {
 			IManagedClass<T> managedClass = (IManagedClass<T>) classesPool.get(interfaceClass);
 			if (managedClass == null) {
 				return null;

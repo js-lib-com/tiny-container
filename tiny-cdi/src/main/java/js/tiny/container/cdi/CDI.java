@@ -1,8 +1,10 @@
 package js.tiny.container.cdi;
 
 import java.lang.annotation.Annotation;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -11,6 +13,7 @@ import javax.inject.Singleton;
 
 import com.jslib.injector.IBindingBuilder;
 import com.jslib.injector.IInjector;
+import com.jslib.injector.IModule;
 import com.jslib.injector.IProvisionListener;
 import com.jslib.injector.IScope;
 import com.jslib.injector.Key;
@@ -18,6 +21,8 @@ import com.jslib.injector.ThreadScoped;
 import com.jslib.injector.impl.AbstractModule;
 import com.jslib.injector.impl.Injector;
 
+import js.lang.Config;
+import js.lang.ConfigException;
 import js.log.Log;
 import js.log.LogFactory;
 import js.tiny.container.spi.IManagedClass;
@@ -74,9 +79,34 @@ public class CDI {
 	 * @param managedClasses container managed classes.
 	 */
 	public void configure(Collection<IManagedClass<?>> managedClasses) {
-		log.trace("configure(Collection<IManagedClass<?>> managedClasses");
+		log.trace("configure(Collection<IManagedClass<?>>");
 		injector.configure(explicitBindings, new ManagedClassesModule(managedClasses));
 		configured.set(true);
+	}
+
+	public Config configure(Object... modules) throws ConfigException {
+		log.trace("configure(Object...)");
+		List<IModule> injectorModules = new ArrayList<>();
+		injectorModules.add(explicitBindings);
+
+		for (Object module : modules) {
+			if (!(module instanceof IModule)) {
+				throw new IllegalArgumentException("Invalid module type " + module.getClass());
+			}
+			injectorModules.add((IModule) module);
+		}
+
+		//configBuilder.getManagedClasses().forEach(managedClass->{});
+		
+		injector.configure(injectorModules.toArray(new IModule[0]));
+
+		CDIConfigBuilder configBuilder = new CDIConfigBuilder();
+		for (Object module : modules) {
+			configBuilder.addModule((IModule) module);
+		}
+
+		//configured.set(true);
+		return configBuilder.build();
 	}
 
 	public <T> void bindInstance(Class<T> interfaceClass, T instance) {
@@ -94,17 +124,18 @@ public class CDI {
 	}
 
 	/**
-	 * Retrieve an instance, be it newly created or reused from a scope cache. Instance to retrieve is identified by the
-	 * interface class. Here the term interface class is used in a broad sense. It is not necessary to be a Java interface; it
-	 * can be an abstract or even a concrete one. The point is that this interface class identifies the instance at injector
+	 * Retrieve an not null instance, be it newly created or reused from a scope cache. Instance to retrieve is identified by
+	 * the interface class. Here the term interface class is used in a broad sense. It is not necessary to be a Java interface;
+	 * it can be an abstract or even a concrete one. The point is that this interface class identifies the instance at injector
 	 * bindings level.
 	 * 
 	 * Depending on injector binding and current context a new instance can be created or one can be reused from a scope cache.
 	 * Instance post construction listener is invoked only if a new instance is created.
 	 * 
-	 * @param interfaceClass interface class used to identify the instance.
+	 * @param interfaceClass interface class used to identify the instance,
 	 * @param instanceListener event listener for instance post construction.
 	 * @return instance, newly created or reused from scope.
+	 * @throws ProvisionException if there is no bindings for requested interface.
 	 * @param <T> instance generic type.
 	 */
 	@SuppressWarnings("unchecked")

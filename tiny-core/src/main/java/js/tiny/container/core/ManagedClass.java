@@ -1,7 +1,6 @@
 package js.tiny.container.core;
 
 import java.lang.annotation.Annotation;
-import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
@@ -10,8 +9,6 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
-
-import javax.inject.Inject;
 
 import js.converter.Converter;
 import js.converter.ConverterException;
@@ -85,9 +82,6 @@ public final class ManagedClass<T> implements IManagedClass<T> {
 	 */
 	private final Class<? extends T> implementationClass;
 
-	/** Cached implementation constructor or null if this managed class has no implementation. */
-	private final Constructor<? extends T> constructor;
-
 	/**
 	 * Optional remote class implementation URL that can be used if this managed class is {@link InstanceType#REMOTE}. This
 	 * field is loaded from <code>url</code> attribute from class descriptor.
@@ -129,9 +123,6 @@ public final class ManagedClass<T> implements IManagedClass<T> {
 
 		this.key = KEY_SEED.getAndIncrement();
 		this.string = buildStringRepresentation(descriptor);
-
-		// get declared constructor return null if no implementation class
-		this.constructor = getDeclaredConstructor(this.implementationClass);
 
 		if (this.instanceType.requiresImplementation()) {
 			scan();
@@ -223,11 +214,6 @@ public final class ManagedClass<T> implements IManagedClass<T> {
 	@Override
 	public Class<? extends T> getImplementationClass() {
 		return implementationClass;
-	}
-
-	@Override
-	public Constructor<? extends T> getConstructor() {
-		return constructor;
 	}
 
 	@Override
@@ -408,63 +394,6 @@ public final class ManagedClass<T> implements IManagedClass<T> {
 			throw new ConfigException("Remote managed class requires <url> attribute. See class descriptor |%s|.", descriptor);
 		}
 		return implementationURL;
-	}
-
-	/**
-	 * Get implementation class constructor. Managed class mandates a single constructor with parameters, no matter if private
-	 * or formal parameters count. If both default constructor and constructor with parameters are defined this method returns
-	 * constructor with parameters. Constructors annotated with {@link TestConstructor} are ignored. It is not allowed to have
-	 * more than a single constructor with parameters, of course less those marked for test. Returns null if implementation
-	 * class is missing.
-	 * 
-	 * @param implementationClass implementation class, possible null.
-	 * @return implementation class constructor or null if given implementation class is null.
-	 * @throws BugError if implementation class is an interface, primitive or array and has no constructor at all.
-	 * @throws BugError if implementation class has more constructors with parameters.
-	 */
-	private static <T> Constructor<? extends T> getDeclaredConstructor(Class<T> implementationClass) {
-		if (implementationClass == null) {
-			return null;
-		}
-		@SuppressWarnings("unchecked")
-		Constructor<? extends T>[] declaredConstructors = (Constructor<? extends T>[]) implementationClass.getDeclaredConstructors();
-		if (declaredConstructors.length == 0) {
-			throw new BugError("Invalid implementation class |%s|. Missing constructor.", implementationClass);
-		}
-		Constructor<? extends T> defaultConstructor = null;
-		Constructor<? extends T> constructor = null;
-
-		for (Constructor<? extends T> declaredConstructor : declaredConstructors) {
-			// synthetic constructors are created by compiler to circumvent JVM limitations, JVM that is not evolving with
-			// the same speed as the language; for example, to allow outer class to access private members on a nested class
-			// compiler creates a constructor with a single argument of very nested class type
-			if (declaredConstructor.isSynthetic()) {
-				continue;
-			}
-
-			if (declaredConstructor.getAnnotation(Inject.class) != null) {
-				constructor = declaredConstructor;
-				break;
-			}
-
-			if (declaredConstructor.getParameterTypes().length == 0) {
-				defaultConstructor = declaredConstructor;
-				continue;
-			}
-			if (constructor != null) {
-				throw new BugError("Implementation class |%s| has not a single constructor with parameters. Use @Inject to declare which constructor to use.", implementationClass);
-			}
-			constructor = declaredConstructor;
-		}
-
-		if (constructor == null) {
-			if (defaultConstructor == null) {
-				throw new BugError("Invalid implementation class |%s|. Missing default constructor.", implementationClass);
-			}
-			constructor = defaultConstructor;
-		}
-		constructor.setAccessible(true);
-		return constructor;
 	}
 
 	/**

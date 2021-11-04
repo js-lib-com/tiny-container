@@ -42,16 +42,6 @@ public class ContainerInterfaceTest {
 	}
 
 	@Test
-	public void Given_WhenIsManagedClass_Then() {
-		// given
-
-		// when
-		container.isManagedClass(Object.class);
-
-		// then
-	}
-
-	@Test
 	public void Given_WhenGetmanagedClass_Then() {
 		// given
 

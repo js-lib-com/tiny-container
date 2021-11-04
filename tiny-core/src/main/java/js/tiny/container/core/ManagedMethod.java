@@ -50,8 +50,7 @@ public class ManagedMethod implements IManagedMethod {
 	/** Managed method signature, mainly for debugging. */
 	private final String signature;
 
-	/** Method invocation arguments processor. */
-	private final ArgumentsValidator argumentsProcessor = new ArgumentsValidator();
+	private final ArgumentsValidator argumentsValidator = new ArgumentsValidator();
 
 	private final Map<Class<? extends IServiceMeta>, IServiceMeta> serviceMetas = new HashMap<>();
 
@@ -162,7 +161,7 @@ public class ManagedMethod implements IManagedMethod {
 	 */
 	@Override
 	public Object onMethodInvocation(IInvocationProcessorsChain chain, IInvocation invocation) throws Exception {
-		Object[] arguments = argumentsProcessor.validateArguments(this, invocation.arguments());
+		Object[] arguments = argumentsValidator.validateArguments(this, invocation.arguments());
 		return method.invoke(invocation.instance(), arguments);
 	}
 

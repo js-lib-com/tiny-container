@@ -8,10 +8,10 @@ import js.log.Log;
 import js.log.LogFactory;
 import js.tiny.container.spi.IContainer;
 import js.tiny.container.spi.IInvocation;
-import js.tiny.container.spi.IMethodInvocationProcessor;
 import js.tiny.container.spi.IInvocationProcessorsChain;
 import js.tiny.container.spi.IManagedClass;
 import js.tiny.container.spi.IManagedMethod;
+import js.tiny.container.spi.IMethodInvocationProcessor;
 import js.tiny.container.spi.IServiceMeta;
 import js.tiny.container.spi.IServiceMetaScanner;
 import js.util.Classes;
@@ -55,7 +55,6 @@ final class InterceptorService implements IMethodInvocationProcessor, IServiceMe
 		return servicesMeta;
 	}
 
-	@SuppressWarnings("unchecked")
 	@Override
 	public Object onMethodInvocation(IInvocationProcessorsChain chain, IInvocation invocation) throws Exception {
 		final IManagedMethod managedMethod = invocation.method();
@@ -69,12 +68,9 @@ final class InterceptorService implements IMethodInvocationProcessor, IServiceMe
 			return chain.invokeNextProcessor(invocation);
 		}
 
-		Interceptor interceptor;
-		Class<? extends Interceptor> interceptorClass = intercepted.value();
-		if (container.isManagedClass(interceptorClass)) {
-			interceptor = container.getInstance((Class<Interceptor>) interceptorClass);
-		} else {
-			interceptor = Classes.newInstance(interceptorClass);
+		Interceptor interceptor = container.getOptionalInstance(intercepted.value());
+		if (interceptor == null) {
+			interceptor = Classes.newInstance(intercepted.value());
 		}
 
 		if (interceptor instanceof PreInvokeInterceptor) {

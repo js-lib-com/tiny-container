@@ -242,14 +242,9 @@ public class ManagedMethodUnitTest {
 	private static class MockContainer extends ContainerStub {
 		public Object managedInstance;
 
-		@Override
-		public boolean isManagedClass(Class<?> interfaceClass) {
-			return managedInstance != null;
-		}
-
 		@SuppressWarnings("unchecked")
 		@Override
-		public <T> T getInstance(Class<? super T> interfaceClass) {
+		public <T> T getInstance(Class<T> interfaceClass) {
 			return (T) managedInstance;
 		}
 	}

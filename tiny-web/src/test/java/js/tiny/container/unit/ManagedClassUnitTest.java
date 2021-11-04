@@ -61,7 +61,6 @@ public class ManagedClassUnitTest {
 
 		Constructor<PojoImpl> constructor = PojoImpl.class.getDeclaredConstructor();
 		assertNotNull(constructor);
-		assertEquals(constructor, managedClass.getConstructor());
 
 		Map<Method, IManagedMethod> methodsPool = Classes.getFieldValue(managedClass, "methodsPool");
 		assertNotNull(methodsPool);
@@ -83,7 +82,6 @@ public class ManagedClassUnitTest {
 
 		Constructor<PojoImpl> constructor = PojoImpl.class.getDeclaredConstructor();
 		assertNotNull(constructor);
-		assertEquals(constructor, managedClass.getConstructor());
 
 		Map<Method, IManagedMethod> methodsPool = Classes.getFieldValue(managedClass, "methodsPool");
 		assertNotNull(methodsPool);
@@ -283,19 +281,6 @@ public class ManagedClassUnitTest {
 	public void badImplementationClass() throws Exception {
 		String config = "<test class='js.tiny.container.unit.ManagedClassUnitTest$Car' interface='js.tiny.container.unit.ManagedClassUnitTest$Car' scope='THREAD' />";
 		getManagedClass(config(config));
-	}
-
-	// --------------------------------------------------------------------------------------------
-	// MANAGED CLASS UTILITY METHODS
-
-	@Test(expected = BugError.class)
-	public void getDeclaredConstructor_BadImplementationClass() throws Exception {
-		Classes.invoke(ManagedClass.class, "getDeclaredConstructor", Car.class);
-	}
-
-	@Test(expected = BugError.class)
-	public void getDeclaredConstructor_MultipleConstructors() throws Exception {
-		Classes.invoke(ManagedClass.class, "getDeclaredConstructor", MultipleConstructors.class);
 	}
 
 	// --------------------------------------------------------------------------------------------

@@ -10,12 +10,12 @@ import js.tiny.container.spi.IManagedMethod;
 
 public class TinyContainerStub implements ITinyContainer {
 	@Override
-	public <T> T getInstance(Class<? super T> interfaceClass) {
+	public <T> T getInstance(Class<T> interfaceClass) {
 		throw new UnsupportedOperationException("getInstance(Class<? super T> interfaceClass)");
 	}
 
 	@Override
-	public <T> T getOptionalInstance(Class<? super T> interfaceClass) {
+	public <T> T getOptionalInstance(Class<T> interfaceClass) {
 		throw new UnsupportedOperationException("getOptionalInstance(Class<? super T> interfaceClass)");
 	}
 
@@ -52,11 +52,6 @@ public class TinyContainerStub implements ITinyContainer {
 	@Override
 	public <T> T getInstance(IManagedClass<T> managedClass) {
 		throw new UnsupportedOperationException("getInstance(ManagedClassSPI managedClass)");
-	}
-
-	@Override
-	public boolean isManagedClass(Class<?> interfaceClass) {
-		throw new UnsupportedOperationException("isManagedClass(Class<?> interfaceClass)");
 	}
 
 	@Override

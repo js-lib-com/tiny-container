@@ -26,7 +26,6 @@ import js.lang.ConfigException;
 import js.lang.Configurable;
 import js.tiny.container.servlet.RequestContext;
 import js.tiny.container.spi.IContainer;
-import js.tiny.container.spi.IFactory;
 import js.tiny.container.unit.TestContext;
 import js.util.Classes;
 import js.util.Strings;
@@ -103,7 +102,7 @@ public class ViewManagerUnitTest {
 		when(request.getContextPath()).thenReturn("/test-app");
 		when(request.getLocale()).thenReturn(Locale.US);
 
-		IFactory factory = TestContext.start();
+		IContainer factory = TestContext.start();
 		RequestContext context = factory.getInstance(RequestContext.class);
 		context.attach(request, response);
 
@@ -125,7 +124,7 @@ public class ViewManagerUnitTest {
 		HttpServletRequest request = mock(HttpServletRequest.class);
 		HttpServletResponse response = mock(HttpServletResponse.class);
 
-		IFactory factory = TestContext.start();
+		IContainer factory = TestContext.start();
 		RequestContext context = factory.getInstance(RequestContext.class);
 		context.attach(request, response);
 

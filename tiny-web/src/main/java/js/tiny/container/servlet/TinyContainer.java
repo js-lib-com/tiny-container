@@ -24,7 +24,6 @@ import js.tiny.container.cdi.CDI;
 import js.tiny.container.cdi.SessionScoped;
 import js.tiny.container.core.Container;
 import js.tiny.container.core.Factory;
-import js.tiny.container.spi.IFactory;
 import js.tiny.container.spi.InstanceScope;
 
 /**
@@ -62,7 +61,7 @@ import js.tiny.container.spi.InstanceScope;
  * <li>initialize {@link #contextParameters} from external descriptors,
  * <li>create {@link TinyConfigBuilder} that parses application descriptor,
  * <li>configure tiny container with created configuration object, see {@link #config(Config)},
- * <li>bind tiny container instance to master factory, see {@link Factory#bind(IFactory)},
+ * <li>bind tiny container instance to master factory,
  * <li>finalize tiny container creation by calling {@link #start()}.
  * </ul>
  * <p>

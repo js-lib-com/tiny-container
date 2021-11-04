@@ -1,7 +1,6 @@
 package js.tiny.container.stub;
 
 import java.lang.annotation.Annotation;
-import java.lang.reflect.Constructor;
 import java.util.Set;
 
 import js.lang.Config;
@@ -22,11 +21,6 @@ public class ManagedClassSpiStub<T> implements IManagedClass<T> {
 	@Override
 	public Integer getKey() {
 		throw new UnsupportedOperationException("getKey()");
-	}
-
-	@Override
-	public Constructor<? extends T> getConstructor() {
-		throw new UnsupportedOperationException("getConstructor()");
 	}
 
 	@Override

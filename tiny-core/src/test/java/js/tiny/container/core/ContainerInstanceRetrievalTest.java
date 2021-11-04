@@ -17,7 +17,6 @@ import org.mockito.junit.MockitoJUnitRunner;
 
 import com.jslib.injector.ProvisionException;
 
-import js.lang.BugError;
 import js.tiny.container.cdi.CDI;
 import js.tiny.container.spi.IManagedClass;
 
@@ -66,9 +65,10 @@ public class ContainerInstanceRetrievalTest {
 	}
 
 	/** Requested managed class is not registered to container. */
-	@Test(expected = BugError.class)
+	@Test(expected = ProvisionException.class)
 	public void GivenMissingManagedClass_WhenGetInstance_ThenException() {
 		// given
+		when(cdi.getInstance(eq(Object.class), any())).thenThrow(ProvisionException.class);
 
 		// when
 		container.getInstance(Object.class);
@@ -119,13 +119,14 @@ public class ContainerInstanceRetrievalTest {
 	@Test
 	public void GivenMissingManagedClass_WhenGetOptionalInstance_ThenNull() {
 		// given
+		when(cdi.getInstance(eq(Object.class), any())).thenThrow(ProvisionException.class);
 
 		// when
 		Object instance = container.getOptionalInstance(Object.class);
 
 		// then
 		assertThat(instance, nullValue());
-		verify(cdi, times(0)).getInstance(any(), any());
+		verify(cdi, times(1)).getInstance(any(), any());
 	}
 
 	@Test(expected = IllegalArgumentException.class)

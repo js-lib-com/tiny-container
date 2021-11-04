@@ -5,7 +5,6 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
-import java.lang.reflect.Constructor;
 import java.lang.reflect.Proxy;
 import java.util.Collections;
 
@@ -159,17 +158,6 @@ public class InstanceAlgorithmUnitTest {
 		@Override
 		public Class<? extends T> getImplementationClass() {
 			return (Class<? extends T>) implementationClass;
-		}
-
-		@SuppressWarnings("unchecked")
-		@Override
-		public Constructor<? extends T> getConstructor() {
-			try {
-				return (Constructor<? extends T>) implementationClass.getConstructor();
-			} catch (NoSuchMethodException e) {
-			} catch (SecurityException e) {
-			}
-			return null;
 		}
 
 		@Override

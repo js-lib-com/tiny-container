@@ -106,12 +106,6 @@ public class ManagedClassSpiConformanceTest {
 	}
 
 	@Test
-	public void getConstructor() throws Exception {
-		String config = "<test class='js.tiny.container.unit.ManagedClassSpiConformanceTest$CarImpl' />";
-		assertEquals(CarImpl.class.getDeclaredConstructor(), getManagedClass(config(config)).getConstructor());
-	}
-
-	@Test
 	public void getManagedMethods_PROXY() throws Exception {
 		String config = "<test interface='js.tiny.container.unit.ManagedClassSpiConformanceTest$Car' class='js.tiny.container.unit.ManagedClassSpiConformanceTest$CarImpl' type='PROXY' />";
 		List<String> methodNames = new ArrayList<>();

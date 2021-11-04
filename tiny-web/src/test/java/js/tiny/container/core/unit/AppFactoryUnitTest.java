@@ -18,7 +18,7 @@ import org.junit.Test;
 import js.lang.BugError;
 import js.lang.InvocationException;
 import js.lang.NoProviderException;
-import js.tiny.container.spi.IFactory;
+import js.tiny.container.spi.IContainer;
 import js.tiny.container.unit.TestContext;
 
 @Ignore
@@ -34,7 +34,7 @@ public class AppFactoryUnitTest {
 	@Test
 	public void getInstance_ConstructorArguments() throws Exception {
 		String descriptor = "<person class='js.tiny.container.core.unit.AppFactoryUnitTest$Person' scope='LOCAL' />";
-		IFactory factory = TestContext.start(config(descriptor));
+		IContainer factory = TestContext.start(config(descriptor));
 		Person person = factory.getInstance(Person.class);
 		assertNotNull(person);
 	}
@@ -42,7 +42,7 @@ public class AppFactoryUnitTest {
 	@Test
 	public void getInstance_ApplicationScope() throws Exception {
 		String descriptor = "<car class='js.tiny.container.core.unit.AppFactoryUnitTest$Car' scope='APPLICATION' />";
-		IFactory factory = TestContext.start(config(descriptor));
+		IContainer factory = TestContext.start(config(descriptor));
 
 		Car car1 = factory.getInstance(Car.class);
 		Car car2 = factory.getInstance(Car.class);
@@ -58,7 +58,7 @@ public class AppFactoryUnitTest {
 	@Test
 	public void getInstance_CrossThreadApplicationScope() throws Exception {
 		String descriptor = "<car class='js.tiny.container.core.unit.AppFactoryUnitTest$Car' scope='APPLICATION' />";
-		final IFactory factory = TestContext.start(config(descriptor));
+		final IContainer factory = TestContext.start(config(descriptor));
 
 		class TestRunnable implements Runnable {
 			private Car car;
@@ -82,7 +82,7 @@ public class AppFactoryUnitTest {
 	@Test
 	public void getInstance_LocalScope() throws Exception {
 		String descriptor = "<car class='js.tiny.container.core.unit.AppFactoryUnitTest$Car' scope='LOCAL' />";
-		IFactory factory = TestContext.start(config(descriptor));
+		IContainer factory = TestContext.start(config(descriptor));
 
 		Car car1 = factory.getInstance(Car.class);
 		Car car2 = factory.getInstance(Car.class);
@@ -96,7 +96,7 @@ public class AppFactoryUnitTest {
 	@Test
 	public void getInstance_PojoType() throws Exception {
 		String descriptor = "<car class='js.tiny.container.core.unit.AppFactoryUnitTest$Car' type='POJO' />";
-		IFactory factory = TestContext.start(config(descriptor));
+		IContainer factory = TestContext.start(config(descriptor));
 		Car car = factory.getInstance(Car.class);
 		assertFalse(Proxy.isProxyClass(car.getClass()));
 	}
@@ -104,14 +104,14 @@ public class AppFactoryUnitTest {
 	@Test
 	public void getInstance_ContainerType() throws Exception {
 		String descriptor = "<car interface='js.tiny.container.core.unit.AppFactoryUnitTest$Product' class='js.tiny.container.core.unit.AppFactoryUnitTest$Car' type='PROXY' />";
-		IFactory factory = TestContext.start(config(descriptor));
+		IContainer factory = TestContext.start(config(descriptor));
 		Product product = factory.getInstance(Product.class);
 		assertTrue(Proxy.isProxyClass(product.getClass()));
 	}
 
 	public void getInstance_RemoteType() throws Exception {
 		String descriptor = "<product interface='js.tiny.container.core.unit.AppFactoryUnitTest$Product' type='REMOTE' url='http://localhost/' />";
-		IFactory factory = TestContext.start(config(descriptor));
+		IContainer factory = TestContext.start(config(descriptor));
 
 		Product product = factory.getInstance(Product.class);
 		assertNotNull(product);
@@ -134,7 +134,7 @@ public class AppFactoryUnitTest {
 		Product product = null;
 		try {
 			String descriptor = "<product interface='js.tiny.container.core.unit.AppFactoryUnitTest$Product' type='SERVICE' />";
-			IFactory factory = TestContext.start(config(descriptor));
+			IContainer factory = TestContext.start(config(descriptor));
 			product = factory.getInstance(Product.class);
 		} finally {
 			Thread.currentThread().setContextClassLoader(contextClassLoader);
@@ -149,7 +149,7 @@ public class AppFactoryUnitTest {
 	@Test(expected = InvocationException.class)
 	public void getInstance_ConstructorInvocationException() throws Exception {
 		String descriptor = "<person class='js.tiny.container.core.unit.AppFactoryUnitTest$ExceptionalObject' scope='LOCAL' />";
-		IFactory factory = TestContext.start(config(descriptor));
+		IContainer factory = TestContext.start(config(descriptor));
 		factory.getInstance(ExceptionalObject.class);
 	}
 
@@ -160,7 +160,7 @@ public class AppFactoryUnitTest {
 				"	<interface name='js.tiny.container.core.unit.AppFactoryUnitTest$Product' />" + //
 				"	<interface name='js.tiny.container.core.unit.AppFactoryUnitTest$Vehicle' />" + //
 				"</car>";
-		IFactory factory = TestContext.start(config(descriptor));
+		IContainer factory = TestContext.start(config(descriptor));
 
 		Product product = factory.getInstance(Product.class);
 		Vehicle vehicle = factory.getInstance(Vehicle.class);
@@ -176,7 +176,7 @@ public class AppFactoryUnitTest {
 				"	<interface name='js.tiny.container.core.unit.AppFactoryUnitTest$Product' />" + //
 				"	<interface name='js.tiny.container.core.unit.AppFactoryUnitTest$Vehicle' />" + //
 				"</car>";
-		IFactory factory = TestContext.start(config(descriptor));
+		IContainer factory = TestContext.start(config(descriptor));
 
 		Product product = factory.getInstance(Product.class);
 		Vehicle vehicle = factory.getInstance(Vehicle.class);
@@ -193,7 +193,7 @@ public class AppFactoryUnitTest {
 				"	<interface name='js.tiny.container.core.unit.AppFactoryUnitTest$Product' />" + //
 				"	<interface name='js.tiny.container.core.unit.AppFactoryUnitTest$Vehicle' />" + //
 				"</car>";
-		IFactory factory = TestContext.start(config(descriptor));
+		IContainer factory = TestContext.start(config(descriptor));
 
 		Product product = factory.getInstance(Product.class);
 		Vehicle vehicle = factory.getInstance(Vehicle.class);
@@ -210,7 +210,7 @@ public class AppFactoryUnitTest {
 				"	<interface name='js.tiny.container.core.unit.AppFactoryUnitTest$Product' />" + //
 				"	<interface name='js.tiny.container.core.unit.AppFactoryUnitTest$Vehicle' />" + //
 				"</car>";
-		IFactory factory = TestContext.start(config(descriptor));
+		IContainer factory = TestContext.start(config(descriptor));
 
 		Car car = factory.getInstance(Car.class);
 		Product product = factory.getInstance(Product.class);
@@ -227,7 +227,7 @@ public class AppFactoryUnitTest {
 	@Test(expected = BugError.class)
 	public void getInstance_NotRegisteredManagedClass() throws Exception {
 		String descriptor = "";
-		IFactory factory = TestContext.start(config(descriptor));
+		IContainer factory = TestContext.start(config(descriptor));
 		factory.getInstance(Car.class);
 	}
 
@@ -235,7 +235,7 @@ public class AppFactoryUnitTest {
 	@Test(expected = NoProviderException.class)
 	public void getInstance_NotProvidedService() throws Exception {
 		String descriptor = "<product interface='js.tiny.container.core.unit.AppFactoryUnitTest$Vehicle' type='SERVICE' />";
-		IFactory factory = TestContext.start(config(descriptor));
+		IContainer factory = TestContext.start(config(descriptor));
 		factory.getInstance(Vehicle.class);
 	}
 
@@ -243,8 +243,8 @@ public class AppFactoryUnitTest {
 	@Test(expected = IllegalArgumentException.class)
 	public void getInstance_NullInterfaceClass() throws Exception {
 		String descriptor = "<car class='js.tiny.container.core.unit.AppFactoryUnitTest$Car' scope='LOCAL' />";
-		IFactory factory = TestContext.start(config(descriptor));
-		factory.getInstance(null);
+		IContainer factory = TestContext.start(config(descriptor));
+		factory.getInstance((Class)null);
 	}
 
 	// --------------------------------------------------------------------------------------------
@@ -253,7 +253,7 @@ public class AppFactoryUnitTest {
 	@Test
 	public void getOptionalInstance() throws Exception {
 		String descriptor = "<car class='js.tiny.container.core.unit.AppFactoryUnitTest$Car' scope='LOCAL' />";
-		IFactory factory = TestContext.start(config(descriptor));
+		IContainer factory = TestContext.start(config(descriptor));
 		assertNotNull(factory.getOptionalInstance(Car.class));
 	}
 
@@ -261,7 +261,7 @@ public class AppFactoryUnitTest {
 	@Test
 	public void getOptionalInstance_NotRegisteredManagedClass() throws Exception {
 		String descriptor = "";
-		IFactory factory = TestContext.start(config(descriptor));
+		IContainer factory = TestContext.start(config(descriptor));
 		assertNull(factory.getOptionalInstance(Car.class));
 	}
 
@@ -269,7 +269,7 @@ public class AppFactoryUnitTest {
 	@Test
 	public void getOptionalInstance_NotProvidedService() throws Exception {
 		String descriptor = "<product interface='js.tiny.container.core.unit.AppFactoryUnitTest$Vehicle' type='SERVICE' />";
-		IFactory factory = TestContext.start(config(descriptor));
+		IContainer factory = TestContext.start(config(descriptor));
 		assertNull(factory.getOptionalInstance(Vehicle.class));
 	}
 
@@ -277,7 +277,7 @@ public class AppFactoryUnitTest {
 	@Test(expected = InvocationException.class)
 	public void getOptionalInstance_ConstructorInvocationException() throws Exception {
 		String descriptor = "<person class='js.tiny.container.core.unit.AppFactoryUnitTest$ExceptionalObject' scope='LOCAL' />";
-		IFactory factory = TestContext.start(config(descriptor));
+		IContainer factory = TestContext.start(config(descriptor));
 		factory.getOptionalInstance(ExceptionalObject.class);
 	}
 

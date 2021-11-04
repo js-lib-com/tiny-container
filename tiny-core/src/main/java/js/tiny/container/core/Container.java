@@ -23,10 +23,10 @@ import js.tiny.container.cdi.CDI;
 import js.tiny.container.service.ConfigurableInstanceProcessor;
 import js.tiny.container.service.FlowProcessorsSet;
 import js.tiny.container.service.InstanceFieldsInitializationProcessor;
-import js.tiny.container.service.ResourcesInjectionProcessor;
 import js.tiny.container.service.InstancePostConstructProcessor;
 import js.tiny.container.service.InstanceStartupProcessor;
 import js.tiny.container.service.LoggerInstanceProcessor;
+import js.tiny.container.service.ResourcesInjectionProcessor;
 import js.tiny.container.spi.IClassPostLoadedProcessor;
 import js.tiny.container.spi.IContainer;
 import js.tiny.container.spi.IContainerService;
@@ -41,11 +41,25 @@ import js.util.Params;
 
 /**
  * Container core implementation.
- *  
+ * 
  * @author Iulian Rotaru
  */
 public class Container implements IContainer, Configurable {
 	private static final Log log = LogFactory.getLog(Container.class);
+
+	public static IContainer create(Config config) throws ConfigException {
+		Container container = new Container();
+		container.config(config);
+		container.start();
+		return container;
+	}
+
+	public static IContainer create(Object... modules) throws ConfigException {
+		Container container = new Container();
+		container.config(modules);
+		container.start();
+		return container;
+	}
 
 	protected final CDI cdi;
 
@@ -131,7 +145,17 @@ public class Container implements IContainer, Configurable {
 	@Override
 	public void config(Config config) throws ConfigException {
 		log.trace("config(Config)");
+		load(config);
+		cdi.configure(classesPool.values());
+	}
 
+	public void config(Object... modules) throws ConfigException {
+		config(cdi.configure(modules));
+	}
+
+	private void load(Config config) throws ConfigException {
+		config.dump();
+		
 		log.debug("Load managed classes from application descriptor.");
 		Config managedClassesSection = config.getChild("managed-classes");
 		if (managedClassesSection != null) {
@@ -149,9 +173,6 @@ public class Container implements IContainer, Configurable {
 				});
 			}
 		}
-
-		log.debug("Configure CDI.");
-		cdi.configure(classesPool.values());
 	}
 
 	/** Execute container services registered to {@link #containerStartProcessors}. */
@@ -222,48 +243,33 @@ public class Container implements IContainer, Configurable {
 	// --------------------------------------------------------------------------------------------
 
 	@Override
-	public <T> T getInstance(Class<? super T> interfaceClass) {
+	public <T> T getInstance(Class<T> interfaceClass) {
 		Params.notNull(interfaceClass, "Interface class");
-
-		@SuppressWarnings("unchecked")
-		IManagedClass<T> managedClass = (IManagedClass<T>) classesPool.get(interfaceClass);
-		if (managedClass == null) {
-			throw new BugError("No managed class associated with interface class |%s|.", interfaceClass);
-		}
-
-		return getInstance(managedClass);
+		return cdi.getInstance(interfaceClass, (instanceManagedClass, instance) -> {
+			instancePostConstructionProcessors.forEach(processor -> {
+				processor.onInstancePostConstruction(instanceManagedClass, instance);
+			});
+		});
 	}
 
 	@Override
-	public <T> T getOptionalInstance(Class<? super T> interfaceClass) {
+	public <T> T getOptionalInstance(Class<T> interfaceClass) {
 		Params.notNull(interfaceClass, "Interface class");
-
-		@SuppressWarnings("unchecked")
-		IManagedClass<T> managedClass = (IManagedClass<T>) classesPool.get(interfaceClass);
-		if (managedClass == null) {
-			return null;
-		}
 
 		// here is a piece of code that uses exception for normal logic flow but I do not see alternative
 		// ServiceInstanceFactory should throw exception that propagates to AppFactory and application code
 		// on the other hand this getOptionalInstance() should return null for missing service provider
 
 		try {
-			return getInstance(managedClass);
+			return getInstance(interfaceClass);
 		} catch (ProvisionException e) {
-			// log record is not an error since exception is expected
-			log.debug(e);
 			return null;
 		}
 	}
 
 	@Override
 	public <T> T getInstance(IManagedClass<T> managedClass) {
-		return cdi.getInstance(managedClass.getInterfaceClass(), (instanceManagedClass, instance) -> {
-			instancePostConstructionProcessors.forEach(processor -> {
-				processor.onInstancePostConstruction(instanceManagedClass, instance);
-			});
-		});
+		return getInstance(managedClass.getInterfaceClass());
 	}
 
 	// ----------------------------------------------------
@@ -272,11 +278,6 @@ public class Container implements IContainer, Configurable {
 	@Override
 	public Iterable<IManagedClass<?>> getManagedClasses() {
 		return classesPool.values();
-	}
-
-	@Override
-	public boolean isManagedClass(Class<?> interfaceClass) {
-		return classesPool.containsKey(interfaceClass);
 	}
 
 	@SuppressWarnings("unchecked")

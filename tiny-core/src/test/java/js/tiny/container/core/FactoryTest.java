@@ -17,12 +17,12 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
 import js.lang.BugError;
-import js.tiny.container.spi.IFactory;
+import js.tiny.container.spi.IContainer;
 
 @RunWith(MockitoJUnitRunner.class)
 public class FactoryTest {
 	@Mock
-	private IFactory factory;
+	private IContainer factory;
 	@Mock
 	private File instance;
 	
@@ -35,7 +35,7 @@ public class FactoryTest {
 		// given
 
 		// when
-		ThreadLocal<IFactory> tls = Factory.tls();
+		ThreadLocal<IContainer> tls = Factory.tls();
 
 		// then
 		assertThat(tls, notNullValue());
@@ -45,7 +45,7 @@ public class FactoryTest {
 	/** Factory implementation bound on main thread should be accessible on child thread. */
 	public void GivenParentFactory_WhenGetFromChild_ThenTheSame() throws InterruptedException {
 		class ChildFactory {
-			IFactory factory;
+			IContainer factory;
 		}
 
 		// given
