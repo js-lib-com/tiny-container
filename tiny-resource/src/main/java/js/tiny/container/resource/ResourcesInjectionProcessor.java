@@ -1,4 +1,4 @@
-package js.tiny.container.service;
+package js.tiny.container.resource;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
@@ -45,7 +45,10 @@ import js.util.Strings;
  * @author Iulian Rotaru
  */
 public class ResourcesInjectionProcessor implements IInstancePostConstructionProcessor, IServiceMetaScanner {
-	private static final Log log = LogFactory.getLog(InstanceFieldsInitializationProcessor.class);
+	private static final Log log = LogFactory.getLog(ResourcesInjectionProcessor.class);
+
+	private static final String GLOBAL_ENV = "java:global/env";
+	private static final String COMP_ENV = "java:comp/env";
 
 	private static final Map<Integer, Collection<Field>> MANAGED_FIELDS = new HashMap<>();
 
@@ -53,8 +56,8 @@ public class ResourcesInjectionProcessor implements IInstancePostConstructionPro
 	private final Context componentEnvironment;
 
 	public ResourcesInjectionProcessor() {
-		this.globalEnvironment = environment("java:global/env");
-		this.componentEnvironment = environment("java:comp/env");
+		this.globalEnvironment = environment(GLOBAL_ENV);
+		this.componentEnvironment = environment(COMP_ENV);
 	}
 
 	private static Context environment(String name) {
@@ -108,11 +111,7 @@ public class ResourcesInjectionProcessor implements IInstancePostConstructionPro
 				continue;
 			}
 
-			Object value = null;
-			Resource resourceAnnotation = field.getAnnotation(Resource.class);
-			if (resourceAnnotation != null) {
-				value = getJndiValue(resourceAnnotation, field);
-			}
+			Object value = getJndiValue(field);
 			if (value == null) {
 				log.debug("Null dependency for field |%s|. Leave it unchanged.", field);
 				continue;
@@ -124,22 +123,27 @@ public class ResourcesInjectionProcessor implements IInstancePostConstructionPro
 	}
 
 	/**
-	 * Load JNDI object or simple environment entry identified by {@link Resource} annotation. Returns null if JNDI value is not
-	 * found.
+	 * Load JNDI object or simple environment entry identified by field {@link Resource} annotation. Returns null if JNDI value
+	 * is not found.
 	 * 
-	 * {@link Resource} annotation has two means to retrieve objects from JNDI: {@link Resource#lookup()} and
-	 * {@link Resource#name()}. For <code>lookup</code> this implementation uses global environment <code>java:global/env</code>
-	 * whereas for <code>name</code> uses component relative environment, <code>java:comp/env</code>. If {@link Resource}
-	 * annotation has no attribute uses class canonical name followed by field name, separated by slash ('/').
+	 * Provided class field is guaranteed to have {@link Resource} annotation. {@link Resource} annotation has two means to
+	 * retrieve objects from JNDI: {@link Resource#lookup()} and {@link Resource#name()}. For <code>lookup</code> this
+	 * implementation uses global environment <code>java:global/env</code> whereas for <code>name</code> uses component relative
+	 * environment, <code>java:comp/env</code>.
 	 * 
-	 * @param resourceAnnotation resource annotation,
-	 * @param field annotated class field, used to infer resource name when resource annotation is empty.
+	 * If {@link Resource} annotation has no attribute infer resource <code>name</code> from class field: uses declaring class
+	 * canonical name followed by field name, separated by slash ('/').
+	 * 
+	 * @param field class field, guaranteed to have {@link Resource} annotation.
 	 * @return JNDI object or simple environment entry or null if not found.
 	 */
-	private Object getJndiValue(Resource resourceAnnotation, Field field) {
+	private Object getJndiValue(Field field) {
+		Resource resourceAnnotation = field.getAnnotation(Resource.class);
+		assert resourceAnnotation != null;
+
 		String lookupName = resourceAnnotation.lookup();
 		if (!lookupName.isEmpty()) {
-			return jndiLookup(globalEnvironment, lookupName);
+			return jndiLookup(globalEnvironment, GLOBAL_ENV, lookupName);
 		}
 
 		String name = resourceAnnotation.name();
@@ -149,26 +153,27 @@ public class ResourcesInjectionProcessor implements IInstancePostConstructionPro
 		if (name.startsWith("java:")) {
 			throw new IllegalArgumentException("Resource name should be relative to component environment: " + name);
 		}
-		return jndiLookup(componentEnvironment, name);
+		return jndiLookup(componentEnvironment, COMP_ENV, name);
 	}
 
 	/**
 	 * Perform JNDI object lookup on given naming context. If naming context is null this method silently returns null.
 	 * 
 	 * @param namingContext naming context, possible null,
+	 * @param contextName context name, for logging,
 	 * @param name JNDI object name relative to naming context.
 	 * @return JNDI object or null if not found.
 	 */
-	private static Object jndiLookup(Context namingContext, String name) {
+	private static Object jndiLookup(Context namingContext, String contextName, String name) {
 		if (namingContext == null) {
 			return null;
 		}
 		Object value = null;
 		try {
 			value = namingContext.lookup(name);
-			log.info("Load JDNI object |%s/%s| of type |%s|.", namingContext.toString(), name, value.getClass());
+			log.info("Load JDNI object |%s/%s| of type |%s|.", contextName, name, value.getClass());
 		} catch (NamingException e) {
-			log.warn("Missing JNDI object |%s/%s|.", namingContext.toString(), name);
+			log.warn("Missing JNDI object |%s/%s|.", contextName, name);
 		}
 		return value;
 	}

@@ -1,4 +1,4 @@
-package js.tiny.container.service;
+package js.tiny.container.resource;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
@@ -185,7 +185,7 @@ public class ResourcesInjectionProcessorTest {
 		}
 
 		static String resourceEmptyName() {
-			return "js.tiny.container.service.ResourcesInjectionProcessorTest$BusinessClass/resourceEmpty";
+			return "js.tiny.container.resource.ResourcesInjectionProcessorTest$BusinessClass/resourceEmpty";
 		}
 
 		@Resource(lookup = "resource.lookup")

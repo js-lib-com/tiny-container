@@ -41,6 +41,7 @@
 		<module>tiny-async</module>
 		<module>tiny-timer</module>
 		<module>tiny-interceptor</module>
+		<module>tiny-resource</module>
 	</modules>
 
 	<properties>

@@ -26,7 +26,6 @@ import js.tiny.container.service.InstanceFieldsInitializationProcessor;
 import js.tiny.container.service.InstancePostConstructProcessor;
 import js.tiny.container.service.InstanceStartupProcessor;
 import js.tiny.container.service.LoggerInstanceProcessor;
-import js.tiny.container.service.ResourcesInjectionProcessor;
 import js.tiny.container.spi.IClassPostLoadedProcessor;
 import js.tiny.container.spi.IContainer;
 import js.tiny.container.spi.IContainerService;
@@ -128,7 +127,6 @@ public class Container implements IContainer, Configurable {
 
 		containerStartProcessors.add(new InstanceStartupProcessor());
 
-		instancePostConstructionProcessors.add(new ResourcesInjectionProcessor());
 		instancePostConstructionProcessors.add(new InstanceFieldsInitializationProcessor());
 		instancePostConstructionProcessors.add(new ConfigurableInstanceProcessor());
 		instancePostConstructionProcessors.add(new InstancePostConstructProcessor());
@@ -154,8 +152,6 @@ public class Container implements IContainer, Configurable {
 	}
 
 	private void load(Config config) throws ConfigException {
-		config.dump();
-
 		log.debug("Load managed classes from application descriptor.");
 		for (Config managedClassesSection : config.findChildren("managed-classes")) {
 			for (Config classDescriptor : managedClassesSection.getChildren()) {
