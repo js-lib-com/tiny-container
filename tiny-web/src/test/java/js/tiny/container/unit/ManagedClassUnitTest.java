@@ -22,7 +22,6 @@ import org.junit.Test;
 import js.lang.BugError;
 import js.lang.Config;
 import js.lang.ConfigException;
-import js.lang.Configurable;
 import js.lang.ManagedLifeCycle;
 import js.lang.VarArgs;
 import js.tiny.container.core.Container;
@@ -54,7 +53,6 @@ public class ManagedClassUnitTest {
 		assertEquals(Pojo.class, managedClass.getInterfaceClass());
 		assertEquals(PojoImpl.class, managedClass.getImplementationClass());
 		assertNotNull(managedClass.getContainer());
-		assertNull(managedClass.getConfig());
 		assertEquals("test:js.tiny.container.unit.ManagedClassUnitTest$PojoImpl:js.tiny.container.unit.ManagedClassUnitTest$Pojo:POJO:APPLICATION", managedClass.toString());
 		assertEquals(InstanceType.POJO, managedClass.getInstanceType());
 		assertEquals(InstanceScope.APPLICATION, managedClass.getInstanceScope());
@@ -75,7 +73,6 @@ public class ManagedClassUnitTest {
 		assertEquals(Pojo.class, managedClass.getInterfaceClass());
 		assertEquals(PojoImpl.class, managedClass.getImplementationClass());
 		assertNotNull(managedClass.getContainer());
-		assertNull(managedClass.getConfig());
 		assertEquals("test:js.tiny.container.unit.ManagedClassUnitTest$PojoImpl:js.tiny.container.unit.ManagedClassUnitTest$Pojo:PROXY:APPLICATION", managedClass.toString());
 		assertEquals(InstanceType.PROXY, managedClass.getInstanceType());
 		assertEquals(InstanceScope.APPLICATION, managedClass.getInstanceScope());
@@ -118,41 +115,6 @@ public class ManagedClassUnitTest {
 	}
 
 	// --------------------------------------------------------------------------------------------
-
-	@Test
-	public void configSections() throws Exception {
-		String descriptor = "<?xml version='1.0' ?>" + //
-				"<config>" + //
-				"   <managed-classes>" + //
-				"   	<test class='js.tiny.container.unit.ManagedClassUnitTest$CarImpl' />" + //
-				"   </managed-classes>" + //
-				"	<test>" + //
-				"		<property name='engine' value='ECO' />" + //
-				"	</test>" + //
-				"</config>";
-
-		IManagedClass<?> managedClass = getManagedClass(descriptor);
-		Config config = managedClass.getConfig();
-
-		assertNotNull(config);
-		assertEquals("ECO", config.getProperty("engine"));
-	}
-
-	@Test
-	public void staticFieldInitializing() throws Exception {
-		String descriptor = "<?xml version='1.0' ?>" + //
-				"<config>" + //
-				"   <managed-classes>" + //
-				"   	<test class='js.tiny.container.unit.ManagedClassUnitTest$CarImpl' />" + //
-				"   </managed-classes>" + //
-				"	<test>" + //
-				"		<static-field name='MODEL' value='Opel Corsa' />" + //
-				"	</test>" + //
-				"</config>";
-
-		getManagedClass(descriptor);
-		assertEquals("Opel Corsa", CarImpl.MODEL);
-	}
 
 	@Test
 	public void remoteManagedClass() throws Exception {
@@ -369,18 +331,12 @@ public class ManagedClassUnitTest {
 
 	}
 
-	private static class CarImpl implements Car, Configurable, ManagedLifeCycle {
+	private static class CarImpl implements Car, ManagedLifeCycle {
 		private static String MODEL;
 
 		private String engine;
 		public boolean afterInstanceCreatedInvoked;
 		public boolean beforeInstanceDisposalInvoked;
-
-		@Override
-		public void config(Config configSection) throws ConfigException {
-			assertNotNull(configSection);
-			this.engine = configSection.getProperty("engine");
-		}
 
 		@Override
 		public void postConstruct() throws Exception {

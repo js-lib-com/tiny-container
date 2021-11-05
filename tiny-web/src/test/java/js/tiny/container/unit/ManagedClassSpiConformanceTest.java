@@ -24,8 +24,6 @@ import org.junit.Test;
 
 import js.lang.BugError;
 import js.lang.Config;
-import js.lang.ConfigException;
-import js.lang.Configurable;
 import js.lang.ManagedLifeCycle;
 import js.tiny.container.core.Container;
 import js.tiny.container.core.ManagedClass;
@@ -64,25 +62,6 @@ public class ManagedClassSpiConformanceTest {
 	}
 
 	@Test
-	public void getConfig() throws Exception {
-		String descriptor = "<?xml version='1.0' ?>" + //
-				"<config>" + //
-				"   <managed-classes>" + //
-				"   	<test class='js.tiny.container.unit.ManagedClassSpiConformanceTest$CarImpl' />" + //
-				"   </managed-classes>" + //
-				"	<test>" + //
-				"		<property name='model' value='Opel Corsa' />" + //
-				"	</test>" + //
-				"</config>";
-
-		IManagedClass<?> managedClass = getManagedClass(descriptor);
-		Config config = managedClass.getConfig();
-
-		assertNotNull(config);
-		assertEquals("Opel Corsa", config.getProperty("model"));
-	}
-
-	@Test
 	public void getInterfaceClass() throws Exception {
 		String config = "<test class='js.tiny.container.unit.ManagedClassSpiConformanceTest$CarImpl' />";
 		assertEquals(CarImpl.class, getManagedClass(config(config)).getInterfaceClass());
@@ -113,8 +92,7 @@ public class ManagedClassSpiConformanceTest {
 			methodNames.add(method.getMethod().getName());
 		}
 
-		assertEquals(4, methodNames.size());
-		assertTrue(methodNames.contains("config"));
+		assertEquals(3, methodNames.size());
 		assertTrue(methodNames.contains("postConstruct"));
 		assertTrue(methodNames.contains("preDestroy"));
 		assertTrue(methodNames.contains("getModel"));
@@ -197,11 +175,7 @@ public class ManagedClassSpiConformanceTest {
 		String getModel();
 	}
 
-	private static class CarImpl implements Car, Configurable, ManagedLifeCycle {
-		@Override
-		public void config(Config configSection) throws ConfigException {
-		}
-
+	private static class CarImpl implements Car, ManagedLifeCycle {
 		@Override
 		public void postConstruct() throws Exception {
 		}

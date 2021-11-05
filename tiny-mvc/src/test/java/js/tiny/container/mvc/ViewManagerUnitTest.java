@@ -23,7 +23,6 @@ import org.mockito.junit.MockitoJUnitRunner;
 import js.lang.BugError;
 import js.lang.ConfigBuilder;
 import js.lang.ConfigException;
-import js.lang.Configurable;
 import js.tiny.container.servlet.RequestContext;
 import js.tiny.container.spi.IContainer;
 import js.tiny.container.unit.TestContext;
@@ -77,7 +76,7 @@ public class ViewManagerUnitTest {
 				"	<repository path='src/test/resources/' files-pattern='*.html' />" + //
 				"</views>";
 		ConfigBuilder builder = new ConfigBuilder(config);
-		Configurable viewManager = new ViewManagerImpl(container);
+		ViewManagerImpl viewManager = new ViewManagerImpl(container);
 		viewManager.config(builder.build());
 	}
 
@@ -89,7 +88,7 @@ public class ViewManagerUnitTest {
 				"	<repository path='src/test/resources/' files-pattern='*.fo' />" + //
 				"</views>";
 		ConfigBuilder builder = new ConfigBuilder(config);
-		Configurable viewManager = new ViewManagerImpl(container);
+		ViewManagerImpl viewManager = new ViewManagerImpl(container);
 		viewManager.config(builder.build());
 	}
 
@@ -170,7 +169,7 @@ public class ViewManagerUnitTest {
 	private void configException(String repository) throws Exception {
 		String config = Strings.concat("<views>", repository, "</views>");
 		ConfigBuilder builder = new ConfigBuilder(config);
-		Configurable viewManager = new ViewManagerImpl(container);
+		ViewManagerImpl viewManager = new ViewManagerImpl(container);
 		viewManager.config(builder.build());
 	}
 }

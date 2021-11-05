@@ -5,7 +5,6 @@ import java.util.Collections;
 import java.util.List;
 
 import js.lang.Config;
-import js.lang.Configurable;
 import js.lang.ManagedLifeCycle;
 import js.log.Log;
 import js.log.LogFactory;
@@ -46,7 +45,7 @@ import js.tiny.container.spi.IManagedMethod;
  * 
  * @author Iulian Rotaru
  */
-class Observer implements Configurable, ManagedLifeCycle, Runnable {
+class Observer implements ManagedLifeCycle, Runnable {
 	/** Class logger. */
 	private static final Log log = LogFactory.getLog(Observer.class);
 
@@ -81,7 +80,6 @@ class Observer implements Configurable, ManagedLifeCycle, Runnable {
 		this.appName = "test";// app.getAppName();
 	}
 
-	@Override
 	public void config(Config config) {
 		log.trace("config(Config.Element)");
 		period = config.getAttribute("period", int.class, 0);

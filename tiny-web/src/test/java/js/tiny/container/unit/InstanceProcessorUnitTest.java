@@ -23,7 +23,6 @@ import js.lang.BugError;
 import js.lang.Config;
 import js.lang.ConfigBuilder;
 import js.lang.ConfigException;
-import js.lang.Configurable;
 import js.lang.InvocationException;
 import js.lang.ManagedPostConstruct;
 import js.tiny.container.core.Container;
@@ -59,179 +58,6 @@ public class InstanceProcessorUnitTest {
 		assertEquals("ConfigurableInstanceProcessor", processors.get(2).getClass().getSimpleName());
 		assertEquals("PostConstructInstanceProcessor", processors.get(3).getClass().getSimpleName());
 		assertEquals("LoggerInstanceProcessor", processors.get(4).getClass().getSimpleName());
-	}
-
-	// --------------------------------------------------------------------------------------------
-	// INSTANCE FIELDS INITIALIZATION PROCESSOR
-
-	@Test
-	public void instanceFieldsInitialization() throws ConfigException {
-		String descriptor = "<?xml version='1.0' ?>" + //
-				"<person>" + //
-				"	<instance-field name='name' value='John Doe' />" + //
-				"	<instance-field name='age' value='54' />" + //
-				"	<instance-field name='maried' value='false' />" + //
-				"</person>";
-		ConfigBuilder builder = new ConfigBuilder(descriptor);
-
-		MockManagedClassSPI<PersonFields> managedClass = new MockManagedClassSPI<>(PersonFields.class);
-		managedClass.config = builder.build();
-		IInstancePostConstructionProcessor processor = getInstanceFieldsInitializationProcessor();
-
-		PersonFields person = new PersonFields();
-		processor.onInstancePostConstruction(managedClass, person);
-
-		assertNotNull(person);
-		assertEquals("John Doe", person.name);
-		assertEquals(54, person.age);
-		assertFalse(person.maried);
-	}
-
-	@Test
-	public void instanceFieldsInitialization_NoConfig() {
-		MockManagedClassSPI<PersonFields> managedClass = new MockManagedClassSPI<>(PersonFields.class);
-		IInstancePostConstructionProcessor processor = getInstanceFieldsInitializationProcessor();
-
-		PersonFields person = new PersonFields();
-		processor.onInstancePostConstruction(managedClass, person);
-
-		assertNotNull(person);
-		assertNull(person.name);
-		assertEquals(0, person.age);
-		assertFalse(person.maried);
-	}
-
-	/** Null instance arguments should not throw exception. */
-	@Test
-	public void instanceFieldsInitialization_NullInstance() {
-		MockManagedClassSPI<Person> managedClass = new MockManagedClassSPI<>(Person.class);
-		IInstancePostConstructionProcessor processor = getInstanceFieldsInitializationProcessor();
-		processor.onInstancePostConstruction(managedClass, null);
-	}
-
-	/** Assigning a non-numerical string to an integer field should throw converter exception. */
-	@Test(expected = ConverterException.class)
-	public void instanceFieldsInitialization_ConverterException() throws ConfigException {
-		String descriptor = "<?xml version='1.0' ?>" + //
-				"<person>" + //
-				"	<instance-field name='age' value='John Doe' />" + //
-				"</person>";
-		ConfigBuilder builder = new ConfigBuilder(descriptor);
-
-		MockManagedClassSPI<PersonFields> managedClass = new MockManagedClassSPI<>(PersonFields.class);
-		managedClass.config = builder.build();
-		IInstancePostConstructionProcessor processor = getInstanceFieldsInitializationProcessor();
-		processor.onInstancePostConstruction(managedClass, new PersonFields());
-	}
-
-	/** Attempting to initialize a field of a type for which there is no converter should rise converter exception. */
-	@Test(expected = ConverterException.class)
-	public void instanceFieldsInitialization_NotValueTypeField() throws ConfigException {
-		String descriptor = "<?xml version='1.0' ?>" + //
-				"<person>" + //
-				"	<instance-field name='pojo' value='John Doe' />" + //
-				"</person>";
-		ConfigBuilder builder = new ConfigBuilder(descriptor);
-
-		MockManagedClassSPI<Person> managedClass = new MockManagedClassSPI<>(Person.class);
-		managedClass.config = builder.build();
-		IInstancePostConstructionProcessor processor = getInstanceFieldsInitializationProcessor();
-		processor.onInstancePostConstruction(managedClass, new Person());
-	}
-
-	@Test(expected = BugError.class)
-	public void instanceFieldsInitialization_NotPOJO() throws ConfigException {
-		String descriptor = "<?xml version='1.0' ?>" + //
-				"<person>" + //
-				"	<instance-field name='name' value='John Doe' />" + //
-				"</person>";
-		ConfigBuilder builder = new ConfigBuilder(descriptor);
-
-		MockManagedClassSPI<PersonFields> managedClass = new MockManagedClassSPI<>(PersonFields.class);
-		managedClass.config = builder.build();
-		managedClass.instanceType = InstanceType.SERVICE;
-		IInstancePostConstructionProcessor processor = getInstanceFieldsInitializationProcessor();
-		processor.onInstancePostConstruction(managedClass, new PersonFields());
-	}
-
-	private static IInstancePostConstructionProcessor getInstanceFieldsInitializationProcessor() {
-		return Classes.newInstance("js.tiny.container.service.InstanceFieldsInitializationProcessor");
-	}
-
-	// --------------------------------------------------------------------------------------------
-	// CONFIGURABLE INSTANCE PROCESSOR
-
-	@Test
-	public void configurable() {
-		MockManagedClassSPI<Joker> managedClass = new MockManagedClassSPI<>(Joker.class);
-		managedClass.config = new Config("test");
-		IInstancePostConstructionProcessor processor = getConfigurableInstanceProcessor();
-
-		Joker joker = new Joker();
-		processor.onInstancePostConstruction(managedClass, joker);
-
-		assertNotNull(joker.config);
-		assertEquals("test", joker.config.getName());
-	}
-
-	/** Configuration processor on instance without Configurable interface should do nothing and throw none. */
-	@Test
-	public void configurable_NoConfigurable() {
-		MockManagedClassSPI<Person> managedClass = new MockManagedClassSPI<>(Person.class);
-		managedClass.config = new Config("test");
-		IInstancePostConstructionProcessor processor = getConfigurableInstanceProcessor();
-
-		Person person = new Person();
-		processor.onInstancePostConstruction(managedClass, person);
-	}
-
-	/** Managed class without configuration object should not execute instance configuration. */
-	@Test
-	public void configurable_NoConfigObject() {
-		MockManagedClassSPI<Joker> managedClass = new MockManagedClassSPI<>(Joker.class);
-		IInstancePostConstructionProcessor processor = getConfigurableInstanceProcessor();
-
-		Joker joker = new Joker();
-		processor.onInstancePostConstruction(managedClass, joker);
-
-		assertNull(joker.config);
-	}
-
-	/** Invalid configuration object should throw bug error. */
-	@Test(expected = BugError.class)
-	public void configurable_Invalid() {
-		MockManagedClassSPI<Joker> managedClass = new MockManagedClassSPI<>(Joker.class);
-		managedClass.config = new Config("test");
-		IInstancePostConstructionProcessor processor = getConfigurableInstanceProcessor();
-
-		Joker joker = new Joker();
-		joker.invalid = true;
-		processor.onInstancePostConstruction(managedClass, joker);
-	}
-
-	/** Null instance arguments should not throw exception. */
-	@Test
-	public void configurable_NullInstance() {
-		MockManagedClassSPI<Person> managedClass = new MockManagedClassSPI<>(Person.class);
-		managedClass.config = new Config("test");
-		IInstancePostConstructionProcessor processor = getConfigurableInstanceProcessor();
-		processor.onInstancePostConstruction(managedClass, null);
-	}
-
-	/** Exception on configuration execution should throw bug error. */
-	@Test(expected = BugError.class)
-	public void configurable_Exception() {
-		MockManagedClassSPI<Joker> managedClass = new MockManagedClassSPI<>(Joker.class);
-		managedClass.config = new Config("test");
-		IInstancePostConstructionProcessor processor = getConfigurableInstanceProcessor();
-
-		Joker joker = new Joker();
-		joker.exception = true;
-		processor.onInstancePostConstruction(managedClass, joker);
-	}
-
-	private static IInstancePostConstructionProcessor getConfigurableInstanceProcessor() {
-		return Classes.newInstance("js.tiny.container.service.ConfigurableInstanceProcessor");
 	}
 
 	// --------------------------------------------------------------------------------------------
@@ -352,22 +178,11 @@ public class InstanceProcessorUnitTest {
 		}
 	}
 
-	private static class Joker implements Configurable, ManagedPostConstruct {
+	private static class Joker implements ManagedPostConstruct {
 		private Config config;
 		private int postConstructProbe;
 		private boolean invalid;
 		private boolean exception;
-
-		@Override
-		public void config(Config config) throws Exception {
-			if (invalid) {
-				throw new ConfigException("invalid");
-			}
-			if (exception) {
-				throw new IOException("exception");
-			}
-			this.config = config;
-		}
 
 		@Override
 		public void postConstruct() throws Exception {
@@ -447,11 +262,6 @@ public class InstanceProcessorUnitTest {
 		@Override
 		public IContainer getContainer() {
 			return container;
-		}
-
-		@Override
-		public Config getConfig() {
-			return config;
 		}
 
 		@Override

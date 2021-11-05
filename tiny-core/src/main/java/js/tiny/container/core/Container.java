@@ -14,15 +14,12 @@ import com.jslib.injector.ProvisionException;
 import js.lang.BugError;
 import js.lang.Config;
 import js.lang.ConfigException;
-import js.lang.Configurable;
 import js.lang.InstanceInvocationHandler;
 import js.lang.ManagedPreDestroy;
 import js.log.Log;
 import js.log.LogFactory;
 import js.tiny.container.cdi.CDI;
-import js.tiny.container.service.ConfigurableInstanceProcessor;
 import js.tiny.container.service.FlowProcessorsSet;
-import js.tiny.container.service.InstanceFieldsInitializationProcessor;
 import js.tiny.container.service.InstancePostConstructProcessor;
 import js.tiny.container.service.InstanceStartupProcessor;
 import js.tiny.container.service.LoggerInstanceProcessor;
@@ -43,7 +40,7 @@ import js.util.Params;
  * 
  * @author Iulian Rotaru
  */
-public class Container implements IContainer, Configurable {
+public class Container implements IContainer {
 	private static final Log log = LogFactory.getLog(Container.class);
 
 	public static IContainer create(Config config) throws ConfigException {
@@ -127,8 +124,6 @@ public class Container implements IContainer, Configurable {
 
 		containerStartProcessors.add(new InstanceStartupProcessor());
 
-		instancePostConstructionProcessors.add(new InstanceFieldsInitializationProcessor());
-		instancePostConstructionProcessors.add(new ConfigurableInstanceProcessor());
 		instancePostConstructionProcessors.add(new InstancePostConstructProcessor());
 		instancePostConstructionProcessors.add(new LoggerInstanceProcessor());
 	}
@@ -140,7 +135,6 @@ public class Container implements IContainer, Configurable {
 	 * @param config container configuration object.
 	 * @throws ConfigException if container configuration fails.
 	 */
-	@Override
 	public void config(Config config) throws ConfigException {
 		log.trace("config(Config)");
 		load(config);

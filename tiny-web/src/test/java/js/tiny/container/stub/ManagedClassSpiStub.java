@@ -3,7 +3,6 @@ package js.tiny.container.stub;
 import java.lang.annotation.Annotation;
 import java.util.Set;
 
-import js.lang.Config;
 import js.tiny.container.spi.IContainer;
 import js.tiny.container.spi.IContainerService;
 import js.tiny.container.spi.IManagedClass;
@@ -56,11 +55,6 @@ public class ManagedClassSpiStub<T> implements IManagedClass<T> {
 	@Override
 	public IContainer getContainer() {
 		throw new UnsupportedOperationException("getContainer()");
-	}
-
-	@Override
-	public Config getConfig() {
-		throw new UnsupportedOperationException("getConfig()");
 	}
 
 	@Override

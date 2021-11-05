@@ -1,4 +1,4 @@
-package js.tiny.container.http.unit;
+package js.tiny.container.mvc.captcha;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -23,9 +23,7 @@ import org.mockito.junit.MockitoJUnitRunner;
 import js.lang.BugError;
 import js.lang.ConfigBuilder;
 import js.lang.ConfigException;
-import js.lang.Configurable;
 import js.tiny.container.http.NoSuchResourceException;
-import js.tiny.container.mvc.captcha.Challenge;
 import js.tiny.container.servlet.RequestContext;
 import js.tiny.container.spi.IContainer;
 import js.util.Classes;
@@ -108,9 +106,9 @@ public class CaptchaTest {
 
 	@Test(expected = BugError.class)
 	public void captcha_getChallenge_NullRepository() throws Exception {
-		Configurable captcha = Classes.newInstance(CAPTCHA, (Object) null);
+		Object captcha = Classes.newInstance(CAPTCHA, (Object) null);
 		Classes.invoke(captcha, "getChallenge", 0);
-	}
+}
 
 	/**
 	 * CAPTCHA challenge image is retrieved after challenge creation. Test that all tokens from challenges set have related
@@ -354,7 +352,7 @@ public class CaptchaTest {
 
 	private static Object captcha(String config, IContainer context) throws Exception {
 		ConfigBuilder builder = new ConfigBuilder(config);
-		Configurable captcha = Classes.newInstance(CAPTCHA, context);
+		Captcha captcha = Classes.newInstance(CAPTCHA, context);
 		captcha.config(builder.build());
 		return captcha;
 	}

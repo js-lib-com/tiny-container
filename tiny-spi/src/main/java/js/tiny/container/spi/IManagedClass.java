@@ -3,8 +3,6 @@ package js.tiny.container.spi;
 import java.lang.annotation.Annotation;
 import java.util.Set;
 
-import js.lang.Config;
-
 /**
  * Service provider interface for managed class. Although public, this interface is designed for library internal usage.
  * Application should consider this interface as volatile and subject to change without notice.
@@ -38,18 +36,6 @@ public interface IManagedClass<T> {
 	 * @return managed class unique key.
 	 */
 	Integer getKey();
-
-	/**
-	 * Get optional configuration object or null if no configuration section present into application descriptor. Every managed
-	 * class has a name that is not required to be unique. A configuration section is an element under application descriptor
-	 * root with managed class name. Since managed class name is not unique is possible to share a configuration section.
-	 * <p>
-	 * This method returns configuration section parsed into a configuration object. Returns null if there is no configuration
-	 * section for this particular managed class.
-	 * 
-	 * @return this managed class configuration object, possible null.
-	 */
-	Config getConfig();
 
 	/**
 	 * Get managed interface class. Note that returned class is not mandatory Java interface. Here term <code>interface</code>

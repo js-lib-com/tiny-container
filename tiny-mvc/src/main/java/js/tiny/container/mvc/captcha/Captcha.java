@@ -13,7 +13,6 @@ import javax.ws.rs.Path;
 import js.lang.BugError;
 import js.lang.Config;
 import js.lang.ConfigException;
-import js.lang.Configurable;
 import js.log.Log;
 import js.log.LogFactory;
 import js.tiny.container.http.NoSuchResourceException;
@@ -60,7 +59,7 @@ import js.util.Params;
 @Remote
 @Path("captcha")
 @PermitAll
-final class Captcha implements Configurable {
+final class Captcha {
 	/** Class logger. */
 	private static final Log log = LogFactory.getLog(Captcha.class);
 
@@ -93,7 +92,6 @@ final class Captcha implements Configurable {
 	 * 
 	 * @param config configuration section from application descriptor.
 	 */
-	@Override
 	@DenyAll
 	public void config(Config config) throws ConfigException {
 		imagesRepositoryDir = config.getProperty("captcha.repository.path", File.class);

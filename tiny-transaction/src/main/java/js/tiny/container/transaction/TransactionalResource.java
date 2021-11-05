@@ -1,13 +1,10 @@
 package js.tiny.container.transaction;
 
 import js.lang.BugError;
-import js.lang.Config;
-import js.lang.ConfigException;
 import js.lang.ManagedPreDestroy;
 import js.log.Log;
 import js.log.LogFactory;
 import js.tiny.container.spi.IContainer;
-import js.tiny.container.spi.OptionalConfigurable;
 import js.transaction.Transaction;
 import js.transaction.TransactionContext;
 import js.transaction.TransactionManager;
@@ -30,7 +27,7 @@ import js.transaction.TransactionManager;
  * @author Iulian Rotaru
  * @version draft
  */
-final class TransactionalResource implements ITransactionalResource, OptionalConfigurable, ManagedPreDestroy {
+final class TransactionalResource implements ITransactionalResource, ManagedPreDestroy {
 	private static final Log log = LogFactory.getLog(ITransactionalResource.class);
 
 	/**
@@ -57,20 +54,6 @@ final class TransactionalResource implements ITransactionalResource, OptionalCon
 		if (this.transactionManager == null) {
 			throw new BugError("Transaction manager service not found. Ensure there is |%s| service provider on run-time.", TransactionManager.class);
 		}
-	}
-
-	/**
-	 * Configure underlying transaction manager.
-	 * 
-	 * @param config configuration object.
-	 * @throws ConfigException if given configuration object is not valid, as requested by transaction manager implementation.
-	 * @throws Exception if configuration of the transaction manager implementation fails.
-	 */
-	@Override
-	public void config(Config config) throws Exception {
-		log.trace("config(Config.Element)");
-		log.debug("Configure transaction manager |%s|.", transactionManager.getClass());
-		transactionManager.config(config);
 	}
 
 	/** Destroy transaction manager and release all resources like caches and connection pools. */

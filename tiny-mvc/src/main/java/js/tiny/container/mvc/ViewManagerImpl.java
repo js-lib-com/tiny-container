@@ -7,7 +7,6 @@ import js.lang.BugError;
 import js.lang.Config;
 import js.lang.ConfigBuilder;
 import js.lang.ConfigException;
-import js.lang.Configurable;
 import js.log.Log;
 import js.log.LogFactory;
 import js.tiny.container.servlet.RequestContext;
@@ -40,7 +39,7 @@ import js.util.Types;
  * @author Iulian Rotaru
  * @version final
  */
-public final class ViewManagerImpl implements ViewManager, Configurable {
+public final class ViewManagerImpl implements ViewManager {
 	/** Class logger. */
 	private static final Log log = LogFactory.getLog(ViewManager.class);
 
@@ -68,7 +67,6 @@ public final class ViewManagerImpl implements ViewManager, Configurable {
 	 * @throws ConfigException if configuration object is not valid.
 	 * @throws IOException if views meta pool cannot be created.
 	 */
-	@Override
 	public void config(Config config) throws ConfigException, IOException {
 		for (Config repositorySection : config.findChildren("repository")) {
 			// view manager configuration section is named <views>

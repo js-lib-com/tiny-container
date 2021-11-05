@@ -15,10 +15,8 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
 import js.lang.BugError;
-import js.lang.Config;
 import js.lang.ManagedPreDestroy;
 import js.tiny.container.spi.IContainer;
-import js.tiny.container.spi.OptionalConfigurable;
 import js.transaction.TransactionManager;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -127,20 +125,6 @@ public class TransactionalResourceTest {
 
 		// then
 		assertNull(sessionStorage.get());
-	}
-
-	/** Configuration object should be passed to transaction manager. */
-	@Test
-	public void GivenConfigInstance_WhenConfig_ThenTransactionManagerConfig() throws Exception {
-		// given
-		Config config = new Config("test");
-
-		// when
-		OptionalConfigurable transactionalResource = new TransactionalResource(container);
-		transactionalResource.config(config);
-
-		// then
-		verify(transactionManager, times(1)).config(config);
 	}
 
 	/** Pre-destroy hook should delegate transaction manager destroy. */

@@ -12,7 +12,6 @@ import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import js.lang.Config;
 import js.tiny.container.spi.IContainer;
 import js.tiny.container.spi.IManagedMethod;
 import js.tiny.container.spi.InstanceScope;
@@ -141,11 +140,6 @@ public class InstanceAlgorithmUnitTest {
 		@Override
 		public Integer getKey() {
 			return 1;
-		}
-
-		@Override
-		public Config getConfig() {
-			return null;
 		}
 
 		@SuppressWarnings("unchecked")

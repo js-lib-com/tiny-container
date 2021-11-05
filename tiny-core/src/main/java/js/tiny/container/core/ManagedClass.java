@@ -1,7 +1,6 @@
 package js.tiny.container.core;
 
 import java.lang.annotation.Annotation;
-import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.HashMap;
@@ -10,12 +9,9 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import js.converter.Converter;
-import js.converter.ConverterException;
 import js.lang.BugError;
 import js.lang.Config;
 import js.lang.ConfigException;
-import js.lang.Configurable;
 import js.lang.ManagedLifeCycle;
 import js.log.Log;
 import js.log.LogFactory;
@@ -55,14 +51,6 @@ public final class ManagedClass<T> implements IManagedClass<T> {
 	 * sequence, and can be used to sort managed classes in creation order.
 	 */
 	private final Integer key;
-
-	/**
-	 * Optional managed class configuration object. Every managed class has an name used in <code>managed-classes</code> section
-	 * from application descriptor. This name can be used to name configuration section usable for every managed class that
-	 * implements {@link Configurable} interface or for field initialization. This field store this configuration section parsed
-	 * as a configuration object. It is null if configuration section is missing.
-	 */
-	private final Config config;
 
 	/** Managed instance scope used for life span management. */
 	private final InstanceScope instanceScope;
@@ -111,8 +99,6 @@ public final class ManagedClass<T> implements IManagedClass<T> {
 	 */
 	public ManagedClass(Container container, Config descriptor) throws ConfigException {
 		this.container = container;
-		// if configuration section is missing this.config field remains null
-		this.config = descriptor.getRoot().getChild(descriptor.getName());
 
 		// loading order matters; do not change it
 		this.instanceScope = descriptor.getAttribute("scope", InstanceScope.class, InstanceScope.APPLICATION);
@@ -126,7 +112,6 @@ public final class ManagedClass<T> implements IManagedClass<T> {
 
 		if (this.instanceType.requiresImplementation()) {
 			scan();
-			initializeStaticFields();
 		}
 	}
 
@@ -199,11 +184,6 @@ public final class ManagedClass<T> implements IManagedClass<T> {
 	@Override
 	public Integer getKey() {
 		return key;
-	}
-
-	@Override
-	public Config getConfig() {
-		return config;
 	}
 
 	@Override
@@ -394,63 +374,6 @@ public final class ManagedClass<T> implements IManagedClass<T> {
 			throw new ConfigException("Remote managed class requires <url> attribute. See class descriptor |%s|.", descriptor);
 		}
 		return implementationURL;
-	}
-
-	/**
-	 * Initialize implementation class static, not final, fields. Static initializer reads name / value pairs from
-	 * <code>static-field</code> configuration element, see sample below. String value is converted to instance field type using
-	 * {@link Converter#asObject(String, Class)} utility. This means that configured value should be convertible to field type,
-	 * otherwise {@link ConverterException} is thrown.
-	 * <p>
-	 * In sample there is a <code>person</code> managed instance that has a configuration section. Configuration declares three
-	 * static fields that will be initialized with defined values when managed class is created.
-	 * 
-	 * <pre>
-	 * &lt;managed-classes&gt;
-	 * 	&lt;person class="js.app.Person" /&gt;
-	 * &lt;/managed-classes&gt;
-	 * ...
-	 * &lt;person&gt;
-	 * 	&lt;static-field name='name' value='John Doe' /&gt;
-	 * 	&lt;static-field name='age' value='54' /&gt;
-	 * 	&lt;static-field name='married' value='false' /&gt;
-	 * &lt;/person&gt;
-	 * ...
-	 * class Person {
-	 * 	private static String name;
-	 * 	private static int age;
-	 * 	private static boolean married;
-	 * }
-	 * </pre>
-	 * 
-	 * @throws ConfigException if static field descriptor is invalid, field is missing or is instance field.
-	 */
-	private void initializeStaticFields() throws ConfigException {
-		if (config == null) {
-			return;
-		}
-		for (Config config : config.findChildren("static-field")) {
-			String fieldName = config.getAttribute("name");
-			if (fieldName == null) {
-				throw new ConfigException("Missing <name> attribute from static field initialization |%s|.", config.getParent());
-			}
-			if (!config.hasAttribute("value")) {
-				throw new ConfigException("Missing <value> attribute from static field initialization |%s|.", config.getParent());
-			}
-
-			Field field = Classes.getOptionalField(implementationClass, fieldName);
-			if (field == null) {
-				throw new ConfigException("Missing managed class static field |%s#%s|.", implementationClass, fieldName);
-			}
-			int modifiers = field.getModifiers();
-			if (!Modifier.isStatic(modifiers)) {
-				throw new ConfigException("Attempt to execute static initialization on instance field |%s#%s|.", implementationClass, fieldName);
-			}
-
-			Object value = config.getAttribute("value", field.getType());
-			log.debug("Intialize static field |%s#%s| |%s|", implementationClass, fieldName, value);
-			Classes.setFieldValue(null, field, config.getAttribute("value", field.getType()));
-		}
 	}
 
 	/**
