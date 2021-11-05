@@ -155,10 +155,9 @@ public class Container implements IContainer, Configurable {
 
 	private void load(Config config) throws ConfigException {
 		config.dump();
-		
+
 		log.debug("Load managed classes from application descriptor.");
-		Config managedClassesSection = config.getChild("managed-classes");
-		if (managedClassesSection != null) {
+		for (Config managedClassesSection : config.findChildren("managed-classes")) {
 			for (Config classDescriptor : managedClassesSection.getChildren()) {
 				if (!classDescriptor.hasAttribute("interface")) {
 					classDescriptor.setAttribute("interface", classDescriptor.getAttribute("class"));
