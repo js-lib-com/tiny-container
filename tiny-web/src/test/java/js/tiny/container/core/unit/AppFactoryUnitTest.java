@@ -240,6 +240,7 @@ public class AppFactoryUnitTest {
 	}
 
 	/** Null interface class should throw illegal argument. */
+	@SuppressWarnings({ "rawtypes", "unchecked" })
 	@Test(expected = IllegalArgumentException.class)
 	public void getInstance_NullInterfaceClass() throws Exception {
 		String descriptor = "<car class='js.tiny.container.core.unit.AppFactoryUnitTest$Car' scope='LOCAL' />";

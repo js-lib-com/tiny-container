@@ -22,6 +22,8 @@ public class InstanceContextParam extends BaseContextParam implements IInstanceP
 		processFields(managedClass, instance, field -> !Modifier.isStatic(field.getModifiers()));
 	}
 
+	// --------------------------------------------------------------------------------------------
+
 	public static class Provider implements IContainerServiceProvider {
 		@Override
 		public InstanceContextParam getService(IContainer container) {

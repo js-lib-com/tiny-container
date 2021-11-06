@@ -8,6 +8,8 @@ import js.lang.InvocationException;
 import js.log.Log;
 import js.log.LogFactory;
 import js.tiny.container.spi.IContainer;
+import js.tiny.container.spi.IContainerService;
+import js.tiny.container.spi.IContainerServiceProvider;
 import js.tiny.container.spi.IInvocation;
 import js.tiny.container.spi.IInvocationProcessorsChain;
 import js.tiny.container.spi.IManagedClass;
@@ -21,7 +23,7 @@ import js.transaction.Transaction;
 import js.transaction.TransactionContext;
 import js.transaction.Transactional;
 
-final class TransactionService implements IMethodInvocationProcessor, IServiceMetaScanner {
+public class TransactionService implements IMethodInvocationProcessor, IServiceMetaScanner {
 	private static final Log log = LogFactory.getLog(TransactionService.class);
 
 	private final IContainer container;
@@ -209,5 +211,14 @@ final class TransactionService implements IMethodInvocationProcessor, IServiceMe
 			return null;
 		}
 		return transactional.schema();
+	}
+
+	// --------------------------------------------------------------------------------------------
+	
+	public static class Provider implements IContainerServiceProvider {
+		@Override
+		public IContainerService getService(IContainer container) {
+			return new TransactionService(container);
+		}
 	}
 }

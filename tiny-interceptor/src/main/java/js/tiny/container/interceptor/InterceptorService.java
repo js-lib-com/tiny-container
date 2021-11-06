@@ -17,7 +17,7 @@ import js.tiny.container.spi.IServiceMeta;
 import js.tiny.container.spi.IServiceMetaScanner;
 import js.util.Classes;
 
-final class InterceptorService implements IMethodInvocationProcessor, IServiceMetaScanner {
+public class InterceptorService implements IMethodInvocationProcessor, IServiceMetaScanner {
 	private static final Log log = LogFactory.getLog(InterceptorService.class);
 
 	private final IContainer container;
@@ -100,7 +100,9 @@ final class InterceptorService implements IMethodInvocationProcessor, IServiceMe
 		return returnValue;
 	}
 
-	public class Provider implements IContainerServiceProvider {
+	// --------------------------------------------------------------------------------------------
+
+	public static class Provider implements IContainerServiceProvider {
 		@Override
 		public InterceptorService getService(IContainer container) {
 			return new InterceptorService(container);

@@ -8,6 +8,9 @@ import javax.ejb.Asynchronous;
 import js.lang.AsyncTask;
 import js.log.Log;
 import js.log.LogFactory;
+import js.tiny.container.spi.IContainer;
+import js.tiny.container.spi.IContainerService;
+import js.tiny.container.spi.IContainerServiceProvider;
 import js.tiny.container.spi.IInvocation;
 import js.tiny.container.spi.IMethodInvocationProcessor;
 import js.tiny.container.spi.IInvocationProcessorsChain;
@@ -16,7 +19,7 @@ import js.tiny.container.spi.IManagedMethod;
 import js.tiny.container.spi.IServiceMeta;
 import js.tiny.container.spi.IServiceMetaScanner;
 
-class AsyncService implements IMethodInvocationProcessor, IServiceMetaScanner {
+public class AsyncService implements IMethodInvocationProcessor, IServiceMetaScanner {
 	private static final Log log = LogFactory.getLog(AsyncService.class);
 
 	public AsyncService() {
@@ -83,5 +86,14 @@ class AsyncService implements IMethodInvocationProcessor, IServiceMetaScanner {
 			return true;
 		}
 		return managedMethod.getDeclaringClass().getServiceMeta(AsynchronousMeta.class) != null;
+	}
+
+	// --------------------------------------------------------------------------------------------
+	
+	public static class Provider implements IContainerServiceProvider {
+		@Override
+		public IContainerService getService(IContainer container) {
+			return new AsyncService();
+		}
 	}
 }

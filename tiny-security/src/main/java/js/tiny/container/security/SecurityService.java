@@ -16,6 +16,8 @@ import js.tiny.container.servlet.RequestContext;
 import js.tiny.container.servlet.TinyContainer;
 import js.tiny.container.spi.AuthorizationException;
 import js.tiny.container.spi.IContainer;
+import js.tiny.container.spi.IContainerService;
+import js.tiny.container.spi.IContainerServiceProvider;
 import js.tiny.container.spi.IInvocation;
 import js.tiny.container.spi.IMethodInvocationProcessor;
 import js.tiny.container.spi.IInvocationProcessorsChain;
@@ -186,5 +188,14 @@ public class SecurityService implements IMethodInvocationProcessor, IServiceMeta
 		}
 
 		return false;
+	}
+
+	// --------------------------------------------------------------------------------------------
+	
+	public static class Provider implements IContainerServiceProvider {
+		@Override
+		public IContainerService getService(IContainer container) {
+			return new SecurityService(container);
+		}
 	}
 }

@@ -25,7 +25,7 @@ import js.tiny.container.spi.IServiceMeta;
 import js.tiny.container.spi.IServiceMetaScanner;
 import js.util.Params;
 
-class CalendarTimerService implements IInstancePostConstructProcessor, IServiceMetaScanner {
+public class CalendarTimerService implements IInstancePostConstructProcessor, IServiceMetaScanner {
 	private static final Log log = LogFactory.getLog(CalendarTimerService.class);
 
 	private static final int SCHEDULERS_THREAD_POLL = 2;
@@ -191,7 +191,7 @@ class CalendarTimerService implements IInstancePostConstructProcessor, IServiceM
 
 	// --------------------------------------------------------------------------------------------
 	
-	public class Provider implements IContainerServiceProvider {
+	public static class Provider implements IContainerServiceProvider {
 		@Override
 		public IContainerService getService(IContainer container) {
 			return new CalendarTimerService();
