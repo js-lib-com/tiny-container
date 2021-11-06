@@ -15,9 +15,6 @@ import javax.ejb.Schedule;
 
 import js.log.Log;
 import js.log.LogFactory;
-import js.tiny.container.spi.IContainer;
-import js.tiny.container.spi.IContainerService;
-import js.tiny.container.spi.IContainerServiceProvider;
 import js.tiny.container.spi.IInstancePostConstructProcessor;
 import js.tiny.container.spi.IManagedClass;
 import js.tiny.container.spi.IManagedMethod;
@@ -186,15 +183,6 @@ public class CalendarTimerService implements IInstancePostConstructProcessor, IS
 
 		default:
 			throw new IllegalStateException();
-		}
-	}
-
-	// --------------------------------------------------------------------------------------------
-	
-	public static class Provider implements IContainerServiceProvider {
-		@Override
-		public IContainerService getService(IContainer container) {
-			return new CalendarTimerService();
 		}
 	}
 }

@@ -21,7 +21,6 @@ import org.mockito.junit.MockitoJUnitRunner;
 import js.lang.BugError;
 import js.lang.ManagedLifeCycle;
 import js.lang.ManagedPostConstruct;
-import js.tiny.container.lifecycle.InstancePostConstructProcessor.Provider;
 import js.tiny.container.spi.IContainer;
 import js.tiny.container.spi.IInstancePostConstructProcessor.Priority;
 import js.tiny.container.spi.IManagedClass;
@@ -43,8 +42,7 @@ public class InstancePostConstructTest {
 		doReturn(Object.class).when(managedClass).getImplementationClass();
 		when(managedClass.getAttribute(any(), eq("post-construct"), eq(IManagedMethod.class))).thenReturn(managedMethod);
 
-		InstancePostConstructProcessor.Provider provider = new Provider();
-		processor = provider.getService(container);
+		processor = new InstancePostConstructProcessor();
 	}
 
 	@Test

@@ -45,7 +45,7 @@ import js.tiny.container.spi.IManagedMethod;
  * 
  * @author Iulian Rotaru
  */
-class Observer implements ManagedLifeCycle, Runnable {
+public class Observer implements ManagedLifeCycle, Runnable {
 	/** Class logger. */
 	private static final Log log = LogFactory.getLog(Observer.class);
 
@@ -96,6 +96,13 @@ class Observer implements ManagedLifeCycle, Runnable {
 		}
 	}
 
+	public void start(int period) {
+		this.period = period;
+		running = true;
+		thread = new Thread(this, getClass().getSimpleName());
+		thread.start();
+	}
+	
 	@Override
 	public void preDestroy() throws Exception {
 		log.trace("preDestroy()");

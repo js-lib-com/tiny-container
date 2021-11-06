@@ -8,15 +8,17 @@ import js.log.Log;
 import js.log.LogFactory;
 import js.tiny.container.servlet.RequestContext;
 import js.tiny.container.spi.IContainer;
+import js.tiny.container.spi.IContainerService;
 import js.tiny.container.spi.IManagedClass;
 
-abstract class BaseContextParam {
+abstract class BaseContextParam implements IContainerService {
 	private static final Log log = LogFactory.getLog(BaseContextParam.class);
 
-	private final IContainer container;
+	private IContainer container;
 
-	protected BaseContextParam(IContainer container) {
-		log.trace("BaseContextParam(IContainer)");
+	@Override
+	public void create(IContainer container) {
+		log.trace("create(IContainer)");
 		this.container = container;
 	}
 

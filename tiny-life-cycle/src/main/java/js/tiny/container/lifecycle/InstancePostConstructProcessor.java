@@ -8,8 +8,6 @@ import js.lang.BugError;
 import js.lang.ManagedPostConstruct;
 import js.log.Log;
 import js.log.LogFactory;
-import js.tiny.container.spi.IContainer;
-import js.tiny.container.spi.IContainerServiceProvider;
 import js.tiny.container.spi.IInstancePostConstructProcessor;
 import js.tiny.container.spi.IManagedClass;
 import js.tiny.container.spi.IManagedMethod;
@@ -26,6 +24,10 @@ public class InstancePostConstructProcessor extends BaseInstanceLifeCycle implem
 	private static final Log log = LogFactory.getLog(InstancePostConstructProcessor.class);
 
 	private static final String ATTR_POST_CONSTRUCT = "post-construct";
+
+	public InstancePostConstructProcessor() {
+		log.trace("InstancePostConstructProcessor()");
+	}
 
 	@Override
 	public Priority getPriority() {
@@ -65,16 +67,6 @@ public class InstancePostConstructProcessor extends BaseInstanceLifeCycle implem
 			method.invoke(instance);
 		} catch (Throwable t) {
 			throw new BugError("Managed instance |%s| post-construct fail: %s", instance, t);
-		}
-	}
-
-	// --------------------------------------------------------------------------------------------
-
-	/** Java service provider declared on META-INF/services */
-	public static class Provider implements IContainerServiceProvider {
-		@Override
-		public InstancePostConstructProcessor getService(IContainer container) {
-			return new InstancePostConstructProcessor();
 		}
 	}
 }

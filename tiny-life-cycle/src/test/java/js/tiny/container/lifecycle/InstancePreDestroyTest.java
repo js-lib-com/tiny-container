@@ -21,7 +21,6 @@ import org.mockito.junit.MockitoJUnitRunner;
 import js.lang.BugError;
 import js.lang.ManagedLifeCycle;
 import js.lang.ManagedPreDestroy;
-import js.tiny.container.lifecycle.InstancePreDestroyProcessor.Provider;
 import js.tiny.container.spi.IContainer;
 import js.tiny.container.spi.IInstancePreDestroyProcessor.Priority;
 import js.tiny.container.spi.IManagedClass;
@@ -43,8 +42,7 @@ public class InstancePreDestroyTest {
 		doReturn(Object.class).when(managedClass).getImplementationClass();
 		when(managedClass.getAttribute(any(), eq("pre-destroy"), eq(IManagedMethod.class))).thenReturn(managedMethod);
 
-		InstancePreDestroyProcessor.Provider provider = new Provider();
-		processor = provider.getService(container);
+		processor = new InstancePreDestroyProcessor();
 	}
 
 	@Test

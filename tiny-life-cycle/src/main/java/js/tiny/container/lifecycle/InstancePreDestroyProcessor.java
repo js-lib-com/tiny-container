@@ -7,18 +7,20 @@ import javax.annotation.PreDestroy;
 import js.lang.ManagedPreDestroy;
 import js.log.Log;
 import js.log.LogFactory;
-import js.tiny.container.spi.IContainer;
-import js.tiny.container.spi.IContainerServiceProvider;
 import js.tiny.container.spi.IInstancePreDestroyProcessor;
 import js.tiny.container.spi.IManagedClass;
 import js.tiny.container.spi.IManagedMethod;
 import js.tiny.container.spi.IServiceMeta;
 import js.tiny.container.spi.IServiceMetaScanner;
 
-class InstancePreDestroyProcessor extends BaseInstanceLifeCycle implements IInstancePreDestroyProcessor, IServiceMetaScanner {
+public class InstancePreDestroyProcessor extends BaseInstanceLifeCycle implements IInstancePreDestroyProcessor, IServiceMetaScanner {
 	private static final Log log = LogFactory.getLog(InstancePreDestroyProcessor.class);
 
 	private static final String ATTR_PRE_DESTROY = "pre-destroy";
+
+	public InstancePreDestroyProcessor() {
+		log.trace("InstancePreDestroyProcessor()");
+	}
 
 	@Override
 	public Priority getPriority() {
@@ -51,14 +53,4 @@ class InstancePreDestroyProcessor extends BaseInstanceLifeCycle implements IInst
 			log.dump(String.format("Managed instance |%s| pre-destroy fail:", instance.getClass()), t);
 		}
 	}
-	
-	// --------------------------------------------------------------------------------------------
-	
-	/** Java service provider declared on META-INF/services */
-	public static class Provider implements IContainerServiceProvider {
-		@Override
-		public InstancePreDestroyProcessor getService(IContainer container) {
-			return new InstancePreDestroyProcessor();
-		}
-	}	
 }

@@ -67,7 +67,8 @@ public class TransactionServiceTest {
 		when(transactional.schema()).thenReturn("");
 		when(methodInvocation.method()).thenReturn(managedMethod);
 
-		service = new TransactionService(container);
+		service = new TransactionService();
+		service.create(container);
 	}
 
 	@Test

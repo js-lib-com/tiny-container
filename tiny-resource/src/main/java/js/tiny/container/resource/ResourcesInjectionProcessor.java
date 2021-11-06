@@ -16,9 +16,6 @@ import javax.naming.NamingException;
 import js.lang.BugError;
 import js.log.Log;
 import js.log.LogFactory;
-import js.tiny.container.spi.IContainer;
-import js.tiny.container.spi.IContainerService;
-import js.tiny.container.spi.IContainerServiceProvider;
 import js.tiny.container.spi.IInstancePostConstructProcessor;
 import js.tiny.container.spi.IManagedClass;
 import js.tiny.container.spi.IManagedMethod;
@@ -208,16 +205,6 @@ public class ResourcesInjectionProcessor implements IInstancePostConstructProces
 			dependencies.add(field);
 		}
 		return dependencies;
-	}
-
-	// --------------------------------------------------------------------------------------------
-
-	/** Java service provider declared on META-INF/services */
-	public static class Provider implements IContainerServiceProvider {
-		@Override
-		public IContainerService getService(IContainer container) {
-			return new ResourcesInjectionProcessor();
-		}
 	}
 
 	// --------------------------------------------------------------------------------------------

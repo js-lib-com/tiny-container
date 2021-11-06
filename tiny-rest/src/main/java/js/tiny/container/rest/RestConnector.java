@@ -9,9 +9,6 @@ import javax.ws.rs.Produces;
 import js.log.Log;
 import js.log.LogFactory;
 import js.tiny.container.spi.IConnector;
-import js.tiny.container.spi.IContainer;
-import js.tiny.container.spi.IContainerService;
-import js.tiny.container.spi.IContainerServiceProvider;
 import js.tiny.container.spi.IManagedClass;
 import js.tiny.container.spi.IManagedMethod;
 import js.tiny.container.spi.IServiceMeta;
@@ -52,13 +49,4 @@ public class RestConnector implements IConnector, IServiceMetaScanner {
 
 		return serviceMetas;
 	}
-	
-	// --------------------------------------------------------------------------------------------
-	
-	public static class Provider implements IContainerServiceProvider {
-		@Override
-		public IContainerService getService(IContainer container) {
-			return new RestConnector();
-		}
-	}	
 }

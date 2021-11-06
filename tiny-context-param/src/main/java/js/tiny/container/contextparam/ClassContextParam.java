@@ -2,14 +2,16 @@ package js.tiny.container.contextparam;
 
 import java.lang.reflect.Modifier;
 
+import js.log.Log;
+import js.log.LogFactory;
 import js.tiny.container.spi.IClassPostLoadedProcessor;
-import js.tiny.container.spi.IContainer;
-import js.tiny.container.spi.IContainerServiceProvider;
 import js.tiny.container.spi.IManagedClass;
 
-class ClassContextParam extends BaseContextParam implements IClassPostLoadedProcessor {
-	protected ClassContextParam(IContainer container) {
-		super(container);
+public class ClassContextParam extends BaseContextParam implements IClassPostLoadedProcessor {
+	private static Log log = LogFactory.getLog(ClassContextParam.class);
+
+	public ClassContextParam() {
+		log.trace("ClassContextParam()");
 	}
 
 	@Override
@@ -20,14 +22,5 @@ class ClassContextParam extends BaseContextParam implements IClassPostLoadedProc
 	@Override
 	public <T> void onClassPostLoaded(IManagedClass<T> managedClass) {
 		processFields(managedClass, null, field -> Modifier.isStatic(field.getModifiers()));
-	}
-
-	// --------------------------------------------------------------------------------------------
-	
-	public static class Provider implements IContainerServiceProvider {
-		@Override
-		public ClassContextParam getService(IContainer container) {
-			return new ClassContextParam(container);
-		}
 	}
 }

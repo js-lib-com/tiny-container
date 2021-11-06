@@ -25,7 +25,6 @@ import js.tiny.container.service.LoggerInstanceProcessor;
 import js.tiny.container.spi.IClassPostLoadedProcessor;
 import js.tiny.container.spi.IContainer;
 import js.tiny.container.spi.IContainerService;
-import js.tiny.container.spi.IContainerServiceProvider;
 import js.tiny.container.spi.IContainerStartProcessor;
 import js.tiny.container.spi.IInstancePostConstructProcessor;
 import js.tiny.container.spi.IInstancePreDestroyProcessor;
@@ -102,9 +101,9 @@ public class Container implements IContainer {
 
 		// load external and built-in container services
 
-		for (IContainerServiceProvider provider : ServiceLoader.load(IContainerServiceProvider.class)) {
-			IContainerService service = provider.getService(this);
+		for (IContainerService service : ServiceLoader.load(IContainerService.class)) {
 			log.debug("Load container service |%s|.", service.getClass());
+			service.create(this);
 			containerServices.add(service);
 
 			if (service instanceof IContainerStartProcessor) {
