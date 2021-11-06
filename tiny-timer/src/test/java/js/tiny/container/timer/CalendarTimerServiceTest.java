@@ -22,7 +22,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
-import js.tiny.container.spi.IInstancePostConstructionProcessor.Priority;
+import js.tiny.container.spi.IInstancePostConstructProcessor.Priority;
 import js.tiny.container.spi.IManagedClass;
 import js.tiny.container.spi.IManagedMethod;
 
@@ -63,7 +63,7 @@ public class CalendarTimerServiceTest {
 		service.scanServiceMeta(managedMethod);
 
 		// when
-		service.onInstancePostConstruction(managedClass, instance);
+		service.onInstancePostConstruct(managedClass, instance);
 
 		// then
 		ArgumentCaptor<Long> delayArg = ArgumentCaptor.forClass(Long.class);

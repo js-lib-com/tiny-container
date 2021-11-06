@@ -13,6 +13,7 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
+import js.tiny.container.contextparam.ClassContextParam.Provider;
 import js.tiny.container.servlet.RequestContext;
 import js.tiny.container.spi.IContainer;
 import js.tiny.container.spi.IManagedClass;
@@ -36,7 +37,8 @@ public class ClassContextParamTest {
 		when(requestContext.getInitParameter(any(), any())).thenReturn("value");
 		doReturn(BusinessClass.class).when(managedClass).getImplementationClass();
 
-		processor = new ClassContextParam(container);
+		ClassContextParam.Provider provider = new Provider();
+		processor = provider.getService(container);
 	}
 
 	@Test

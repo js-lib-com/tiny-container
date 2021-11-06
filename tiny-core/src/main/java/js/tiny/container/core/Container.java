@@ -20,7 +20,6 @@ import js.log.Log;
 import js.log.LogFactory;
 import js.tiny.container.cdi.CDI;
 import js.tiny.container.service.FlowProcessorsSet;
-import js.tiny.container.service.InstancePostConstructProcessor;
 import js.tiny.container.service.InstanceStartupProcessor;
 import js.tiny.container.service.LoggerInstanceProcessor;
 import js.tiny.container.spi.IClassPostLoadedProcessor;
@@ -28,8 +27,8 @@ import js.tiny.container.spi.IContainer;
 import js.tiny.container.spi.IContainerService;
 import js.tiny.container.spi.IContainerServiceProvider;
 import js.tiny.container.spi.IContainerStartProcessor;
-import js.tiny.container.spi.IInstancePostConstructionProcessor;
-import js.tiny.container.spi.IInstancePreDestructionProcessor;
+import js.tiny.container.spi.IInstancePostConstructProcessor;
+import js.tiny.container.spi.IInstancePreDestroyProcessor;
 import js.tiny.container.spi.IManagedClass;
 import js.tiny.container.spi.IManagedMethod;
 import js.util.Classes;
@@ -83,11 +82,11 @@ public class Container implements IContainer {
 	 * this processors are not executed. They add instance specific services. This list contains processors in execution order.
 	 * <p>
 	 * There are a number of built-in processor created by constructor but subclass may register new ones via
-	 * {@link #registerInstanceProcessor(IInstancePostConstructionProcessor)}.
+	 * {@link #registerInstanceProcessor(IInstancePostConstructProcessor)}.
 	 */
-	private final FlowProcessorsSet<IInstancePostConstructionProcessor> instancePostConstructionProcessors = new FlowProcessorsSet<>();
+	private final FlowProcessorsSet<IInstancePostConstructProcessor> instancePostConstructionProcessors = new FlowProcessorsSet<>();
 
-	private final FlowProcessorsSet<IInstancePreDestructionProcessor> instancePreDestructionProcessors = new FlowProcessorsSet<>();
+	private final FlowProcessorsSet<IInstancePreDestroyProcessor> instancePreDestructionProcessors = new FlowProcessorsSet<>();
 
 	public Container() {
 		this(CDI.create());
@@ -114,17 +113,15 @@ public class Container implements IContainer {
 			if (service instanceof IClassPostLoadedProcessor) {
 				classPostLoadedProcessors.add((IClassPostLoadedProcessor) service);
 			}
-			if (service instanceof IInstancePostConstructionProcessor) {
-				instancePostConstructionProcessors.add((IInstancePostConstructionProcessor) service);
+			if (service instanceof IInstancePostConstructProcessor) {
+				instancePostConstructionProcessors.add((IInstancePostConstructProcessor) service);
 			}
-			if (service instanceof IInstancePreDestructionProcessor) {
-				instancePreDestructionProcessors.add((IInstancePreDestructionProcessor) service);
+			if (service instanceof IInstancePreDestroyProcessor) {
+				instancePreDestructionProcessors.add((IInstancePreDestroyProcessor) service);
 			}
 		}
 
 		containerStartProcessors.add(new InstanceStartupProcessor());
-
-		instancePostConstructionProcessors.add(new InstancePostConstructProcessor());
 		instancePostConstructionProcessors.add(new LoggerInstanceProcessor());
 	}
 
@@ -215,7 +212,7 @@ public class Container implements IContainer {
 
 			final Object finalInstance = instance;
 			instancePreDestructionProcessors.forEach(processor -> {
-				processor.onInstancePreDestruction(managedClass, finalInstance);
+				processor.onInstancePreDestroy(managedClass, finalInstance);
 			});
 		}
 
@@ -236,7 +233,7 @@ public class Container implements IContainer {
 		Params.notNull(interfaceClass, "Interface class");
 		return cdi.getInstance(interfaceClass, (instanceManagedClass, instance) -> {
 			instancePostConstructionProcessors.forEach(processor -> {
-				processor.onInstancePostConstruction(instanceManagedClass, instance);
+				processor.onInstancePostConstruct(instanceManagedClass, instance);
 			});
 		});
 	}

@@ -19,7 +19,7 @@ import js.log.LogFactory;
 import js.tiny.container.spi.IContainer;
 import js.tiny.container.spi.IContainerService;
 import js.tiny.container.spi.IContainerServiceProvider;
-import js.tiny.container.spi.IInstancePostConstructionProcessor;
+import js.tiny.container.spi.IInstancePostConstructProcessor;
 import js.tiny.container.spi.IManagedClass;
 import js.tiny.container.spi.IManagedMethod;
 import js.tiny.container.spi.IServiceMeta;
@@ -44,7 +44,7 @@ import js.util.Strings;
  * 
  * @author Iulian Rotaru
  */
-public class ResourcesInjectionProcessor implements IInstancePostConstructionProcessor, IServiceMetaScanner {
+public class ResourcesInjectionProcessor implements IInstancePostConstructProcessor, IServiceMetaScanner {
 	private static final Log log = LogFactory.getLog(ResourcesInjectionProcessor.class);
 
 	private static final String GLOBAL_ENV = "java:global/env";
@@ -99,7 +99,7 @@ public class ResourcesInjectionProcessor implements IInstancePostConstructionPro
 	 * @param instance instance of given managed class.
 	 */
 	@Override
-	public <T> void onInstancePostConstruction(IManagedClass<T> managedClass, T instance) {
+	public <T> void onInstancePostConstruct(IManagedClass<T> managedClass, T instance) {
 		if (instance == null || !MANAGED_FIELDS.containsKey(managedClass.getKey())) {
 			// null instance and no fields conditions are silently ignored
 			return;
@@ -212,8 +212,8 @@ public class ResourcesInjectionProcessor implements IInstancePostConstructionPro
 
 	// --------------------------------------------------------------------------------------------
 
-	/** Java service loader declared on META-INF/services */
-	public static class Service implements IContainerServiceProvider {
+	/** Java service provider declared on META-INF/services */
+	public static class Provider implements IContainerServiceProvider {
 		@Override
 		public IContainerService getService(IContainer container) {
 			return new ResourcesInjectionProcessor();

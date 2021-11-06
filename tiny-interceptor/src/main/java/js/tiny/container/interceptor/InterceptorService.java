@@ -7,6 +7,7 @@ import js.lang.InvocationException;
 import js.log.Log;
 import js.log.LogFactory;
 import js.tiny.container.spi.IContainer;
+import js.tiny.container.spi.IContainerServiceProvider;
 import js.tiny.container.spi.IInvocation;
 import js.tiny.container.spi.IInvocationProcessorsChain;
 import js.tiny.container.spi.IManagedClass;
@@ -97,5 +98,12 @@ final class InterceptorService implements IMethodInvocationProcessor, IServiceMe
 			}
 		}
 		return returnValue;
+	}
+
+	public class Provider implements IContainerServiceProvider {
+		@Override
+		public InterceptorService getService(IContainer container) {
+			return new InterceptorService(container);
+		}
 	}
 }

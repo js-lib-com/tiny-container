@@ -1,4 +1,4 @@
-package js.tiny.container.service;
+package js.tiny.container.lifecycle;
 
 import java.util.Collections;
 
@@ -8,15 +8,14 @@ import js.lang.ManagedPreDestroy;
 import js.log.Log;
 import js.log.LogFactory;
 import js.tiny.container.spi.IContainer;
-import js.tiny.container.spi.IContainerService;
 import js.tiny.container.spi.IContainerServiceProvider;
-import js.tiny.container.spi.IInstancePreDestructionProcessor;
+import js.tiny.container.spi.IInstancePreDestroyProcessor;
 import js.tiny.container.spi.IManagedClass;
 import js.tiny.container.spi.IManagedMethod;
 import js.tiny.container.spi.IServiceMeta;
 import js.tiny.container.spi.IServiceMetaScanner;
 
-class InstancePreDestroyProcessor extends BaseInstanceLifeCycle implements IInstancePreDestructionProcessor, IServiceMetaScanner {
+class InstancePreDestroyProcessor extends BaseInstanceLifeCycle implements IInstancePreDestroyProcessor, IServiceMetaScanner {
 	private static final Log log = LogFactory.getLog(InstancePreDestroyProcessor.class);
 
 	private static final String ATTR_PRE_DESTROY = "pre-destroy";
@@ -39,7 +38,7 @@ class InstancePreDestroyProcessor extends BaseInstanceLifeCycle implements IInst
 	}
 
 	@Override
-	public <T> void onInstancePreDestruction(IManagedClass<T> managedClass, T instance) {
+	public <T> void onInstancePreDestroy(IManagedClass<T> managedClass, T instance) {
 		IManagedMethod method = managedClass.getAttribute(this, ATTR_PRE_DESTROY, IManagedMethod.class);
 		if (method == null) {
 			return;
@@ -55,10 +54,10 @@ class InstancePreDestroyProcessor extends BaseInstanceLifeCycle implements IInst
 	
 	// --------------------------------------------------------------------------------------------
 	
-	/** Java service loader declared on META-INF/services */
-	public static class Service implements IContainerServiceProvider {
+	/** Java service provider declared on META-INF/services */
+	public static class Provider implements IContainerServiceProvider {
 		@Override
-		public IContainerService getService(IContainer container) {
+		public InstancePreDestroyProcessor getService(IContainer container) {
 			return new InstancePreDestroyProcessor();
 		}
 	}	

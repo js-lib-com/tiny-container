@@ -1,4 +1,4 @@
-package js.tiny.container.service;
+package js.tiny.container.lifecycle;
 
 import java.util.Collections;
 
@@ -9,9 +9,8 @@ import js.lang.ManagedPostConstruct;
 import js.log.Log;
 import js.log.LogFactory;
 import js.tiny.container.spi.IContainer;
-import js.tiny.container.spi.IContainerService;
 import js.tiny.container.spi.IContainerServiceProvider;
-import js.tiny.container.spi.IInstancePostConstructionProcessor;
+import js.tiny.container.spi.IInstancePostConstructProcessor;
 import js.tiny.container.spi.IManagedClass;
 import js.tiny.container.spi.IManagedMethod;
 import js.tiny.container.spi.IServiceMeta;
@@ -23,7 +22,7 @@ import js.tiny.container.spi.IServiceMetaScanner;
  * 
  * @author Iulian Rotaru
  */
-public class InstancePostConstructProcessor extends BaseInstanceLifeCycle implements IInstancePostConstructionProcessor, IServiceMetaScanner {
+public class InstancePostConstructProcessor extends BaseInstanceLifeCycle implements IInstancePostConstructProcessor, IServiceMetaScanner {
 	private static final Log log = LogFactory.getLog(InstancePostConstructProcessor.class);
 
 	private static final String ATTR_POST_CONSTRUCT = "post-construct";
@@ -50,11 +49,12 @@ public class InstancePostConstructProcessor extends BaseInstanceLifeCycle implem
 	 * implement {@link ManagedPostConstruct} interface.
 	 * 
 	 * @param managedClass managed class,
-	 * @param instance instance of given managed class.
-	 * @throws BugError if instance post-construction fails due to exception of user defined logic.
+	 * @param instance instance of given managed class, not null.
+	 * @throws NullPointerException if managed class or instance argument is null.
+	 * @throws BugError if instance post-construction fails due to exception of application defined logic.
 	 */
 	@Override
-	public <T> void onInstancePostConstruction(IManagedClass<T> managedClass, T instance) {
+	public <T> void onInstancePostConstruct(IManagedClass<T> managedClass, T instance) {
 		IManagedMethod method = managedClass.getAttribute(this, ATTR_POST_CONSTRUCT, IManagedMethod.class);
 		if (method == null) {
 			return;
@@ -67,13 +67,13 @@ public class InstancePostConstructProcessor extends BaseInstanceLifeCycle implem
 			throw new BugError("Managed instance |%s| post-construct fail: %s", instance, t);
 		}
 	}
-	
+
 	// --------------------------------------------------------------------------------------------
-	
-	/** Java service loader declared on META-INF/services */
-	public static class Service implements IContainerServiceProvider {
+
+	/** Java service provider declared on META-INF/services */
+	public static class Provider implements IContainerServiceProvider {
 		@Override
-		public IContainerService getService(IContainer container) {
+		public InstancePostConstructProcessor getService(IContainer container) {
 			return new InstancePostConstructProcessor();
 		}
 	}

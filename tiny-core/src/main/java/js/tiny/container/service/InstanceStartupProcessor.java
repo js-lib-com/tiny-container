@@ -36,7 +36,7 @@ public class InstanceStartupProcessor implements IContainerStartProcessor {
 	 * application descriptor.
 	 * <p>
 	 * Note that this method does not explicitly execute {@link ManagedLifeCycle#postConstruct()} hooks; this hooks are actually
-	 * executed by instance processor, see {link {@link InstancePostConstructProcessor}.
+	 * executed by instance processor from life cycle module.
 	 */
 	@Override
 	public void onContainerStart(IContainer container) {

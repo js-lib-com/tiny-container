@@ -3,7 +3,7 @@ package js.tiny.container.service;
 import js.log.Log;
 import js.log.LogFactory;
 import js.tiny.container.core.Container;
-import js.tiny.container.spi.IInstancePostConstructionProcessor;
+import js.tiny.container.spi.IInstancePostConstructProcessor;
 import js.tiny.container.spi.IManagedClass;
 import js.tiny.container.spi.InstanceScope;
 import js.tiny.container.spi.InstanceType;
@@ -17,7 +17,7 @@ import js.tiny.container.spi.InstanceType;
  * 
  * @author Iulian Rotaru
  */
-public class LoggerInstanceProcessor implements IInstancePostConstructionProcessor {
+public class LoggerInstanceProcessor implements IInstancePostConstructProcessor {
 	/** Class logger. */
 	private static final Log log = LogFactory.getLog(LoggerInstanceProcessor.class);
 
@@ -34,7 +34,7 @@ public class LoggerInstanceProcessor implements IInstancePostConstructionProcess
 	 * @param instance instance of managed class.
 	 */
 	@Override
-	public <T> void onInstancePostConstruction(IManagedClass<T> managedClass, T instance) {
+	public <T> void onInstancePostConstruct(IManagedClass<T> managedClass, T instance) {
 		if (!managedClass.getInstanceScope().equals(InstanceScope.APPLICATION)) {
 			return;
 		}

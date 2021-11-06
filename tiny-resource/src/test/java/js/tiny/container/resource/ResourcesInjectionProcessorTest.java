@@ -99,7 +99,7 @@ public class ResourcesInjectionProcessorTest {
 		processor.scanServiceMeta(managedClass);
 
 		// when
-		processor.onInstancePostConstruction(managedClass, instance);
+		processor.onInstancePostConstruct(managedClass, instance);
 
 		// then
 		assertThat(instance.resourceLookup, equalTo("resource"));
@@ -113,7 +113,7 @@ public class ResourcesInjectionProcessorTest {
 		processor.scanServiceMeta(managedClass);
 
 		// when
-		processor.onInstancePostConstruction(managedClass, null);
+		processor.onInstancePostConstruct(managedClass, null);
 
 		// then
 	}
@@ -125,7 +125,7 @@ public class ResourcesInjectionProcessorTest {
 		processor.scanServiceMeta(managedClass);
 
 		// when
-		processor.onInstancePostConstruction(managedClass, instance);
+		processor.onInstancePostConstruct(managedClass, instance);
 
 		// then
 	}
@@ -139,7 +139,7 @@ public class ResourcesInjectionProcessorTest {
 		processor.scanServiceMeta(managedClass);
 
 		// when
-		processor.onInstancePostConstruction(managedClass, instance);
+		processor.onInstancePostConstruct(managedClass, instance);
 
 		// then
 		assertThat(instance.resourceName, equalTo("resource"));
@@ -155,7 +155,7 @@ public class ResourcesInjectionProcessorTest {
 		processor.scanServiceMeta(managedClass);
 
 		// when
-		processor.onInstancePostConstruction(managedClass, instance);
+		processor.onInstancePostConstruct(managedClass, instance);
 
 		// then
 	}
@@ -169,7 +169,7 @@ public class ResourcesInjectionProcessorTest {
 		processor.scanServiceMeta(managedClass);
 
 		// when
-		processor.onInstancePostConstruction(managedClass, instance);
+		processor.onInstancePostConstruct(managedClass, instance);
 
 		// then
 		assertThat(instance.resourceName, nullValue());

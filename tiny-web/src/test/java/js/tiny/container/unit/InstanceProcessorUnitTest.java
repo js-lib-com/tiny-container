@@ -29,7 +29,7 @@ import js.tiny.container.core.Container;
 import js.tiny.container.spi.AuthorizationException;
 import js.tiny.container.spi.IContainer;
 import js.tiny.container.spi.IContainer;
-import js.tiny.container.spi.IInstancePostConstructionProcessor;
+import js.tiny.container.spi.IInstancePostConstructProcessor;
 import js.tiny.container.spi.IManagedClass;
 import js.tiny.container.spi.InstanceScope;
 import js.tiny.container.spi.InstanceType;
@@ -50,7 +50,7 @@ public class InstanceProcessorUnitTest {
 	@Ignore
 	public void containerRegistration() throws Exception {
 		Object container = TestContext.start();
-		List<IInstancePostConstructionProcessor> processors = Classes.getFieldValue(container, Container.class, "instancePostConstructProcessors");
+		List<IInstancePostConstructProcessor> processors = Classes.getFieldValue(container, Container.class, "instancePostConstructProcessors");
 
 		assertNotNull(processors);
 		assertEquals("InstanceFieldsInjectionProcessor", processors.get(0).getClass().getSimpleName());
@@ -61,55 +61,6 @@ public class InstanceProcessorUnitTest {
 	}
 
 	// --------------------------------------------------------------------------------------------
-	// POST_CONSTRUCT INSTANCE PROCESSOR
-
-	@Test
-	public void postConstruct() {
-		MockManagedMethodSPI managedMethod = new MockManagedMethodSPI(Joker.getPostConstructMethod());
-		MockManagedClassSPI<Joker> managedClass = new MockManagedClassSPI<>(Joker.class);
-		managedClass.attribute = managedMethod;
-		IInstancePostConstructionProcessor processor = getPostConstructInstanceProcessor();
-
-		Joker joker = new Joker();
-		processor.onInstancePostConstruction(managedClass, joker);
-
-		assertEquals(1, joker.postConstructProbe);
-	}
-
-	@Test
-	public void postConstruct_NoManagedPostConstruct() {
-		MockManagedClassSPI<Person> managedClass = new MockManagedClassSPI<>(Person.class);
-		IInstancePostConstructionProcessor processor = getPostConstructInstanceProcessor();
-
-		Person person = new Person();
-		processor.onInstancePostConstruction(managedClass, person);
-	}
-
-	/** Null instance arguments should not throw exception. */
-	@Test
-	public void postConstruct_NullInstance() {
-		MockManagedClassSPI<Person> managedClass = new MockManagedClassSPI<>(Person.class);
-		IInstancePostConstructionProcessor processor = getPostConstructInstanceProcessor();
-		processor.onInstancePostConstruction(managedClass, null);
-	}
-
-	@Test(expected = BugError.class)
-	public void postConstruct_Exception() {
-		MockManagedMethodSPI managedMethod = new MockManagedMethodSPI(Joker.getPostConstructMethod());
-		MockManagedClassSPI<Joker> managedClass = new MockManagedClassSPI<>(Joker.class);
-		managedClass.attribute = managedMethod;
-		IInstancePostConstructionProcessor processor = getPostConstructInstanceProcessor();
-
-		Joker joker = new Joker();
-		joker.exception = true;
-		processor.onInstancePostConstruction(managedClass, joker);
-	}
-
-	private static IInstancePostConstructionProcessor getPostConstructInstanceProcessor() {
-		return Classes.newInstance("js.tiny.container.service.InstancePostConstructProcessor");
-	}
-
-	// --------------------------------------------------------------------------------------------
 	// LOGGER INSTANCE PROCESSOR
 
 	@Test
@@ -117,10 +68,10 @@ public class InstanceProcessorUnitTest {
 		MockManagedClassSPI<Person> managedClass = new MockManagedClassSPI<>(Person.class);
 		managedClass.instanceScope = InstanceScope.APPLICATION;
 		managedClass.instanceType = InstanceType.PROXY;
-		IInstancePostConstructionProcessor processor = getLoggerInstanceProcessor();
+		IInstancePostConstructProcessor processor = getLoggerInstanceProcessor();
 
 		Person person = new Person();
-		processor.onInstancePostConstruction(managedClass, person);
+		processor.onInstancePostConstruct(managedClass, person);
 	}
 
 	@Test
@@ -128,10 +79,10 @@ public class InstanceProcessorUnitTest {
 		MockManagedClassSPI<Joker> managedClass = new MockManagedClassSPI<>(Joker.class);
 		managedClass.instanceScope = InstanceScope.APPLICATION;
 		managedClass.instanceType = InstanceType.PROXY;
-		IInstancePostConstructionProcessor processor = getLoggerInstanceProcessor();
+		IInstancePostConstructProcessor processor = getLoggerInstanceProcessor();
 
 		Joker joker = new Joker();
-		processor.onInstancePostConstruction(managedClass, joker);
+		processor.onInstancePostConstruct(managedClass, joker);
 	}
 
 	@Test
@@ -139,13 +90,13 @@ public class InstanceProcessorUnitTest {
 		MockManagedClassSPI<Person> managedClass = new MockManagedClassSPI<>(Person.class);
 		managedClass.instanceScope = InstanceScope.LOCAL;
 		managedClass.instanceType = InstanceType.POJO;
-		IInstancePostConstructionProcessor processor = getLoggerInstanceProcessor();
+		IInstancePostConstructProcessor processor = getLoggerInstanceProcessor();
 
 		Person person = new Person();
-		processor.onInstancePostConstruction(managedClass, person);
+		processor.onInstancePostConstruct(managedClass, person);
 	}
 
-	private static IInstancePostConstructionProcessor getLoggerInstanceProcessor() {
+	private static IInstancePostConstructProcessor getLoggerInstanceProcessor() {
 		return Classes.newInstance("js.tiny.container.service.LoggerInstanceProcessor");
 	}
 

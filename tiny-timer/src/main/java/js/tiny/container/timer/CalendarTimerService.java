@@ -15,14 +15,17 @@ import javax.ejb.Schedule;
 
 import js.log.Log;
 import js.log.LogFactory;
-import js.tiny.container.spi.IInstancePostConstructionProcessor;
+import js.tiny.container.spi.IContainer;
+import js.tiny.container.spi.IContainerService;
+import js.tiny.container.spi.IContainerServiceProvider;
+import js.tiny.container.spi.IInstancePostConstructProcessor;
 import js.tiny.container.spi.IManagedClass;
 import js.tiny.container.spi.IManagedMethod;
 import js.tiny.container.spi.IServiceMeta;
 import js.tiny.container.spi.IServiceMetaScanner;
 import js.util.Params;
 
-class CalendarTimerService implements IInstancePostConstructionProcessor, IServiceMetaScanner {
+class CalendarTimerService implements IInstancePostConstructProcessor, IServiceMetaScanner {
 	private static final Log log = LogFactory.getLog(CalendarTimerService.class);
 
 	private static final int SCHEDULERS_THREAD_POLL = 2;
@@ -65,7 +68,7 @@ class CalendarTimerService implements IInstancePostConstructionProcessor, IServi
 	}
 
 	@Override
-	public <T> void onInstancePostConstruction(IManagedClass<T> managedClass, final T instance) {
+	public <T> void onInstancePostConstruct(IManagedClass<T> managedClass, final T instance) {
 		Set<IManagedMethod> timerMethods = classTimers.get(managedClass.getKey());
 		if (timerMethods == null) {
 			return;
@@ -183,6 +186,15 @@ class CalendarTimerService implements IInstancePostConstructionProcessor, IServi
 
 		default:
 			throw new IllegalStateException();
+		}
+	}
+
+	// --------------------------------------------------------------------------------------------
+	
+	public class Provider implements IContainerServiceProvider {
+		@Override
+		public IContainerService getService(IContainer container) {
+			return new CalendarTimerService();
 		}
 	}
 }
