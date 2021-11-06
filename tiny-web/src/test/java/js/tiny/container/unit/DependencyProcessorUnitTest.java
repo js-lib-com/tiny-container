@@ -23,7 +23,6 @@ import js.lang.BugError;
 import js.lang.InvocationException;
 import js.tiny.container.core.Container;
 import js.tiny.container.spi.IContainer;
-import js.tiny.container.spi.IContainer;
 import js.tiny.container.spi.IManagedClass;
 import js.tiny.container.spi.InstanceScope;
 import js.tiny.container.stub.ContainerStub;

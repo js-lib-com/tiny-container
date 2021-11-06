@@ -1,5 +1,6 @@
 package js.tiny.container.mvc;
 
+import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -11,10 +12,9 @@ import js.tiny.container.mvc.annotation.ResponseContentType;
 import js.tiny.container.spi.IConnector;
 import js.tiny.container.spi.IManagedClass;
 import js.tiny.container.spi.IManagedMethod;
-import js.tiny.container.spi.IServiceMeta;
-import js.tiny.container.spi.IServiceMetaScanner;
+import js.tiny.container.spi.IAnnotationsScanner;
 
-public class ResourceConnector implements IConnector, IServiceMetaScanner {
+public class ResourceConnector implements IConnector, IAnnotationsScanner {
 	private static final Log log = LogFactory.getLog(ResourceConnector.class);
 
 	public ResourceConnector() {
@@ -22,29 +22,29 @@ public class ResourceConnector implements IConnector, IServiceMetaScanner {
 	}
 
 	@Override
-	public List<IServiceMeta> scanServiceMeta(IManagedClass<?> managedClass) {
-		List<IServiceMeta> serviceMetas = new ArrayList<>();
+	public List<Annotation> scanClassAnnotations(IManagedClass<?> managedClass) {
+		List<Annotation> serviceMetas = new ArrayList<>();
 
-		Controller controller = managedClass.getAnnotation(Controller.class);
+		Controller controller = managedClass.scanAnnotation(Controller.class);
 		if (controller != null) {
-			serviceMetas.add(new ControllerMeta(this, controller));
+			serviceMetas.add(controller);
 		}
 
 		return serviceMetas;
 	}
 
 	@Override
-	public List<IServiceMeta> scanServiceMeta(IManagedMethod managedMethod) {
-		List<IServiceMeta> serviceMetas = new ArrayList<>();
+	public List<Annotation> scanMethodAnnotations(IManagedMethod managedMethod) {
+		List<Annotation> serviceMetas = new ArrayList<>();
 
-		RequestPath requestPath = managedMethod.getAnnotation(RequestPath.class);
+		RequestPath requestPath = managedMethod.scanAnnotation(RequestPath.class);
 		if (requestPath != null) {
-			serviceMetas.add(new RequestPathMeta(this, requestPath));
+			serviceMetas.add(requestPath);
 		}
 
-		ResponseContentType responseContentType = managedMethod.getAnnotation(ResponseContentType.class);
+		ResponseContentType responseContentType = managedMethod.scanAnnotation(ResponseContentType.class);
 		if (responseContentType != null) {
-			serviceMetas.add(new ResponseContentTypeMeta(this, responseContentType));
+			serviceMetas.add(responseContentType);
 		}
 
 		return serviceMetas;

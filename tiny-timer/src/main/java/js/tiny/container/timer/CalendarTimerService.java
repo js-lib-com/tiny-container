@@ -1,5 +1,6 @@
 package js.tiny.container.timer;
 
+import java.lang.annotation.Annotation;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
@@ -18,11 +19,10 @@ import js.log.LogFactory;
 import js.tiny.container.spi.IInstancePostConstructProcessor;
 import js.tiny.container.spi.IManagedClass;
 import js.tiny.container.spi.IManagedMethod;
-import js.tiny.container.spi.IServiceMeta;
-import js.tiny.container.spi.IServiceMetaScanner;
+import js.tiny.container.spi.IAnnotationsScanner;
 import js.util.Params;
 
-public class CalendarTimerService implements IInstancePostConstructProcessor, IServiceMetaScanner {
+public class CalendarTimerService implements IInstancePostConstructProcessor, IAnnotationsScanner {
 	private static final Log log = LogFactory.getLog(CalendarTimerService.class);
 
 	private static final int SCHEDULERS_THREAD_POLL = 2;
@@ -41,13 +41,13 @@ public class CalendarTimerService implements IInstancePostConstructProcessor, IS
 	}
 
 	@Override
-	public Iterable<IServiceMeta> scanServiceMeta(IManagedClass<?> managedClass) {
+	public Iterable<Annotation> scanClassAnnotations(IManagedClass<?> managedClass) {
 		return Collections.emptyList();
 	}
 
 	@Override
-	public Iterable<IServiceMeta> scanServiceMeta(IManagedMethod managedMethod) {
-		Schedule schedule = managedMethod.getAnnotation(Schedule.class);
+	public Iterable<Annotation> scanMethodAnnotations(IManagedMethod managedMethod) {
+		Schedule schedule = managedMethod.scanAnnotation(Schedule.class);
 		if (schedule != null) {
 			Set<IManagedMethod> timerMethods = classTimers.get(managedMethod.getDeclaringClass().getKey());
 			if (timerMethods == null) {
@@ -72,7 +72,7 @@ public class CalendarTimerService implements IInstancePostConstructProcessor, IS
 		}
 		// computed remaining time can be zero in which case managed method is executed instantly
 		timerMethods.forEach(managedMethod -> {
-			schedule(new TimerTask(this, instance, managedMethod), computeDelay(managedMethod.getAnnotation(Schedule.class)));
+			schedule(new TimerTask(this, instance, managedMethod), computeDelay(managedMethod.scanAnnotation(Schedule.class)));
 		});
 	}
 

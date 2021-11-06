@@ -99,9 +99,9 @@ public interface IManagedClass<T> {
 	 */
 	String getImplementationURL();
 
-	<A extends Annotation> A getAnnotation(Class<A> type);
+	<A extends Annotation> A scanAnnotation(Class<A> type);
 
-	<S extends IServiceMeta> S getServiceMeta(Class<S> type);
+	<A extends Annotation> A getAnnotation(Class<A> type);
 
 	void setAttribute(Object context, String name, Object value);
 

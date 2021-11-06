@@ -3,7 +3,6 @@ package js.tiny.container.unit;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import java.lang.reflect.Constructor;
@@ -23,9 +22,7 @@ import js.lang.BugError;
 import js.lang.Config;
 import js.lang.ConfigException;
 import js.lang.ManagedLifeCycle;
-import js.lang.VarArgs;
 import js.tiny.container.core.Container;
-import js.tiny.container.core.Factory;
 import js.tiny.container.core.ManagedClass;
 import js.tiny.container.servlet.TinyConfigBuilder;
 import js.tiny.container.spi.IManagedClass;

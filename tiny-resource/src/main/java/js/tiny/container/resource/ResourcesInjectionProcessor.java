@@ -1,5 +1,6 @@
 package js.tiny.container.resource;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
@@ -19,8 +20,7 @@ import js.log.LogFactory;
 import js.tiny.container.spi.IInstancePostConstructProcessor;
 import js.tiny.container.spi.IManagedClass;
 import js.tiny.container.spi.IManagedMethod;
-import js.tiny.container.spi.IServiceMeta;
-import js.tiny.container.spi.IServiceMetaScanner;
+import js.tiny.container.spi.IAnnotationsScanner;
 import js.util.Classes;
 import js.util.Strings;
 
@@ -41,7 +41,7 @@ import js.util.Strings;
  * 
  * @author Iulian Rotaru
  */
-public class ResourcesInjectionProcessor implements IInstancePostConstructProcessor, IServiceMetaScanner {
+public class ResourcesInjectionProcessor implements IInstancePostConstructProcessor, IAnnotationsScanner {
 	private static final Log log = LogFactory.getLog(ResourcesInjectionProcessor.class);
 
 	private static final String GLOBAL_ENV = "java:global/env";
@@ -79,13 +79,13 @@ public class ResourcesInjectionProcessor implements IInstancePostConstructProces
 	}
 
 	@Override
-	public Iterable<IServiceMeta> scanServiceMeta(IManagedClass<?> managedClass) {
+	public Iterable<Annotation> scanClassAnnotations(IManagedClass<?> managedClass) {
 		MANAGED_FIELDS.put(managedClass.getKey(), scanFields(managedClass.getImplementationClass()));
 		return Collections.emptyList();
 	}
 
 	@Override
-	public Iterable<IServiceMeta> scanServiceMeta(IManagedMethod managedMethod) {
+	public Iterable<Annotation> scanMethodAnnotations(IManagedMethod managedMethod) {
 		return Collections.emptyList();
 	}
 

@@ -32,7 +32,7 @@ public class TimerTaskTest {
 
 	@Before
 	public void beforeTest() {
-		when(managedMethod.getAnnotation(Schedule.class)).thenReturn(schedule);
+		when(managedMethod.scanAnnotation(Schedule.class)).thenReturn(schedule);
 
 		task = new TimerTask(service, instance, managedMethod);
 	}

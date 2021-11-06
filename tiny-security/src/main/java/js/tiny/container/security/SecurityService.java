@@ -1,5 +1,6 @@
 package js.tiny.container.security;
 
+import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -21,10 +22,9 @@ import js.tiny.container.spi.IInvocationProcessorsChain;
 import js.tiny.container.spi.IManagedClass;
 import js.tiny.container.spi.IManagedMethod;
 import js.tiny.container.spi.IMethodInvocationProcessor;
-import js.tiny.container.spi.IServiceMeta;
-import js.tiny.container.spi.IServiceMetaScanner;
+import js.tiny.container.spi.IAnnotationsScanner;
 
-public class SecurityService implements IMethodInvocationProcessor, IServiceMetaScanner {
+public class SecurityService implements IMethodInvocationProcessor, IAnnotationsScanner {
 	private static final Log log = LogFactory.getLog(SecurityService.class);
 
 	private IContainer container;
@@ -46,53 +46,53 @@ public class SecurityService implements IMethodInvocationProcessor, IServiceMeta
 	}
 
 	@Override
-	public List<IServiceMeta> scanServiceMeta(IManagedClass<?> managedClass) {
-		List<IServiceMeta> servicesMeta = new ArrayList<>();
+	public List<Annotation> scanClassAnnotations(IManagedClass<?> managedClass) {
+		List<Annotation> annotations = new ArrayList<>();
 
-		RolesAllowed rolesAllowed = managedClass.getAnnotation(RolesAllowed.class);
+		RolesAllowed rolesAllowed = managedClass.scanAnnotation(RolesAllowed.class);
 		if (rolesAllowed != null) {
-			servicesMeta.add(new RolesAllowedMeta(this, rolesAllowed));
+			annotations.add(rolesAllowed);
 		}
 
-		DenyAll denyAll = managedClass.getAnnotation(DenyAll.class);
+		DenyAll denyAll = managedClass.scanAnnotation(DenyAll.class);
 		if (denyAll != null) {
-			servicesMeta.add(new DenyAllMeta(this));
+			annotations.add(denyAll);
 		}
 
-		PermitAll permitAll = managedClass.getAnnotation(PermitAll.class);
+		PermitAll permitAll = managedClass.scanAnnotation(PermitAll.class);
 		if (permitAll != null) {
-			servicesMeta.add(new PermitAllMeta(this));
+			annotations.add(permitAll);
 		}
 
-		if (!servicesMeta.isEmpty()) {
+		if (!annotations.isEmpty()) {
 			enabled = true;
 		}
-		return servicesMeta;
+		return annotations;
 	}
 
 	@Override
-	public List<IServiceMeta> scanServiceMeta(IManagedMethod managedMethod) {
-		List<IServiceMeta> servicesMeta = new ArrayList<>();
+	public List<Annotation> scanMethodAnnotations(IManagedMethod managedMethod) {
+		List<Annotation> annotations = new ArrayList<>();
 
-		RolesAllowed rolesAllowed = managedMethod.getAnnotation(RolesAllowed.class);
+		RolesAllowed rolesAllowed = managedMethod.scanAnnotation(RolesAllowed.class);
 		if (rolesAllowed != null) {
-			servicesMeta.add(new RolesAllowedMeta(this, rolesAllowed));
+			annotations.add(rolesAllowed);
 		}
 
-		DenyAll denyAll = managedMethod.getAnnotation(DenyAll.class);
+		DenyAll denyAll = managedMethod.scanAnnotation(DenyAll.class);
 		if (denyAll != null) {
-			servicesMeta.add(new DenyAllMeta(this));
+			annotations.add(denyAll);
 		}
 
-		PermitAll permitAll = managedMethod.getAnnotation(PermitAll.class);
+		PermitAll permitAll = managedMethod.scanAnnotation(PermitAll.class);
 		if (permitAll != null) {
-			servicesMeta.add(new PermitAllMeta(this));
+			annotations.add(permitAll);
 		}
 
-		if (!servicesMeta.isEmpty()) {
+		if (!annotations.isEmpty()) {
 			enabled = true;
 		}
-		return servicesMeta;
+		return annotations;
 	}
 
 	@Override
@@ -133,19 +133,19 @@ public class SecurityService implements IMethodInvocationProcessor, IServiceMeta
 	// --------------------------------------------------------------------------------------------
 
 	private static boolean isDenyAll(IManagedMethod managedMethod) {
-		return managedMethod.getServiceMeta(DenyAllMeta.class) != null || managedMethod.getDeclaringClass().getServiceMeta(DenyAllMeta.class) != null;
+		return managedMethod.getAnnotation(DenyAll.class) != null || managedMethod.getDeclaringClass().getAnnotation(DenyAll.class) != null;
 	}
 
 	private static boolean isPermitAll(IManagedMethod managedMethod) {
-		return managedMethod.getServiceMeta(PermitAllMeta.class) != null || managedMethod.getDeclaringClass().getServiceMeta(PermitAllMeta.class) != null;
+		return managedMethod.getAnnotation(PermitAll.class) != null || managedMethod.getDeclaringClass().getAnnotation(PermitAll.class) != null;
 	}
 
 	private static final String[] EMPTY_ROLES = new String[0];
 
 	private static String[] getRoles(IManagedMethod managedMethod) {
-		RolesAllowedMeta rolesAllowed = managedMethod.getServiceMeta(RolesAllowedMeta.class);
+		RolesAllowed rolesAllowed = managedMethod.getAnnotation(RolesAllowed.class);
 		if (rolesAllowed == null) {
-			rolesAllowed = managedMethod.getDeclaringClass().getServiceMeta(RolesAllowedMeta.class);
+			rolesAllowed = managedMethod.getDeclaringClass().getAnnotation(RolesAllowed.class);
 		}
 		return rolesAllowed != null ? rolesAllowed.value() : EMPTY_ROLES;
 	}

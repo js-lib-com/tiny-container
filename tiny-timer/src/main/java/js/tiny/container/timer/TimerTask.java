@@ -25,7 +25,7 @@ class TimerTask implements Runnable {
 		log.debug("Execute timer method |%s|.", managedMethod);
 		try {
 			managedMethod.invoke(instance);
-			long delay = service.computeDelay(managedMethod.getAnnotation(Schedule.class));
+			long delay = service.computeDelay(managedMethod.scanAnnotation(Schedule.class));
 			if (delay > 0) {
 				service.schedule(this, delay);
 			}

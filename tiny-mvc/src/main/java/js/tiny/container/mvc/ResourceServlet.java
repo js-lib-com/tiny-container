@@ -21,6 +21,8 @@ import js.tiny.container.http.encoder.ArgumentsReader;
 import js.tiny.container.http.encoder.ArgumentsReaderFactory;
 import js.tiny.container.http.encoder.ServerEncoders;
 import js.tiny.container.mvc.annotation.Controller;
+import js.tiny.container.mvc.annotation.RequestPath;
+import js.tiny.container.mvc.annotation.ResponseContentType;
 import js.tiny.container.servlet.AppServlet;
 import js.tiny.container.servlet.RequestContext;
 import js.tiny.container.servlet.RequestPreprocessor;
@@ -171,9 +173,9 @@ public class ResourceServlet extends AppServlet {
 				throw new BugError("Null resource for request |%s| returned by method |%s|.", httpRequest.getRequestURI(), method);
 			}
 
-			ResponseContentTypeMeta responseContentTypeMeta = method.getServiceMeta(ResponseContentTypeMeta.class);
-			if (responseContentTypeMeta != null) {
-				httpResponse.setContentType(responseContentTypeMeta.value());
+			ResponseContentType responseContentType = method.getAnnotation(ResponseContentType.class);
+			if (responseContentType != null) {
+				httpResponse.setContentType(responseContentType.value());
 			}
 		} catch (AuthorizationException e) {
 			// at this point, resource is private and need to redirect to a login page
@@ -259,14 +261,14 @@ public class ResourceServlet extends AppServlet {
 	}
 
 	private static String path(IManagedClass<?> managedClass) {
-		ControllerMeta controllerMeta = managedClass.getServiceMeta(ControllerMeta.class);
-		String value = controllerMeta != null ? controllerMeta.value() : null;
+		Controller controller = managedClass.getAnnotation(Controller.class);
+		String value = controller != null ? controller.value() : null;
 		return value != null && !value.isEmpty() ? value : null;
 	}
 
 	private static String path(IManagedMethod managedMethod) {
-		RequestPathMeta requestPathMeta = managedMethod.getServiceMeta(RequestPathMeta.class);
-		return requestPathMeta != null ? requestPathMeta.value() : Strings.memberToDashCase(managedMethod.getName());
+		RequestPath requestPath = managedMethod.getAnnotation(RequestPath.class);
+		return requestPath != null ? requestPath.value() : Strings.memberToDashCase(managedMethod.getName());
 	}
 
 	/**

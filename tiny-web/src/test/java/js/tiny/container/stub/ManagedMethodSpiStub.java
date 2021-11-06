@@ -10,7 +10,6 @@ import js.tiny.container.spi.IInvocation;
 import js.tiny.container.spi.IInvocationProcessorsChain;
 import js.tiny.container.spi.IManagedClass;
 import js.tiny.container.spi.IManagedMethod;
-import js.tiny.container.spi.IServiceMeta;
 
 public class ManagedMethodSpiStub implements IManagedMethod {
 	@Override
@@ -49,17 +48,17 @@ public class ManagedMethodSpiStub implements IManagedMethod {
 	}
 
 	@Override
-	public <T extends Annotation> T getAnnotation(Class<T> type) {
+	public <T extends Annotation> T scanAnnotation(Class<T> type) {
 		throw new UnsupportedOperationException("getAnnotation(Class<T> type)");
 	}
 
 	@Override
-	public void addServiceMeta(IServiceMeta serviceMeta) {
+	public void addAnnotation(Annotation serviceMeta) {
 		throw new UnsupportedOperationException("addServiceMeta(IServiceMeta serviceMeta)");
 	}
 
 	@Override
-	public <T extends IServiceMeta> T getServiceMeta(Class<T> type) {
+	public <T extends Annotation> T getAnnotation(Class<T> type) {
 		throw new UnsupportedOperationException("getServiceMeta(Class<T> type)");
 	}
 

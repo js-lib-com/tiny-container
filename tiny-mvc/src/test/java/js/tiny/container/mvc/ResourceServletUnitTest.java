@@ -4,6 +4,7 @@ package js.tiny.container.mvc;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.util.Arrays;
@@ -21,6 +22,8 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
 import js.tiny.container.http.Resource;
+import js.tiny.container.mvc.annotation.Controller;
+import js.tiny.container.mvc.annotation.RequestPath;
 import js.tiny.container.servlet.ITinyContainer;
 import js.tiny.container.servlet.TinyContainer;
 import js.tiny.container.spi.IContainerService;
@@ -51,8 +54,11 @@ public class ResourceServletUnitTest {
 		when(servletContext.getServletContextName()).thenReturn("test-app");
 		when(servletContext.getAttribute(TinyContainer.ATTR_INSTANCE)).thenReturn(container);
 
+		Controller controller = mock(Controller.class);
+		when(controller.value()).thenReturn("controller");
+
 		when(container.getManagedMethods()).thenReturn(Arrays.asList(managedMethod));
-		when(managedClass.getServiceMeta(ControllerMeta.class)).thenReturn(new ControllerMeta(service, "controller"));
+		when(managedClass.getAnnotation(Controller.class)).thenReturn(controller);
 		doReturn(managedClass).when(managedMethod).getDeclaringClass();
 		when(managedMethod.getName()).thenReturn("resource");
 	}
@@ -67,7 +73,10 @@ public class ResourceServletUnitTest {
 	@Test
 	public void GivenResourceMethod_WhenServletInit_ThenRegister() throws ServletException {
 		// given
-		when(managedMethod.getServiceMeta(RequestPathMeta.class)).thenReturn(new RequestPathMeta(service, "index"));
+		RequestPath requestPath = mock(RequestPath.class);
+		when(requestPath.value()).thenReturn("index");
+
+		when(managedMethod.getAnnotation(RequestPath.class)).thenReturn(requestPath);
 		when(managedMethod.getReturnType()).thenReturn(Resource.class);
 
 		// when
@@ -79,7 +88,7 @@ public class ResourceServletUnitTest {
 		assertNotNull(methods);
 		assertEquals(1, methods.size());
 		assertNotNull(methods.get("/controller/index"));
-		assertEquals("index", methods.get("/controller/index").getServiceMeta(RequestPathMeta.class).value());
+		assertEquals("index", methods.get("/controller/index").getAnnotation(RequestPath.class).value());
 	}
 
 	@Test
@@ -109,7 +118,9 @@ public class ResourceServletUnitTest {
 	@Test
 	public void GivenAppContext_WhenCreateStorageKey_ThenIncludeAppContext() throws Exception {
 		// given
-		when(managedMethod.getServiceMeta(RequestPathMeta.class)).thenReturn(new RequestPathMeta(service, "resource"));
+		RequestPath requestPath = mock(RequestPath.class);
+		when(requestPath.value()).thenReturn("resource");
+		when(managedMethod.getAnnotation(RequestPath.class)).thenReturn(requestPath);
 
 		// when
 		String key = key(managedMethod);
@@ -121,7 +132,9 @@ public class ResourceServletUnitTest {
 	@Test
 	public void GivenRootContext_WhenCreateStorageKey_ThenNoAppContext() throws Exception {
 		// given
-		when(managedClass.getServiceMeta(ControllerMeta.class)).thenReturn(new ControllerMeta(service, ""));
+		Controller controller = mock(Controller.class);
+		when(controller.value()).thenReturn("");
+		when(managedClass.getAnnotation(Controller.class)).thenReturn(controller);
 
 		// when
 		String key = key(managedMethod);

@@ -64,6 +64,6 @@ public class InstanceStartupProcessor implements IContainerStartProcessor {
 		if (!managedClass.getInstanceType().requiresImplementation()) {
 			return false;
 		}
-		return managedClass.getAnnotation(Startup.class) != null;
+		return managedClass.scanAnnotation(Startup.class) != null;
 	}
 }

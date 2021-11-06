@@ -2,6 +2,7 @@ package js.tiny.container.mvc;
 
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.*;
@@ -24,6 +25,8 @@ import js.json.Json;
 import js.tiny.container.http.Resource;
 import js.tiny.container.http.encoder.ArgumentsReader;
 import js.tiny.container.http.encoder.ArgumentsReaderFactory;
+import js.tiny.container.mvc.annotation.Controller;
+import js.tiny.container.mvc.annotation.RequestPath;
 import js.tiny.container.servlet.ITinyContainer;
 import js.tiny.container.servlet.RequestContext;
 import js.tiny.container.servlet.TinyContainer;
@@ -82,10 +85,14 @@ public class ResourceServletHandlerUnitTest {
 		// when(container.getLoginPage()).thenReturn("login");
 		doReturn(new Object()).when(container).getInstance(managedClass);
 
-		when(managedClass.getServiceMeta(ControllerMeta.class)).thenReturn(new ControllerMeta(service, "controller"));
+		Controller controller = mock(Controller.class);
+		when(controller.value()).thenReturn("controller");
+		when(managedClass.getAnnotation(Controller.class)).thenReturn(controller);
 		doReturn(managedClass).when(managedMethod).getDeclaringClass();
 
-		when(managedMethod.getServiceMeta(RequestPathMeta.class)).thenReturn(new RequestPathMeta(service, "index"));
+		RequestPath requestPath = mock(RequestPath.class);
+		when(requestPath.value()).thenReturn("index");
+		when(managedMethod.getAnnotation(RequestPath.class)).thenReturn(requestPath);
 		when(managedMethod.getParameterTypes()).thenReturn(new Class[] { String.class });
 		when(managedMethod.getReturnType()).thenReturn(Resource.class);
 		when(managedMethod.invoke(any(), any())).thenReturn(resource);

@@ -17,7 +17,6 @@ import js.tiny.container.spi.IInvocationProcessorsChain;
 import js.tiny.container.spi.IManagedClass;
 import js.tiny.container.spi.IManagedMethod;
 import js.tiny.container.spi.IMethodInvocationProcessor;
-import js.tiny.container.spi.IServiceMeta;
 import js.util.Strings;
 import js.util.Types;
 
@@ -52,7 +51,7 @@ public class ManagedMethod implements IManagedMethod {
 
 	private final ArgumentsValidator argumentsValidator = new ArgumentsValidator();
 
-	private final Map<Class<? extends IServiceMeta>, IServiceMeta> serviceMetas = new HashMap<>();
+	private final Map<Class<? extends Annotation>, Annotation> annotations = new HashMap<>();
 
 	/**
 	 * Join point processors attached to {@link #invoke(Object, Object...)} method. When this method is executed all processors
@@ -166,7 +165,7 @@ public class ManagedMethod implements IManagedMethod {
 	}
 
 	@Override
-	public <T extends Annotation> T getAnnotation(Class<T> type) {
+	public <T extends Annotation> T scanAnnotation(Class<T> type) {
 		T annotation = method.getAnnotation(type);
 		if (annotation == null) {
 			try {
@@ -187,15 +186,15 @@ public class ManagedMethod implements IManagedMethod {
 	}
 
 	@Override
-	public void addServiceMeta(IServiceMeta serviceMeta) {
+	public void addAnnotation(Annotation serviceMeta) {
 		log.debug("Add service meta |%s| to managed method |%s|", serviceMeta.getClass(), this);
-		serviceMetas.put(serviceMeta.getClass(), serviceMeta);
+		annotations.put(serviceMeta.annotationType(), serviceMeta);
 	}
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public <T extends IServiceMeta> T getServiceMeta(Class<T> type) {
-		return (T) serviceMetas.get(type);
+	public <T extends Annotation> T getAnnotation(Class<T> type) {
+		return (T) annotations.get(type);
 	}
 
 	private final Map<String, Object> attributes = new HashMap<>();

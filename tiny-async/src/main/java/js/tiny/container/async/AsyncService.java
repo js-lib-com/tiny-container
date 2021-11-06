@@ -1,5 +1,6 @@
 package js.tiny.container.async;
 
+import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -13,10 +14,9 @@ import js.tiny.container.spi.IInvocationProcessorsChain;
 import js.tiny.container.spi.IManagedClass;
 import js.tiny.container.spi.IManagedMethod;
 import js.tiny.container.spi.IMethodInvocationProcessor;
-import js.tiny.container.spi.IServiceMeta;
-import js.tiny.container.spi.IServiceMetaScanner;
+import js.tiny.container.spi.IAnnotationsScanner;
 
-public class AsyncService implements IMethodInvocationProcessor, IServiceMetaScanner {
+public class AsyncService implements IMethodInvocationProcessor, IAnnotationsScanner {
 	private static final Log log = LogFactory.getLog(AsyncService.class);
 
 	public AsyncService() {
@@ -29,27 +29,27 @@ public class AsyncService implements IMethodInvocationProcessor, IServiceMetaSca
 	}
 
 	@Override
-	public List<IServiceMeta> scanServiceMeta(IManagedClass<?> managedClass) {
-		List<IServiceMeta> servicesMeta = new ArrayList<>();
+	public List<Annotation> scanClassAnnotations(IManagedClass<?> managedClass) {
+		List<Annotation> annotations = new ArrayList<>();
 
-		Asynchronous immutable = managedClass.getAnnotation(Asynchronous.class);
-		if (immutable != null) {
-			servicesMeta.add(new AsynchronousMeta(this));
+		Asynchronous asynchronous = managedClass.scanAnnotation(Asynchronous.class);
+		if (asynchronous != null) {
+			annotations.add(asynchronous);
 		}
 
-		return servicesMeta;
+		return annotations;
 	}
 
 	@Override
-	public List<IServiceMeta> scanServiceMeta(IManagedMethod managedMethod) {
-		List<IServiceMeta> servicesMeta = new ArrayList<>();
+	public List<Annotation> scanMethodAnnotations(IManagedMethod managedMethod) {
+		List<Annotation> annotations = new ArrayList<>();
 
-		Asynchronous immutable = managedMethod.getAnnotation(Asynchronous.class);
-		if (immutable != null) {
-			servicesMeta.add(new AsynchronousMeta(this));
+		Asynchronous asynchronous = managedMethod.scanAnnotation(Asynchronous.class);
+		if (asynchronous != null) {
+			annotations.add(asynchronous);
 		}
 
-		return servicesMeta;
+		return annotations;
 	}
 
 	/**
@@ -79,9 +79,9 @@ public class AsyncService implements IMethodInvocationProcessor, IServiceMetaSca
 	}
 
 	private static boolean isAsynchronous(IManagedMethod managedMethod) {
-		if (managedMethod.getServiceMeta(AsynchronousMeta.class) != null) {
+		if (managedMethod.getAnnotation(Asynchronous.class) != null) {
 			return true;
 		}
-		return managedMethod.getDeclaringClass().getServiceMeta(AsynchronousMeta.class) != null;
+		return managedMethod.getDeclaringClass().getAnnotation(Asynchronous.class) != null;
 	}
 }

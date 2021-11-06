@@ -22,7 +22,7 @@ abstract class BaseInstanceLifeCycle {
 	}
 
 	protected void scanLifeCycleAnnotation(IManagedMethod managedMethod, Class<? extends Annotation> annotationClass, String attrName) {
-		Annotation annotation = managedMethod.getAnnotation(annotationClass);
+		Annotation annotation = managedMethod.scanAnnotation(annotationClass);
 		if (annotation != null) {
 			IManagedClass<?> managedClass = managedMethod.getDeclaringClass();
 			if (managedClass.getAttribute(this, attrName, IManagedMethod.class) != null) {

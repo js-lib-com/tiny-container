@@ -1,5 +1,6 @@
 package js.tiny.container.transaction;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
@@ -13,15 +14,14 @@ import js.tiny.container.spi.IInvocationProcessorsChain;
 import js.tiny.container.spi.IManagedClass;
 import js.tiny.container.spi.IManagedMethod;
 import js.tiny.container.spi.IMethodInvocationProcessor;
-import js.tiny.container.spi.IServiceMeta;
-import js.tiny.container.spi.IServiceMetaScanner;
+import js.tiny.container.spi.IAnnotationsScanner;
 import js.transaction.Immutable;
 import js.transaction.Mutable;
 import js.transaction.Transaction;
 import js.transaction.TransactionContext;
 import js.transaction.Transactional;
 
-public class TransactionService implements IMethodInvocationProcessor, IServiceMetaScanner {
+public class TransactionService implements IMethodInvocationProcessor, IAnnotationsScanner {
 	private static final Log log = LogFactory.getLog(TransactionService.class);
 
 	private IContainer container;
@@ -42,42 +42,42 @@ public class TransactionService implements IMethodInvocationProcessor, IServiceM
 	}
 
 	@Override
-	public List<IServiceMeta> scanServiceMeta(IManagedClass<?> managedClass) {
-		List<IServiceMeta> servicesMeta = new ArrayList<>();
+	public List<Annotation> scanClassAnnotations(IManagedClass<?> managedClass) {
+		List<Annotation> annotations = new ArrayList<>();
 
-		Transactional transactional = managedClass.getAnnotation(Transactional.class);
+		Transactional transactional = managedClass.scanAnnotation(Transactional.class);
 		if (transactional != null) {
-			servicesMeta.add(new TransactionalMeta(this, transactional));
+			annotations.add(transactional);
 		}
 
-		Immutable immutable = managedClass.getAnnotation(Immutable.class);
+		Immutable immutable = managedClass.scanAnnotation(Immutable.class);
 		if (immutable != null) {
-			servicesMeta.add(new ImmutableMeta(this));
+			annotations.add(immutable);
 		}
 
-		return servicesMeta;
+		return annotations;
 	}
 
 	@Override
-	public List<IServiceMeta> scanServiceMeta(IManagedMethod managedMethod) {
-		List<IServiceMeta> servicesMeta = new ArrayList<>();
+	public List<Annotation> scanMethodAnnotations(IManagedMethod managedMethod) {
+		List<Annotation> annotations = new ArrayList<>();
 
-		Transactional transactional = managedMethod.getAnnotation(Transactional.class);
+		Transactional transactional = managedMethod.scanAnnotation(Transactional.class);
 		if (transactional != null) {
-			servicesMeta.add(new TransactionalMeta(this, transactional));
+			annotations.add(transactional);
 		}
 
-		Immutable immutable = managedMethod.getAnnotation(Immutable.class);
+		Immutable immutable = managedMethod.scanAnnotation(Immutable.class);
 		if (immutable != null) {
-			servicesMeta.add(new ImmutableMeta(this));
+			annotations.add(immutable);
 		}
 
-		Mutable mutable = managedMethod.getAnnotation(Mutable.class);
+		Mutable mutable = managedMethod.scanAnnotation(Mutable.class);
 		if (mutable != null) {
-			servicesMeta.add(new MutableMeta(this));
+			annotations.add(mutable);
 		}
 
-		return servicesMeta;
+		return annotations;
 	}
 
 	@Override
@@ -181,24 +181,24 @@ public class TransactionService implements IMethodInvocationProcessor, IServiceM
 	}
 
 	private static boolean isTransactional(IManagedMethod managedMethod) {
-		if (managedMethod.getServiceMeta(TransactionalMeta.class) != null) {
+		if (managedMethod.getAnnotation(Transactional.class) != null) {
 			return true;
 		}
-		if (managedMethod.getDeclaringClass().getServiceMeta(TransactionalMeta.class) != null) {
+		if (managedMethod.getDeclaringClass().getAnnotation(Transactional.class) != null) {
 			return true;
 		}
 		return false;
 	}
 
 	private static boolean isMutable(IManagedMethod managedMethod) {
-		if (managedMethod.getServiceMeta(MutableMeta.class) != null) {
+		if (managedMethod.getAnnotation(Mutable.class) != null) {
 			return true;
 		}
-		if (managedMethod.getServiceMeta(ImmutableMeta.class) != null) {
+		if (managedMethod.getAnnotation(Immutable.class) != null) {
 			return false;
 		}
 		// at this point business method has no transaction related annotations
-		if (managedMethod.getDeclaringClass().getServiceMeta(MutableMeta.class) != null) {
+		if (managedMethod.getDeclaringClass().getAnnotation(Mutable.class) != null) {
 			return true;
 		}
 		// by default transactional class is immutable
@@ -206,13 +206,16 @@ public class TransactionService implements IMethodInvocationProcessor, IServiceM
 	}
 
 	private static String getScheme(IManagedMethod managedMethod) {
-		TransactionalMeta transactional = managedMethod.getServiceMeta(TransactionalMeta.class);
+		Transactional transactional = managedMethod.getAnnotation(Transactional.class);
 		if (transactional == null) {
-			transactional = managedMethod.getDeclaringClass().getServiceMeta(TransactionalMeta.class);
+			transactional = managedMethod.getDeclaringClass().getAnnotation(Transactional.class);
 		}
 		if (transactional == null) {
 			return null;
 		}
-		return transactional.schema();
+		if(transactional.schema() == null) {
+			return null;
+		}
+		return transactional.schema().isEmpty() ? null : transactional.schema();
 	}
 }

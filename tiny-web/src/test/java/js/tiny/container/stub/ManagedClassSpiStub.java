@@ -7,7 +7,6 @@ import js.tiny.container.spi.IContainer;
 import js.tiny.container.spi.IContainerService;
 import js.tiny.container.spi.IManagedClass;
 import js.tiny.container.spi.IManagedMethod;
-import js.tiny.container.spi.IServiceMeta;
 import js.tiny.container.spi.InstanceScope;
 import js.tiny.container.spi.InstanceType;
 
@@ -58,7 +57,7 @@ public class ManagedClassSpiStub<T> implements IManagedClass<T> {
 	}
 
 	@Override
-	public <S extends IServiceMeta> S getServiceMeta(Class<S> type) {
+	public <S extends Annotation> S getAnnotation(Class<S> type) {
 		throw new UnsupportedOperationException("getServiceMeta(Class<T> type)");
 	}
 
@@ -68,7 +67,7 @@ public class ManagedClassSpiStub<T> implements IManagedClass<T> {
 	}
 
 	@Override
-	public <A extends Annotation> A getAnnotation(Class<A> type) {
+	public <A extends Annotation> A scanAnnotation(Class<A> type) {
 		throw new UnsupportedOperationException("getAnnotation(Class<T> type)");
 	}
 

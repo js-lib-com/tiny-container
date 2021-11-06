@@ -11,6 +11,7 @@ import javax.servlet.UnavailableException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.Path;
+import javax.ws.rs.Produces;
 
 import js.log.Log;
 import js.log.LogFactory;
@@ -218,8 +219,8 @@ public class RestServlet extends AppServlet {
 		// JSON but with limited capacity; if capacity is not exceeded set response content length; if capacity is exceeded
 		// switch to chunked transfer
 
-		ProducesMeta producesMeta = managedMethod.getServiceMeta(ProducesMeta.class);
-		String produces = producesMeta != null ? producesMeta.value() : null;
+		Produces producesMeta = managedMethod.getAnnotation(Produces.class);
+		String produces = producesMeta != null ? producesMeta.value().length > 0 ? producesMeta.value()[0] : null : null;
 
 		ContentType contentType = ContentType.valueOf(produces);
 		if (contentType == null) {
@@ -266,12 +267,12 @@ public class RestServlet extends AppServlet {
 	}
 
 	private static String path(IManagedClass<?> managedClass) {
-		PathMeta pathMeta = managedClass.getServiceMeta(PathMeta.class);
+		Path pathMeta = managedClass.getAnnotation(Path.class);
 		return pathMeta != null ? pathMeta.value() : null;
 	}
 
 	private static String path(IManagedMethod managedMethod) {
-		PathMeta pathMeta = managedMethod.getServiceMeta(PathMeta.class);
+		Path pathMeta = managedMethod.getAnnotation(Path.class);
 		return pathMeta != null ? pathMeta.value() : null;
 	}
 

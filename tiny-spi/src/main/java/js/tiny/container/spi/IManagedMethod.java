@@ -59,11 +59,11 @@ public interface IManagedMethod extends IMethodInvocationProcessor {
 	 */
 	<T> T invoke(Object object, Object... args) throws Exception;
 
+	<T extends Annotation> T scanAnnotation(Class<T> type);
+
+	void addAnnotation(Annotation annotation);
+
 	<T extends Annotation> T getAnnotation(Class<T> type);
-
-	void addServiceMeta(IServiceMeta serviceMeta);
-
-	<T extends IServiceMeta> T getServiceMeta(Class<T> type);
 
 	void setAttribute(Object context, String name, Object value);
 

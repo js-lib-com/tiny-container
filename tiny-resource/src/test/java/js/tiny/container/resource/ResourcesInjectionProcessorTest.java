@@ -59,7 +59,7 @@ public class ResourcesInjectionProcessorTest {
 		// given
 
 		// when
-		processor.scanServiceMeta(managedClass);
+		processor.scanClassAnnotations(managedClass);
 
 		// then
 		Collection<Field> managedFields = processor.getManagedFields(1);
@@ -75,7 +75,7 @@ public class ResourcesInjectionProcessorTest {
 		doReturn(StaticResource.class).when(managedClass).getImplementationClass();
 
 		// when
-		processor.scanServiceMeta(managedClass);
+		processor.scanClassAnnotations(managedClass);
 
 		// then
 	}
@@ -86,7 +86,7 @@ public class ResourcesInjectionProcessorTest {
 		doReturn(FinalResource.class).when(managedClass).getImplementationClass();
 
 		// when
-		processor.scanServiceMeta(managedClass);
+		processor.scanClassAnnotations(managedClass);
 
 		// then
 	}
@@ -96,7 +96,7 @@ public class ResourcesInjectionProcessorTest {
 		// given
 		when(componentEnvironment.lookup(anyString())).thenThrow(NamingException.class);
 		when(globalEnvironment.lookup("resource.lookup")).thenReturn("resource");
-		processor.scanServiceMeta(managedClass);
+		processor.scanClassAnnotations(managedClass);
 
 		// when
 		processor.onInstancePostConstruct(managedClass, instance);
@@ -110,7 +110,7 @@ public class ResourcesInjectionProcessorTest {
 	@Test
 	public void GivenNullInstance_WhenLookup_ThenNothing() throws NamingException {
 		// given
-		processor.scanServiceMeta(managedClass);
+		processor.scanClassAnnotations(managedClass);
 
 		// when
 		processor.onInstancePostConstruct(managedClass, null);
@@ -122,7 +122,7 @@ public class ResourcesInjectionProcessorTest {
 	public void GivenGlocalResourceAndTypeMissmatch_WhenLookup_ThenException() throws NamingException {
 		// given
 		when(globalEnvironment.lookup("resource.lookup")).thenReturn(new Object());
-		processor.scanServiceMeta(managedClass);
+		processor.scanClassAnnotations(managedClass);
 
 		// when
 		processor.onInstancePostConstruct(managedClass, instance);
@@ -136,7 +136,7 @@ public class ResourcesInjectionProcessorTest {
 		when(globalEnvironment.lookup(anyString())).thenThrow(NamingException.class);
 		when(componentEnvironment.lookup(BusinessClass.resourceEmptyName())).thenThrow(NamingException.class);
 		when(componentEnvironment.lookup("resource.name")).thenReturn("resource");
-		processor.scanServiceMeta(managedClass);
+		processor.scanClassAnnotations(managedClass);
 
 		// when
 		processor.onInstancePostConstruct(managedClass, instance);
@@ -152,7 +152,7 @@ public class ResourcesInjectionProcessorTest {
 		// given
 		when(globalEnvironment.lookup(anyString())).thenThrow(NamingException.class);
 		when(componentEnvironment.lookup("resource.name")).thenReturn(new Object());
-		processor.scanServiceMeta(managedClass);
+		processor.scanClassAnnotations(managedClass);
 
 		// when
 		processor.onInstancePostConstruct(managedClass, instance);
@@ -166,7 +166,7 @@ public class ResourcesInjectionProcessorTest {
 		when(globalEnvironment.lookup(anyString())).thenThrow(NamingException.class);
 		when(componentEnvironment.lookup("resource.name")).thenThrow(NamingException.class);
 		when(componentEnvironment.lookup(BusinessClass.resourceEmptyName())).thenReturn("resource");
-		processor.scanServiceMeta(managedClass);
+		processor.scanClassAnnotations(managedClass);
 
 		// when
 		processor.onInstancePostConstruct(managedClass, instance);

@@ -1,5 +1,6 @@
 package js.tiny.container.lifecycle;
 
+import java.lang.annotation.Annotation;
 import java.util.Collections;
 
 import javax.annotation.PreDestroy;
@@ -10,10 +11,9 @@ import js.log.LogFactory;
 import js.tiny.container.spi.IInstancePreDestroyProcessor;
 import js.tiny.container.spi.IManagedClass;
 import js.tiny.container.spi.IManagedMethod;
-import js.tiny.container.spi.IServiceMeta;
-import js.tiny.container.spi.IServiceMetaScanner;
+import js.tiny.container.spi.IAnnotationsScanner;
 
-public class InstancePreDestroyProcessor extends BaseInstanceLifeCycle implements IInstancePreDestroyProcessor, IServiceMetaScanner {
+public class InstancePreDestroyProcessor extends BaseInstanceLifeCycle implements IInstancePreDestroyProcessor, IAnnotationsScanner {
 	private static final Log log = LogFactory.getLog(InstancePreDestroyProcessor.class);
 
 	private static final String ATTR_PRE_DESTROY = "pre-destroy";
@@ -28,13 +28,13 @@ public class InstancePreDestroyProcessor extends BaseInstanceLifeCycle implement
 	}
 
 	@Override
-	public Iterable<IServiceMeta> scanServiceMeta(IManagedClass<?> managedClass) {
+	public Iterable<Annotation> scanClassAnnotations(IManagedClass<?> managedClass) {
 		scanLifeCycleInterface(managedClass, ManagedPreDestroy.class, ATTR_PRE_DESTROY);
 		return Collections.emptyList();
 	}
 
 	@Override
-	public Iterable<IServiceMeta> scanServiceMeta(IManagedMethod managedMethod) {
+	public Iterable<Annotation> scanMethodAnnotations(IManagedMethod managedMethod) {
 		scanLifeCycleAnnotation(managedMethod, PreDestroy.class, ATTR_PRE_DESTROY);
 		return Collections.emptyList();
 	}

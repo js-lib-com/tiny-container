@@ -1,5 +1,6 @@
 package js.tiny.container.rest;
 
+import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -11,10 +12,9 @@ import js.log.LogFactory;
 import js.tiny.container.spi.IConnector;
 import js.tiny.container.spi.IManagedClass;
 import js.tiny.container.spi.IManagedMethod;
-import js.tiny.container.spi.IServiceMeta;
-import js.tiny.container.spi.IServiceMetaScanner;
+import js.tiny.container.spi.IAnnotationsScanner;
 
-public class RestConnector implements IConnector, IServiceMetaScanner {
+public class RestConnector implements IConnector, IAnnotationsScanner {
 	private static final Log log = LogFactory.getLog(RestConnector.class);
 
 	public RestConnector() {
@@ -22,29 +22,29 @@ public class RestConnector implements IConnector, IServiceMetaScanner {
 	}
 
 	@Override
-	public List<IServiceMeta> scanServiceMeta(IManagedClass<?> managedClass) {
-		List<IServiceMeta> serviceMetas = new ArrayList<>();
+	public List<Annotation> scanClassAnnotations(IManagedClass<?> managedClass) {
+		List<Annotation> serviceMetas = new ArrayList<>();
 
-		Path path = managedClass.getAnnotation(Path.class);
+		Path path = managedClass.scanAnnotation(Path.class);
 		if (path != null) {
-			serviceMetas.add(new PathMeta(this, path));
+			serviceMetas.add(path);
 		}
 
 		return serviceMetas;
 	}
 
 	@Override
-	public List<IServiceMeta> scanServiceMeta(IManagedMethod managedMethod) {
-		List<IServiceMeta> serviceMetas = new ArrayList<>();
+	public List<Annotation> scanMethodAnnotations(IManagedMethod managedMethod) {
+		List<Annotation> serviceMetas = new ArrayList<>();
 
-		Path path = managedMethod.getAnnotation(Path.class);
+		Path path = managedMethod.scanAnnotation(Path.class);
 		if (path != null) {
-			serviceMetas.add(new PathMeta(this, path));
+			serviceMetas.add(path);
 		}
 
-		Produces produces = managedMethod.getAnnotation(Produces.class);
+		Produces produces = managedMethod.scanAnnotation(Produces.class);
 		if (produces != null) {
-			serviceMetas.add(new ProducesMeta(this, produces));
+			serviceMetas.add(produces);
 		}
 
 		return serviceMetas;

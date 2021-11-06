@@ -60,11 +60,11 @@ public class InstancePostConstructTest {
 	public void GivenPostConstructAnnotation_WhenScanMethod_ThenSetAttribute() {
 		// given
 		when(managedClass.getAttribute(any(), eq("post-construct"), eq(IManagedMethod.class))).thenReturn(null);
-		when(managedMethod.getAnnotation(PostConstruct.class)).thenReturn(mock(PostConstruct.class));
+		when(managedMethod.scanAnnotation(PostConstruct.class)).thenReturn(mock(PostConstruct.class));
 		doReturn(managedClass).when(managedMethod).getDeclaringClass();
 
 		// when
-		processor.scanServiceMeta(managedMethod);
+		processor.scanMethodAnnotations(managedMethod);
 
 		// then
 		verify(managedClass, times(1)).setAttribute(any(), eq("post-construct"), any());
@@ -75,7 +75,7 @@ public class InstancePostConstructTest {
 		// given
 
 		// when
-		processor.scanServiceMeta(managedMethod);
+		processor.scanMethodAnnotations(managedMethod);
 
 		// then
 		verify(managedClass, times(0)).setAttribute(any(), eq("post-construct"), any());
@@ -85,11 +85,11 @@ public class InstancePostConstructTest {
 	public void GivenManagedService_WhenScanMethod_ThenException() {
 		// given
 		// managed class has already managed service attribute set on before test
-		when(managedMethod.getAnnotation(PostConstruct.class)).thenReturn(mock(PostConstruct.class));
+		when(managedMethod.scanAnnotation(PostConstruct.class)).thenReturn(mock(PostConstruct.class));
 		doReturn(managedClass).when(managedMethod).getDeclaringClass();
 
 		// when
-		processor.scanServiceMeta(managedMethod);
+		processor.scanMethodAnnotations(managedMethod);
 
 		// then
 	}
@@ -102,7 +102,7 @@ public class InstancePostConstructTest {
 		doReturn(PostConstructService.class).when(managedClass).getImplementationClass();
 
 		// when
-		processor.scanServiceMeta(managedClass);
+		processor.scanClassAnnotations(managedClass);
 
 		// then
 		verify(managedClass, times(1)).setAttribute(any(), eq("post-construct"), any());
@@ -116,7 +116,7 @@ public class InstancePostConstructTest {
 		doReturn(LifeCycleService.class).when(managedClass).getImplementationClass();
 
 		// when
-		processor.scanServiceMeta(managedClass);
+		processor.scanClassAnnotations(managedClass);
 
 		// then
 		verify(managedClass, times(1)).setAttribute(any(), eq("post-construct"), any());
@@ -127,7 +127,7 @@ public class InstancePostConstructTest {
 		// given
 
 		// when
-		processor.scanServiceMeta(managedClass);
+		processor.scanClassAnnotations(managedClass);
 
 		// then
 		verify(managedClass, times(0)).setAttribute(any(), eq("post-construct"), any());

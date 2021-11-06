@@ -1,9 +1,7 @@
 package js.tiny.container.unit;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
 
 import java.io.IOException;
 import java.lang.reflect.Field;
@@ -18,16 +16,12 @@ import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import js.converter.ConverterException;
 import js.lang.BugError;
 import js.lang.Config;
-import js.lang.ConfigBuilder;
-import js.lang.ConfigException;
 import js.lang.InvocationException;
 import js.lang.ManagedPostConstruct;
 import js.tiny.container.core.Container;
 import js.tiny.container.spi.AuthorizationException;
-import js.tiny.container.spi.IContainer;
 import js.tiny.container.spi.IContainer;
 import js.tiny.container.spi.IInstancePostConstructProcessor;
 import js.tiny.container.spi.IManagedClass;

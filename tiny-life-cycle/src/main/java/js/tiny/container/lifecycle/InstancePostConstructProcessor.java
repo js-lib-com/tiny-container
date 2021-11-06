@@ -1,5 +1,6 @@
 package js.tiny.container.lifecycle;
 
+import java.lang.annotation.Annotation;
 import java.util.Collections;
 
 import javax.annotation.PostConstruct;
@@ -11,8 +12,7 @@ import js.log.LogFactory;
 import js.tiny.container.spi.IInstancePostConstructProcessor;
 import js.tiny.container.spi.IManagedClass;
 import js.tiny.container.spi.IManagedMethod;
-import js.tiny.container.spi.IServiceMeta;
-import js.tiny.container.spi.IServiceMetaScanner;
+import js.tiny.container.spi.IAnnotationsScanner;
 
 /**
  * Execute {@link ManagedPostConstruct#postConstruct()} on managed instance. Instance post-construction is executed after
@@ -20,7 +20,7 @@ import js.tiny.container.spi.IServiceMetaScanner;
  * 
  * @author Iulian Rotaru
  */
-public class InstancePostConstructProcessor extends BaseInstanceLifeCycle implements IInstancePostConstructProcessor, IServiceMetaScanner {
+public class InstancePostConstructProcessor extends BaseInstanceLifeCycle implements IInstancePostConstructProcessor, IAnnotationsScanner {
 	private static final Log log = LogFactory.getLog(InstancePostConstructProcessor.class);
 
 	private static final String ATTR_POST_CONSTRUCT = "post-construct";
@@ -35,13 +35,13 @@ public class InstancePostConstructProcessor extends BaseInstanceLifeCycle implem
 	}
 
 	@Override
-	public Iterable<IServiceMeta> scanServiceMeta(IManagedClass<?> managedClass) {
+	public Iterable<Annotation> scanClassAnnotations(IManagedClass<?> managedClass) {
 		scanLifeCycleInterface(managedClass, ManagedPostConstruct.class, ATTR_POST_CONSTRUCT);
 		return Collections.emptyList();
 	}
 
 	@Override
-	public Iterable<IServiceMeta> scanServiceMeta(IManagedMethod managedMethod) {
+	public Iterable<Annotation> scanMethodAnnotations(IManagedMethod managedMethod) {
 		scanLifeCycleAnnotation(managedMethod, PostConstruct.class, ATTR_POST_CONSTRUCT);
 		return Collections.emptyList();
 	}

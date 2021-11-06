@@ -20,8 +20,7 @@ import js.tiny.container.spi.IContainerService;
 import js.tiny.container.spi.IManagedClass;
 import js.tiny.container.spi.IManagedMethod;
 import js.tiny.container.spi.IMethodInvocationProcessor;
-import js.tiny.container.spi.IServiceMeta;
-import js.tiny.container.spi.IServiceMetaScanner;
+import js.tiny.container.spi.IAnnotationsScanner;
 import js.tiny.container.spi.InstanceScope;
 import js.tiny.container.spi.InstanceType;
 import js.util.Classes;
@@ -85,7 +84,7 @@ public final class ManagedClass<T> implements IManagedClass<T> {
 	/** Cached value of managed class string representation, merely for logging. */
 	private final String string;
 
-	private final Map<Class<? extends IServiceMeta>, IServiceMeta> serviceMetas = new HashMap<>();
+	private final Map<Class<? extends Annotation>, Annotation> annotations = new HashMap<>();
 
 	private final Set<IContainerService> services = new HashSet<>();
 
@@ -147,12 +146,12 @@ public final class ManagedClass<T> implements IManagedClass<T> {
 		}
 
 		for (IContainerService service : container.getServices()) {
-			if (service instanceof IServiceMetaScanner) {
-				IServiceMetaScanner scanner = (IServiceMetaScanner) service;
-				for (IServiceMeta serviceMeta : scanner.scanServiceMeta(this)) {
+			if (service instanceof IAnnotationsScanner) {
+				IAnnotationsScanner scanner = (IAnnotationsScanner) service;
+				for (Annotation serviceMeta : scanner.scanClassAnnotations(this)) {
 					log.debug("Add service meta |%s| to managed class |%s|", serviceMeta.getClass(), this);
 					services.add(service);
-					serviceMetas.put(serviceMeta.getClass(), serviceMeta);
+					annotations.put(serviceMeta.annotationType(), serviceMeta);
 				}
 			}
 		}
@@ -163,10 +162,10 @@ public final class ManagedClass<T> implements IManagedClass<T> {
 				if (service instanceof IMethodInvocationProcessor) {
 					managedMethod.addInvocationProcessor((IMethodInvocationProcessor) service);
 				}
-				if (service instanceof IServiceMetaScanner) {
-					IServiceMetaScanner scanner = (IServiceMetaScanner) service;
-					for (IServiceMeta serviceMeta : scanner.scanServiceMeta(managedMethod)) {
-						managedMethod.addServiceMeta(serviceMeta);
+				if (service instanceof IAnnotationsScanner) {
+					IAnnotationsScanner scanner = (IAnnotationsScanner) service;
+					for (Annotation serviceMeta : scanner.scanMethodAnnotations(managedMethod)) {
+						managedMethod.addAnnotation(serviceMeta);
 					}
 				}
 			}
@@ -409,12 +408,12 @@ public final class ManagedClass<T> implements IManagedClass<T> {
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public <S extends IServiceMeta> S getServiceMeta(Class<S> type) {
-		return (S) serviceMetas.get(type);
+	public <S extends Annotation> S getAnnotation(Class<S> type) {
+		return (S) annotations.get(type);
 	}
 
 	@Override
-	public <A extends Annotation> A getAnnotation(Class<A> type) {
+	public <A extends Annotation> A scanAnnotation(Class<A> type) {
 		A annotation = implementationClass.getAnnotation(type);
 		if (annotation == null) {
 			for (Class<?> interfaceClass : implementationClass.getInterfaces()) {

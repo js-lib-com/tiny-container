@@ -44,7 +44,7 @@ public class CalendarTimerServiceTest {
 	@Before
 	public void beforeTest() {
 		doReturn(managedClass).when(managedMethod).getDeclaringClass();
-		when(managedMethod.getAnnotation(Schedule.class)).thenReturn(schedule);
+		when(managedMethod.scanAnnotation(Schedule.class)).thenReturn(schedule);
 
 		when(schedule.second()).thenReturn("0");
 		when(schedule.minute()).thenReturn("0");
@@ -60,7 +60,7 @@ public class CalendarTimerServiceTest {
 	@Test
 	public void GivenTimerMethod_WhenPostConstructInstance_ThenInvokeScheduler() {
 		// given
-		service.scanServiceMeta(managedMethod);
+		service.scanMethodAnnotations(managedMethod);
 
 		// when
 		service.onInstancePostConstruct(managedClass, instance);

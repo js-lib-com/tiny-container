@@ -1,5 +1,6 @@
 package js.tiny.container.interceptor;
 
+import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -12,11 +13,10 @@ import js.tiny.container.spi.IInvocationProcessorsChain;
 import js.tiny.container.spi.IManagedClass;
 import js.tiny.container.spi.IManagedMethod;
 import js.tiny.container.spi.IMethodInvocationProcessor;
-import js.tiny.container.spi.IServiceMeta;
-import js.tiny.container.spi.IServiceMetaScanner;
+import js.tiny.container.spi.IAnnotationsScanner;
 import js.util.Classes;
 
-public class InterceptorService implements IMethodInvocationProcessor, IServiceMetaScanner {
+public class InterceptorService implements IMethodInvocationProcessor, IAnnotationsScanner {
 	private static final Log log = LogFactory.getLog(InterceptorService.class);
 
 	private IContainer container;
@@ -37,27 +37,27 @@ public class InterceptorService implements IMethodInvocationProcessor, IServiceM
 	}
 
 	@Override
-	public List<IServiceMeta> scanServiceMeta(IManagedClass<?> managedClass) {
-		List<IServiceMeta> servicesMeta = new ArrayList<>();
+	public List<Annotation> scanClassAnnotations(IManagedClass<?> managedClass) {
+		List<Annotation> annotations = new ArrayList<>();
 
-		Intercepted intercepted = managedClass.getAnnotation(Intercepted.class);
+		Intercepted intercepted = managedClass.scanAnnotation(Intercepted.class);
 		if (intercepted != null) {
-			servicesMeta.add(new InterceptedMeta(this, intercepted));
+			annotations.add(intercepted);
 		}
 
-		return servicesMeta;
+		return annotations;
 	}
 
 	@Override
-	public List<IServiceMeta> scanServiceMeta(IManagedMethod managedMethod) {
-		List<IServiceMeta> servicesMeta = new ArrayList<>();
+	public List<Annotation> scanMethodAnnotations(IManagedMethod managedMethod) {
+		List<Annotation> annotations = new ArrayList<>();
 
-		Intercepted intercepted = managedMethod.getAnnotation(Intercepted.class);
+		Intercepted intercepted = managedMethod.scanAnnotation(Intercepted.class);
 		if (intercepted != null) {
-			servicesMeta.add(new InterceptedMeta(this, intercepted));
+			annotations.add(intercepted);
 		}
 
-		return servicesMeta;
+		return annotations;
 	}
 
 	@Override
@@ -65,9 +65,9 @@ public class InterceptorService implements IMethodInvocationProcessor, IServiceM
 		final IManagedMethod managedMethod = invocation.method();
 		final Object[] arguments = invocation.arguments();
 
-		InterceptedMeta intercepted = managedMethod.getServiceMeta(InterceptedMeta.class);
+		Intercepted intercepted = managedMethod.getAnnotation(Intercepted.class);
 		if (intercepted == null) {
-			intercepted = managedMethod.getDeclaringClass().getServiceMeta(InterceptedMeta.class);
+			intercepted = managedMethod.getDeclaringClass().getAnnotation(Intercepted.class);
 		}
 		if (intercepted == null) {
 			return chain.invokeNextProcessor(invocation);

@@ -60,11 +60,11 @@ public class InstancePreDestroyTest {
 	public void GivenPreDestroyAnnotation_WhenScanMethod_ThenSetAttribute() {
 		// given
 		when(managedClass.getAttribute(any(), eq("pre-destroy"), eq(IManagedMethod.class))).thenReturn(null);
-		when(managedMethod.getAnnotation(PreDestroy.class)).thenReturn(mock(PreDestroy.class));
+		when(managedMethod.scanAnnotation(PreDestroy.class)).thenReturn(mock(PreDestroy.class));
 		doReturn(managedClass).when(managedMethod).getDeclaringClass();
 
 		// when
-		processor.scanServiceMeta(managedMethod);
+		processor.scanMethodAnnotations(managedMethod);
 
 		// then
 		verify(managedClass, times(1)).setAttribute(any(), eq("pre-destroy"), any());
@@ -75,7 +75,7 @@ public class InstancePreDestroyTest {
 		// given
 
 		// when
-		processor.scanServiceMeta(managedMethod);
+		processor.scanMethodAnnotations(managedMethod);
 
 		// then
 		verify(managedClass, times(0)).setAttribute(any(), eq("pre-destroy"), any());
@@ -85,11 +85,11 @@ public class InstancePreDestroyTest {
 	public void GivenManagedService_WhenScanMethod_ThenException() {
 		// given
 		// managed class has already managed service attribute set on before test
-		when(managedMethod.getAnnotation(PreDestroy.class)).thenReturn(mock(PreDestroy.class));
+		when(managedMethod.scanAnnotation(PreDestroy.class)).thenReturn(mock(PreDestroy.class));
 		doReturn(managedClass).when(managedMethod).getDeclaringClass();
 
 		// when
-		processor.scanServiceMeta(managedMethod);
+		processor.scanMethodAnnotations(managedMethod);
 
 		// then
 	}
@@ -102,7 +102,7 @@ public class InstancePreDestroyTest {
 		doReturn(PreDestroyService.class).when(managedClass).getImplementationClass();
 
 		// when
-		processor.scanServiceMeta(managedClass);
+		processor.scanClassAnnotations(managedClass);
 
 		// then
 		verify(managedClass, times(1)).setAttribute(any(), eq("pre-destroy"), any());
@@ -116,7 +116,7 @@ public class InstancePreDestroyTest {
 		doReturn(LifeCycleService.class).when(managedClass).getImplementationClass();
 
 		// when
-		processor.scanServiceMeta(managedClass);
+		processor.scanClassAnnotations(managedClass);
 
 		// then
 		verify(managedClass, times(1)).setAttribute(any(), eq("pre-destroy"), any());
@@ -127,7 +127,7 @@ public class InstancePreDestroyTest {
 		// given
 
 		// when
-		processor.scanServiceMeta(managedClass);
+		processor.scanClassAnnotations(managedClass);
 
 		// then
 		verify(managedClass, times(0)).setAttribute(any(), eq("pre-destroy"), any());
