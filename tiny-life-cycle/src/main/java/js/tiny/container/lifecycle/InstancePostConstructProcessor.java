@@ -1,6 +1,7 @@
 package js.tiny.container.lifecycle;
 
 import java.lang.annotation.Annotation;
+import java.lang.reflect.InvocationTargetException;
 import java.util.Collections;
 
 import javax.annotation.PostConstruct;
@@ -66,6 +67,9 @@ public class InstancePostConstructProcessor extends BaseInstanceLifeCycle implem
 		try {
 			method.invoke(instance);
 		} catch (Throwable t) {
+			if (t instanceof InvocationTargetException) {
+				t = ((InvocationTargetException) t).getTargetException();
+			}
 			throw new BugError("Managed instance |%s| post-construct fail: %s", instance, t);
 		}
 	}

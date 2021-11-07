@@ -180,6 +180,7 @@ public class TinyContainer extends Container implements ServletContextListener, 
 
 		this.cdi.bindInstance(ITinyContainer.class, this);
 		this.cdi.bindInstance(WebContext.class, this);
+		this.cdi.bindInstance(SecurityContext.class, this);
 		this.cdi.bindScope(SessionScoped.class, new SessionScopeProvider.Factory<>());
 
 		// TODO: remove?

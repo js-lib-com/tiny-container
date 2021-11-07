@@ -9,13 +9,16 @@ import js.lang.BugError;
  * login method variants: one for servlet container provided authentication, see {@link #login(String, String)} and the second
  * used when authentication is implemented by application, {@link #login(Principal)}. Security context implementation should
  * adapt behavior considering login variant.
- * <p>
+ * 
  * Basically, a security context has means to login and logout and test if is currently authenticated. On successful login
  * implementation creates a principal and store it on this security context. Stored principal can be retrieved, see
  * {@link #getUserPrincipal()}.
  * 
+ * Security context can be injected into application classes. Anyway, since security context implementation depends on HTTP
+ * session it can be used only inside business methods, in a valid HTTP request context. Attempting to use security context
+ * outside HTTP request will throw exception, e.g. post construct or timer methods.
+ * 
  * @author Iulian Rotaru
- * @version final
  */
 public interface SecurityContext {
 	/**
