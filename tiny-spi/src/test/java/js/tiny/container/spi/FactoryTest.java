@@ -1,4 +1,4 @@
-package js.tiny.container.core;
+package js.tiny.container.spi;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
@@ -17,7 +17,6 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
 import js.lang.BugError;
-import js.tiny.container.spi.IContainer;
 
 @RunWith(MockitoJUnitRunner.class)
 public class FactoryTest {

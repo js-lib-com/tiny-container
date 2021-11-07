@@ -18,6 +18,7 @@ import js.lang.InstanceInvocationHandler;
 import js.lang.ManagedPreDestroy;
 import js.log.Log;
 import js.log.LogFactory;
+import js.tiny.container.AppContainer;
 import js.tiny.container.cdi.CDI;
 import js.tiny.container.service.FlowProcessorsSet;
 import js.tiny.container.service.InstanceStartupProcessor;
@@ -38,22 +39,8 @@ import js.util.Params;
  * 
  * @author Iulian Rotaru
  */
-public class Container implements IContainer {
+public class Container implements IContainer, AppContainer {
 	private static final Log log = LogFactory.getLog(Container.class);
-
-	public static IContainer create(Config config) throws ConfigException {
-		Container container = new Container();
-		container.config(config);
-		container.start();
-		return container;
-	}
-
-	public static IContainer create(Object... modules) throws ConfigException {
-		Container container = new Container();
-		container.config(modules);
-		container.start();
-		return container;
-	}
 
 	protected final CDI cdi;
 
@@ -98,6 +85,7 @@ public class Container implements IContainer {
 	public Container(CDI cdi) {
 		this.cdi = cdi;
 		this.cdi.bindInstance(IContainer.class, this);
+		this.cdi.bindInstance(AppContainer.class, this);
 
 		// load external and built-in container services
 
@@ -179,8 +167,9 @@ public class Container implements IContainer {
 	 * descriptor.
 	 */
 	@SuppressWarnings({ "unchecked", "rawtypes" })
-	public void destroy() {
-		log.trace("destroy()");
+	@Override
+	public void close() {
+		log.trace("close()");
 
 		// classes pool is not sorted
 		// bellow sorted set is used to ensure reverse order on managed classes destruction

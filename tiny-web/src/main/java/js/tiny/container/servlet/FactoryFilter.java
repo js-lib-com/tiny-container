@@ -12,7 +12,7 @@ import javax.servlet.ServletResponse;
 
 import js.log.Log;
 import js.log.LogFactory;
-import js.tiny.container.core.Factory;
+import js.tiny.container.spi.Factory;
 import js.tiny.container.spi.IContainer;
 
 /**

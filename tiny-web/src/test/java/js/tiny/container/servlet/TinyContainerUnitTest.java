@@ -119,59 +119,6 @@ public class TinyContainerUnitTest {
 		assertTrue(privateDir.exists());
 	}
 
-	@Test
-	public void config_Login() throws ConfigException {
-		String descriptor = "" + //
-				"<test-app>" + //
-				"	<login>" + //
-				"		<property name='realm' value='Fax2e-mail' />" + //
-				"		<property name='page' value='login-form.htm' />" + //
-				"	</login>" + //
-				"</test-app>";
-		ConfigBuilder builder = new ConfigBuilder(descriptor);
-
-		TinyContainer container = new TinyContainer();
-		container.config(builder.build());
-
-		assertEquals("Fax2e-mail", container.getLoginRealm());
-		assertEquals("/test-app/login-form.htm", container.getLoginPage());
-	}
-
-	@Test
-	public void config_Login_AbsolutePage() throws ConfigException {
-		String descriptor = "" + //
-				"<test-app>" + //
-				"	<login>" + //
-				"		<property name='realm' value='Fax2e-mail' />" + //
-				"		<property name='page' value='/app/login-form.htm' />" + //
-				"	</login>" + //
-				"</test-app>";
-		ConfigBuilder builder = new ConfigBuilder(descriptor);
-
-		TinyContainer container = new TinyContainer();
-		container.config(builder.build());
-
-		assertEquals("Fax2e-mail", container.getLoginRealm());
-		assertEquals("/app/login-form.htm", container.getLoginPage());
-	}
-
-	@Test
-	public void config_Login_NullPage() throws ConfigException {
-		String descriptor = "" + //
-				"<test-app>" + //
-				"	<login>" + //
-				"		<property name='realm' value='Fax2e-mail' />" + //
-				"	</login>" + //
-				"</test-app>";
-		ConfigBuilder builder = new ConfigBuilder(descriptor);
-
-		TinyContainer container = new TinyContainer();
-		container.config(builder.build());
-
-		assertEquals("Fax2e-mail", container.getLoginRealm());
-		assertNull(container.getLoginPage());
-	}
-
 	// --------------------------------------------------------------------------------------------
 	// SERVLET CONTAINER LISTENERS
 
@@ -273,7 +220,7 @@ public class TinyContainerUnitTest {
 			int destroyProbe;
 
 			@Override
-			public void destroy() {
+			public void close() {
 				++destroyProbe;
 			}
 		}
@@ -290,7 +237,7 @@ public class TinyContainerUnitTest {
 	public void contextDestroyed_Throwable() {
 		class MockContainer extends TinyContainer {
 			@Override
-			public void destroy() {
+			public void close() {
 				throw new RuntimeException("runtime exception");
 			}
 		}
@@ -364,20 +311,6 @@ public class TinyContainerUnitTest {
 		TinyContainer container = new TinyContainer();
 		container.contextInitialized(new ServletContextEvent(new MockServletContext()));
 		assertNull(container.getProperty("not.defined", File.class));
-	}
-
-	@Test
-	public void getRequestLocale() throws ConfigException {
-		String config = "<context interface='js.tiny.container.servlet.RequestContext' class='js.tiny.container.servlet.TinyContainerUnitTest$MockRequestContext' />";
-		TinyContainer container = getContainer(config);
-		assertEquals(Locale.ENGLISH, container.getRequestLocale());
-	}
-
-	@Test
-	public void getRemoteAddr() throws ConfigException {
-		String config = "<context interface='js.tiny.container.servlet.RequestContext' class='js.tiny.container.servlet.TinyContainerUnitTest$MockRequestContext' />";
-		TinyContainer container = getContainer(config);
-		assertEquals("1.2.3.4", container.getRemoteAddr());
 	}
 
 	// --------------------------------------------------------------------------------------------

@@ -5,9 +5,9 @@ import java.io.InputStream;
 import java.util.Properties;
 
 import js.lang.Config;
-import js.tiny.container.core.Factory;
 import js.tiny.container.servlet.ITinyContainer;
 import js.tiny.container.servlet.TinyContainer;
+import js.tiny.container.spi.Factory;
 
 public final class TestContext {
 	public static ITinyContainer start() throws Exception {

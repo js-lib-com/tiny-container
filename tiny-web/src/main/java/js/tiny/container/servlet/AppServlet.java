@@ -21,10 +21,10 @@ import js.log.LogContext;
 import js.log.LogFactory;
 import js.rmi.BusinessException;
 import js.rmi.RemoteException;
-import js.tiny.container.core.Factory;
 import js.tiny.container.http.ContentType;
 import js.tiny.container.http.HttpHeader;
 import js.tiny.container.spi.AuthorizationException;
+import js.tiny.container.spi.Factory;
 import js.tiny.container.spi.IContainer;
 import js.util.Strings;
 
@@ -266,20 +266,9 @@ public abstract class AppServlet extends HttpServlet {
 		}
 		log.error("Reject unauthorized request for private resource or service: |%s|.", context.getRequestURI());
 
-		String loginPage = container.getLoginPage();
-		if (HttpHeader.isXHR(context.getRequest()) && loginPage != null) {
-			// XMLHttpRequest specs mandates that redirection codes to be performed transparently by user agent
-			// this means redirect from server does not reach script counterpart
-			// as workaround uses 200 OK and X-JSLIB-Location extension header
-			log.trace("Send X-JSLIB-Location |%s| for rejected XHR request: |%s|", container.getLoginPage(), context.getRequestURI());
-			httpResponse.setStatus(HttpServletResponse.SC_OK);
-			httpResponse.setHeader(HttpHeader.X_HEADER_LOCATION, container.getLoginPage());
-			return;
-		}
-
-		log.trace("Send WWW-Authenticate |Basic realm=%s| for rejected request: |%s|", container.getLoginRealm(), context.getRequestURI());
+		log.trace("Send WWW-Authenticate |Basic realm=%s| for rejected request: |%s|", container.getAppName(), context.getRequestURI());
 		httpResponse.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-		httpResponse.setHeader(HttpHeader.WWW_AUTHENTICATE, String.format("Basic realm=%s", container.getLoginRealm()));
+		httpResponse.setHeader(HttpHeader.WWW_AUTHENTICATE, String.format("Basic realm=%s", container.getAppName()));
 	}
 
 	/**

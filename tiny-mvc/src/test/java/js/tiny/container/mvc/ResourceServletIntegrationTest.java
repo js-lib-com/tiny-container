@@ -36,7 +36,6 @@ import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import js.tiny.container.core.Factory;
 import js.tiny.container.http.ContentType;
 import js.tiny.container.http.form.Form;
 import js.tiny.container.http.form.FormField;
@@ -47,6 +46,7 @@ import js.tiny.container.http.form.UploadedFile;
 import js.tiny.container.mvc.annotation.Controller;
 import js.tiny.container.servlet.RequestContext;
 import js.tiny.container.servlet.TinyContainer;
+import js.tiny.container.spi.Factory;
 import js.tiny.container.spi.IContainer;
 import js.tiny.container.unit.HttpServletRequestStub;
 import js.tiny.container.unit.HttpServletResponseStub;

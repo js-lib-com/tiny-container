@@ -183,7 +183,7 @@
  * scenario when client is written in Java language.
  * <p>
  * First we need to acquire a remote service instance. For this we need to know the URL of the context where service is deployed and uses
- * global {@link js.tiny.container.core.Factory}, as in snippet below. The returned instance is in fact a Java Proxy that implements remote service interface
+ * global {@link js.tiny.container.spi.Factory}, as in snippet below. The returned instance is in fact a Java Proxy that implements remote service interface
  * and delegates {@link js.net.client.HttpRmiTransactionHandler} as invocation handler.
  * <pre>
  *  URL implementationURL = "http://services.bbnet.ro";

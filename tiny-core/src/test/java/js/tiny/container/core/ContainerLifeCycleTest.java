@@ -114,11 +114,11 @@ public class ContainerLifeCycleTest {
 	}
 
 	@Test
-	public void Given_WhenDestroy_Then() {
+	public void Given_WhenClose_Then() {
 		// given
 
 		// when
-		container.destroy();
+		container.close();
 
 		// then
 	}

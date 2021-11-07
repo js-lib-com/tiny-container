@@ -1,7 +1,6 @@
-package js.tiny.container.core;
+package js.tiny.container.spi;
 
 import js.lang.BugError;
-import js.tiny.container.spi.IContainer;
 
 /**
  * Global master factory for managed instances. This utility class has JVM level visibility and just delegates requests to

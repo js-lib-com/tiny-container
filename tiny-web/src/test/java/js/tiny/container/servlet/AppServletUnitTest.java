@@ -82,7 +82,6 @@ public class AppServletUnitTest {
 	public void beforeTest() throws Exception {
 		when(container.getInstance(RequestContext.class)).thenReturn(requestContext);
 		when(requestContext.getContainer()).thenReturn(container);
-		when(requestContext.getRequest()).thenReturn(httpRequest);
 		when(requestContext.getResponse()).thenReturn(httpResponse);
 		when(requestContext.getLocale()).thenReturn(Locale.getDefault());
 
@@ -277,7 +276,7 @@ public class AppServletUnitTest {
 	/** For non XHR request unauthorized access send 401 and WWW-Authenticate set to basic. */
 	@Test
 	public void GivenLoginRealm_WhenSendUnauthorized_ThenBasicRealm() throws Exception {
-		when(container.getLoginRealm()).thenReturn("Test App");
+		when(container.getAppName()).thenReturn("Test App");
 
 		// when
 		AppServlet.sendUnauthorized(requestContext);
@@ -299,42 +298,6 @@ public class AppServletUnitTest {
 		// then
 		verify(httpResponse, times(1)).setStatus(401);
 		verify(httpResponse, times(1)).setHeader(eq("WWW-Authenticate"), anyString());
-		verify(requestContext, times(0)).dump();
-	}
-
-	/**
-	 * For XHR request on application with login page unauthorized access send 200 and custom header X-JSLIB-Location set to
-	 * login page.
-	 */
-	@Test
-	public void GivenXMLHttpRequestAndLoginPage_WhenSendUnauthorized_ThenJsLibRedirectToLogin() throws Exception {
-		// given
-		when(container.getLoginPage()).thenReturn("/test-app/login.xsp");
-		when(httpRequest.getHeader("X-Requested-With")).thenReturn("XMLHttpRequest");
-
-		// when
-		AppServlet.sendUnauthorized(requestContext);
-
-		// then
-		verify(httpResponse, times(1)).setStatus(200);
-		verify(httpResponse, times(1)).setHeader("X-JSLIB-Location", "/test-app/login.xsp");
-		verify(requestContext, times(0)).dump();
-	}
-
-	/** For XHR request on application without login page unauthorized access send 401 and WWW-Authenticate set to basic. */
-	@Test
-	public void GivenNullLoginPage_WhenSendUnauthorized_ThenNoJsLibRedirectToLogin() throws Exception {
-		// given
-		when(container.getLoginRealm()).thenReturn("Test App");
-		when(container.getLoginPage()).thenReturn(null);
-		when(httpRequest.getHeader("X-Requested-With")).thenReturn("XMLHttpRequest");
-
-		// when
-		AppServlet.sendUnauthorized(requestContext);
-
-		// then
-		verify(httpResponse, times(1)).setStatus(401);
-		verify(httpResponse, times(1)).setHeader("WWW-Authenticate", "Basic realm=Test App");
 		verify(requestContext, times(0)).dump();
 	}
 

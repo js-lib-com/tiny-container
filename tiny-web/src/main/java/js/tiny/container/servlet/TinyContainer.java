@@ -3,7 +3,6 @@ package js.tiny.container.servlet;
 import java.io.File;
 import java.security.Principal;
 import java.util.Enumeration;
-import java.util.Locale;
 import java.util.Properties;
 import java.util.ServiceLoader;
 
@@ -23,7 +22,7 @@ import js.log.LogFactory;
 import js.tiny.container.cdi.CDI;
 import js.tiny.container.cdi.SessionScoped;
 import js.tiny.container.core.Container;
-import js.tiny.container.core.Factory;
+import js.tiny.container.spi.Factory;
 import js.tiny.container.spi.InstanceScope;
 
 /**
@@ -93,7 +92,7 @@ import js.tiny.container.spi.InstanceScope;
  * @author Iulian Rotaru
  * @version final
  */
-public class TinyContainer extends Container implements ServletContextListener, HttpSessionListener, ITinyContainer {
+public class TinyContainer extends Container implements ServletContextListener, HttpSessionListener, ITinyContainer, WebContext {
 	/** Server global state and applications logger initialization. */
 	private static final Server server = new Server();
 
@@ -129,7 +128,7 @@ public class TinyContainer extends Container implements ServletContextListener, 
 	/**
 	 * Development context is running in the same JVM and is allowed to do cross context forward to this context private
 	 * resources WITHOUT AUTHENTICATION. It should be explicitly configured on context parameters with the name
-	 * 'js.tiny.container.dev.context'.
+	 * <code>js.tiny.container.dev.context</code>.
 	 */
 	private String developmentContext;
 
@@ -139,22 +138,6 @@ public class TinyContainer extends Container implements ServletContextListener, 
 	 * {@link #getAppFile(String)} are always relative to this <code>private</code> directory.
 	 */
 	private File privateDir;
-
-	/**
-	 * Optional login realm, default to web application context name. Basic authentication realm sent by servlets when client
-	 * attempt to access non authorized resource.
-	 * <p>
-	 * Basic authentication realm is loaded from application descriptor, <code>login</code> section. If not configured uses the
-	 * context name.
-	 * 
-	 * <pre>
-	 * &lt;login&gt;
-	 * 	&lt;property name="realm" value="Fax2e-mail" /&gt;
-	 * 	...
-	 * &lt;/login&gt;
-	 * </pre>
-	 */
-	private String loginRealm;
 
 	/**
 	 * Location for application login page, null if not configured. This field value is loaded from application descriptor.
@@ -196,6 +179,7 @@ public class TinyContainer extends Container implements ServletContextListener, 
 		this.configBuilder = configBuilder;
 
 		this.cdi.bindInstance(ITinyContainer.class, this);
+		this.cdi.bindInstance(WebContext.class, this);
 		this.cdi.bindScope(SessionScoped.class, new SessionScopeProvider.Factory<>());
 
 		// TODO: remove?
@@ -220,22 +204,6 @@ public class TinyContainer extends Container implements ServletContextListener, 
 		privateDir = server.getAppDir(appName);
 		if (!privateDir.exists()) {
 			privateDir.mkdir();
-		}
-
-		Config loginConfig = config.getChild("login");
-		if (loginConfig != null) {
-			loginRealm = loginConfig.getProperty("realm", appName);
-			loginPage = loginConfig.getProperty("page");
-			if (loginPage != null && !loginPage.startsWith("/")) {
-				StringBuilder loginPageBuilder = new StringBuilder();
-				loginPageBuilder.append('/');
-				if (!TinyConfigBuilder.ROOT_APP_NAME.equals(appName)) {
-					loginPageBuilder.append(appName);
-					loginPageBuilder.append('/');
-				}
-				loginPageBuilder.append(loginPage);
-				loginPage = loginPageBuilder.toString();
-			}
 		}
 	}
 
@@ -317,7 +285,7 @@ public class TinyContainer extends Container implements ServletContextListener, 
 	public void contextDestroyed(ServletContextEvent contextEvent) {
 		log.debug("Context |%s| destroying.", appName);
 		try {
-			destroy();
+			close();
 		} catch (Throwable t) {
 			log.dump(String.format("Fatal error on container |%s| destroy:", appName), t);
 		}
@@ -342,7 +310,7 @@ public class TinyContainer extends Container implements ServletContextListener, 
 	}
 
 	// --------------------------------------------------------------------------------------------
-	// APPLICATION CONTEXT INTERFACE
+	// WEB CONTEXT INTERFACE
 
 	@Override
 	public String getAppName() {
@@ -360,13 +328,13 @@ public class TinyContainer extends Container implements ServletContextListener, 
 	}
 
 	@Override
-	public Locale getRequestLocale() {
-		return getInstance(RequestContext.class).getLocale();
+	public RequestContext getRequestContext() {
+		return getInstance(RequestContext.class);
 	}
 
 	@Override
-	public String getRemoteAddr() {
-		return getInstance(RequestContext.class).getRemoteHost();
+	public SecurityContext getSecurityContext() {
+		return this;
 	}
 
 	// --------------------------------------------------------------------------------------------
@@ -412,11 +380,6 @@ public class TinyContainer extends Container implements ServletContextListener, 
 
 	// --------------------------------------------------------------------------------------------
 	// CONTAINER SPI
-
-	@Override
-	public String getLoginRealm() {
-		return loginRealm;
-	}
 
 	@Override
 	public String getLoginPage() {

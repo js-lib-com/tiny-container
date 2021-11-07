@@ -59,7 +59,7 @@ public class SessionScopeProvider<T> extends ScopedProvider<T> {
 	 */
 	HttpSession getSession() {
 		// TODO: replace global factory
-		RequestContext requestContext = js.tiny.container.core.Factory.getInstance(RequestContext.class);
+		RequestContext requestContext = js.tiny.container.spi.Factory.getInstance(RequestContext.class);
 		HttpServletRequest httpRequest = requestContext.getRequest();
 		if (httpRequest == null) {
 			throw new BugError("Invalid web context due to null HTTP request. Cannot create managed instance for |%s| with scope SESSION.", provider.getClass().getCanonicalName());

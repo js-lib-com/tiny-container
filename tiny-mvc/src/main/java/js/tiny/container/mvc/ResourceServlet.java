@@ -15,6 +15,7 @@ import javax.servlet.http.HttpServletResponse;
 import js.lang.BugError;
 import js.log.Log;
 import js.log.LogFactory;
+import js.tiny.container.http.HttpHeader;
 import js.tiny.container.http.NoSuchResourceException;
 import js.tiny.container.http.Resource;
 import js.tiny.container.http.encoder.ArgumentsReader;
@@ -185,6 +186,16 @@ public class ResourceServlet extends AppServlet {
 
 			String loginPage = container.getLoginPage();
 			if (loginPage != null) {
+				// XMLHttpRequest specs mandates that redirection codes to be performed transparently by user agent
+				// this means redirect from server does not reach script counterpart
+				// as workaround uses 200 OK and X-JSLIB-Location extension header
+				if (HttpHeader.isXHR(context.getRequest())) {
+					log.trace("Send X-JSLIB-Location |%s| for rejected XHR request: |%s|", container.getLoginPage(), context.getRequestURI());
+					httpResponse.setStatus(HttpServletResponse.SC_OK);
+					httpResponse.setHeader(HttpHeader.X_HEADER_LOCATION, container.getLoginPage());
+					return;
+				}
+
 				httpResponse.sendRedirect(loginPage);
 			} else {
 				// expected servlet container behavior:

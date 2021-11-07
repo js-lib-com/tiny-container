@@ -28,7 +28,7 @@ import org.mockito.junit.MockitoJUnitRunner;
 import com.jslib.injector.Key;
 
 import js.lang.BugError;
-import js.tiny.container.core.Factory;
+import js.tiny.container.spi.Factory;
 import js.tiny.container.spi.IContainer;
 
 @RunWith(MockitoJUnitRunner.class)

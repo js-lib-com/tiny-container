@@ -136,7 +136,7 @@ public class HttpRmiServletHandlerUnitTest {
 		}
 
 		@Override
-		public String getLoginRealm() {
+		public String getAppName() {
 			return "app-test";
 		}
 

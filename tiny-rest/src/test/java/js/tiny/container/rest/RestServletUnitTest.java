@@ -238,7 +238,7 @@ public class RestServletUnitTest {
 	@Test
 	public void GivenNotAuthorizedRemoteMethod_WhenInvoke_Then401() throws Exception {
 		// given
-		when(container.getLoginRealm()).thenReturn("Test App");
+		when(container.getAppName()).thenReturn("Test App");
 		when(container.getManagedMethods()).thenReturn(Arrays.asList(managedMethod));
 		when(methodPath.value()).thenReturn("rest/sub-resource");
 		when(managedMethod.getParameterTypes()).thenReturn(new Class[0]);
