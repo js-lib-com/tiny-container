@@ -1,5 +1,5 @@
 /**
- * Resources servlet and view manager for server pages and dynamic generated content.
+ * Model View Controller framework for legacy applications.
  *
  * @author Iulian Rotaru
  */
