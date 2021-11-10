@@ -1,7 +1,7 @@
 # Tiny Container
 Light weight Java EE compliant, modular container for solutions where size and code reuse matters. Code reuse is promoted by reducing application dependencies; in fact one can create a functional application using only Java SE and Tiny Container services exposed by standard JEE annotations. Of course for complex applications third party dependencies are required.
 
-![](../image/app-dependencies.png)
+![](https://github.com/js-lib-com/tiny-container/blob/development/docs/image/app-dependencies.png)
 
 This code snippet is functional and has no dependency on Tiny Container. It can be moved without changes into another application server.
 
@@ -63,4 +63,4 @@ public class Main {
 }	
 ```
 
-![](../image/container-concept.png)
+![](https://github.com/js-lib-com/tiny-container/blob/development/docs/image/container-concept.png)
