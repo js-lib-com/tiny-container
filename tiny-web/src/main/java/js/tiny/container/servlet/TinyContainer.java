@@ -4,7 +4,6 @@ import java.io.File;
 import java.security.Principal;
 import java.util.Enumeration;
 import java.util.Properties;
-import java.util.ServiceLoader;
 
 import javax.servlet.ServletContext;
 import javax.servlet.ServletContextEvent;
@@ -162,20 +161,20 @@ public class TinyContainer extends Container implements ServletContextListener, 
 	 */
 	private String loginPage;
 
-	private SecurityContextProvider securityProvider;
+	private TinySecurity security;
 
 	private final TinyConfigBuilder configBuilder;
 
 	public TinyContainer() {
-		this(CDI.create(), new TinyConfigBuilder(), new TinySecurityContext());
+		this(CDI.create(), new TinyConfigBuilder(), new TinySecurity());
 	}
 
 	/**
 	 * Test constructor.
 	 */
-	public TinyContainer(CDI cdi, TinyConfigBuilder configBuilder, SecurityContextProvider securityProvider) {
+	public TinyContainer(CDI cdi, TinyConfigBuilder configBuilder, TinySecurity security) {
 		super(cdi);
-		log.trace("TinyContainer(CDI)");
+		log.trace("TinyContainer(CDI, TinyConfigBuilder, TinySecurity)");
 		this.configBuilder = configBuilder;
 
 		this.cdi.bindInstance(ITinyContainer.class, this);
@@ -183,16 +182,7 @@ public class TinyContainer extends Container implements ServletContextListener, 
 		this.cdi.bindInstance(SecurityContext.class, this);
 		this.cdi.bindScope(SessionScoped.class, new SessionScopeProvider.Factory<>());
 
-		// TODO: remove?
-		for (SecurityContextProvider accessControl : ServiceLoader.load(SecurityContextProvider.class)) {
-			log.info("Found access control implementation |%s|.", accessControl.getClass());
-			if (this.securityProvider != null) {
-				throw new BugError("Invalid runtime environment. Multiple access control implementation.");
-			}
-			this.securityProvider = accessControl;
-		}
-
-		this.securityProvider = securityProvider;
+		this.security = security;
 	}
 
 	@Override
@@ -343,22 +333,22 @@ public class TinyContainer extends Container implements ServletContextListener, 
 
 	@Override
 	public boolean login(String username, String password) {
-		return securityProvider.login(getInstance(RequestContext.class), username, password);
+		return security.login(getInstance(RequestContext.class), username, password);
 	}
 
 	@Override
 	public void login(Principal user) {
-		securityProvider.login(getInstance(RequestContext.class), user);
+		security.login(getInstance(RequestContext.class), user);
 	}
 
 	@Override
 	public void logout() {
-		securityProvider.logout(getInstance(RequestContext.class));
+		security.logout(getInstance(RequestContext.class));
 	}
 
 	@Override
 	public Principal getUserPrincipal() {
-		return securityProvider.getUserPrincipal(getInstance(RequestContext.class));
+		return security.getUserPrincipal(getInstance(RequestContext.class));
 	}
 
 	@Override
@@ -376,7 +366,7 @@ public class TinyContainer extends Container implements ServletContextListener, 
 		if (developmentContext != null && developmentContext.equals(context.getForwardContextPath())) {
 			return true;
 		}
-		return securityProvider.isAuthorized(context, roles);
+		return security.isAuthorized(context, roles);
 	}
 
 	// --------------------------------------------------------------------------------------------

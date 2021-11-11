@@ -42,7 +42,7 @@ public class TinySecurityContextTest {
 	@Mock
 	private RequestContext requestContext;
 
-	private SecurityContextProvider security;
+	private TinySecurity security;
 
 	@Before
 	public void beforeTest() {
@@ -50,7 +50,7 @@ public class TinySecurityContextTest {
 		when(requestContext.getResponse()).thenReturn(httpResponse);
 		when(httpRequest.getSession(true)).thenReturn(httpSession);
 
-		security = new TinySecurityContext();
+		security = new TinySecurity();
 	}
 
 	/** Login using servlet container provided authentication should write credentials to HTTP response cookies. */

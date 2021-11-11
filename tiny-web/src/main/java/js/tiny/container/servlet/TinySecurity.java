@@ -14,10 +14,9 @@ import js.log.Log;
 import js.log.LogFactory;
 import js.util.Params;
 
-public class TinySecurityContext implements SecurityContextProvider {
-	private static final Log log = LogFactory.getLog(TinySecurityContext.class);
+public class TinySecurity {
+	private static final Log log = LogFactory.getLog(TinySecurity.class);
 
-	@Override
 	public boolean login(RequestContext context, String username, String password) {
 		log.trace("login(RequestContext, String, String)");
 		Params.notNullOrEmpty(username, "User name");
@@ -44,7 +43,6 @@ public class TinySecurityContext implements SecurityContextProvider {
 		return true;
 	}
 
-	@Override
 	public void login(RequestContext context, Principal principal) {
 		log.trace("login(RequestContext, Principal)");
 		Params.notNull(principal, "User principal");
@@ -67,7 +65,6 @@ public class TinySecurityContext implements SecurityContextProvider {
 		log.info("Login principal |%s|.", principal);
 	}
 
-	@Override
 	public void logout(RequestContext context) {
 		log.trace("logout(RequestContext)");
 		final HttpServletRequest request = request(context);
@@ -101,7 +98,6 @@ public class TinySecurityContext implements SecurityContextProvider {
 		log.info("Logout user |%s|.", username);
 	}
 
-	@Override
 	public Principal getUserPrincipal(RequestContext context) {
 		final HttpServletRequest request = context.getRequest();
 		if (request == null) {
@@ -132,7 +128,6 @@ public class TinySecurityContext implements SecurityContextProvider {
 		}
 	}
 
-	@Override
 	public boolean isAuthorized(RequestContext context, String... roles) {
 		final HttpServletRequest request = context.getRequest();
 		if (request == null) {

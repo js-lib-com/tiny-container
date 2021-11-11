@@ -63,7 +63,7 @@ public class TinyContainerUnitTest {
 	@Mock
 	private TinyConfigBuilder configBuilder;
 	@Mock
-	private SecurityContextProvider securityProvider;
+	private TinySecurity securityProvider;
 
 	private TinyContainer container;
 
