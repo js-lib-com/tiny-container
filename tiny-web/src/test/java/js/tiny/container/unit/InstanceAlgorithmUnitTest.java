@@ -168,10 +168,5 @@ public class InstanceAlgorithmUnitTest {
 		public String getImplementationURL() {
 			return "http://localhost/";
 		}
-
-		@Override
-		public <A> A getAttribute(Object context, String name, Class<A> type) {
-			return null;
-		}
 	}
 }

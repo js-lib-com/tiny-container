@@ -65,14 +65,4 @@ public class ManagedClassSpiStub<T> implements IManagedClass<T> {
 	public <A extends Annotation> A scanAnnotation(Class<A> type) {
 		throw new UnsupportedOperationException("getAnnotation(Class<T> type)");
 	}
-
-	@Override
-	public void setAttribute(Object context, String name, Object value) {
-		throw new UnsupportedOperationException("setAttribute(Object context, String name, Object value)");
-	}
-
-	@Override
-	public <A> A getAttribute(Object context, String name, Class<A> type) {
-		throw new UnsupportedOperationException("getAttribute(Object context, String name, Class<T> type)");
-	}
 }

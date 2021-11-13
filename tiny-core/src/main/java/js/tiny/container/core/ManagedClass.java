@@ -22,7 +22,6 @@ import js.tiny.container.spi.IMethodInvocationProcessor;
 import js.tiny.container.spi.InstanceScope;
 import js.tiny.container.spi.InstanceType;
 import js.util.Classes;
-import js.util.Strings;
 import js.util.Types;
 
 /**
@@ -213,34 +212,6 @@ public final class ManagedClass<T> implements IManagedClass<T> {
 	@Override
 	public String getImplementationURL() {
 		return implementationURL;
-	}
-
-	private final Map<String, Object> attributes = new HashMap<>();
-
-	@Override
-	public void setAttribute(Object context, String name, Object value) {
-		attributes.put(key(context, name), value);
-	}
-
-	@SuppressWarnings("unchecked")
-	@Override
-	public <A> A getAttribute(Object context, String name, Class<A> type) {
-		String key = key(context, name);
-		Object value = attributes.get(key);
-		if (value == null) {
-			return null;
-		}
-		if (!Types.isInstanceOf(value, type)) {
-			throw new ClassCastException(String.format("Cannot cast attribute |%s| to type |%s|.", key, type));
-		}
-		return (A) value;
-	}
-
-	private static final String key(Object context, String name) {
-		if (!(context instanceof Class)) {
-			context = context.getClass();
-		}
-		return Strings.concat(((Class<?>) context).getCanonicalName(), '#', name);
 	}
 
 	// --------------------------------------------------------------------------------------------

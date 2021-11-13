@@ -95,8 +95,4 @@ public interface IManagedClass<T> {
 
 	<A extends Annotation> A getAnnotation(Class<A> type);
 
-	void setAttribute(Object context, String name, Object value);
-
-	<A> A getAttribute(Object context, String name, Class<A> type);
-
 }
