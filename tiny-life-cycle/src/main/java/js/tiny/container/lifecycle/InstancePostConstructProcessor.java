@@ -1,19 +1,20 @@
 package js.tiny.container.lifecycle;
 
-import java.lang.annotation.Annotation;
+import static java.lang.String.format;
+
 import java.lang.reflect.InvocationTargetException;
-import java.util.Collections;
+import java.lang.reflect.Method;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.annotation.PostConstruct;
 
-import js.lang.BugError;
 import js.lang.ManagedPostConstruct;
 import js.log.Log;
 import js.log.LogFactory;
 import js.tiny.container.spi.IInstancePostConstructProcessor;
 import js.tiny.container.spi.IManagedClass;
-import js.tiny.container.spi.IManagedMethod;
-import js.tiny.container.spi.IAnnotationsScanner;
+import js.util.Params;
 
 /**
  * Execute {@link ManagedPostConstruct#postConstruct()} on managed instance. Instance post-construction is executed after
@@ -21,10 +22,11 @@ import js.tiny.container.spi.IAnnotationsScanner;
  * 
  * @author Iulian Rotaru
  */
-public class InstancePostConstructProcessor extends BaseInstanceLifeCycle implements IInstancePostConstructProcessor, IAnnotationsScanner {
+public class InstancePostConstructProcessor extends BaseInstanceLifeCycle implements IInstancePostConstructProcessor {
 	private static final Log log = LogFactory.getLog(InstancePostConstructProcessor.class);
 
-	private static final String ATTR_POST_CONSTRUCT = "post-construct";
+	/** Cache for @PostConstruct methods filled on the fly. */
+	private static final Map<Class<?>, Method> POST_CONSTRUCT_METHODS = new HashMap<>();
 
 	public InstancePostConstructProcessor() {
 		log.trace("InstancePostConstructProcessor()");
@@ -35,30 +37,20 @@ public class InstancePostConstructProcessor extends BaseInstanceLifeCycle implem
 		return Priority.CONSTRUCTOR;
 	}
 
-	@Override
-	public Iterable<Annotation> scanClassAnnotations(IManagedClass<?> managedClass) {
-		scanLifeCycleInterface(managedClass, ManagedPostConstruct.class, ATTR_POST_CONSTRUCT);
-		return Collections.emptyList();
-	}
-
-	@Override
-	public Iterable<Annotation> scanMethodAnnotations(IManagedMethod managedMethod) {
-		scanLifeCycleAnnotation(managedMethod, PostConstruct.class, ATTR_POST_CONSTRUCT);
-		return Collections.emptyList();
-	}
-
 	/**
 	 * Execute post-construct on managed instance. In order to perform instance post-construction, managed instance should
 	 * implement {@link ManagedPostConstruct} interface.
 	 * 
 	 * @param managedClass managed class,
 	 * @param instance instance of given managed class, not null.
-	 * @throws NullPointerException if managed class or instance argument is null.
-	 * @throws BugError if instance post-construction fails due to exception of application defined logic.
+	 * @throws RuntimeException if instance post-construction fails due to exception of application defined logic.
 	 */
 	@Override
 	public <T> void onInstancePostConstruct(IManagedClass<T> managedClass, T instance) {
-		IManagedMethod method = managedClass.getAttribute(this, ATTR_POST_CONSTRUCT, IManagedMethod.class);
+		Params.notNull(instance, "Instance");
+		final Class<?> implementationClass = instance.getClass();
+
+		Method method = getAnnotatedMethod(POST_CONSTRUCT_METHODS, implementationClass, PostConstruct.class);
 		if (method == null) {
 			return;
 		}
@@ -70,7 +62,13 @@ public class InstancePostConstructProcessor extends BaseInstanceLifeCycle implem
 			if (t instanceof InvocationTargetException) {
 				t = ((InvocationTargetException) t).getTargetException();
 			}
-			throw new BugError("Managed instance |%s| post-construct fail: %s", instance, t);
+			throw new RuntimeException(format("Managed instance |%s| post-construct fail: %s", implementationClass.getCanonicalName(), t.getMessage()));
 		}
+	}
+	
+	// --------------------------------------------------------------------------------------------
+	
+	void resetCache() {
+		POST_CONSTRUCT_METHODS.clear();
 	}
 }

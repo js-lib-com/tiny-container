@@ -1,22 +1,24 @@
 package js.tiny.container.lifecycle;
 
-import java.lang.annotation.Annotation;
-import java.util.Collections;
+import static java.lang.String.format;
+
+import java.lang.reflect.Method;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.annotation.PreDestroy;
 
-import js.lang.ManagedPreDestroy;
 import js.log.Log;
 import js.log.LogFactory;
 import js.tiny.container.spi.IInstancePreDestroyProcessor;
 import js.tiny.container.spi.IManagedClass;
-import js.tiny.container.spi.IManagedMethod;
-import js.tiny.container.spi.IAnnotationsScanner;
+import js.util.Params;
 
-public class InstancePreDestroyProcessor extends BaseInstanceLifeCycle implements IInstancePreDestroyProcessor, IAnnotationsScanner {
+public class InstancePreDestroyProcessor extends BaseInstanceLifeCycle implements IInstancePreDestroyProcessor {
 	private static final Log log = LogFactory.getLog(InstancePreDestroyProcessor.class);
 
-	private static final String ATTR_PRE_DESTROY = "pre-destroy";
+	/** Cache for @PreDestroy methods filled on the fly. */
+	private static final Map<Class<?>, Method> PRE_DESTROY_METHODS = new HashMap<>();
 
 	public InstancePreDestroyProcessor() {
 		log.trace("InstancePreDestroyProcessor()");
@@ -28,20 +30,11 @@ public class InstancePreDestroyProcessor extends BaseInstanceLifeCycle implement
 	}
 
 	@Override
-	public Iterable<Annotation> scanClassAnnotations(IManagedClass<?> managedClass) {
-		scanLifeCycleInterface(managedClass, ManagedPreDestroy.class, ATTR_PRE_DESTROY);
-		return Collections.emptyList();
-	}
-
-	@Override
-	public Iterable<Annotation> scanMethodAnnotations(IManagedMethod managedMethod) {
-		scanLifeCycleAnnotation(managedMethod, PreDestroy.class, ATTR_PRE_DESTROY);
-		return Collections.emptyList();
-	}
-
-	@Override
 	public <T> void onInstancePreDestroy(IManagedClass<T> managedClass, T instance) {
-		IManagedMethod method = managedClass.getAttribute(this, ATTR_PRE_DESTROY, IManagedMethod.class);
+		Params.notNull(instance, "Instance");
+		final Class<?> implementationClass = instance.getClass();
+
+		Method method = getAnnotatedMethod(PRE_DESTROY_METHODS, implementationClass, PreDestroy.class);
 		if (method == null) {
 			return;
 		}
@@ -50,7 +43,13 @@ public class InstancePreDestroyProcessor extends BaseInstanceLifeCycle implement
 		try {
 			method.invoke(instance);
 		} catch (Throwable t) {
-			log.dump(String.format("Managed instance |%s| pre-destroy fail:", instance.getClass()), t);
+			log.dump(format("Managed instance |%s| pre-destroy fail:", instance.getClass()), t);
 		}
+	}
+	
+	// --------------------------------------------------------------------------------------------
+	
+	void resetCache() {
+		PRE_DESTROY_METHODS.clear();
 	}
 }
