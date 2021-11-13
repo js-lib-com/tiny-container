@@ -10,8 +10,6 @@ import java.util.Map;
 
 import js.log.Log;
 import js.log.LogFactory;
-import js.tiny.container.service.FlowProcessorsSet;
-import js.tiny.container.service.InvocationProcessorsChain;
 import js.tiny.container.spi.IInvocation;
 import js.tiny.container.spi.IInvocationProcessorsChain;
 import js.tiny.container.spi.IManagedClass;

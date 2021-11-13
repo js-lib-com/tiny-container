@@ -1,4 +1,4 @@
-package js.tiny.container.service;
+package js.tiny.container.core;
 
 import java.util.Set;
 import java.util.TreeSet;

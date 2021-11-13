@@ -20,9 +20,6 @@ import js.log.Log;
 import js.log.LogFactory;
 import js.tiny.container.AppContainer;
 import js.tiny.container.cdi.CDI;
-import js.tiny.container.service.FlowProcessorsSet;
-import js.tiny.container.service.InstanceStartupProcessor;
-import js.tiny.container.service.LoggerInstanceProcessor;
 import js.tiny.container.spi.IClassPostLoadedProcessor;
 import js.tiny.container.spi.IContainer;
 import js.tiny.container.spi.IContainerService;
@@ -109,7 +106,6 @@ public class Container implements IContainer, AppContainer {
 		}
 
 		containerStartProcessors.add(new InstanceStartupProcessor());
-		instancePostConstructionProcessors.add(new LoggerInstanceProcessor());
 	}
 
 	/**
