@@ -7,7 +7,6 @@ import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.when;
 
 import java.lang.reflect.Field;
@@ -25,14 +24,11 @@ import org.mockito.junit.MockitoJUnitRunner;
 
 import js.lang.BugError;
 import js.tiny.container.spi.IContainer;
-import js.tiny.container.spi.IManagedClass;
 
 @RunWith(MockitoJUnitRunner.class)
 public class ResourcesInjectionProcessorTest {
 	@Mock
 	private IContainer container;
-	@Mock
-	private IManagedClass<BusinessClass> managedClass;
 
 	@Mock
 	private Context globalEnvironment;
@@ -44,25 +40,19 @@ public class ResourcesInjectionProcessorTest {
 
 	@Before
 	public void beforeTest() throws NamingException {
-		when(managedClass.getKey()).thenReturn(1);
-		doReturn(BusinessClass.class).when(managedClass).getImplementationClass();
-
-		// when(globalEnvironment.lookup(anyString())).thenThrow(NamingException.class);
-		// when(componentEnvironment.lookup(anyString())).thenThrow(NamingException.class);
-
 		processor = new ResourcesInjectionProcessor(globalEnvironment, componentEnvironment);
+		processor.resetCache();
 		instance = new BusinessClass();
 	}
 
 	@Test
-	public void GivenDefaults_WhenScanServiceMeta_ThenFields() throws NoSuchFieldException, SecurityException {
+	public void GivenDefaults_WhenScanFields_ThenFieldsInitialized() throws NoSuchFieldException, SecurityException {
 		// given
 
 		// when
-		processor.scanClassAnnotations(managedClass);
+		Collection<Field> managedFields = ResourcesInjectionProcessor.scanFields(BusinessClass.class);
 
 		// then
-		Collection<Field> managedFields = processor.getManagedFields(1);
 		assertThat(managedFields, notNullValue());
 		assertThat(managedFields, hasItem(BusinessClass.field("resourceName")));
 		assertThat(managedFields, hasItem(BusinessClass.field("resourceLookup")));
@@ -72,10 +62,9 @@ public class ResourcesInjectionProcessorTest {
 	@Test(expected = BugError.class)
 	public void GivenStaticResource_WhenScanServiceMeta_ThenException() {
 		// given
-		doReturn(StaticResource.class).when(managedClass).getImplementationClass();
 
 		// when
-		processor.scanClassAnnotations(managedClass);
+		ResourcesInjectionProcessor.scanFields(StaticResource.class);
 
 		// then
 	}
@@ -83,10 +72,9 @@ public class ResourcesInjectionProcessorTest {
 	@Test(expected = BugError.class)
 	public void GivenFinalResource_WhenScanServiceMeta_ThenException() {
 		// given
-		doReturn(FinalResource.class).when(managedClass).getImplementationClass();
 
 		// when
-		processor.scanClassAnnotations(managedClass);
+		ResourcesInjectionProcessor.scanFields(FinalResource.class);
 
 		// then
 	}
@@ -96,10 +84,10 @@ public class ResourcesInjectionProcessorTest {
 		// given
 		when(componentEnvironment.lookup(anyString())).thenThrow(NamingException.class);
 		when(globalEnvironment.lookup("resource.lookup")).thenReturn("resource");
-		processor.scanClassAnnotations(managedClass);
+		ResourcesInjectionProcessor.scanFields(BusinessClass.class);
 
 		// when
-		processor.onInstancePostConstruct(managedClass, instance);
+		processor.onInstancePostConstruct(null, instance);
 
 		// then
 		assertThat(instance.resourceLookup, equalTo("resource"));
@@ -110,10 +98,10 @@ public class ResourcesInjectionProcessorTest {
 	@Test
 	public void GivenNullInstance_WhenLookup_ThenNothing() throws NamingException {
 		// given
-		processor.scanClassAnnotations(managedClass);
+		ResourcesInjectionProcessor.scanFields(BusinessClass.class);
 
 		// when
-		processor.onInstancePostConstruct(managedClass, null);
+		processor.onInstancePostConstruct(null, null);
 
 		// then
 	}
@@ -121,11 +109,12 @@ public class ResourcesInjectionProcessorTest {
 	@Test(expected = BugError.class)
 	public void GivenGlocalResourceAndTypeMissmatch_WhenLookup_ThenException() throws NamingException {
 		// given
+		when(componentEnvironment.lookup(anyString())).thenThrow(NamingException.class);
 		when(globalEnvironment.lookup("resource.lookup")).thenReturn(new Object());
-		processor.scanClassAnnotations(managedClass);
+		ResourcesInjectionProcessor.scanFields(BusinessClass.class);
 
 		// when
-		processor.onInstancePostConstruct(managedClass, instance);
+		processor.onInstancePostConstruct(null, instance);
 
 		// then
 	}
@@ -136,10 +125,10 @@ public class ResourcesInjectionProcessorTest {
 		when(globalEnvironment.lookup(anyString())).thenThrow(NamingException.class);
 		when(componentEnvironment.lookup(BusinessClass.resourceEmptyName())).thenThrow(NamingException.class);
 		when(componentEnvironment.lookup("resource.name")).thenReturn("resource");
-		processor.scanClassAnnotations(managedClass);
+		ResourcesInjectionProcessor.scanFields(BusinessClass.class);
 
 		// when
-		processor.onInstancePostConstruct(managedClass, instance);
+		processor.onInstancePostConstruct(null, instance);
 
 		// then
 		assertThat(instance.resourceName, equalTo("resource"));
@@ -150,12 +139,11 @@ public class ResourcesInjectionProcessorTest {
 	@Test(expected = BugError.class)
 	public void GivenComponentResourceAndTypeMissmatch_WhenLookup_ThenException() throws NamingException {
 		// given
-		when(globalEnvironment.lookup(anyString())).thenThrow(NamingException.class);
 		when(componentEnvironment.lookup("resource.name")).thenReturn(new Object());
-		processor.scanClassAnnotations(managedClass);
+		ResourcesInjectionProcessor.scanFields(BusinessClass.class);
 
 		// when
-		processor.onInstancePostConstruct(managedClass, instance);
+		processor.onInstancePostConstruct(null, instance);
 
 		// then
 	}
@@ -166,10 +154,10 @@ public class ResourcesInjectionProcessorTest {
 		when(globalEnvironment.lookup(anyString())).thenThrow(NamingException.class);
 		when(componentEnvironment.lookup("resource.name")).thenThrow(NamingException.class);
 		when(componentEnvironment.lookup(BusinessClass.resourceEmptyName())).thenReturn("resource");
-		processor.scanClassAnnotations(managedClass);
+		ResourcesInjectionProcessor.scanFields(BusinessClass.class);
 
 		// when
-		processor.onInstancePostConstruct(managedClass, instance);
+		processor.onInstancePostConstruct(null, instance);
 
 		// then
 		assertThat(instance.resourceName, nullValue());

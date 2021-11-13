@@ -1,13 +1,13 @@
 package js.tiny.container.resource;
 
-import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 import javax.annotation.Resource;
 import javax.naming.Context;
@@ -19,8 +19,6 @@ import js.log.Log;
 import js.log.LogFactory;
 import js.tiny.container.spi.IInstancePostConstructProcessor;
 import js.tiny.container.spi.IManagedClass;
-import js.tiny.container.spi.IManagedMethod;
-import js.tiny.container.spi.IAnnotationsScanner;
 import js.util.Classes;
 import js.util.Strings;
 
@@ -41,13 +39,13 @@ import js.util.Strings;
  * 
  * @author Iulian Rotaru
  */
-public class ResourcesInjectionProcessor implements IInstancePostConstructProcessor, IAnnotationsScanner {
+public class ResourcesInjectionProcessor implements IInstancePostConstructProcessor {
 	private static final Log log = LogFactory.getLog(ResourcesInjectionProcessor.class);
 
 	private static final String GLOBAL_ENV = "java:global/env";
 	private static final String COMP_ENV = "java:comp/env";
 
-	private static final Map<Integer, Collection<Field>> MANAGED_FIELDS = new HashMap<>();
+	private static final Map<Class<?>, Set<Field>> RESOURCE_FIELDS = new HashMap<>();
 
 	private final Context globalEnvironment;
 	private final Context componentEnvironment;
@@ -78,17 +76,6 @@ public class ResourcesInjectionProcessor implements IInstancePostConstructProces
 		return Priority.INJECT;
 	}
 
-	@Override
-	public Iterable<Annotation> scanClassAnnotations(IManagedClass<?> managedClass) {
-		MANAGED_FIELDS.put(managedClass.getKey(), scanFields(managedClass.getImplementationClass()));
-		return Collections.emptyList();
-	}
-
-	@Override
-	public Iterable<Annotation> scanMethodAnnotations(IManagedMethod managedMethod) {
-		return Collections.emptyList();
-	}
-
 	/**
 	 * Initialize resource fields from managed class with value retrieved from JNDI.
 	 * 
@@ -97,11 +84,23 @@ public class ResourcesInjectionProcessor implements IInstancePostConstructProces
 	 */
 	@Override
 	public <T> void onInstancePostConstruct(IManagedClass<T> managedClass, T instance) {
-		if (instance == null || !MANAGED_FIELDS.containsKey(managedClass.getKey())) {
-			// null instance and no fields conditions are silently ignored
+		if (instance == null) {
+			// null instance is silently ignored
 			return;
 		}
-		for (Field field : MANAGED_FIELDS.get(managedClass.getKey())) {
+
+		Class<?> implementationClass = instance.getClass();
+		Set<Field> fields = RESOURCE_FIELDS.get(implementationClass);
+		if (fields == null) {
+			synchronized (this) {
+				if (fields == null) {
+					fields = scanFields(implementationClass);
+					RESOURCE_FIELDS.put(implementationClass, fields);
+				}
+			}
+		}
+
+		for (Field field : fields) {
 			if (field.isSynthetic()) {
 				// it seems there can be injected fields, created via byte code manipulation, when run with test coverage active
 				// not clear why and how but was consistently observed on mock object from unit test run with coverage
@@ -186,11 +185,11 @@ public class ResourcesInjectionProcessor implements IInstancePostConstructProces
 	 * @return dependencies collection, in no particular order.
 	 * @throws BugError if annotation is used on final or static field.
 	 */
-	private static Collection<Field> scanFields(Class<?> type) {
+	static Set<Field> scanFields(Class<?> type) {
 		if (type == null) {
-			return Collections.emptyList();
+			return Collections.emptySet();
 		}
-		Collection<Field> dependencies = new ArrayList<>();
+		Set<Field> dependencies = new HashSet<>();
 		for (Field field : type.getDeclaredFields()) {
 			if (!field.isAnnotationPresent(Resource.class)) {
 				continue;
@@ -210,7 +209,11 @@ public class ResourcesInjectionProcessor implements IInstancePostConstructProces
 	// --------------------------------------------------------------------------------------------
 	// tests access
 
-	Collection<Field> getManagedFields(Integer key) {
-		return MANAGED_FIELDS.get(key);
+	Collection<Field> getManagedFields(Class<?> type) {
+		return RESOURCE_FIELDS.get(type);
+	}
+
+	void resetCache() {
+		RESOURCE_FIELDS.clear();
 	}
 }
