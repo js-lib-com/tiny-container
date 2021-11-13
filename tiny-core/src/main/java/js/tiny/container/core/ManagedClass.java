@@ -4,9 +4,7 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import js.lang.BugError;
@@ -15,12 +13,12 @@ import js.lang.ConfigException;
 import js.lang.ManagedLifeCycle;
 import js.log.Log;
 import js.log.LogFactory;
+import js.tiny.container.spi.IAnnotationsScanner;
 import js.tiny.container.spi.IContainer;
 import js.tiny.container.spi.IContainerService;
 import js.tiny.container.spi.IManagedClass;
 import js.tiny.container.spi.IManagedMethod;
 import js.tiny.container.spi.IMethodInvocationProcessor;
-import js.tiny.container.spi.IAnnotationsScanner;
 import js.tiny.container.spi.InstanceScope;
 import js.tiny.container.spi.InstanceType;
 import js.util.Classes;
@@ -86,8 +84,6 @@ public final class ManagedClass<T> implements IManagedClass<T> {
 
 	private final Map<Class<? extends Annotation>, Annotation> annotations = new HashMap<>();
 
-	private final Set<IContainerService> services = new HashSet<>();
-
 	/**
 	 * Loads this managed class state from class descriptor then delegates {@link #scan()}. Annotations scanning is
 	 * performed only if this managed class type requires implementation, see {@link InstanceType#requiresImplementation()}.
@@ -125,11 +121,6 @@ public final class ManagedClass<T> implements IManagedClass<T> {
 		return string;
 	}
 
-	@Override
-	public Set<IContainerService> getServices() {
-		return services;
-	}
-
 	/**
 	 * Scan annotations for managed classes that requires implementation. Annotations are processed only for managed classes
 	 * that have {@link #implementationClass} that is primary source scanned for annotation. If an annotation is not present
@@ -150,7 +141,6 @@ public final class ManagedClass<T> implements IManagedClass<T> {
 				IAnnotationsScanner scanner = (IAnnotationsScanner) service;
 				for (Annotation serviceMeta : scanner.scanClassAnnotations(this)) {
 					log.debug("Add service meta |%s| to managed class |%s|", serviceMeta.getClass(), this);
-					services.add(service);
 					annotations.put(serviceMeta.annotationType(), serviceMeta);
 				}
 			}

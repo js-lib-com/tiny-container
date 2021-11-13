@@ -62,11 +62,6 @@ public class ManagedClassSpiStub<T> implements IManagedClass<T> {
 	}
 
 	@Override
-	public Set<IContainerService> getServices() {
-		throw new UnsupportedOperationException("getServices()");
-	}
-
-	@Override
 	public <A extends Annotation> A scanAnnotation(Class<A> type) {
 		throw new UnsupportedOperationException("getAnnotation(Class<T> type)");
 	}

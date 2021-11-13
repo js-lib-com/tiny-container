@@ -90,11 +90,6 @@ public class ManagedMethodSpiConformanceTest {
 		}
 
 		@Override
-		public Set<IContainerService> getServices() {
-			return Collections.emptySet();
-		}
-
-		@Override
 		public Class<?> getImplementationClass() {
 			return Person.class;
 		}

@@ -77,12 +77,6 @@ public class ManagedMethod implements IManagedMethod {
 			formalParameters.add(formalParameter.getSimpleName());
 		}
 		signature = String.format(QUALIFIED_NAME_FORMAT, declaringClass.getImplementationClass().getCanonicalName(), method.getName(), Strings.join(formalParameters, ','));
-
-		declaringClass.getServices().forEach(service -> {
-			if (service instanceof IMethodInvocationProcessor) {
-				invocationProcessors.add((IMethodInvocationProcessor) service);
-			}
-		});
 	}
 
 	@Override

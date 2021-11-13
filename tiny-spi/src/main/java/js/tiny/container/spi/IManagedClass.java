@@ -1,7 +1,6 @@
 package js.tiny.container.spi;
 
 import java.lang.annotation.Annotation;
-import java.util.Set;
 
 /**
  * Service provider interface for managed class. Although public, this interface is designed for library internal usage.
@@ -20,13 +19,6 @@ public interface IManagedClass<T> {
 	 * @return parent container.
 	 */
 	IContainer getContainer();
-
-	/**
-	 * Gets the set of container services configured to this particular managed class.
-	 * 
-	 * @return container services of this managed class.
-	 */
-	Set<IContainerService> getServices();
 
 	/**
 	 * Get the key uniquely identifying this managed class. Returned key is created incrementally, but not necessarily in
