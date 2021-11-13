@@ -29,14 +29,12 @@ public class PerformanceMonitorService implements IMethodInvocationProcessor, IA
 
 	@Override
 	public List<Annotation> scanClassAnnotations(IManagedClass<?> managedClass) {
-		managedClass.getManagedMethods().forEach(managedMethod -> {
-			managedMethod.setAttribute(getClass(), ATTR_METER, new Meter(managedMethod));
-		});
 		return Collections.emptyList();
 	}
 
 	@Override
 	public List<Annotation> scanMethodAnnotations(IManagedMethod managedMethod) {
+		managedMethod.setAttribute(getClass(), ATTR_METER, new Meter(managedMethod));
 		return Collections.emptyList();
 	}
 

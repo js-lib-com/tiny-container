@@ -1,10 +1,8 @@
 package js.tiny.container.stub;
 
 import java.lang.annotation.Annotation;
-import java.util.Set;
 
 import js.tiny.container.spi.IContainer;
-import js.tiny.container.spi.IContainerService;
 import js.tiny.container.spi.IManagedClass;
 import js.tiny.container.spi.IManagedMethod;
 import js.tiny.container.spi.InstanceScope;

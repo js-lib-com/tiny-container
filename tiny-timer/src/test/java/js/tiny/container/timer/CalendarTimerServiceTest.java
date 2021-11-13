@@ -31,18 +31,20 @@ public class CalendarTimerServiceTest {
 	@Mock
 	private ScheduledExecutorService scheduler;
 	@Mock
-	private Object instance;
-	@Mock
 	private IManagedClass<Object> managedClass;
 	@Mock
 	private IManagedMethod managedMethod;
 	@Mock
 	private Schedule schedule;
 
+	private Object instance;
 	private CalendarTimerService service;
 
 	@Before
 	public void beforeTest() {
+		instance = new Object();
+
+		doReturn(instance.getClass()).when(managedClass).getImplementationClass();
 		doReturn(managedClass).when(managedMethod).getDeclaringClass();
 		when(managedMethod.scanAnnotation(Schedule.class)).thenReturn(schedule);
 

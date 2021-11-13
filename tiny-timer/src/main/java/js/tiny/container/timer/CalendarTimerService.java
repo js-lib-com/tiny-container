@@ -28,7 +28,7 @@ public class CalendarTimerService implements IInstancePostConstructProcessor, IA
 	private static final int SCHEDULERS_THREAD_POLL = 2;
 	private final ScheduledExecutorService scheduler;
 
-	private final Map<Integer, Set<IManagedMethod>> classTimers = new HashMap<>();
+	private final Map<Class<?>, Set<IManagedMethod>> classTimers = new HashMap<>();
 
 	public CalendarTimerService() {
 		log.trace("CalendarTimerService()");
@@ -49,10 +49,10 @@ public class CalendarTimerService implements IInstancePostConstructProcessor, IA
 	public Iterable<Annotation> scanMethodAnnotations(IManagedMethod managedMethod) {
 		Schedule schedule = managedMethod.scanAnnotation(Schedule.class);
 		if (schedule != null) {
-			Set<IManagedMethod> timerMethods = classTimers.get(managedMethod.getDeclaringClass().getKey());
+			Set<IManagedMethod> timerMethods = classTimers.get(managedMethod.getDeclaringClass().getImplementationClass());
 			if (timerMethods == null) {
 				timerMethods = new HashSet<>();
-				classTimers.put(managedMethod.getDeclaringClass().getKey(), timerMethods);
+				classTimers.put(managedMethod.getDeclaringClass().getImplementationClass(), timerMethods);
 			}
 			timerMethods.add(managedMethod);
 		}
@@ -66,7 +66,8 @@ public class CalendarTimerService implements IInstancePostConstructProcessor, IA
 
 	@Override
 	public <T> void onInstancePostConstruct(IManagedClass<T> managedClass, final T instance) {
-		Set<IManagedMethod> timerMethods = classTimers.get(managedClass.getKey());
+		Class<?> implementationClass = instance.getClass();
+		Set<IManagedMethod> timerMethods = classTimers.get(implementationClass);
 		if (timerMethods == null) {
 			return;
 		}
