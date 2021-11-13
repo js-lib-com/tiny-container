@@ -9,4 +9,5 @@ Being so small Tiny Container is well suited for embedded systems with limited r
 
 Tiny Container is highly modular, its architecture resembling mico-kernel pattern. It has a core from couple classes and container service modules loaded at runtime with standard Java service loader.
 
-http://www.javadoc.io/doc/com.js-lib/tiny-container/1.0.0
+- [GitHub Wiki](https://github.com/js-lib-com/tiny-container/wiki)
+- [Javadoc IO](http://www.javadoc.io/doc/com.js-lib/tiny-container/1.0.0)
