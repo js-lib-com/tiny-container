@@ -3,8 +3,7 @@ package js.tiny.container.contextparam;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.nullValue;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import org.junit.Before;
@@ -15,6 +14,7 @@ import org.mockito.junit.MockitoJUnitRunner;
 
 import js.tiny.container.servlet.RequestContext;
 import js.tiny.container.spi.IContainer;
+import js.tiny.container.spi.IInstancePostConstructProcessor.Priority;
 import js.tiny.container.spi.IManagedClass;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -22,58 +22,100 @@ public class InstanceContextParamTest {
 	@Mock
 	private IContainer container;
 	@Mock
-	private IManagedClass<BusinessClass> managedClass;
-	@Mock
 	private RequestContext requestContext;
 
 	private InstanceContextParam processor;
 
 	@Before
 	public void beforeTest() {
-		BusinessClass.staticField = null;
-
 		when(container.getInstance(RequestContext.class)).thenReturn(requestContext);
-		when(requestContext.getInitParameter(any(), any())).thenReturn("value");
-		doReturn(BusinessClass.class).when(managedClass).getImplementationClass();
+		when(requestContext.getInitParameter(String.class, "field")).thenReturn("value");
 
 		processor = new InstanceContextParam();
 		processor.create(container);
 	}
 
 	@Test
+	public void GivenDefaults_WhenGetPriority_ThenCONSTRCUTOR() {
+		// given
+
+		// when
+		Priority priority = processor.getPriority();
+
+		// then
+		assertThat(priority, equalTo(Priority.INJECT));
+	}
+
+	@Test
 	public void GivenDefaults_WhenPostConstructInstance_ThenFieldInitialized() {
 		// given
-		BusinessClass instance = new BusinessClass();
+		@SuppressWarnings("unchecked")
+		IManagedClass<FieldClass> managedClass = mock(IManagedClass.class);
+		FieldClass instance = new FieldClass();
 
 		// when
 		processor.onInstancePostConstruct(managedClass, instance);
 
 		// then
-		assertThat(instance.instanceField, equalTo("value"));
+		assertThat(instance.field, equalTo("value"));
+	}
+
+	@Test(expected = IllegalStateException.class)
+	public void GivenFinalField_WhenPostLoadClass_ThenException() {
+		// given
+		@SuppressWarnings("unchecked")
+		IManagedClass<FinalFieldClass> managedClass = mock(IManagedClass.class);
+		FinalFieldClass instance = new FinalFieldClass();
+
+		// when
+		processor.onInstancePostConstruct(managedClass, instance);
+
+		// then
 	}
 
 	@Test
 	public void GivenMissingOptionalField_WhenPostConstructInstance_ThenNullField() {
 		// given
-		BusinessClass instance = new BusinessClass();
-		when(requestContext.getInitParameter(String.class, "instance.field")).thenReturn(null);
+		@SuppressWarnings("unchecked")
+		IManagedClass<FieldClass> managedClass = mock(IManagedClass.class);
+		FieldClass instance = new FieldClass();
+		when(requestContext.getInitParameter(String.class, "field")).thenReturn(null);
 
 		// when
 		processor.onInstancePostConstruct(managedClass, instance);
 
 		// then
-		assertThat(instance.instanceField, nullValue());
+		assertThat(instance.field, nullValue());
 	}
 
 	@Test(expected = RuntimeException.class)
 	public void GivenMissingMandatoryField_WhenPostConstructInstance_ThenException() {
 		// given
-		BusinessClass instance = new BusinessClass();
-		when(requestContext.getInitParameter(String.class, "instance.mandatory.field")).thenReturn(null);
+		@SuppressWarnings("unchecked")
+		IManagedClass<MandatoryFieldClass> managedClass = mock(IManagedClass.class);
+		when(requestContext.getInitParameter(String.class, "field")).thenReturn(null);
+		MandatoryFieldClass instance = new MandatoryFieldClass();
 
 		// when
 		processor.onInstancePostConstruct(managedClass, instance);
 
 		// then
+	}
+
+	// --------------------------------------------------------------------------------------------
+
+	private static class FieldClass {
+		@ContextParam("field")
+		String field;
+	}
+
+	private static class MandatoryFieldClass {
+		@ContextParam(value = "field", mandatory = true)
+		String field;
+	}
+
+	private static class FinalFieldClass {
+		@ContextParam("field")
+		final String field = "final";
 	}
 }
