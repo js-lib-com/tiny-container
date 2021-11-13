@@ -8,7 +8,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import javax.inject.Provider;
 import javax.inject.Singleton;
 
 import com.jslib.injector.IBindingBuilder;
@@ -17,6 +16,7 @@ import com.jslib.injector.IModule;
 import com.jslib.injector.IProvisionListener;
 import com.jslib.injector.IScope;
 import com.jslib.injector.Key;
+import com.jslib.injector.ProvisionException;
 import com.jslib.injector.ThreadScoped;
 import com.jslib.injector.impl.AbstractModule;
 import com.jslib.injector.impl.Injector;
@@ -53,16 +53,6 @@ public class CDI {
 	 */
 	private final IInjector injector;
 
-	/**
-	 * Cache provisioning providers used to create instances for related managed classes. Remember that a provisioning provider
-	 * is one that actually creates new instances; this is in contrast with a scope provider that uses internal cache and can
-	 * reuse an instance.
-	 * 
-	 * This cache is updated by managed classes module when create injector bindings. It is used by instance post construct
-	 * listener to retrieve managed class while knowing the provider used by injector.
-	 */
-	private final Map<Provider<?>, IManagedClass<?>> providedClasses;
-
 	/** Flag true only after CDI configuration complete. Used to assert CDI internal state consistency. */
 	private final AtomicBoolean configured = new AtomicBoolean(false);
 
@@ -70,7 +60,6 @@ public class CDI {
 		log.trace("CDI()");
 		this.explicitBindings = new ExplicitBindingModule();
 		this.injector = new Injector();
-		this.providedClasses = new HashMap<>();
 	}
 
 	/**
@@ -138,7 +127,6 @@ public class CDI {
 	 * @throws ProvisionException if there is no bindings for requested interface.
 	 * @param <T> instance generic type.
 	 */
-	@SuppressWarnings("unchecked")
 	public <T> T getInstance(Class<T> interfaceClass, IInstancePostConstructionListener<T> instanceListener) {
 		Params.notNull(interfaceClass, "Interface class");
 		Params.notNull(instanceListener, "Instance listener");
@@ -148,7 +136,7 @@ public class CDI {
 		}
 
 		IProvisionListener<T> provisionListener = invocation -> {
-			instanceListener.onInstancePostConstruction((IManagedClass<T>) providedClasses.get(invocation.provider()), (T) invocation.instance());
+			instanceListener.onInstancePostConstruction(invocation.instance());
 		};
 		injector.bindListener(provisionListener);
 		try {
@@ -223,12 +211,10 @@ public class CDI {
 				switch (managedClass.getInstanceType()) {
 				case POJO:
 					bindingBuilder.to(managedClass.getImplementationClass());
-					providedClasses.put(bindingBuilder.getProvider(), managedClass);
 					break;
 
 				case PROXY:
 					bindingBuilder.to(managedClass.getImplementationClass());
-					providedClasses.put(bindingBuilder.getProvider(), managedClass);
 					bindingBuilder.toProvider(new ProxyProvider(managedClass, bindingBuilder.getProvider()));
 					break;
 
@@ -238,7 +224,6 @@ public class CDI {
 
 				case SERVICE:
 					bindingBuilder.toProvider(new ServiceProvider<>(injector, managedClass.getInterfaceClass()));
-					providedClasses.put(bindingBuilder.getProvider(), managedClass);
 					break;
 
 				default:

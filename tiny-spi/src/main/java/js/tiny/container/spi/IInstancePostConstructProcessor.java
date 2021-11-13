@@ -17,10 +17,9 @@ public interface IInstancePostConstructProcessor extends IFlowProcessor {
 	 * Execute specific post processing logic on instance of a given managed class. Implementation may or may not alter instance
 	 * state, depending on specific kind of processing.
 	 * 
-	 * @param managedClass managed class,
 	 * @param instance instance of given managed class.
 	 */
-	<T> void onInstancePostConstruct(IManagedClass<T> managedClass, T instance);
+	<T> void onInstancePostConstruct(T instance);
 
 	Priority getPriority();
 

@@ -18,7 +18,6 @@ import js.lang.BugError;
 import js.log.Log;
 import js.log.LogFactory;
 import js.tiny.container.spi.IInstancePostConstructProcessor;
-import js.tiny.container.spi.IManagedClass;
 import js.util.Classes;
 import js.util.Strings;
 
@@ -83,7 +82,7 @@ public class ResourcesInjectionProcessor implements IInstancePostConstructProces
 	 * @param instance instance of given managed class.
 	 */
 	@Override
-	public <T> void onInstancePostConstruct(IManagedClass<T> managedClass, T instance) {
+	public <T> void onInstancePostConstruct(T instance) {
 		if (instance == null) {
 			// null instance is silently ignored
 			return;

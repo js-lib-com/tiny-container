@@ -87,7 +87,7 @@ public class ResourcesInjectionProcessorTest {
 		ResourcesInjectionProcessor.scanFields(BusinessClass.class);
 
 		// when
-		processor.onInstancePostConstruct(null, instance);
+		processor.onInstancePostConstruct(instance);
 
 		// then
 		assertThat(instance.resourceLookup, equalTo("resource"));
@@ -101,7 +101,7 @@ public class ResourcesInjectionProcessorTest {
 		ResourcesInjectionProcessor.scanFields(BusinessClass.class);
 
 		// when
-		processor.onInstancePostConstruct(null, null);
+		processor.onInstancePostConstruct(null);
 
 		// then
 	}
@@ -114,7 +114,7 @@ public class ResourcesInjectionProcessorTest {
 		ResourcesInjectionProcessor.scanFields(BusinessClass.class);
 
 		// when
-		processor.onInstancePostConstruct(null, instance);
+		processor.onInstancePostConstruct(instance);
 
 		// then
 	}
@@ -128,7 +128,7 @@ public class ResourcesInjectionProcessorTest {
 		ResourcesInjectionProcessor.scanFields(BusinessClass.class);
 
 		// when
-		processor.onInstancePostConstruct(null, instance);
+		processor.onInstancePostConstruct(instance);
 
 		// then
 		assertThat(instance.resourceName, equalTo("resource"));
@@ -143,7 +143,7 @@ public class ResourcesInjectionProcessorTest {
 		ResourcesInjectionProcessor.scanFields(BusinessClass.class);
 
 		// when
-		processor.onInstancePostConstruct(null, instance);
+		processor.onInstancePostConstruct(instance);
 
 		// then
 	}
@@ -157,7 +157,7 @@ public class ResourcesInjectionProcessorTest {
 		ResourcesInjectionProcessor.scanFields(BusinessClass.class);
 
 		// when
-		processor.onInstancePostConstruct(null, instance);
+		processor.onInstancePostConstruct(instance);
 
 		// then
 		assertThat(instance.resourceName, nullValue());

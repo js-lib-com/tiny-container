@@ -65,7 +65,7 @@ public class CalendarTimerService implements IInstancePostConstructProcessor, IA
 	}
 
 	@Override
-	public <T> void onInstancePostConstruct(IManagedClass<T> managedClass, final T instance) {
+	public <T> void onInstancePostConstruct(final T instance) {
 		Class<?> implementationClass = instance.getClass();
 		Set<IManagedMethod> timerMethods = classTimers.get(implementationClass);
 		if (timerMethods == null) {

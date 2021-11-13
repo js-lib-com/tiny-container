@@ -3,7 +3,6 @@ package js.tiny.container.contextparam;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.nullValue;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import org.junit.Before;
@@ -15,7 +14,6 @@ import org.mockito.junit.MockitoJUnitRunner;
 import js.tiny.container.servlet.RequestContext;
 import js.tiny.container.spi.IContainer;
 import js.tiny.container.spi.IInstancePostConstructProcessor.Priority;
-import js.tiny.container.spi.IManagedClass;
 
 @RunWith(MockitoJUnitRunner.class)
 public class InstanceContextParamTest {
@@ -49,12 +47,10 @@ public class InstanceContextParamTest {
 	@Test
 	public void GivenDefaults_WhenPostConstructInstance_ThenFieldInitialized() {
 		// given
-		@SuppressWarnings("unchecked")
-		IManagedClass<FieldClass> managedClass = mock(IManagedClass.class);
 		FieldClass instance = new FieldClass();
 
 		// when
-		processor.onInstancePostConstruct(managedClass, instance);
+		processor.onInstancePostConstruct(instance);
 
 		// then
 		assertThat(instance.field, equalTo("value"));
@@ -63,12 +59,10 @@ public class InstanceContextParamTest {
 	@Test(expected = IllegalStateException.class)
 	public void GivenFinalField_WhenPostLoadClass_ThenException() {
 		// given
-		@SuppressWarnings("unchecked")
-		IManagedClass<FinalFieldClass> managedClass = mock(IManagedClass.class);
 		FinalFieldClass instance = new FinalFieldClass();
 
 		// when
-		processor.onInstancePostConstruct(managedClass, instance);
+		processor.onInstancePostConstruct(instance);
 
 		// then
 	}
@@ -76,13 +70,11 @@ public class InstanceContextParamTest {
 	@Test
 	public void GivenMissingOptionalField_WhenPostConstructInstance_ThenNullField() {
 		// given
-		@SuppressWarnings("unchecked")
-		IManagedClass<FieldClass> managedClass = mock(IManagedClass.class);
 		FieldClass instance = new FieldClass();
 		when(requestContext.getInitParameter(String.class, "field")).thenReturn(null);
 
 		// when
-		processor.onInstancePostConstruct(managedClass, instance);
+		processor.onInstancePostConstruct(instance);
 
 		// then
 		assertThat(instance.field, nullValue());
@@ -91,13 +83,11 @@ public class InstanceContextParamTest {
 	@Test(expected = RuntimeException.class)
 	public void GivenMissingMandatoryField_WhenPostConstructInstance_ThenException() {
 		// given
-		@SuppressWarnings("unchecked")
-		IManagedClass<MandatoryFieldClass> managedClass = mock(IManagedClass.class);
 		when(requestContext.getInitParameter(String.class, "field")).thenReturn(null);
 		MandatoryFieldClass instance = new MandatoryFieldClass();
 
 		// when
-		processor.onInstancePostConstruct(managedClass, instance);
+		processor.onInstancePostConstruct(instance);
 
 		// then
 	}

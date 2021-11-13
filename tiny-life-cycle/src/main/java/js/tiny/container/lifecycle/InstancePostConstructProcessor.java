@@ -13,7 +13,6 @@ import js.lang.ManagedPostConstruct;
 import js.log.Log;
 import js.log.LogFactory;
 import js.tiny.container.spi.IInstancePostConstructProcessor;
-import js.tiny.container.spi.IManagedClass;
 import js.util.Params;
 
 /**
@@ -41,12 +40,11 @@ public class InstancePostConstructProcessor extends BaseInstanceLifeCycle implem
 	 * Execute post-construct on managed instance. In order to perform instance post-construction, managed instance should
 	 * implement {@link ManagedPostConstruct} interface.
 	 * 
-	 * @param managedClass managed class,
 	 * @param instance instance of given managed class, not null.
 	 * @throws RuntimeException if instance post-construction fails due to exception of application defined logic.
 	 */
 	@Override
-	public <T> void onInstancePostConstruct(IManagedClass<T> managedClass, T instance) {
+	public <T> void onInstancePostConstruct(T instance) {
 		Params.notNull(instance, "Instance");
 		final Class<?> implementationClass = instance.getClass();
 

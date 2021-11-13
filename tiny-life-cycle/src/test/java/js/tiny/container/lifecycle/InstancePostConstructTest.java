@@ -36,7 +36,7 @@ public class InstancePostConstructTest {
 		Service instance = new Service();
 
 		// when
-		processor.onInstancePostConstruct(null, instance);
+		processor.onInstancePostConstruct(instance);
 
 		// then
 		assertThat(instance.invocationProbe, equalTo(1));
@@ -48,7 +48,7 @@ public class InstancePostConstructTest {
 		Object instance = new ServiceExcecutionException();
 
 		// when
-		processor.onInstancePostConstruct(null, instance);
+		processor.onInstancePostConstruct(instance);
 
 		// then
 	}
@@ -59,7 +59,7 @@ public class InstancePostConstructTest {
 		Object instance = new ServiceStatic();
 
 		// when
-		processor.onInstancePostConstruct(null, instance);
+		processor.onInstancePostConstruct(instance);
 
 		// then
 	}
@@ -70,7 +70,7 @@ public class InstancePostConstructTest {
 		Object instance = new ServiceParameter();
 
 		// when
-		processor.onInstancePostConstruct(null, instance);
+		processor.onInstancePostConstruct(instance);
 
 		// then
 	}
@@ -81,7 +81,7 @@ public class InstancePostConstructTest {
 		Object instance = new ServiceNotVoid();
 
 		// when
-		processor.onInstancePostConstruct(null, instance);
+		processor.onInstancePostConstruct(instance);
 
 		// then
 	}
@@ -92,7 +92,7 @@ public class InstancePostConstructTest {
 		Object instance = new ServiceException();
 
 		// when
-		processor.onInstancePostConstruct(null, instance);
+		processor.onInstancePostConstruct(instance);
 
 		// then
 	}
@@ -103,7 +103,7 @@ public class InstancePostConstructTest {
 		Object instance = new ServiceDuplicated();
 
 		// when
-		processor.onInstancePostConstruct(null, instance);
+		processor.onInstancePostConstruct(instance);
 
 		// then
 	}
@@ -114,7 +114,7 @@ public class InstancePostConstructTest {
 		Object instance = new Object();
 
 		// when
-		processor.onInstancePostConstruct(null, instance);
+		processor.onInstancePostConstruct(instance);
 
 		// then
 	}
@@ -124,7 +124,7 @@ public class InstancePostConstructTest {
 		// given
 
 		// when
-		processor.onInstancePostConstruct(null, null);
+		processor.onInstancePostConstruct(null);
 
 		// then
 	}

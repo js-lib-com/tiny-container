@@ -215,9 +215,9 @@ public class Container implements IContainer, AppContainer {
 	@Override
 	public <T> T getInstance(Class<T> interfaceClass) {
 		Params.notNull(interfaceClass, "Interface class");
-		return cdi.getInstance(interfaceClass, (instanceManagedClass, instance) -> {
+		return cdi.getInstance(interfaceClass, instance -> {
 			instancePostConstructionProcessors.forEach(processor -> {
-				processor.onInstancePostConstruct(instanceManagedClass, instance);
+				processor.onInstancePostConstruct(instance);
 			});
 		});
 	}

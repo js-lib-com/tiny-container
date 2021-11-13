@@ -6,7 +6,6 @@ import js.converter.Converter;
 import js.log.Log;
 import js.log.LogFactory;
 import js.tiny.container.spi.IInstancePostConstructProcessor;
-import js.tiny.container.spi.IManagedClass;
 
 /**
  * Inject context parameters into instance, non final fields. Field type could be anything for which there is a
@@ -30,7 +29,7 @@ public class InstanceContextParam extends BaseContextParam implements IInstanceP
 	}
 
 	@Override
-	public <T> void onInstancePostConstruct(IManagedClass<T> managedClass, T instance) {
+	public <T> void onInstancePostConstruct(T instance) {
 		processFields(instance, field -> !Modifier.isStatic(field.getModifiers()));
 	}
 }

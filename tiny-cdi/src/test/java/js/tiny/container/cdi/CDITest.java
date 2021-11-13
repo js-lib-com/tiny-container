@@ -7,7 +7,6 @@ import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
@@ -68,7 +67,7 @@ public class CDITest {
 
 		// then
 		assertThat(instance, notNullValue());
-		verify(instanceListener, times(1)).onInstancePostConstruction(managedClass, instance);
+		verify(instanceListener, times(1)).onInstancePostConstruction(instance);
 	}
 
 	@Test
@@ -90,7 +89,7 @@ public class CDITest {
 
 		// then
 		assertThat(instance, notNullValue());
-		verify(instanceListener, times(1)).onInstancePostConstruction(managedClass, instance);
+		verify(instanceListener, times(1)).onInstancePostConstruction(instance);
 	}
 
 	@Test
@@ -105,7 +104,7 @@ public class CDITest {
 
 		// then
 		assertThat(instance, notNullValue());
-		verify(instanceListener, times(0)).onInstancePostConstruction(any(), any());
+		verify(instanceListener, times(0)).onInstancePostConstruction(any());
 	}
 
 	@Test
@@ -126,7 +125,7 @@ public class CDITest {
 
 		// then
 		assertThat(instance, notNullValue());
-		verify(instanceListener, times(1)).onInstancePostConstruction(managedClass, instance);
+		verify(instanceListener, times(1)).onInstancePostConstruction(instance);
 		assertThat(instance.name(), equalTo("service"));
 	}
 
@@ -245,9 +244,9 @@ public class CDITest {
 		Object instance2 = cdi.getInstance(Object.class, instanceListener);
 
 		// then
-		verify(instanceListener, times(2)).onInstancePostConstruction(eq(managedClass), any());
-		verify(instanceListener, times(1)).onInstancePostConstruction(managedClass, instance1);
-		verify(instanceListener, times(1)).onInstancePostConstruction(managedClass, instance2);
+		verify(instanceListener, times(2)).onInstancePostConstruction(any());
+		verify(instanceListener, times(1)).onInstancePostConstruction(instance1);
+		verify(instanceListener, times(1)).onInstancePostConstruction(instance2);
 	}
 
 	@Test
@@ -261,7 +260,7 @@ public class CDITest {
 		cdi.getInstance(Object.class, instanceListener);
 
 		// then
-		verify(instanceListener, times(1)).onInstancePostConstruction(eq(managedClass), any());
+		verify(instanceListener, times(1)).onInstancePostConstruction(any());
 	}
 
 	@Test(expected = IllegalStateException.class)

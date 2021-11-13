@@ -65,7 +65,7 @@ public class CalendarTimerServiceTest {
 		service.scanMethodAnnotations(managedMethod);
 
 		// when
-		service.onInstancePostConstruct(managedClass, instance);
+		service.onInstancePostConstruct(instance);
 
 		// then
 		ArgumentCaptor<Long> delayArg = ArgumentCaptor.forClass(Long.class);
