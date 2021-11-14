@@ -26,7 +26,9 @@ public interface IClassPostLoadedProcessor extends IFlowProcessor {
 		/** 0 - register managed class to external services, e.g. CDI */
 		REGISTER,
 		/** 1 - inject values to class static fields */
-		INJECT
+		INJECT,
+		/** 2 - scan class annotations for on the fly processing */
+		SCAN
 	}
 
 }

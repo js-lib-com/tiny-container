@@ -232,7 +232,6 @@ public class Container implements IContainer, AppContainer {
 	// ----------------------------------------------------
 	// CONTAINER SPI
 
-	@Override
 	public Iterable<IManagedClass<?>> getManagedClasses() {
 		return classesPool.values();
 	}
@@ -243,7 +242,6 @@ public class Container implements IContainer, AppContainer {
 		return (IManagedClass<T>) classesPool.get(interfaceClass);
 	}
 
-	@Override
 	public Iterable<IManagedMethod> getManagedMethods() {
 		return new Iterable<IManagedMethod>() {
 			@Override

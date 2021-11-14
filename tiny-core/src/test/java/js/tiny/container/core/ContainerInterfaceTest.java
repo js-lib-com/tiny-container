@@ -22,27 +22,7 @@ public class ContainerInterfaceTest {
 	}
 
 	@Test
-	public void Given_WhenGetManagedClasses_Then() {
-		// given
-
-		// when
-		container.getManagedClasses();
-
-		// then
-	}
-
-	@Test
-	public void Given_WhenGetManagedMethods_Then() {
-		// given
-
-		// when
-		container.getManagedMethods();
-
-		// then
-	}
-
-	@Test
-	public void Given_WhenGetmanagedClass_Then() {
+	public void Given_WhenGetManagedClass_Then() {
 		// given
 
 		// when
