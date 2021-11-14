@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import js.log.Log;
 import js.log.LogFactory;
@@ -220,6 +221,23 @@ public class ManagedMethod implements IManagedMethod {
 	@Override
 	public String toString() {
 		return signature;
+	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hash(method);
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		ManagedMethod other = (ManagedMethod) obj;
+		return Objects.equals(method, other.method);
 	}
 
 	// --------------------------------------------------------------------------------------------

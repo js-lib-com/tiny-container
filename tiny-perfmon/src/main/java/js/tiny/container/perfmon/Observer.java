@@ -1,15 +1,9 @@
 package js.tiny.container.perfmon;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-
 import js.lang.Config;
 import js.lang.ManagedLifeCycle;
 import js.log.Log;
 import js.log.LogFactory;
-import js.tiny.container.spi.IContainer;
-import js.tiny.container.spi.IManagedMethod;
 
 /**
  * Performance meters observer. Collect periodically application invocation meters and dump values to meter logger. In order to
@@ -55,11 +49,8 @@ public class Observer implements ManagedLifeCycle, Runnable {
 	/** Timeout for observer thread stop. */
 	private static final int THREAD_STOP_TIMEOUT = 4000;
 
-	private final IContainer container;
-
-	/** Application name displayed into meters dump header. */
-	private final String appName;
-
+	private final MetersStore metersStore;
+	
 	/** Observer worker thread. */
 	private Thread thread;
 
@@ -74,10 +65,9 @@ public class Observer implements ManagedLifeCycle, Runnable {
 	 * 
 	 * @param app parent application.
 	 */
-	public Observer(IContainer container) {
-		log.trace("Observer(IContainer)");
-		this.container = container;
-		this.appName = "test";// app.getAppName();
+	public Observer() {
+		log.trace("Observer()");
+		this.metersStore = MetersStore.instance();
 	}
 
 	public void config(Config config) {
@@ -128,11 +118,8 @@ public class Observer implements ManagedLifeCycle, Runnable {
 				}
 			}
 
-			List<IInvocationMeter> invocationMeters = getMeters();
-			Collections.sort(invocationMeters, (m1, m2) -> ((Long) m1.getMaxProcessingTime()).compareTo(m2.getMaxProcessingTime()));
-
-			meterLog.info("Start observer meters dump for %s:", appName);
-			for (IInvocationMeter meter : invocationMeters) {
+			meterLog.info("Invocation meters dump:");
+			for (IInvocationMeter meter : metersStore.getInvocationMeters()) {
 				if (meter.getInvocationsCount() != 0) {
 					meterLog.info(meter.toExternalForm());
 				}
@@ -143,19 +130,5 @@ public class Observer implements ManagedLifeCycle, Runnable {
 			this.notify();
 		}
 		log.debug("Stop meters observer on thread |%s|.", thread);
-	}
-
-	/**
-	 * Collect invocation meters from application managed classes.
-	 * 
-	 * @return application invocation meters.
-	 */
-	private List<IInvocationMeter> getMeters() {
-		List<IInvocationMeter> invocationMeters = new ArrayList<IInvocationMeter>();
-		for (IManagedMethod managedMethod : container.getManagedMethods()) {
-			Meter meter = managedMethod.getAttribute(PerformanceMonitorService.class, Meter.ATTR_METER, Meter.class);
-			invocationMeters.add(meter);
-		}
-		return invocationMeters;
 	}
 }

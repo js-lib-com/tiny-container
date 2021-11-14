@@ -6,20 +6,21 @@ import java.util.List;
 
 import js.log.Log;
 import js.log.LogFactory;
+import js.tiny.container.spi.IAnnotationsScanner;
 import js.tiny.container.spi.IInvocation;
 import js.tiny.container.spi.IInvocationProcessorsChain;
 import js.tiny.container.spi.IManagedClass;
 import js.tiny.container.spi.IManagedMethod;
 import js.tiny.container.spi.IMethodInvocationProcessor;
-import js.tiny.container.spi.IAnnotationsScanner;
 
 public class PerformanceMonitorService implements IMethodInvocationProcessor, IAnnotationsScanner {
 	private static final Log log = LogFactory.getLog(PerformanceMonitorService.class);
 
-	private static final String ATTR_METER = "meter";
+	private final MetersStore metersStore;
 
 	public PerformanceMonitorService() {
 		log.trace("PerformanceMonitorService()");
+		this.metersStore = MetersStore.instance();
 	}
 
 	@Override
@@ -34,13 +35,13 @@ public class PerformanceMonitorService implements IMethodInvocationProcessor, IA
 
 	@Override
 	public List<Annotation> scanMethodAnnotations(IManagedMethod managedMethod) {
-		managedMethod.setAttribute(getClass(), ATTR_METER, new Meter(managedMethod));
+		metersStore.createMeter(managedMethod);
 		return Collections.emptyList();
 	}
 
 	@Override
 	public Object onMethodInvocation(IInvocationProcessorsChain chain, IInvocation invocation) throws Exception {
-		Meter meter = invocation.method().getAttribute(getClass(), ATTR_METER, Meter.class);
+		Meter meter = metersStore.getMeter(invocation.method());
 		meter.incrementInvocationsCount();
 		meter.startProcessing();
 
