@@ -5,15 +5,8 @@ import java.lang.annotation.Annotation;
 import js.tiny.container.spi.IContainer;
 import js.tiny.container.spi.IManagedClass;
 import js.tiny.container.spi.IManagedMethod;
-import js.tiny.container.spi.InstanceScope;
-import js.tiny.container.spi.InstanceType;
 
 public class ManagedClassSpiStub<T> implements IManagedClass<T> {
-	@Override
-	public String getImplementationURL() {
-		throw new UnsupportedOperationException("getImplementationURL()");
-	}
-
 	@Override
 	public Integer getKey() {
 		throw new UnsupportedOperationException("getKey()");
@@ -32,16 +25,6 @@ public class ManagedClassSpiStub<T> implements IManagedClass<T> {
 	@Override
 	public IManagedMethod getManagedMethod(String methodName) {
 		throw new UnsupportedOperationException("getManagedMethod(String methodName)");
-	}
-
-	@Override
-	public InstanceScope getInstanceScope() {
-		throw new UnsupportedOperationException("getInstanceScope()");
-	}
-
-	@Override
-	public InstanceType getInstanceType() {
-		throw new UnsupportedOperationException("getInstanceType()");
 	}
 
 	@Override

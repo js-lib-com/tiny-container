@@ -268,10 +268,5 @@ public class DependencyProcessorUnitTest {
 		public Class<? extends T> getImplementationClass() {
 			return implementationClass;
 		}
-
-		@Override
-		public InstanceScope getInstanceScope() {
-			return instanceScope;
-		}
 	}
 }

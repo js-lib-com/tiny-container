@@ -2,7 +2,9 @@ package js.tiny.container.servlet;
 
 import java.io.File;
 import java.security.Principal;
+import java.util.ArrayList;
 import java.util.Enumeration;
+import java.util.List;
 import java.util.Properties;
 
 import javax.servlet.ServletContext;
@@ -20,8 +22,10 @@ import js.log.LogContext;
 import js.log.LogFactory;
 import js.tiny.container.cdi.CDI;
 import js.tiny.container.cdi.SessionScoped;
+import js.tiny.container.core.ClassDescriptor;
 import js.tiny.container.core.Container;
 import js.tiny.container.spi.Factory;
+import js.tiny.container.spi.IClassDescriptor;
 import js.tiny.container.spi.InstanceScope;
 
 /**
@@ -186,11 +190,11 @@ public class TinyContainer extends Container implements ServletContextListener, 
 	}
 
 	@Override
-	public void config(Config config) throws ConfigException {
-		super.config(config);
+	public void create(List<IClassDescriptor<?>> descriptors) throws ConfigException {
+		super.create(descriptors);
 
 		// by convention configuration object name is the web application name
-		appName = config.getName();
+		// appName = config.getName();
 
 		privateDir = server.getAppDir(appName);
 		if (!privateDir.exists()) {
@@ -244,7 +248,14 @@ public class TinyContainer extends Container implements ServletContextListener, 
 
 		try {
 			configBuilder.configure(servletContext, contextParameters);
-			config(configBuilder.build());
+
+			List<IClassDescriptor<?>> descriptors = new ArrayList<>();
+			for (Config managedClasses : configBuilder.build().findChildren("managed-classes")) {
+				for (Config managedClass : managedClasses.getChildren()) {
+					descriptors.add(new ClassDescriptor<>(managedClass));
+				}
+			}
+			create(descriptors);
 
 			Factory.bind(this);
 			start();

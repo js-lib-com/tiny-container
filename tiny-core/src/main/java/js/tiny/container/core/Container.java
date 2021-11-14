@@ -1,10 +1,10 @@
 package js.tiny.container.core;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.ServiceLoader;
 import java.util.Set;
@@ -85,8 +85,18 @@ public class Container implements IContainer, AppContainer {
 		this.cdi = cdi;
 		this.cdi.bindInstance(IContainer.class, this);
 		this.cdi.bindInstance(AppContainer.class, this);
+	}
 
-		// load external and built-in container services
+	/**
+	 * Create all managed classes registered to this container via external application descriptor. For every found managed
+	 * class execute {@link #classPostLoadedProcessors}. After managed classes initialization configure CDI.
+	 * 
+	 * @param config container configuration object.
+	 * @throws ConfigException if container configuration fails.
+	 */
+	public void create(List<IClassDescriptor<?>> descriptors) throws ConfigException {
+		log.trace("config(Config)");
+		cdi.configure(descriptors, descriptor -> classesPool.get(descriptor.getInterfaceClass()));
 
 		for (IContainerService service : ServiceLoader.load(IContainerService.class)) {
 			log.debug("Load container service |%s|.", service.getClass());
@@ -107,48 +117,19 @@ public class Container implements IContainer, AppContainer {
 			}
 		}
 
-		containerStartProcessors.add(new InstanceStartupProcessor());
-	}
+		for (IClassDescriptor<?> descriptor : descriptors) {
+			ManagedClass<?> managedClass = new ManagedClass<>(this, descriptor);
+			log.debug("Register managed class |%s|.", managedClass);
+			classesPool.put(managedClass.getInterfaceClass(), managedClass);
 
-	/**
-	 * Create all managed classes registered to this container via external application descriptor. For every found managed
-	 * class execute {@link #classPostLoadedProcessors}. After managed classes initialization configure CDI.
-	 * 
-	 * @param config container configuration object.
-	 * @throws ConfigException if container configuration fails.
-	 */
-	public void config(Config config) throws ConfigException {
-		log.trace("config(Config)");
-		load(config);
-
-		Collection<IClassDescriptor<?>> descriptors = new ArrayList<>();
-		for (IManagedClass<?> managedClass : classesPool.values()) {
-			descriptors.add((IClassDescriptor<?>) managedClass);
+			classPostLoadedProcessors.forEach(processor -> {
+				processor.onClassPostLoaded(managedClass);
+			});
 		}
-		cdi.configure(descriptors, descriptor -> classesPool.get(descriptor.getInterfaceClass()));
 	}
 
 	public void config(Object... modules) throws ConfigException {
-		config(cdi.configure(modules));
-	}
-
-	private void load(Config config) throws ConfigException {
-		log.debug("Load managed classes from application descriptor.");
-		for (Config managedClassesSection : config.findChildren("managed-classes")) {
-			for (Config classDescriptor : managedClassesSection.getChildren()) {
-				if (!classDescriptor.hasAttribute("interface")) {
-					classDescriptor.setAttribute("interface", classDescriptor.getAttribute("class"));
-				}
-
-				ManagedClass<?> managedClass = new ManagedClass<>(this, classDescriptor);
-				log.debug("Register managed class |%s|.", managedClass);
-				classesPool.put(managedClass.getInterfaceClass(), managedClass);
-
-				classPostLoadedProcessors.forEach(processor -> {
-					processor.onClassPostLoaded(managedClass);
-				});
-			}
-		}
+		cdi.configure(modules);
 	}
 
 	/** Execute container services registered to {@link #containerStartProcessors}. */
@@ -181,9 +162,7 @@ public class Container implements IContainer, AppContainer {
 		// compare second with first to ensure descending sorting
 		Set<IManagedClass> sortedClasses = new TreeSet<>((o1, o2) -> o2.getKey().compareTo(o1.getKey()));
 		for (IManagedClass managedClass : classesPool.values()) {
-			if (!managedClass.getInstanceScope().isLOCAL()) {
-				sortedClasses.add(managedClass);
-			}
+			sortedClasses.add(managedClass);
 		}
 
 		for (IManagedClass managedClass : sortedClasses) {
@@ -212,9 +191,10 @@ public class Container implements IContainer, AppContainer {
 		}
 
 		classesPool.clear();
-		classPostLoadedProcessors.clear();
 		instancePostConstructionProcessors.clear();
 		instancePreDestructionProcessors.clear();
+		classPostLoadedProcessors.clear();
+		containerStartProcessors.clear();
 	}
 
 	// --------------------------------------------------------------------------------------------

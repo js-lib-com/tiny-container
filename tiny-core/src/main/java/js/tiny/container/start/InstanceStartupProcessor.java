@@ -1,20 +1,19 @@
-package js.tiny.container.core;
+package js.tiny.container.start;
 
 import java.util.Set;
 import java.util.TreeSet;
 
+import javax.annotation.PostConstruct;
 import javax.ejb.Startup;
 
-import js.lang.ManagedLifeCycle;
 import js.log.Log;
 import js.log.LogFactory;
 import js.tiny.container.spi.IContainer;
 import js.tiny.container.spi.IContainerStartProcessor;
 import js.tiny.container.spi.IManagedClass;
-import js.util.Types;
 
 /**
- * Auto-create managed instances marked with {@link Startup} annotation or implementing {@link ManagedLifeCycle} interface.
+ * Auto-create managed instances marked with {@link Startup} annotation.
  * 
  * @author Iulian Rotaru
  */
@@ -35,15 +34,15 @@ public class InstanceStartupProcessor implements IContainerStartProcessor {
 	 * This is critical for assuring that {@link App} is created first; {@link App} class descriptor is declared first into
 	 * application descriptor.
 	 * <p>
-	 * Note that this method does not explicitly execute {@link ManagedLifeCycle#postConstruct()} hooks; this hooks are actually
-	 * executed by instance processor from life cycle module.
+	 * Note that this method does not explicitly execute {@link PostConstruct} hooks; this hooks are actually executed by
+	 * instance processor from life cycle module.
 	 */
 	@Override
 	public void onContainerStart(IContainer container) {
 		// compare first with second to ensure ascending sorting
 		Set<IManagedClass<?>> startupClasses = new TreeSet<>((o1, o2) -> o1.getKey().compareTo(o2.getKey()));
 		for (IManagedClass<?> managedClass : container.getManagedClasses()) {
-			if (isStartup(managedClass)) {
+			if (managedClass.scanAnnotation(Startup.class) != null) {
 				startupClasses.add(managedClass);
 			}
 		}
@@ -55,15 +54,5 @@ public class InstanceStartupProcessor implements IContainerStartProcessor {
 			log.debug("Create managed instance with managed life cycle |%s|.", managedClass);
 			container.getInstance(managedClass);
 		}
-	}
-
-	private static boolean isStartup(IManagedClass<?> managedClass) {
-		if (Types.isKindOf(managedClass.getInterfaceClass(), ManagedLifeCycle.class)) {
-			return true;
-		}
-		if (!managedClass.getInstanceType().requiresImplementation()) {
-			return false;
-		}
-		return managedClass.scanAnnotation(Startup.class) != null;
 	}
 }

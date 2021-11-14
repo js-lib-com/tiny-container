@@ -67,30 +67,6 @@ public interface IManagedClass<T> {
 	 */
 	IManagedMethod getManagedMethod(String methodName);
 
-	/**
-	 * Get managed instance scope. There are predefined scope values, see {@link InstanceScope}, but user defined scopes are
-	 * supported.
-	 * 
-	 * @return managed class scope.
-	 */
-	InstanceScope getInstanceScope();
-
-	/**
-	 * Get managed instance type. There are predefined instance type values, see {@link InstanceType}, but user defined types
-	 * are supported.
-	 * 
-	 * @return managed class type.
-	 */
-	InstanceType getInstanceType();
-
-	/**
-	 * Remote class implementation URL as declared into managed class descriptor. This value has meaning only if managed class
-	 * is of {@link InstanceType#REMOTE} type.
-	 * 
-	 * @return remote class implementation URL.
-	 */
-	String getImplementationURL();
-
 	<A extends Annotation> A scanAnnotation(Class<A> type);
 
 	<A extends Annotation> A getAnnotation(Class<A> type);

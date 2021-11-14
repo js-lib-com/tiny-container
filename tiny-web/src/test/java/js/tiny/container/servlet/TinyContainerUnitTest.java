@@ -9,10 +9,12 @@ import static org.mockito.Mockito.when;
 import java.io.File;
 import java.io.IOException;
 import java.security.Principal;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
@@ -36,7 +38,9 @@ import js.lang.ConfigBuilder;
 import js.lang.ConfigException;
 import js.tiny.container.cdi.CDI;
 import js.tiny.container.cdi.IInstancePostConstructionListener;
+import js.tiny.container.core.ClassDescriptor;
 import js.tiny.container.core.Container;
+import js.tiny.container.spi.IClassDescriptor;
 import js.tiny.container.spi.IManagedClass;
 import js.tiny.container.unit.HttpServletRequestStub;
 import js.tiny.container.unit.HttpServletResponseStub;
@@ -112,7 +116,7 @@ public class TinyContainerUnitTest {
 		new File("fixture/tomcat/work/Applications/test-app").delete();
 
 		TinyContainer container = new TinyContainer();
-		container.config(builder.build());
+		container.create(Collections.emptyList());
 
 		File privateDir = Classes.getFieldValue(container, "privateDir");
 		assertNotNull(privateDir);
@@ -129,7 +133,7 @@ public class TinyContainerUnitTest {
 			int startProbe;
 
 			@Override
-			public void config(Config config) throws ConfigException {
+			public void create(List<IClassDescriptor<?>> descriptors) throws ConfigException {
 				++configProbe;
 			}
 
@@ -184,7 +188,7 @@ public class TinyContainerUnitTest {
 	public void contextInitialized_ConfigException() {
 		class MockContainer extends TinyContainer {
 			@Override
-			public void config(Config config) throws ConfigException {
+			public void create(List<IClassDescriptor<?>> descriptors) throws ConfigException {
 				throw new ConfigException("config exception");
 			}
 		}
@@ -329,7 +333,15 @@ public class TinyContainerUnitTest {
 				"</test-app>";
 		ConfigBuilder builder = new ConfigBuilder(config);
 		TinyContainer container = new TinyContainer();
-		container.config(builder.build());
+
+		List<IClassDescriptor<?>> descriptors = new ArrayList<>();
+		for (Config managedClasses : builder.build().findChildren("managed-classes")) {
+			for (Config managedClass : managedClasses.getChildren()) {
+				descriptors.add(new ClassDescriptor<>(managedClass));
+			}
+		}
+
+		container.create(descriptors);
 		return container;
 	}
 

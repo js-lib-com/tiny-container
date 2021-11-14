@@ -25,13 +25,12 @@ import org.junit.Test;
 import js.lang.BugError;
 import js.lang.Config;
 import js.lang.ManagedLifeCycle;
+import js.tiny.container.core.ClassDescriptor;
 import js.tiny.container.core.Container;
 import js.tiny.container.core.ManagedClass;
 import js.tiny.container.servlet.TinyConfigBuilder;
 import js.tiny.container.spi.IManagedClass;
 import js.tiny.container.spi.IManagedMethod;
-import js.tiny.container.spi.InstanceScope;
-import js.tiny.container.spi.InstanceType;
 import js.tiny.container.stub.ContainerStub;
 import js.util.Classes;
 
@@ -121,24 +120,6 @@ public class ManagedClassSpiConformanceTest {
 		assertNull(getManagedClass(config(config)).getManagedMethod("getCounty"));
 	}
 
-	@Test
-	public void getInstanceScope() throws Exception {
-		String config = "<test class='js.tiny.container.unit.ManagedClassSpiConformanceTest$CarImpl' />";
-		assertEquals(InstanceScope.APPLICATION, getManagedClass(config(config)).getInstanceScope());
-	}
-
-	@Test
-	public void getInstanceType() throws Exception {
-		String config = "<test class='js.tiny.container.unit.ManagedClassSpiConformanceTest$CarImpl' />";
-		assertEquals(InstanceType.POJO, getManagedClass(config(config)).getInstanceType());
-	}
-
-	@Test
-	public void getImplementationURL() throws Exception {
-		String config = "<test interface='js.tiny.container.unit.ManagedClassSpiConformanceTest$Car' type='REMOTE' url='http://server/' />";
-		assertEquals("http://server/", getManagedClass(config(config)).getImplementationURL());
-	}
-
 	// --------------------------------------------------------------------------------------------
 	// UTILITY METHODS
 
@@ -155,7 +136,7 @@ public class ManagedClassSpiConformanceTest {
 			}
 		}
 
-		return new ManagedClass<>(container, classDescriptor);
+		return new ManagedClass<>(container, new ClassDescriptor<>(classDescriptor));
 	}
 
 	private static String config(String classDescriptor) {

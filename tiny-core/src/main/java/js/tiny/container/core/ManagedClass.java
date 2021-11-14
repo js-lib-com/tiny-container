@@ -2,15 +2,12 @@ package js.tiny.container.core;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import js.lang.BugError;
-import js.lang.Config;
 import js.lang.ConfigException;
-import js.lang.ManagedLifeCycle;
 import js.log.Log;
 import js.log.LogFactory;
 import js.tiny.container.spi.IAnnotationsScanner;
@@ -20,17 +17,14 @@ import js.tiny.container.spi.IContainerService;
 import js.tiny.container.spi.IManagedClass;
 import js.tiny.container.spi.IManagedMethod;
 import js.tiny.container.spi.IMethodInvocationProcessor;
-import js.tiny.container.spi.InstanceScope;
 import js.tiny.container.spi.InstanceType;
-import js.util.Classes;
-import js.util.Types;
 
 /**
  * Managed class implementation.
- *  
+ * 
  * @author Iulian Rotaru
  */
-public final class ManagedClass<T> implements IManagedClass<T>, IClassDescriptor<T> {
+public final class ManagedClass<T> implements IManagedClass<T> {
 	private static final Log log = LogFactory.getLog(ManagedClass.class);
 
 	/**
@@ -49,12 +43,6 @@ public final class ManagedClass<T> implements IManagedClass<T>, IClassDescriptor
 	 */
 	private final Integer key;
 
-	/** Managed instance scope used for life span management. */
-	private final InstanceScope instanceScope;
-
-	/** Managed instance type used to select CDI instance provider. */
-	private final InstanceType instanceType;
-
 	/**
 	 * Managed class interface. If class descriptor has only <code>class</code> attribute this field is initialized from
 	 * {@link #implementationClass}.
@@ -68,12 +56,6 @@ public final class ManagedClass<T> implements IManagedClass<T>, IClassDescriptor
 	private final Class<? extends T> implementationClass;
 
 	/**
-	 * Optional remote class implementation URL that can be used if this managed class is {@link InstanceType#REMOTE}. This
-	 * field is loaded from <code>url</code> attribute from class descriptor.
-	 */
-	private final String implementationURL;
-
-	/**
 	 * Managed methods pool for managed classes of type {@link InstanceType#PROXY}. Used to find out managed method bound to
 	 * interface method.
 	 */
@@ -85,27 +67,22 @@ public final class ManagedClass<T> implements IManagedClass<T>, IClassDescriptor
 	private final Map<Class<? extends Annotation>, Annotation> annotations = new HashMap<>();
 
 	/**
-	 * Loads this managed class state from class descriptor then delegates {@link #scan()}. Annotations scanning is
-	 * performed only if this managed class type requires implementation, see {@link InstanceType#requiresImplementation()}.
+	 * Loads this managed class state from class descriptor then delegates {@link #scan()}. Annotations scanning is performed
+	 * only if this managed class type requires implementation, see {@link InstanceType#requiresImplementation()}.
 	 * 
 	 * @param container parent container,
 	 * @param descriptor class descriptor from <code>managed-class</code> section.
 	 * @throws ConfigException if configuration is invalid.
 	 */
-	public ManagedClass(Container container, Config descriptor) throws ConfigException {
+	public ManagedClass(Container container, IClassDescriptor<T> descriptor) throws ConfigException {
 		this.container = container;
 
-		// loading order matters; do not change it
-		this.instanceScope = descriptor.getAttribute("scope", InstanceScope.class, InstanceScope.APPLICATION);
-		this.instanceType = descriptor.getAttribute("type", InstanceType.class, InstanceType.POJO, ConfigException.class);
-		this.implementationClass = loadImplementationClass(descriptor);
-		this.interfaceClass = loadInterfaceClass(descriptor);
-		this.implementationURL = loadImplementationURL(descriptor);
-
+		this.interfaceClass = descriptor.getInterfaceClass();
+		this.implementationClass = descriptor.getImplementationClass();
 		this.key = KEY_SEED.getAndIncrement();
 		this.string = buildStringRepresentation(descriptor);
 
-		if (this.instanceType.requiresImplementation()) {
+		if (descriptor.getInstanceType().requiresImplementation()) {
 			scan();
 		}
 	}
@@ -200,142 +177,8 @@ public final class ManagedClass<T> implements IManagedClass<T>, IClassDescriptor
 		return managedMethod;
 	}
 
-	@Override
-	public InstanceScope getInstanceScope() {
-		return instanceScope;
-	}
-
-	@Override
-	public InstanceType getInstanceType() {
-		return instanceType;
-	}
-
-	@Override
-	public String getImplementationURL() {
-		return implementationURL;
-	}
-
 	// --------------------------------------------------------------------------------------------
 	// CLASS DESCRIPTOR UTILITY METHODS
-
-	/**
-	 * Load optional implementation class from class descriptor and applies insanity checks. Load implementation class from
-	 * <code>class</code> attribute from descriptor. If <code>class</code> attribute not present return null.
-	 * <p>
-	 * Beside loading implementation class this utility method performs sanity checks and throws configuration exception if:
-	 * <ul>
-	 * <li>instance type requires implementation but <code>class</code> attribute is missing,
-	 * <li>instance type does not require implementation but <code>class</code> attribute is present,
-	 * <li>class not found on run-time class path,
-	 * <li>implementation class is a Java interface,
-	 * <li>implementation class is abstract,
-	 * <li>implementation class implements managed life cycle but instance scope is not {@link InstanceScope#APPLICATION}.
-	 * </ul>
-	 * 
-	 * @param descriptor class descriptor.
-	 * @return loaded implementation class or null.
-	 * @throws ConfigException if sanity check fails.
-	 */
-	private Class<? extends T> loadImplementationClass(Config descriptor) throws ConfigException {
-		String implementationName = descriptor.getAttribute("class");
-		if (implementationName == null) {
-			if (instanceType.requiresImplementation()) {
-				throw new ConfigException("Managed type |%s| requires <class> attribute. See class descriptor |%s|.", instanceType, descriptor);
-			}
-			return null;
-		}
-		if (!instanceType.requiresImplementation()) {
-			throw new ConfigException("Managed type |%s| forbids <class> attribute. See class descriptor |%s|.", instanceType, descriptor);
-		}
-
-		Class<? extends T> implementationClass = Classes.forOptionalName(implementationName);
-		if (implementationClass == null) {
-			throw new ConfigException("Managed class implementation |%s| not found.", implementationName);
-		}
-
-		if (implementationClass.isInterface()) {
-			throw new ConfigException("Managed class implementation |%s| cannot be an interface. See class descriptor |%s|.", implementationClass, descriptor);
-		}
-		int implementationModifiers = implementationClass.getModifiers();
-		if (Modifier.isAbstract(implementationModifiers)) {
-			throw new ConfigException("Managed class implementation |%s| cannot be abstract. See class descriptor |%s|.", implementationClass, descriptor);
-		}
-		if (Types.isKindOf(implementationClass, ManagedLifeCycle.class) && !InstanceScope.APPLICATION.equals(instanceScope)) {
-			throw new ConfigException("Bad scope |%s| used with managed life cycle. See class descriptor |%s|.", instanceScope, descriptor);
-		}
-
-		return implementationClass;
-	}
-
-	/**
-	 * Load interface class from class descriptor. Attempt to load interface class from <code>interface</code> attribute. If not
-	 * found returns implementation class that should be already initialized.
-	 * <p>
-	 * Perform sanity checks on loaded interface class and throws configuration exception if:
-	 * <ul>
-	 * <li>instance type requires interface but none found,
-	 * <li><code>name</code> attribute is missing from child element,
-	 * <li>interface class not found on run-time class path,
-	 * <li>implementation class is not implemented by already configured implementation class.
-	 * </ul>
-	 * <p>
-	 * This utility method should be loaded after {@link #loadImplementationClass(Config)} otherwise behavior is not defined.
-	 * 
-	 * @param descriptor class descriptor.
-	 * @return interface classes array.
-	 * @throws ConfigException if sanity check fails.
-	 */
-	@SuppressWarnings("unchecked")
-	private Class<T> loadInterfaceClass(Config descriptor) throws ConfigException {
-		if (!descriptor.hasAttribute("interface")) {
-			if (instanceType.requiresInterface()) {
-				throw new ConfigException("Managed type |%s| requires <interface> attribute. See class descriptor |%s|.", instanceType, descriptor);
-			}
-			// if interface is not required and is missing uses implementation class
-			return (Class<T>) implementationClass;
-		}
-
-		if ("REMOTE".equals(descriptor.getAttribute("type"))) {
-			String url = descriptor.getAttribute("url");
-			if (url == null || url.isEmpty()) {
-				throw new ConfigException("Managed type REMOTE requires <url> attribute. See class descriptor |%s|.", descriptor);
-			}
-			if (url.startsWith("${")) {
-				throw new ConfigException("Remote implementation <url> property not resolved. See class descriptor |%s|.", descriptor);
-			}
-		}
-
-		String interfaceName = descriptor.getAttribute("interface");
-		final Class<T> interfaceClass = Classes.forOptionalName(interfaceName);
-
-		if (interfaceClass == null) {
-			throw new ConfigException("Managed class interface |%s| not found.", interfaceName);
-		}
-		if (instanceType.requiresInterface() && !interfaceClass.isInterface()) {
-			throw new ConfigException("Managed type |%s| requires interface to make Java Proxy happy but got |%s|.", instanceType, interfaceClass);
-		}
-		if (implementationClass != null && !Types.isKindOf(implementationClass, interfaceClass)) {
-			throw new ConfigException("Implementation |%s| is not a kind of interface |%s|.", implementationClass, interfaceClass);
-		}
-
-		return interfaceClass;
-	}
-
-	/**
-	 * Load remote class URL from class descriptor, <code>url</code> attribute. This getter does not perform URL validation; it
-	 * returns URL value as declared by attribute.
-	 * 
-	 * @param descriptor class descriptor.
-	 * @return remote class URL value.
-	 * @throws ConfigException if instance type is {@link InstanceType#REMOTE} and <code>url</code> attribute is missing.
-	 */
-	private String loadImplementationURL(Config descriptor) throws ConfigException {
-		String implementationURL = descriptor.getAttribute("url");
-		if (instanceType.equals(InstanceType.REMOTE) && implementationURL == null) {
-			throw new ConfigException("Remote managed class requires <url> attribute. See class descriptor |%s|.", descriptor);
-		}
-		return implementationURL;
-	}
 
 	/**
 	 * Build and return this managed class string representation.
@@ -343,24 +186,22 @@ public final class ManagedClass<T> implements IManagedClass<T>, IClassDescriptor
 	 * @param descriptor managed class descriptor.
 	 * @return this managed class string representation.
 	 */
-	private String buildStringRepresentation(Config descriptor) {
+	private String buildStringRepresentation(IClassDescriptor<T> descriptor) {
 		StringBuilder builder = new StringBuilder();
-		builder.append(descriptor.getName());
-		builder.append(':');
-		if (implementationClass != null) {
-			builder.append(implementationClass.getName());
+		if (descriptor.getInterfaceClass() != null) {
+			builder.append(descriptor.getInterfaceClass().getName());
 			builder.append(':');
 		}
-		if (interfaceClass != null) {
-			builder.append(interfaceClass.getName());
+		if (descriptor.getImplementationClass() != null) {
+			builder.append(descriptor.getImplementationClass().getName());
 			builder.append(':');
 		}
-		builder.append(instanceType);
+		builder.append(descriptor.getInstanceType());
 		builder.append(':');
-		builder.append(instanceScope);
-		if (implementationURL != null) {
+		builder.append(descriptor.getInstanceScope());
+		if (descriptor.getImplementationURL() != null) {
 			builder.append(':');
-			builder.append(implementationURL);
+			builder.append(descriptor.getImplementationURL());
 		}
 		return builder.toString();
 	}
@@ -376,6 +217,9 @@ public final class ManagedClass<T> implements IManagedClass<T>, IClassDescriptor
 
 	@Override
 	public <A extends Annotation> A scanAnnotation(Class<A> type) {
+		if (implementationClass == null) {
+			return null;
+		}
 		A annotation = implementationClass.getAnnotation(type);
 		if (annotation == null) {
 			for (Class<?> interfaceClass : implementationClass.getInterfaces()) {

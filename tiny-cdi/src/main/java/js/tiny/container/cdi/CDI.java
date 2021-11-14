@@ -2,7 +2,6 @@ package js.tiny.container.cdi;
 
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -69,7 +68,7 @@ public class CDI {
 	 * 
 	 * @param classDescriptors container managed classes.
 	 */
-	public void configure(Collection<IClassDescriptor<?>> classDescriptors, Function<IClassDescriptor<?>, IManagedClass<?>> managedClassFactory) {
+	public void configure(List<IClassDescriptor<?>> classDescriptors, Function<IClassDescriptor<?>, IManagedClass<?>> managedClassFactory) {
 		log.trace("configure(Collection<IManagedClass<?>>");
 		injector.configure(explicitBindings, new ManagedClassesModule(classDescriptors, managedClassFactory));
 		configured.set(true);
@@ -196,10 +195,10 @@ public class CDI {
 	 * @author Iulian Rotaru
 	 */
 	private class ManagedClassesModule extends AbstractModule {
-		private final Collection<IClassDescriptor<?>> classDescriptors;
+		private final List<IClassDescriptor<?>> classDescriptors;
 		private final Function<IClassDescriptor<?>, IManagedClass<?>> managedClassFactory;
 
-		public ManagedClassesModule(Collection<IClassDescriptor<?>> classDescriptors, Function<IClassDescriptor<?>, IManagedClass<?>> managedClassFactory) {
+		public ManagedClassesModule(List<IClassDescriptor<?>> classDescriptors, Function<IClassDescriptor<?>, IManagedClass<?>> managedClassFactory) {
 			this.classDescriptors = classDescriptors;
 			this.managedClassFactory = managedClassFactory;
 		}

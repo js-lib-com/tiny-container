@@ -6,8 +6,8 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
-import js.tiny.container.core.InstanceStartupProcessor;
 import js.tiny.container.spi.IContainer;
+import js.tiny.container.start.InstanceStartupProcessor;
 
 @RunWith(MockitoJUnitRunner.class)
 public class InstanceStartupProcessorTest {
