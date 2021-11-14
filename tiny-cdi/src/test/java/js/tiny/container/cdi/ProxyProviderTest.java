@@ -10,6 +10,8 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.util.function.Function;
+
 import javax.inject.Provider;
 
 import org.junit.Before;
@@ -19,6 +21,7 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
 import js.lang.BugError;
+import js.tiny.container.spi.IClassDescriptor;
 import js.tiny.container.spi.IManagedClass;
 import js.tiny.container.spi.IManagedMethod;
 
@@ -30,19 +33,24 @@ public class ProxyProviderTest {
 	private IManagedMethod managedMethod;
 
 	@Mock
+	private IClassDescriptor<IPerson> classDescriptor;
+	@Mock
+	private Function<IClassDescriptor<IPerson>, IManagedClass<IPerson>> managedClassFactory;
+	@Mock
 	private Provider<IPerson> provider;
 
 	private ProxyProvider<IPerson> proxy;
 
 	@Before
 	public void beforeTest() throws Exception {
-		when(managedClass.getInterfaceClass()).thenReturn(IPerson.class);
-		doReturn(Person.class).when(managedClass).getImplementationClass();
-		when(managedClass.getManagedMethod("name")).thenReturn(managedMethod);
+		when(classDescriptor.getInterfaceClass()).thenReturn(IPerson.class);
+		doReturn(Person.class).when(classDescriptor).getImplementationClass();
+		when(managedClassFactory.apply(classDescriptor)).thenReturn(managedClass);
 
+		when(managedClass.getManagedMethod("name")).thenReturn(managedMethod);
 		when(provider.get()).thenReturn(new Person());
 
-		proxy = new ProxyProvider<>(managedClass, provider);
+		proxy = new ProxyProvider<IPerson>(classDescriptor, managedClassFactory, provider);
 	}
 
 	@Test

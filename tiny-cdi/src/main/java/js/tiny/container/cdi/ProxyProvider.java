@@ -4,6 +4,7 @@ import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
+import java.util.function.Function;
 
 import javax.inject.Provider;
 
@@ -13,6 +14,7 @@ import js.lang.BugError;
 import js.lang.InvocationException;
 import js.log.Log;
 import js.log.LogFactory;
+import js.tiny.container.spi.IClassDescriptor;
 import js.tiny.container.spi.IManagedClass;
 import js.tiny.container.spi.IManagedMethod;
 
@@ -25,32 +27,28 @@ import js.tiny.container.spi.IManagedMethod;
 class ProxyProvider<T> implements IProvider<T> {
 	private static final Log log = LogFactory.getLog(ProxyProvider.class);
 
-	private final IManagedClass<T> managedClass;
+	private final IClassDescriptor<T> classDescriptor;
+	private Function<IClassDescriptor<T>, IManagedClass<T>> managedClassFactory;
 	private final Provider<T> provider;
 
-	/**
-	 * Proxy provider construction.
-	 * 
-	 * @param managedClass managed instance class,
-	 * @param provider provider to create instance to delegate requests to.
-	 */
-	public ProxyProvider(IManagedClass<T> managedClass, Provider<T> provider) {
-		log.trace("ProxyProvider(IManagedClass<T>, T)");
-		this.managedClass = managedClass;
+	public ProxyProvider(IClassDescriptor<T> classDescriptor, Function<IClassDescriptor<T>, IManagedClass<T>> managedClassFactory, Provider<T> provider) {
+		log.trace("IClassDescriptor<T>, Function<IClassDescriptor<T>, IManagedClass<T>>, Provider");
+		this.classDescriptor = classDescriptor;
+		this.managedClassFactory = managedClassFactory;
 		this.provider = provider;
 	}
 
 	@Override
 	public Class<? extends T> type() {
-		return managedClass.getImplementationClass();
+		return classDescriptor.getImplementationClass();
 	}
 
 	@SuppressWarnings("unchecked")
 	@Override
 	public T get() {
-		final ClassLoader classLoader = managedClass.getImplementationClass().getClassLoader();
-		final Class<T>[] interfaces = new Class[] { managedClass.getInterfaceClass() };
-		final InvocationHandler handler = new ProxyHandler<>(managedClass, provider.get());
+		final ClassLoader classLoader = classDescriptor.getImplementationClass().getClassLoader();
+		final Class<T>[] interfaces = new Class[] { classDescriptor.getInterfaceClass() };
+		final InvocationHandler handler = new ProxyHandler<>(managedClassFactory.apply(classDescriptor), provider.get());
 		return (T) Proxy.newProxyInstance(classLoader, interfaces, handler);
 	}
 
@@ -75,16 +73,16 @@ class ProxyProvider<T> implements IProvider<T> {
 
 		@Override
 		public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-			if(method.getDeclaringClass().equals(Object.class)) {
+			if (method.getDeclaringClass().equals(Object.class)) {
 				return method.invoke(managedInstance, args);
 			}
-			
+
 			final IManagedMethod managedMethod = managedClass.getManagedMethod(method.getName());
 			if (managedMethod == null) {
 				throw new BugError("Attempt to use not managed method |%s|.", method);
 			}
 			log.trace("Invoke |%s|.", managedMethod);
-			
+
 			try {
 				return managedMethod.invoke(managedInstance, args);
 			} catch (Throwable t) {

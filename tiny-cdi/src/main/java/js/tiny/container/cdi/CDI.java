@@ -7,6 +7,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Function;
 
 import javax.inject.Singleton;
 
@@ -25,6 +26,7 @@ import js.lang.Config;
 import js.lang.ConfigException;
 import js.log.Log;
 import js.log.LogFactory;
+import js.tiny.container.spi.IClassDescriptor;
 import js.tiny.container.spi.IManagedClass;
 import js.tiny.container.spi.InstanceScope;
 import js.util.Params;
@@ -65,11 +67,11 @@ public class CDI {
 	/**
 	 * Create bindings for container managed classes and configure injector implementation.
 	 * 
-	 * @param managedClasses container managed classes.
+	 * @param classDescriptors container managed classes.
 	 */
-	public void configure(Collection<IManagedClass<?>> managedClasses) {
+	public void configure(Collection<IClassDescriptor<?>> classDescriptors, Function<IClassDescriptor<?>, IManagedClass<?>> managedClassFactory) {
 		log.trace("configure(Collection<IManagedClass<?>>");
-		injector.configure(explicitBindings, new ManagedClassesModule(managedClasses));
+		injector.configure(explicitBindings, new ManagedClassesModule(classDescriptors, managedClassFactory));
 		configured.set(true);
 	}
 
@@ -85,8 +87,8 @@ public class CDI {
 			injectorModules.add((IModule) module);
 		}
 
-		//configBuilder.getManagedClasses().forEach(managedClass->{});
-		
+		// configBuilder.getManagedClasses().forEach(managedClass->{});
+
 		injector.configure(injectorModules.toArray(new IModule[0]));
 
 		CDIConfigBuilder configBuilder = new CDIConfigBuilder();
@@ -94,7 +96,7 @@ public class CDI {
 			configBuilder.addModule((IModule) module);
 		}
 
-		//configured.set(true);
+		// configured.set(true);
 		return configBuilder.build();
 	}
 
@@ -194,43 +196,46 @@ public class CDI {
 	 * @author Iulian Rotaru
 	 */
 	private class ManagedClassesModule extends AbstractModule {
-		private final Collection<IManagedClass<?>> managedClasses;
+		private final Collection<IClassDescriptor<?>> classDescriptors;
+		private final Function<IClassDescriptor<?>, IManagedClass<?>> managedClassFactory;
 
-		public ManagedClassesModule(Collection<IManagedClass<?>> managedClasses) {
-			this.managedClasses = managedClasses;
+		public ManagedClassesModule(Collection<IClassDescriptor<?>> classDescriptors, Function<IClassDescriptor<?>, IManagedClass<?>> managedClassFactory) {
+			this.classDescriptors = classDescriptors;
+			this.managedClassFactory = managedClassFactory;
 		}
 
 		@SuppressWarnings({ "unchecked", "rawtypes" })
 		@Override
 		protected void configure() {
-			managedClasses.forEach(managedClass -> {
-				log.debug("CDI register managed class |%s|.", managedClass);
+			classDescriptors.forEach(classDescriptor -> {
+				log.debug("CDI register managed class |%s|.", classDescriptor);
 
-				IBindingBuilder bindingBuilder = bind(managedClass.getInterfaceClass());
+				IBindingBuilder bindingBuilder = bind(classDescriptor.getInterfaceClass());
 
-				switch (managedClass.getInstanceType()) {
+				switch (classDescriptor.getInstanceType()) {
 				case POJO:
-					bindingBuilder.to(managedClass.getImplementationClass());
+					bindingBuilder.to(classDescriptor.getImplementationClass());
 					break;
 
 				case PROXY:
-					bindingBuilder.to(managedClass.getImplementationClass());
-					bindingBuilder.toProvider(new ProxyProvider(managedClass, bindingBuilder.getProvider()));
+					bindingBuilder.to(classDescriptor.getImplementationClass());
+					managedClassFactory.apply(classDescriptor);
+					bindingBuilder.toProvider(new ProxyProvider(classDescriptor, managedClassFactory, bindingBuilder.getProvider()));
 					break;
 
 				case REMOTE:
-					bindingBuilder.on(managedClass.getImplementationURL());
+					bindingBuilder.on(classDescriptor.getImplementationURL());
 					break;
 
 				case SERVICE:
-					bindingBuilder.toProvider(new ServiceProvider<>(injector, managedClass.getInterfaceClass()));
+					bindingBuilder.toProvider(new ServiceProvider<>(injector, classDescriptor.getInterfaceClass()));
 					break;
 
 				default:
-					throw new IllegalStateException("No provider for instance type " + managedClass.getInstanceType());
+					throw new IllegalStateException("No provider for instance type " + classDescriptor.getInstanceType());
 				}
 
-				final InstanceScope instanceScope = managedClass.getInstanceScope();
+				final InstanceScope instanceScope = classDescriptor.getInstanceScope();
 				if (instanceScope.isLOCAL()) {
 					// local scope always creates a new instance
 				} else if (instanceScope.isAPPLICATION()) {

@@ -14,6 +14,7 @@ import js.lang.ManagedLifeCycle;
 import js.log.Log;
 import js.log.LogFactory;
 import js.tiny.container.spi.IAnnotationsScanner;
+import js.tiny.container.spi.IClassDescriptor;
 import js.tiny.container.spi.IContainer;
 import js.tiny.container.spi.IContainerService;
 import js.tiny.container.spi.IManagedClass;
@@ -29,7 +30,7 @@ import js.util.Types;
  *  
  * @author Iulian Rotaru
  */
-public final class ManagedClass<T> implements IManagedClass<T> {
+public final class ManagedClass<T> implements IManagedClass<T>, IClassDescriptor<T> {
 	private static final Log log = LogFactory.getLog(ManagedClass.class);
 
 	/**

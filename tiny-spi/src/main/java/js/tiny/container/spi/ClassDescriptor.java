@@ -1,9 +1,8 @@
 package js.tiny.container.spi;
 
-import java.net.URI;
 import java.util.concurrent.atomic.AtomicInteger;
 
-public class ClassDescriptor<T> {
+public class ClassDescriptor<T> implements IClassDescriptor<T> {
 	private static final AtomicInteger keyGenerator = new AtomicInteger();
 
 	private final String managedClassKey;
@@ -11,7 +10,7 @@ public class ClassDescriptor<T> {
 	private final Class<? extends T> implementationClass;
 	private final InstanceType instanceType;
 	private final InstanceScope instanceScope;
-	private final URI implementationURL;
+	private final String implementationURL;
 
 	public ClassDescriptor(Class<T> interfaceClass) {
 		this.managedClassKey = Integer.toString(keyGenerator.getAndIncrement());
@@ -26,23 +25,28 @@ public class ClassDescriptor<T> {
 		return managedClassKey;
 	}
 
+	@Override
 	public Class<T> getInterfaceClass() {
 		return interfaceClass;
 	}
 
+	@Override
 	public Class<? extends T> getImplementationClass() {
 		return implementationClass;
 	}
 
+	@Override
 	public InstanceType getInstanceType() {
 		return instanceType;
 	}
 
+	@Override
 	public InstanceScope getInstanceScope() {
 		return instanceScope;
 	}
 
-	public URI getImplementationURL() {
+	@Override
+	public String getImplementationURL() {
 		return implementationURL;
 	}
 }

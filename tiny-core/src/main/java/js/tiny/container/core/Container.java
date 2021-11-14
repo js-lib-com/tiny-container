@@ -1,5 +1,6 @@
 package js.tiny.container.core;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -20,6 +21,7 @@ import js.log.Log;
 import js.log.LogFactory;
 import js.tiny.container.AppContainer;
 import js.tiny.container.cdi.CDI;
+import js.tiny.container.spi.IClassDescriptor;
 import js.tiny.container.spi.IClassPostLoadedProcessor;
 import js.tiny.container.spi.IContainer;
 import js.tiny.container.spi.IContainerService;
@@ -118,7 +120,12 @@ public class Container implements IContainer, AppContainer {
 	public void config(Config config) throws ConfigException {
 		log.trace("config(Config)");
 		load(config);
-		cdi.configure(classesPool.values());
+
+		Collection<IClassDescriptor<?>> descriptors = new ArrayList<>();
+		for (IManagedClass<?> managedClass : classesPool.values()) {
+			descriptors.add((IClassDescriptor<?>) managedClass);
+		}
+		cdi.configure(descriptors, descriptor -> classesPool.get(descriptor.getInterfaceClass()));
 	}
 
 	public void config(Object... modules) throws ConfigException {

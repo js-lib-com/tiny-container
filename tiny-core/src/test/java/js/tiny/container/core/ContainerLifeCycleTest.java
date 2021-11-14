@@ -100,7 +100,7 @@ public class ContainerLifeCycleTest {
 		container.config(Mockito.mock(Config.class));
 
 		// then
-		verify(cdi, times(1)).configure(any(Collection.class));
+		verify(cdi, times(1)).configure(any(Collection.class), any());
 	}
 
 	@Test
