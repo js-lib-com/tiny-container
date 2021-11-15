@@ -33,6 +33,11 @@ public class ManagedMethodSpiStub implements IManagedMethod {
 	}
 
 	@Override
+	public boolean isPublic() {
+		return true;
+	}
+
+	@Override
 	public <T> T invoke(Object object, Object... arguments) throws IllegalArgumentException, InvocationException, AuthorizationException {
 		throw new UnsupportedOperationException("invoke(Object object, Object... arguments)");
 	}

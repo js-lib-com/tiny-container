@@ -33,6 +33,8 @@ public interface IManagedMethod extends IMethodInvocationProcessor {
 	 */
 	Method getMethod();
 
+	boolean isPublic();
+	
 	/**
 	 * Get managed method parameter types. If a formal parameter type is a parameterized type, the Type object returned for it
 	 * must accurately reflect the actual type parameters used in the source code.

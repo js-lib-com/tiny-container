@@ -22,23 +22,24 @@ public class MethodsCacheTest {
 	private IManagedClass<?> managedClass;
 	@Mock
 	private IManagedMethod managedMethod;
+	@Mock
+	private RequestPath requestPath;
 
 	@Before
 	public void beforeTest() {
 		doReturn(managedClass).when(managedMethod).getDeclaringClass();
 		when(managedMethod.getName()).thenReturn("resource");
+		when(managedMethod.scanAnnotation(RequestPath.class)).thenReturn(requestPath);
 	}
-	
+
 	@Test
 	public void GivenAppContext_WhenCreateStorageKey_ThenIncludeAppContext() throws Exception {
 		// given
-		RequestPath requestPath = mock(RequestPath.class);
 		when(requestPath.value()).thenReturn("resource");
-		when(managedMethod.getAnnotation(RequestPath.class)).thenReturn(requestPath);
 
 		Controller controller = mock(Controller.class);
 		when(controller.value()).thenReturn("controller");
-		when(managedClass.getAnnotation(Controller.class)).thenReturn(controller);
+		when(managedClass.scanAnnotation(Controller.class)).thenReturn(controller);
 
 		// when
 		String key = MethodsCache.key(managedMethod);
@@ -50,15 +51,51 @@ public class MethodsCacheTest {
 	@Test
 	public void GivenRootContext_WhenCreateStorageKey_ThenNoAppContext() throws Exception {
 		// given
-		Controller controller = mock(Controller.class);
-		when(controller.value()).thenReturn("");
-		when(managedClass.getAnnotation(Controller.class)).thenReturn(controller);
 
 		// when
 		String key = MethodsCache.key(managedMethod);
 
 		// then
 		assertEquals("/resource", key);
+	}
+
+	@Test
+	public void GivenMissingRequestPath_WhenCreateStorageKey_ThenUseMethodName() {
+		// given
+		when(requestPath.value()).thenReturn(null);
+		when(managedMethod.getName()).thenReturn("toString");
+
+		// when
+		String key = MethodsCache.key(managedMethod);
+
+		// then
+		assertEquals("/to-string", key);
+	}
+
+	@Test
+	public void GivenEmptyRequestPath_WhenCreateStorageKey_ThenUseMethodName() {
+		// given
+		when(requestPath.value()).thenReturn("");
+		when(managedMethod.getName()).thenReturn("toString");
+
+		// when
+		String key = MethodsCache.key(managedMethod);
+
+		// then
+		assertEquals("/to-string", key);
+	}
+
+	@Test
+	public void GivenWhitespaceRequestPath_WhenCreateStorageKey_ThenUseMethodName() {
+		// given
+		when(requestPath.value()).thenReturn("	 ");
+		when(managedMethod.getName()).thenReturn("toString");
+
+		// when
+		String key = MethodsCache.key(managedMethod);
+
+		// then
+		assertEquals("/to-string", key);
 	}
 
 	@Test
@@ -78,14 +115,5 @@ public class MethodsCacheTest {
 		assertEquals("/resource", MethodsCache.key("/resource"));
 		assertEquals("/resource", MethodsCache.key("/resource?query"));
 		assertEquals("/resource", MethodsCache.key("/resource?"));
-	}
-
-	@Test
-	public void Given_When_Then() {
-		// given
-		
-		// when
-		
-		// then
 	}
 }

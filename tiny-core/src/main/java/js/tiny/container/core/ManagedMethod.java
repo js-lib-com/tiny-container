@@ -2,6 +2,7 @@ package js.tiny.container.core;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -112,6 +113,11 @@ public class ManagedMethod implements IManagedMethod {
 	@Override
 	public Type getReturnType() {
 		return method.getGenericReturnType();
+	}
+
+	@Override
+	public boolean isPublic() {
+		return Modifier.isPublic(method.getModifiers());
 	}
 
 	/**

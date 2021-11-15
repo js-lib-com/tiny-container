@@ -1,52 +1,50 @@
 package js.tiny.container.rest;
 
-import java.lang.annotation.Annotation;
-import java.util.ArrayList;
-import java.util.List;
-
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
+import javax.ejb.Remote;
+import javax.inject.Inject;
 
 import js.log.Log;
 import js.log.LogFactory;
+import js.tiny.container.http.Resource;
+import js.tiny.container.spi.IClassPostLoadedProcessor;
 import js.tiny.container.spi.IConnector;
 import js.tiny.container.spi.IManagedClass;
 import js.tiny.container.spi.IManagedMethod;
-import js.tiny.container.spi.IAnnotationsScanner;
+import js.util.Types;
 
-public class RestConnector implements IConnector, IAnnotationsScanner {
+public class RestConnector implements IConnector, IClassPostLoadedProcessor {
 	private static final Log log = LogFactory.getLog(RestConnector.class);
 
+	private final MethodsCache cache;
+
+	@Inject
 	public RestConnector() {
 		log.trace("RestConnector()");
+		this.cache = MethodsCache.instance();
+	}
+
+	public RestConnector(MethodsCache cache) {
+		this.cache = cache;
 	}
 
 	@Override
-	public List<Annotation> scanClassAnnotations(IManagedClass<?> managedClass) {
-		List<Annotation> serviceMetas = new ArrayList<>();
-
-		Path path = managedClass.scanAnnotation(Path.class);
-		if (path != null) {
-			serviceMetas.add(path);
-		}
-
-		return serviceMetas;
+	public Priority getPriority() {
+		return Priority.SCAN;
 	}
 
 	@Override
-	public List<Annotation> scanMethodAnnotations(IManagedMethod managedMethod) {
-		List<Annotation> serviceMetas = new ArrayList<>();
-
-		Path path = managedMethod.scanAnnotation(Path.class);
-		if (path != null) {
-			serviceMetas.add(path);
+	public <T> void onClassPostLoaded(IManagedClass<T> managedClass) {
+		Remote remote = managedClass.scanAnnotation(Remote.class);
+		if (remote == null) {
+			return;
 		}
 
-		Produces produces = managedMethod.scanAnnotation(Produces.class);
-		if (produces != null) {
-			serviceMetas.add(produces);
+		log.debug("Scan REST controller |%s|.", managedClass.getInterfaceClass());
+		for (IManagedMethod managedMethod : managedClass.getManagedMethods()) {
+			if (managedMethod.isPublic() && !Types.isKindOf(managedMethod.getReturnType(), Resource.class)) {
+				String path = cache.add(managedMethod);
+				log.debug("Register REST method |%s| to path |%s|.", managedMethod, path);
+			}
 		}
-
-		return serviceMetas;
 	}
 }

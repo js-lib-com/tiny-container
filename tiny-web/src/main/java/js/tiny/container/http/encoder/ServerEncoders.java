@@ -28,7 +28,7 @@ import js.tiny.container.http.ContentType;
  * @author Iulian Rotaru
  * @version final
  */
-public final class ServerEncoders implements ArgumentsReaderFactory, ValueWriterFactory {
+public class ServerEncoders implements ArgumentsReaderFactory, ValueWriterFactory {
 	/** Class logger. */
 	private static final Log log = LogFactory.getLog(ServerEncoders.class);
 

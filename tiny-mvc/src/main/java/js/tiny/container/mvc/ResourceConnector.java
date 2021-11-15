@@ -28,6 +28,11 @@ public class ResourceConnector implements IConnector, IClassPostLoadedProcessor 
 	}
 
 	@Override
+	public Priority getPriority() {
+		return Priority.SCAN;
+	}
+
+	@Override
 	public <T> void onClassPostLoaded(IManagedClass<T> managedClass) {
 		log.trace("onClassPostLoaded(IManagedClass<T>)");
 		Controller controller = managedClass.scanAnnotation(Controller.class);
@@ -36,15 +41,11 @@ public class ResourceConnector implements IConnector, IClassPostLoadedProcessor 
 		}
 
 		log.debug("Scan MVC controller |%s|.", managedClass.getInterfaceClass());
-		for (IManagedMethod method : managedClass.getManagedMethods()) {
-			if (Types.isKindOf(method.getReturnType(), Resource.class)) {
-				cache.add(method);
+		for (IManagedMethod managedMethod : managedClass.getManagedMethods()) {
+			if (managedMethod.isPublic() && Types.isKindOf(managedMethod.getReturnType(), Resource.class)) {
+				String path = cache.add(managedMethod);
+				log.debug("Register MVC method |%s| to path |%s|.", managedMethod, path);
 			}
 		}
-	}
-
-	@Override
-	public Priority getPriority() {
-		return Priority.SCAN;
 	}
 }
