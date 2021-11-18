@@ -46,4 +46,9 @@ public class ManagedClassSpiStub<T> implements IManagedClass<T> {
 	public <A extends Annotation> A scanAnnotation(Class<A> type) {
 		throw new UnsupportedOperationException("getAnnotation(Class<T> type)");
 	}
+
+	@Override
+	public T getInstance() {
+		throw new UnsupportedOperationException("getInstance()");
+	}
 }

@@ -94,7 +94,7 @@ public class Container implements IContainer, AppContainer {
 	 * @param config container configuration object.
 	 * @throws ConfigException if container configuration fails.
 	 */
-	public void create(List<IClassDescriptor<?>> descriptors) throws ConfigException {
+	public void config(List<IClassDescriptor<?>> descriptors) throws ConfigException {
 		log.trace("config(Config)");
 		cdi.configure(descriptors, descriptor -> classesPool.get(descriptor.getInterfaceClass()));
 
@@ -222,11 +222,6 @@ public class Container implements IContainer, AppContainer {
 		} catch (ProvisionException e) {
 			return null;
 		}
-	}
-
-	@Override
-	public <T> T getInstance(IManagedClass<T> managedClass) {
-		return getInstance(managedClass.getInterfaceClass());
 	}
 
 	// ----------------------------------------------------

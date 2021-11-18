@@ -52,7 +52,7 @@ public class InstanceStartupProcessor implements IContainerStartProcessor {
 			// getInstance() will create instance only if not already exist; returned value is ignored
 
 			log.debug("Create managed instance with managed life cycle |%s|.", managedClass);
-			container.getInstance(managedClass);
+			managedClass.getInstance();
 		}
 	}
 }

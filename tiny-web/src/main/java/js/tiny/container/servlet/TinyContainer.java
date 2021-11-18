@@ -2,7 +2,6 @@ package js.tiny.container.servlet;
 
 import java.io.File;
 import java.security.Principal;
-import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.Properties;
@@ -22,9 +21,8 @@ import js.log.LogContext;
 import js.log.LogFactory;
 import js.tiny.container.cdi.CDI;
 import js.tiny.container.cdi.SessionScoped;
-import js.tiny.container.core.ClassDescriptor;
+import js.tiny.container.core.Bootstrap;
 import js.tiny.container.core.Container;
-import js.tiny.container.spi.Factory;
 import js.tiny.container.spi.IClassDescriptor;
 import js.tiny.container.spi.InstanceScope;
 
@@ -190,8 +188,8 @@ public class TinyContainer extends Container implements ServletContextListener, 
 	}
 
 	@Override
-	public void create(List<IClassDescriptor<?>> descriptors) throws ConfigException {
-		super.create(descriptors);
+	public void config(List<IClassDescriptor<?>> descriptors) throws ConfigException {
+		super.config(descriptors);
 
 		// by convention configuration object name is the web application name
 		// appName = config.getName();
@@ -246,19 +244,10 @@ public class TinyContainer extends Container implements ServletContextListener, 
 		// WARN: if development context is declared it can access private resources without authentication
 		developmentContext = contextParameters.getProperty("js.tiny.container.dev.context");
 
+		Bootstrap bootstrap = new Bootstrap();
 		try {
 			configBuilder.configure(servletContext, contextParameters);
-
-			List<IClassDescriptor<?>> descriptors = new ArrayList<>();
-			for (Config managedClasses : configBuilder.build().findChildren("managed-classes")) {
-				for (Config managedClass : managedClasses.getChildren()) {
-					descriptors.add(new ClassDescriptor<>(managedClass));
-				}
-			}
-			create(descriptors);
-
-			Factory.bind(this);
-			start();
+			bootstrap.startContainer(this, configBuilder.build());
 
 			// set tiny container reference on servlet context attribute ONLY if no exception
 			servletContext.setAttribute(TinyContainer.ATTR_INSTANCE, this);

@@ -52,7 +52,7 @@ public final class TestContext {
 				descriptors.add(new ClassDescriptor<>(managedClass));
 			}
 		}
-		container.create(descriptors);
+		container.config(descriptors);
 
 		Factory.bind(container);
 		container.start();

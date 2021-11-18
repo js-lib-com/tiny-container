@@ -158,7 +158,7 @@ public final class HttpRmiServlet extends AppServlet {
 			argumentsReader = argumentsReaderFactory.getArgumentsReader(httpRequest, formalParameters);
 			Object[] arguments = argumentsReader.read(httpRequest, formalParameters);
 
-			Object instance = container.getInstance(managedClass);
+			Object instance = managedClass.getInstance();
 			value = managedMethod.invoke(instance, arguments);
 		} catch (AuthorizationException e) {
 			sendUnauthorized(context);

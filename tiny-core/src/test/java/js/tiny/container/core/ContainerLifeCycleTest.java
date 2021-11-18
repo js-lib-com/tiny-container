@@ -50,11 +50,11 @@ public class ContainerLifeCycleTest {
 	}
 
 	@Test
-	public void GivenDescriptor_WhenCreate_ThenClassesPoolContainsManagedClass() throws ConfigException {
+	public void GivenDescriptor_WhenConfig_ThenClassesPoolContainsManagedClass() throws ConfigException {
 		// given
 
 		// when
-		container.create(Arrays.asList(descriptor));
+		container.config(Arrays.asList(descriptor));
 
 		// then
 		assertThat(container.classesPool().get(Object.class), notNullValue());
@@ -66,7 +66,7 @@ public class ContainerLifeCycleTest {
 		
 		
 		// when
-		container.create(Arrays.asList(descriptor));
+		container.config(Arrays.asList(descriptor));
 
 		// then
 		IManagedClass<?> managedClass = container.classesPool().get(Object.class);
@@ -94,11 +94,11 @@ public class ContainerLifeCycleTest {
 
 	@SuppressWarnings("unchecked")
 	@Test
-	public void GivenDefaults_WhenCreate_ThenCDIConfigure() throws ConfigException {
+	public void GivenDefaults_WhenConfig_ThenCDIConfigure() throws ConfigException {
 		// given
 
 		// when
-		container.create(Arrays.asList(descriptor));
+		container.config(Arrays.asList(descriptor));
 
 		// then
 		verify(cdi, times(1)).configure(any(List.class), any());

@@ -87,8 +87,6 @@ public class ResourceServletHandlerTest {
 		when(httpRequest.getContextPath()).thenReturn("/test-app");
 		when(httpRequest.getHeaderNames()).thenReturn(Collections.emptyEnumeration());
 
-		doReturn(new Object()).when(container).getInstance(managedClass);
-
 		doReturn(managedClass).when(managedMethod).getDeclaringClass();
 
 		when(managedMethod.getParameterTypes()).thenReturn(new Class[] { String.class });

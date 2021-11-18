@@ -147,7 +147,7 @@ public class RestServlet extends AppServlet {
 			argumentsReader = argumentsReaderFactory.getArgumentsReader(httpRequest, formalParameters);
 			Object[] arguments = argumentsReader.read(httpRequest, formalParameters);
 
-			Object instance = container.getInstance(managedMethod.getDeclaringClass());
+			Object instance = managedMethod.getDeclaringClass().getInstance();
 			value = managedMethod.invoke(instance, arguments);
 		} catch (AuthorizationException e) {
 			sendUnauthorized(context);

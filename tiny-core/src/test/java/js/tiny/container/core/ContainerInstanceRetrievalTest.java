@@ -139,16 +139,4 @@ public class ContainerInstanceRetrievalTest {
 		// then
 		verify(cdi, times(0)).getInstance(any(), any());
 	}
-
-	@Test
-	public void Given_WhenGetInstanceByManagedClass_ThenDelegateCDI() {
-		// given
-
-		// when
-		Object instance = container.getInstance(managedClass);
-
-		// then
-		assertThat(instance, notNullValue());
-		verify(cdi, times(1)).getInstance(any(), any());
-	}
 }

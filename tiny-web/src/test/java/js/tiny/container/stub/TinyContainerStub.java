@@ -48,11 +48,6 @@ public class TinyContainerStub implements ITinyContainer {
 	}
 
 	@Override
-	public <T> T getInstance(IManagedClass<T> managedClass) {
-		throw new UnsupportedOperationException("getInstance(ManagedClassSPI managedClass)");
-	}
-
-	@Override
 	public <T> IManagedClass<T> getManagedClass(Class<T> interfaceClass) {
 		throw new UnsupportedOperationException("getManagedClass(Class<?> interfaceClass)");
 	}

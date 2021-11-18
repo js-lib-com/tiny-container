@@ -1,10 +1,5 @@
 package js.tiny.container.spi;
 
-import java.lang.reflect.InvocationTargetException;
-
-import js.lang.InvocationException;
-import js.lang.NoProviderException;
-
 /**
  * Container services for framework internals and plugins. This interface is a service provider interface and is not intended
  * for applications consumption. It deals with container extensions, and managed classes and methods.
@@ -42,25 +37,6 @@ public interface IContainer {
 	 * @param <T> instance generic type.
 	 */
 	<T> T getOptionalInstance(Class<T> interfaceClass);
-
-	/**
-	 * Retrieve instance of requested managed class. Depending on managed class scope a new managed instance can be created or
-	 * it can be reused from caches. If instance is newly created this factory method takes care to resolve all instance
-	 * dependencies and execute post-construct method.
-	 * 
-	 * Under normal circumstances this factory method always succeed and does return a not null instance. Implementation should
-	 * fail only for severe errors like out of memory or similar extreme conditions. Anyway, since instance creation may involve
-	 * user defined constructors is possible also to throw {@link InvocationTargetException}. Also if requested interface is a
-	 * service and no provider found at run-time this factory method throws {@link NoProviderException}.
-	 * 
-	 * @param managedClass managed class to return instance for.
-	 * @return managed instance, created on the fly or reused from caches, but never null.
-	 * 
-	 * @throws InvocationException if instance is local and constructor fails.
-	 * @throws NoProviderException if interface is a service and no provider found on run-time.
-	 * @param <T> instance generic type.
-	 */
-	<T> T getInstance(IManagedClass<T> managedClass);
 
 	/**
 	 * Get managed class bound to requested interface class or null if none found.

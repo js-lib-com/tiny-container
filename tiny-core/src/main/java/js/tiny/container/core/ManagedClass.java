@@ -177,6 +177,11 @@ public final class ManagedClass<T> implements IManagedClass<T> {
 		return managedMethod;
 	}
 
+	@Override
+	public T getInstance() {
+		return container.getInstance(interfaceClass);
+	}
+
 	// --------------------------------------------------------------------------------------------
 	// CLASS DESCRIPTOR UTILITY METHODS
 

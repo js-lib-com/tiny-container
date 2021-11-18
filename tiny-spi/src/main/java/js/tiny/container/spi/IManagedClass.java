@@ -1,6 +1,10 @@
 package js.tiny.container.spi;
 
 import java.lang.annotation.Annotation;
+import java.lang.reflect.InvocationTargetException;
+
+import js.lang.InvocationException;
+import js.lang.NoProviderException;
 
 /**
  * Service provider interface for managed class. Although public, this interface is designed for library internal usage.
@@ -66,6 +70,22 @@ public interface IManagedClass<T> {
 	 * @return requested managed method, possible null.
 	 */
 	IManagedMethod getManagedMethod(String methodName);
+
+	/**
+	 * Gets an instance of this managed class implementation, newly created or reused for scope caches. If a new instance is
+	 * indeed created this factory method takes care to resolve and inject all instance dependencies and execute post-construct
+	 * processors.
+	 * 
+	 * Under normal circumstances this factory method always succeed and does return a not null instance. Implementation should
+	 * fail only for severe errors like out of memory or similar extreme conditions. Anyway, since instance creation may involve
+	 * user defined constructors is possible also to throw {@link InvocationTargetException}. Also if requested interface is a
+	 * service and no provider found at run-time this factory method throws {@link NoProviderException}.
+	 *
+	 * @return this managed class instance.
+	 * @throws InvocationException if instance is local and constructor fails.
+	 * @throws NoProviderException if interface is a service and no provider found on run-time.
+	 */
+	T getInstance();
 
 	<A extends Annotation> A scanAnnotation(Class<A> type);
 

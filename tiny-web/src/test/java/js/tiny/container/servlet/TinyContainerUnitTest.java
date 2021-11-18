@@ -116,7 +116,7 @@ public class TinyContainerUnitTest {
 		new File("fixture/tomcat/work/Applications/test-app").delete();
 
 		TinyContainer container = new TinyContainer();
-		container.create(Collections.emptyList());
+		container.config(Collections.emptyList());
 
 		File privateDir = Classes.getFieldValue(container, "privateDir");
 		assertNotNull(privateDir);
@@ -133,7 +133,7 @@ public class TinyContainerUnitTest {
 			int startProbe;
 
 			@Override
-			public void create(List<IClassDescriptor<?>> descriptors) throws ConfigException {
+			public void config(List<IClassDescriptor<?>> descriptors) throws ConfigException {
 				++configProbe;
 			}
 
@@ -188,7 +188,7 @@ public class TinyContainerUnitTest {
 	public void contextInitialized_ConfigException() {
 		class MockContainer extends TinyContainer {
 			@Override
-			public void create(List<IClassDescriptor<?>> descriptors) throws ConfigException {
+			public void config(List<IClassDescriptor<?>> descriptors) throws ConfigException {
 				throw new ConfigException("config exception");
 			}
 		}
@@ -341,7 +341,7 @@ public class TinyContainerUnitTest {
 			}
 		}
 
-		container.create(descriptors);
+		container.config(descriptors);
 		return container;
 	}
 

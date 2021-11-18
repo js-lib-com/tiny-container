@@ -133,7 +133,7 @@ public class ResourceServlet extends AppServlet {
 			argumentsReader = argumentsReaderFactory.getArgumentsReader(httpRequest, formalParameters);
 			Object[] arguments = argumentsReader.read(httpRequest, formalParameters);
 
-			Object controller = container.getInstance(method.getDeclaringClass());
+			Object controller = method.getDeclaringClass().getInstance();
 			resource = method.invoke(controller, arguments);
 			if (resource == null) {
 				throw new BugError("Null resource for request |%s| returned by method |%s|.", httpRequest.getRequestURI(), method);

@@ -18,6 +18,7 @@ import javax.servlet.WriteListener;
 import org.junit.Before;
 import org.junit.Test;
 
+import js.json.Json;
 import js.lang.InvocationException;
 import js.tiny.container.net.HttpRmiServlet;
 import js.tiny.container.servlet.AppServlet;
@@ -131,7 +132,10 @@ public class HttpRmiServletHandlerUnitTest {
 		}
 
 		@Override
-		public <T> T getInstance(IManagedClass<T> managedClass) {
+		public <T> T getInstance(Class<T> interfaceClass) {
+			if(interfaceClass.equals(Json.class)) {
+				return (T) Classes.loadService(Json.class);
+			}
 			return (T) new Object();
 		}
 
@@ -152,6 +156,11 @@ public class HttpRmiServletHandlerUnitTest {
 		@Override
 		public IManagedMethod getManagedMethod(String methodName) {
 			return managedMethod;
+		}
+
+		@Override
+		public Object getInstance() {
+			return new Object();
 		}
 	}
 
