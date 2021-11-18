@@ -1,7 +1,8 @@
 package js.tiny.container.cdi;
 
+import javax.inject.Provider;
+
 import com.jslib.injector.IInjector;
-import com.jslib.injector.IProvider;
 import com.jslib.injector.IProvisionInvocation;
 import com.jslib.injector.ProvisionException;
 
@@ -17,18 +18,13 @@ import js.util.Classes;
  * @param <T> instance generic type.
  * @author Iulian Rotaru
  */
-class ServiceProvider<T> implements IProvider<T> {
+class ServiceProvider<T> implements Provider<T> {
 	private final IInjector injector;
 	private final Class<T> type;
 
 	public ServiceProvider(IInjector injector, Class<T> type) {
 		this.injector = injector;
 		this.type = type;
-	}
-
-	@Override
-	public Class<? extends T> type() {
-		return type;
 	}
 
 	/**

@@ -8,8 +8,6 @@ import java.util.function.Function;
 
 import javax.inject.Provider;
 
-import com.jslib.injector.IProvider;
-
 import js.lang.BugError;
 import js.lang.InvocationException;
 import js.log.Log;
@@ -24,7 +22,7 @@ import js.tiny.container.spi.IManagedMethod;
  * 
  * @author Iulian Rotaru
  */
-class ProxyProvider<T> implements IProvider<T> {
+class ProxyProvider<T> implements Provider<T> {
 	private static final Log log = LogFactory.getLog(ProxyProvider.class);
 
 	private final IClassDescriptor<T> classDescriptor;
@@ -36,11 +34,6 @@ class ProxyProvider<T> implements IProvider<T> {
 		this.classDescriptor = classDescriptor;
 		this.managedClassFactory = managedClassFactory;
 		this.provider = provider;
-	}
-
-	@Override
-	public Class<? extends T> type() {
-		return classDescriptor.getImplementationClass();
 	}
 
 	@SuppressWarnings("unchecked")

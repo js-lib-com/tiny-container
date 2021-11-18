@@ -12,6 +12,7 @@ import java.util.TreeSet;
 
 import com.jslib.injector.ProvisionException;
 
+import js.app.container.AppContainer;
 import js.lang.BugError;
 import js.lang.Config;
 import js.lang.ConfigException;
@@ -19,7 +20,6 @@ import js.lang.InstanceInvocationHandler;
 import js.lang.ManagedPreDestroy;
 import js.log.Log;
 import js.log.LogFactory;
-import js.tiny.container.AppContainer;
 import js.tiny.container.cdi.CDI;
 import js.tiny.container.spi.IClassDescriptor;
 import js.tiny.container.spi.IClassPostLoadedProcessor;

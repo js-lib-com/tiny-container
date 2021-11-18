@@ -9,6 +9,11 @@
 
 	<dependencies>
 		<dependency>
+			<groupId>com.js-lib</groupId>
+			<artifactId>app-container-api</artifactId>
+			<version>1.0</version>
+		</dependency>
+		<dependency>
 			<groupId>${project.parent.groupId}</groupId>
 			<artifactId>tiny-cdi</artifactId>
 			<version>${project.parent.version}</version>
@@ -41,5 +46,5 @@
 			</plugin>
 		</plugins>
 	</build>
-	
+
 </project>

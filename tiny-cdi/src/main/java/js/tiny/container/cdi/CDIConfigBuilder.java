@@ -6,7 +6,6 @@ import java.util.List;
 import javax.inject.Provider;
 
 import com.jslib.injector.IModule;
-import com.jslib.injector.IProvider;
 import com.jslib.injector.ScopedProvider;
 
 import js.lang.Config;
@@ -28,16 +27,10 @@ public class CDIConfigBuilder extends ConfigBuilder {
 			if(provider instanceof ScopedProvider) {
 				//((ScopedProvider)provider).getScopeAnnotation()
 			}
-			
-			if (!(provider instanceof IProvider)) {
-				return;
-			}
-
-			IProvider<?> typedProvider = (IProvider<?>) provider;
 
 			Config config = new Config("managed-class");
-			config.setAttribute("interface", binding.key().type().getCanonicalName());
-			config.setAttribute("class", typedProvider.type().getCanonicalName());
+//			config.setAttribute("interface", binding.key().type().getCanonicalName());
+//			config.setAttribute("class", typedProvider.type().getCanonicalName());
 			
 			
 			managedClasses.add(config);
