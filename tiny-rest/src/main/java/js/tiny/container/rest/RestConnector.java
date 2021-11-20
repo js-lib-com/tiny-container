@@ -34,12 +34,13 @@ public class RestConnector implements IConnector, IClassPostLoadedProcessor {
 
 	@Override
 	public <T> void onClassPostLoaded(IManagedClass<T> managedClass) {
-		Remote remote = managedClass.scanAnnotation(Remote.class);
+		log.trace("onClassPostLoaded(IManagedClass<T>)");
+		Remote remote = managedClass.getAnnotation(Remote.class);
 		if (remote == null) {
 			return;
 		}
 
-		log.debug("Scan REST controller |%s|.", managedClass.getInterfaceClass());
+		log.debug("Scan REST controller |%s|.", managedClass.getSignature());
 		for (IManagedMethod managedMethod : managedClass.getManagedMethods()) {
 			if (managedMethod.isPublic() && !Types.isKindOf(managedMethod.getReturnType(), Resource.class)) {
 				String path = cache.add(managedMethod);

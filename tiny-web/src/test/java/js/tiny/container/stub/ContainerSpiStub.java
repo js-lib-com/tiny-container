@@ -2,7 +2,6 @@ package js.tiny.container.stub;
 
 import js.tiny.container.spi.IContainer;
 import js.tiny.container.spi.IManagedClass;
-import js.tiny.container.spi.IManagedMethod;
 
 public class ContainerSpiStub implements IContainer {
 	@Override
@@ -23,10 +22,5 @@ public class ContainerSpiStub implements IContainer {
 	@Override
 	public Iterable<IManagedClass<?>> getManagedClasses() {
 		throw new UnsupportedOperationException("getManagedClasses()");
-	}
-
-	@Override
-	public Iterable<IManagedMethod> getManagedMethods() {
-		throw new UnsupportedOperationException("getManagedMethods()");
 	}
 }

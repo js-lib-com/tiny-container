@@ -13,6 +13,14 @@ package js.tiny.container.spi;
  */
 public interface IInstancePostConstructProcessor extends IFlowProcessor {
 
+	Priority getPriority();
+
+//	<T> boolean bind(IManagedClass<T> managedClass);
+
+	default <T> boolean bind(IManagedClass<T> managedClass) {
+		return true;
+	}
+
 	/**
 	 * Execute specific post processing logic on instance of a given managed class. Implementation may or may not alter instance
 	 * state, depending on specific kind of processing.
@@ -20,8 +28,6 @@ public interface IInstancePostConstructProcessor extends IFlowProcessor {
 	 * @param instance instance of given managed class.
 	 */
 	<T> void onInstancePostConstruct(T instance);
-
-	Priority getPriority();
 
 	/**
 	 * Predefined priorities available to instance post processing.

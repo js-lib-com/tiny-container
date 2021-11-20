@@ -9,6 +9,8 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.util.Map;
 
+import javax.annotation.PostConstruct;
+import javax.annotation.PreDestroy;
 import javax.annotation.security.DenyAll;
 import javax.annotation.security.PermitAll;
 import javax.ejb.Asynchronous;
@@ -21,7 +23,6 @@ import org.junit.Test;
 import js.lang.BugError;
 import js.lang.Config;
 import js.lang.ConfigException;
-import js.lang.ManagedLifeCycle;
 import js.tiny.container.core.ClassDescriptor;
 import js.tiny.container.core.Container;
 import js.tiny.container.core.ManagedClass;
@@ -225,12 +226,6 @@ public class ManagedClassUnitTest {
 	}
 
 	@Test(expected = ConfigException.class)
-	public void managedLifeCycleWithBadScope() throws Exception {
-		String config = "<test class='js.tiny.container.unit.ManagedClassUnitTest$CarImpl' interface='js.tiny.container.unit.ManagedClassUnitTest$Car' scope='THREAD' />";
-		getManagedClass(config(config));
-	}
-
-	@Test(expected = ConfigException.class)
 	public void badImplementationClass() throws Exception {
 		String config = "<test class='js.tiny.container.unit.ManagedClassUnitTest$Car' interface='js.tiny.container.unit.ManagedClassUnitTest$Car' scope='THREAD' />";
 		getManagedClass(config(config));
@@ -322,19 +317,19 @@ public class ManagedClassUnitTest {
 
 	}
 
-	private static class CarImpl implements Car, ManagedLifeCycle {
+	private static class CarImpl implements Car {
 		private static String MODEL;
 
 		private String engine;
 		public boolean afterInstanceCreatedInvoked;
 		public boolean beforeInstanceDisposalInvoked;
 
-		@Override
+		@PostConstruct
 		public void postConstruct() throws Exception {
 			this.afterInstanceCreatedInvoked = true;
 		}
 
-		@Override
+		@PreDestroy
 		public void preDestroy() throws Exception {
 			this.beforeInstanceDisposalInvoked = true;
 		}

@@ -1,9 +1,6 @@
 package js.tiny.container.transaction;
 
-import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
-import java.util.List;
 
 import js.lang.InvocationException;
 import js.log.Log;
@@ -11,17 +8,15 @@ import js.log.LogFactory;
 import js.tiny.container.spi.IContainer;
 import js.tiny.container.spi.IInvocation;
 import js.tiny.container.spi.IInvocationProcessorsChain;
-import js.tiny.container.spi.IManagedClass;
 import js.tiny.container.spi.IManagedMethod;
 import js.tiny.container.spi.IMethodInvocationProcessor;
-import js.tiny.container.spi.IAnnotationsScanner;
 import js.transaction.Immutable;
 import js.transaction.Mutable;
 import js.transaction.Transaction;
 import js.transaction.TransactionContext;
 import js.transaction.Transactional;
 
-public class TransactionService implements IMethodInvocationProcessor, IAnnotationsScanner {
+public class TransactionService implements IMethodInvocationProcessor {
 	private static final Log log = LogFactory.getLog(TransactionService.class);
 
 	private IContainer container;
@@ -42,51 +37,19 @@ public class TransactionService implements IMethodInvocationProcessor, IAnnotati
 	}
 
 	@Override
-	public List<Annotation> scanClassAnnotations(IManagedClass<?> managedClass) {
-		List<Annotation> annotations = new ArrayList<>();
-
-		Transactional transactional = managedClass.scanAnnotation(Transactional.class);
-		if (transactional != null) {
-			annotations.add(transactional);
+	public boolean bind(IManagedMethod managedMethod) {
+		if (managedMethod.scanAnnotation(Transactional.class) != null) {
+			return true;
 		}
-
-		Immutable immutable = managedClass.scanAnnotation(Immutable.class);
-		if (immutable != null) {
-			annotations.add(immutable);
+		if (managedMethod.getDeclaringClass().getAnnotation(Transactional.class) != null) {
+			return true;
 		}
-
-		return annotations;
-	}
-
-	@Override
-	public List<Annotation> scanMethodAnnotations(IManagedMethod managedMethod) {
-		List<Annotation> annotations = new ArrayList<>();
-
-		Transactional transactional = managedMethod.scanAnnotation(Transactional.class);
-		if (transactional != null) {
-			annotations.add(transactional);
-		}
-
-		Immutable immutable = managedMethod.scanAnnotation(Immutable.class);
-		if (immutable != null) {
-			annotations.add(immutable);
-		}
-
-		Mutable mutable = managedMethod.scanAnnotation(Mutable.class);
-		if (mutable != null) {
-			annotations.add(mutable);
-		}
-
-		return annotations;
+		return false;
 	}
 
 	@Override
 	public Object onMethodInvocation(IInvocationProcessorsChain chain, IInvocation invocation) throws Exception {
 		final IManagedMethod managedMethod = invocation.method();
-		if (!isTransactional(managedMethod)) {
-			return chain.invokeNextProcessor(invocation);
-		}
-
 		ITransactionalResource transactionalResource = (ITransactionalResource) container.getInstance(TransactionContext.class);
 		if (isMutable(managedMethod)) {
 			return executeMutableTransaction(transactionalResource, chain, invocation);
@@ -180,21 +143,11 @@ public class TransactionService implements IMethodInvocationProcessor, IAnnotati
 		return new InvocationException(t);
 	}
 
-	private static boolean isTransactional(IManagedMethod managedMethod) {
-		if (managedMethod.getAnnotation(Transactional.class) != null) {
-			return true;
-		}
-		if (managedMethod.getDeclaringClass().getAnnotation(Transactional.class) != null) {
-			return true;
-		}
-		return false;
-	}
-
 	private static boolean isMutable(IManagedMethod managedMethod) {
-		if (managedMethod.getAnnotation(Mutable.class) != null) {
+		if (managedMethod.scanAnnotation(Mutable.class) != null) {
 			return true;
 		}
-		if (managedMethod.getAnnotation(Immutable.class) != null) {
+		if (managedMethod.scanAnnotation(Immutable.class) != null) {
 			return false;
 		}
 		// at this point business method has no transaction related annotations
@@ -206,7 +159,7 @@ public class TransactionService implements IMethodInvocationProcessor, IAnnotati
 	}
 
 	private static String getScheme(IManagedMethod managedMethod) {
-		Transactional transactional = managedMethod.getAnnotation(Transactional.class);
+		Transactional transactional = managedMethod.scanAnnotation(Transactional.class);
 		if (transactional == null) {
 			transactional = managedMethod.getDeclaringClass().getAnnotation(Transactional.class);
 		}

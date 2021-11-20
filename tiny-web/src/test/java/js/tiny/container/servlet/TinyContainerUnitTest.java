@@ -37,7 +37,7 @@ import js.lang.Config;
 import js.lang.ConfigBuilder;
 import js.lang.ConfigException;
 import js.tiny.container.cdi.CDI;
-import js.tiny.container.cdi.IInstancePostConstructionListener;
+import js.tiny.container.cdi.IInstanceCreatedListener;
 import js.tiny.container.core.ClassDescriptor;
 import js.tiny.container.core.Container;
 import js.tiny.container.spi.IClassDescriptor;
@@ -62,7 +62,7 @@ public class TinyContainerUnitTest {
 	@Mock
 	private CDI cdi;
 	@Mock
-	private IInstancePostConstructionListener instanceListener;
+	private IInstanceCreatedListener instanceListener;
 	
 	@Mock
 	private TinyConfigBuilder configBuilder;
@@ -83,22 +83,13 @@ public class TinyContainerUnitTest {
 	}
 
 	@Before
-	public void beforeTest() {
+	public void beforeTest() throws ConfigException {
 		//when(cdi.getInstance(RequestContext.class, instanceListener)).thenReturn(requestContext);
 		
 		container = new TinyContainer(cdi, configBuilder, securityProvider);
 		
-		when(requestContextManagedClass.getInterfaceClass()).thenReturn(RequestContext.class);
+		//when(requestContextManagedClass.getInterfaceClass()).thenReturn(RequestContext.class);
 		container.config(requestContextManagedClass);
-	}
-
-	@Test
-	public void constructor() {
-		TinyContainer container = new TinyContainer();
-
-		Map<Class<?>, IManagedClass> classesPool = Classes.getFieldValue(container, Container.class, "classesPool");
-		assertNotNull(classesPool);
-		assertTrue(classesPool.isEmpty());
 	}
 
 	private static void assertClass(String expected, Object object) {

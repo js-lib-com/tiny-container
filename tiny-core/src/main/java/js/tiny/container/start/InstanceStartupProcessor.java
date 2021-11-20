@@ -1,8 +1,5 @@
 package js.tiny.container.start;
 
-import java.util.Set;
-import java.util.TreeSet;
-
 import javax.annotation.PostConstruct;
 import javax.ejb.Startup;
 
@@ -39,20 +36,13 @@ public class InstanceStartupProcessor implements IContainerStartProcessor {
 	 */
 	@Override
 	public void onContainerStart(IContainer container) {
-		// compare first with second to ensure ascending sorting
-		Set<IManagedClass<?>> startupClasses = new TreeSet<>((o1, o2) -> o1.getKey().compareTo(o2.getKey()));
 		for (IManagedClass<?> managedClass : container.getManagedClasses()) {
-			if (managedClass.scanAnnotation(Startup.class) != null) {
-				startupClasses.add(managedClass);
+			if (managedClass.getAnnotation(Startup.class) != null) {
+				// call getInstance to ensure managed instance with managed lifecycle is started
+				// getInstance() will create instance only if not already exist; returned value is ignored
+				log.debug("Create managed instance with managed lifecycle |%s|.", managedClass);
+				managedClass.getInstance();
 			}
-		}
-
-		for (IManagedClass<?> managedClass : startupClasses) {
-			// call getInstance to ensure managed instance with managed life cycle is started
-			// getInstance() will create instance only if not already exist; returned value is ignored
-
-			log.debug("Create managed instance with managed life cycle |%s|.", managedClass);
-			managedClass.getInstance();
 		}
 	}
 }

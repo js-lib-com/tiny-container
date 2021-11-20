@@ -27,14 +27,6 @@ public class ManagedProxy<T> implements InvocationHandler {
 		this.managedInstance = managedInstance;
 	}
 
-	public Class<T> getInterfaceClass() {
-		return managedClass.getInterfaceClass();
-	}
-
-	public Class<? extends T> getImplementationClass() {
-		return managedClass.getImplementationClass();
-	}
-
 	@Override
 	public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
 		if (method.getDeclaringClass().equals(Object.class)) {

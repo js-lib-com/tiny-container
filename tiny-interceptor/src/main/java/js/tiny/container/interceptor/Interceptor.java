@@ -3,10 +3,10 @@ package js.tiny.container.interceptor;
 import javax.interceptor.Interceptors;
 
 /**
- * Managed method invocation interceptor. This interface is base abstraction for specialized interceptors executed before and
- * after managed method execution. User space code may chose one of them or even both. Interceptor interface works closely with
- * {@link Interceptors} annotation as in next example.
- * <p>
+ * Stateless managed method invocation interceptor. This interface is base abstraction for specialized interceptors executed
+ * before and after managed method execution. User space code may chose one of them or even both. Interceptor interface works
+ * closely with {@link Interceptors} annotation as in next example.
+ * 
  * In sample below managed method is intercepted by audit class. Container executes {@link PreInvokeInterceptor} just before
  * executing managed method and {@link PostInvokeInterceptor} after.
  * 
@@ -26,8 +26,10 @@ import javax.interceptor.Interceptors;
  * }
  * </pre>
  * 
+ * Warn: interceptor instance is reused by container for every method invocation; therefore implementation should refrain to
+ * hold mutable state.
+ * 
  * @author Iulian Rotaru
- * @version final
  */
 public interface Interceptor {
 }

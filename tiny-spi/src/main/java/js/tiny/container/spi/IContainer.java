@@ -53,11 +53,4 @@ public interface IContainer {
 	 */
 	Iterable<IManagedClass<?>> getManagedClasses();
 
-	/**
-	 * Get all managed methods, from all managed classes, registered to this container.
-	 * 
-	 * @return container managed methods, in no particular order.
-	 */
-	Iterable<IManagedMethod> getManagedMethods();
-
 }

@@ -28,6 +28,7 @@ public class Bootstrap implements AppContainerProvider {
 			startContainer(container, arguments);
 			return container;
 		} catch (Exception e) {
+			log.dump("Fail to create application container:", e);
 			throw new AppContainerException();
 		}
 	}

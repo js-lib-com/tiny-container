@@ -1,7 +1,9 @@
 package js.tiny.container.perfmon;
 
-import js.lang.Config;
-import js.lang.ManagedLifeCycle;
+import javax.annotation.PostConstruct;
+import javax.annotation.PreDestroy;
+import javax.ejb.Startup;
+
 import js.log.Log;
 import js.log.LogFactory;
 
@@ -39,7 +41,8 @@ import js.log.LogFactory;
  * 
  * @author Iulian Rotaru
  */
-public class Observer implements ManagedLifeCycle, Runnable {
+@Startup
+public class Observer implements Runnable {
 	/** Class logger. */
 	private static final Log log = LogFactory.getLog(Observer.class);
 
@@ -58,7 +61,7 @@ public class Observer implements ManagedLifeCycle, Runnable {
 	private volatile boolean running;
 
 	/** Meters sampling period, in milliseconds. */
-	private int period;
+	private int period = 60000;
 
 	/**
 	 * Construct instrumentation manager for given parent application.
@@ -70,13 +73,8 @@ public class Observer implements ManagedLifeCycle, Runnable {
 		this.metersStore = MetersStore.instance();
 	}
 
-	public void config(Config config) {
-		log.trace("config(Config.Element)");
-		period = config.getAttribute("period", int.class, 0);
-	}
-
-	@Override
-	public void postConstruct() throws Exception {
+	@PostConstruct
+	public void postConstruct() {
 		log.trace("postConstruct()");
 		// start observer thread only if application is configured with observer period
 		if (period > 0) {
@@ -85,22 +83,20 @@ public class Observer implements ManagedLifeCycle, Runnable {
 			thread.start();
 		}
 	}
-
-	public void start(int period) {
-		this.period = period;
-		running = true;
-		thread = new Thread(this, getClass().getSimpleName());
-		thread.start();
-	}
 	
-	@Override
-	public void preDestroy() throws Exception {
+	@PreDestroy
+	public void preDestroy() {
 		log.trace("preDestroy()");
 		if (running) {
 			synchronized (this) {
 				running = false;
 				thread.interrupt();
-				this.wait(THREAD_STOP_TIMEOUT);
+				try {
+					this.wait(THREAD_STOP_TIMEOUT);
+				} catch (InterruptedException e) {
+					// TODO Auto-generated catch block
+					log.error(e);
+				}
 			}
 		}
 	}

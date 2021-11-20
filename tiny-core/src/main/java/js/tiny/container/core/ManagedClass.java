@@ -4,44 +4,31 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicInteger;
 
-import js.lang.BugError;
 import js.lang.ConfigException;
 import js.log.Log;
 import js.log.LogFactory;
-import js.tiny.container.spi.IAnnotationsScanner;
 import js.tiny.container.spi.IClassDescriptor;
+import js.tiny.container.spi.IClassPostLoadedProcessor;
 import js.tiny.container.spi.IContainer;
 import js.tiny.container.spi.IContainerService;
+import js.tiny.container.spi.IInstancePostConstructProcessor;
+import js.tiny.container.spi.IInstancePreDestroyProcessor;
 import js.tiny.container.spi.IManagedClass;
 import js.tiny.container.spi.IManagedMethod;
-import js.tiny.container.spi.IMethodInvocationProcessor;
 import js.tiny.container.spi.InstanceType;
 
 /**
- * Managed class implementation.
+ * Managed class implements extension points for class and instance services and facilitates remote access to business methods
+ * via reflection.
  * 
  * @author Iulian Rotaru
  */
 public final class ManagedClass<T> implements IManagedClass<T> {
 	private static final Log log = LogFactory.getLog(ManagedClass.class);
 
-	/**
-	 * Seed for managed classes key. These keys are created incrementally, but not necessarily in sequence because of concurrent
-	 * applications boot, and can be used to sort managed classes in creation order; creation order is the order of class
-	 * descriptor declarations on application descriptor.
-	 */
-	private static final AtomicInteger KEY_SEED = new AtomicInteger(0);
-
 	/** Back reference to parent container. */
 	private final Container container;
-
-	/**
-	 * Managed class key used to uniquely identifying this managed class. This key is incremental, but not necessarily in
-	 * sequence, and can be used to sort managed classes in creation order.
-	 */
-	private final Integer key;
 
 	/**
 	 * Managed class interface. If class descriptor has only <code>class</code> attribute this field is initialized from
@@ -64,7 +51,13 @@ public final class ManagedClass<T> implements IManagedClass<T> {
 	/** Cached value of managed class string representation, merely for logging. */
 	private final String string;
 
-	private final Map<Class<? extends Annotation>, Annotation> annotations = new HashMap<>();
+	/**
+	 * Instance post-processors are executed only on newly created managed instances. If instance is reused from scope cache
+	 * this processors are not executed. They add instance specific services. This list contains processors in execution order.
+	 */
+	private final FlowProcessorsSet<IInstancePostConstructProcessor> instancePostConstructors = new FlowProcessorsSet<>();
+
+	private final FlowProcessorsSet<IInstancePreDestroyProcessor> instancePreDestructors = new FlowProcessorsSet<>();
 
 	/**
 	 * Loads this managed class state from class descriptor then delegates {@link #scan()}. Annotations scanning is performed
@@ -79,7 +72,6 @@ public final class ManagedClass<T> implements IManagedClass<T> {
 
 		this.interfaceClass = descriptor.getInterfaceClass();
 		this.implementationClass = descriptor.getImplementationClass();
-		this.key = KEY_SEED.getAndIncrement();
 		this.string = buildStringRepresentation(descriptor);
 
 		if (descriptor.getInstanceType().requiresImplementation()) {
@@ -98,45 +90,49 @@ public final class ManagedClass<T> implements IManagedClass<T> {
 		return string;
 	}
 
-	/**
-	 * Scan annotations for managed classes that requires implementation. Annotations are processed only for managed classes
-	 * that have {@link #implementationClass} that is primary source scanned for annotation. If an annotation is not present
-	 * into implementation class try to find it on interface(s). See <a href="#annotations">Annotations</a> section from class
-	 * description.
-	 * 
-	 * @throws BugError for insane conditions.
-	 */
+	@Override
+	public String getSignature() {
+		return interfaceClass.getCanonicalName();
+	}
+
 	private void scan() {
 		for (Method method : implementationClass.getDeclaredMethods()) {
-			Method interfaceMethod = getInterfaceMethod(method);
-			IManagedMethod managedMethod = new ManagedMethod(this, interfaceMethod);
-			methodsPool.put(interfaceMethod.getName(), managedMethod);
+			IManagedMethod managedMethod = new ManagedMethod(this, method);
+			managedMethod.scanServices(container.getServices());
+			methodsPool.put(method.getName(), managedMethod);
 		}
 
 		for (IContainerService service : container.getServices()) {
-			if (service instanceof IAnnotationsScanner) {
-				IAnnotationsScanner scanner = (IAnnotationsScanner) service;
-				for (Annotation serviceMeta : scanner.scanClassAnnotations(this)) {
-					log.debug("Add service meta |%s| to managed class |%s|", serviceMeta.getClass(), this);
-					annotations.put(serviceMeta.annotationType(), serviceMeta);
+			if (service instanceof IClassPostLoadedProcessor) {
+				IClassPostLoadedProcessor processor = (IClassPostLoadedProcessor) service;
+				processor.onClassPostLoaded(this);
+			}
+			if (service instanceof IInstancePostConstructProcessor) {
+				IInstancePostConstructProcessor processor = (IInstancePostConstructProcessor) service;
+				if (processor.bind(this)) {
+					instancePostConstructors.add(processor);
+				}
+			}
+			if (service instanceof IInstancePreDestroyProcessor) {
+				IInstancePreDestroyProcessor processor = (IInstancePreDestroyProcessor) service;
+				if (processor.bind(this)) {
+					instancePreDestructors.add(processor);
 				}
 			}
 		}
 
-		for (IManagedMethod method : methodsPool.values()) {
-			ManagedMethod managedMethod = (ManagedMethod) method;
-			for (IContainerService service : container.getServices()) {
-				if (service instanceof IMethodInvocationProcessor) {
-					managedMethod.addInvocationProcessor((IMethodInvocationProcessor) service);
-				}
-				if (service instanceof IAnnotationsScanner) {
-					IAnnotationsScanner scanner = (IAnnotationsScanner) service;
-					for (Annotation serviceMeta : scanner.scanMethodAnnotations(managedMethod)) {
-						managedMethod.addAnnotation(serviceMeta);
-					}
-				}
-			}
-		}
+	}
+
+	void executeInstancePostConstructors(Object instance) {
+		instancePostConstructors.forEach(processor -> {
+			processor.onInstancePostConstruct(instance);
+		});
+	}
+
+	void executeInstancePreDestructors(Object instance) {
+		instancePreDestructors.forEach(processor -> {
+			processor.onInstancePreDestroy(instance);
+		});
 	}
 
 	// --------------------------------------------------------------------------------------------
@@ -145,11 +141,6 @@ public final class ManagedClass<T> implements IManagedClass<T> {
 	@Override
 	public IContainer getContainer() {
 		return container;
-	}
-
-	@Override
-	public Integer getKey() {
-		return key;
 	}
 
 	@Override
@@ -214,45 +205,20 @@ public final class ManagedClass<T> implements IManagedClass<T> {
 	// --------------------------------------------------------------------------------------------
 	// ANNOTATIONS SCANNER UTILITY METHODS
 
-	@SuppressWarnings("unchecked")
 	@Override
-	public <S extends Annotation> S getAnnotation(Class<S> type) {
-		return (S) annotations.get(type);
-	}
-
-	@Override
-	public <A extends Annotation> A scanAnnotation(Class<A> type) {
+	public <A extends Annotation> A getAnnotation(Class<A> annotationClass) {
 		if (implementationClass == null) {
 			return null;
 		}
-		A annotation = implementationClass.getAnnotation(type);
+		A annotation = implementationClass.getAnnotation(annotationClass);
 		if (annotation == null) {
 			for (Class<?> interfaceClass : implementationClass.getInterfaces()) {
-				annotation = interfaceClass.getAnnotation(type);
+				annotation = interfaceClass.getAnnotation(annotationClass);
 				if (annotation != null) {
 					break;
 				}
 			}
 		}
 		return annotation;
-	}
-
-	/**
-	 * Get Java reflective method from interface. This getter attempt to locate a method with the same signature as requested
-	 * base class method in any interface the declaring class may have. If no method found in interfaces or no interface present
-	 * return given base class method. If requested base class method is declared in multiple interfaces this getter returns the
-	 * first found but there is no guarantee for order.
-	 * 
-	 * @param method base class method, not null.
-	 * @return interface method or given base class method if no interface method found.
-	 */
-	private static Method getInterfaceMethod(Method method) {
-		for (Class<?> interfaceClass : method.getDeclaringClass().getInterfaces()) {
-			try {
-				return interfaceClass.getMethod(method.getName(), method.getParameterTypes());
-			} catch (NoSuchMethodException unused) {
-			}
-		}
-		return method;
 	}
 }

@@ -1,5 +1,7 @@
 package js.tiny.container.lifecycle;
 
+import static org.mockito.Mockito.*;
+
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 
@@ -7,15 +9,23 @@ import javax.annotation.PostConstruct;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.Mock;
+import org.mockito.junit.MockitoJUnitRunner;
 
 import js.tiny.container.spi.IInstancePostConstructProcessor.Priority;
+import js.tiny.container.spi.IManagedClass;
 
+@RunWith(MockitoJUnitRunner.class)
 public class InstancePostConstructTest {
-	private InstancePostConstructProcessor processor;
+	@Mock
+	private IManagedClass<?> managedClass;
+
+	private InstancePostConstructor processor;
 
 	@Before
 	public void beforeTest() {
-		processor = new InstancePostConstructProcessor();
+		processor = new InstancePostConstructor();
 		processor.resetCache();
 	}
 
@@ -33,6 +43,8 @@ public class InstancePostConstructTest {
 	@Test
 	public void GivenPostConstructMethod_WhenOnInstancePostConstruct_ThenInvoke() {
 		// given
+		doReturn(Service.class).when(managedClass).getImplementationClass();
+		processor.bind(managedClass);
 		Service instance = new Service();
 
 		// when
@@ -56,6 +68,8 @@ public class InstancePostConstructTest {
 	@Test(expected = IllegalStateException.class)
 	public void GivenStaticMethod_WhenOnInstancePostConstruct_ThenException() {
 		// given
+		doReturn(ServiceStatic.class).when(managedClass).getImplementationClass();
+		processor.bind(managedClass);
 		Object instance = new ServiceStatic();
 
 		// when
@@ -66,7 +80,8 @@ public class InstancePostConstructTest {
 
 	@Test(expected = IllegalStateException.class)
 	public void GivenMethodWithParameter_WhenOnInstancePostConstruct_ThenException() {
-		// given
+		doReturn(ServiceParameter.class).when(managedClass).getImplementationClass();
+		processor.bind(managedClass);
 		Object instance = new ServiceParameter();
 
 		// when
@@ -78,6 +93,8 @@ public class InstancePostConstructTest {
 	@Test(expected = IllegalStateException.class)
 	public void GivennonVoidMethod_WhenOnInstancePostConstruct_ThenException() {
 		// given
+		doReturn(ServiceNotVoid.class).when(managedClass).getImplementationClass();
+		processor.bind(managedClass);
 		Object instance = new ServiceNotVoid();
 
 		// when
@@ -89,6 +106,8 @@ public class InstancePostConstructTest {
 	@Test(expected = IllegalStateException.class)
 	public void GivenMethodWithException_WhenOnInstancePostConstruct_ThenException() {
 		// given
+		doReturn(ServiceException.class).when(managedClass).getImplementationClass();
+		processor.bind(managedClass);
 		Object instance = new ServiceException();
 
 		// when
@@ -97,9 +116,11 @@ public class InstancePostConstructTest {
 		// then
 	}
 
-	@Test(expected = IllegalStateException.class)
-	public void GivenDuplicatedMethod_WhenOnInstancePostConstruct_ThenException() {
+	@Test
+	public void GivenDuplicatedMethod_WhenOnInstancePostConstruct_ThenGetOne() {
 		// given
+		doReturn(ServiceDuplicated.class).when(managedClass).getImplementationClass();
+		processor.bind(managedClass);
 		Object instance = new ServiceDuplicated();
 
 		// when
@@ -108,8 +129,8 @@ public class InstancePostConstructTest {
 		// then
 	}
 
-	@Test
-	public void GivenMissingManagedMethod_WhenOnInstancePostConstruct_ThenNothing() {
+	@Test(expected = IllegalStateException.class)
+	public void GivenMissingManagedMethod_WhenOnInstancePostConstruct_ThenException() {
 		// given
 		Object instance = new Object();
 

@@ -1,17 +1,12 @@
 package js.tiny.container.transaction;
 
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.empty;
-import static org.hamcrest.Matchers.not;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.io.IOException;
-import java.lang.annotation.Annotation;
-import java.util.List;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -72,54 +67,6 @@ public class TransactionServiceTest {
 	}
 
 	@Test
-	public void GivenTransactionalClass_WhenScanClass_ThenServicesMeta() {
-		// given
-		when(managedClass.scanAnnotation(Transactional.class)).thenReturn(transactional);
-
-		// when
-		List<Annotation> servicesMeta = service.scanClassAnnotations(managedClass);
-
-		// then
-		assertThat(servicesMeta, not(empty()));
-	}
-
-	@Test
-	public void GivenNotTransactionalClass_WhenScanClass_ThenEmptyServicesMeta() {
-		// given
-		when(managedClass.scanAnnotation(Transactional.class)).thenReturn(transactional);
-
-		// when
-		List<Annotation> servicesMeta = service.scanClassAnnotations(managedClass);
-
-		// then
-		assertThat(servicesMeta, not(empty()));
-	}
-
-	@Test
-	public void GivenTransactionalMethod_WhenScanMethod_ThenServicesMeta() {
-		// given
-		when(managedMethod.scanAnnotation(Transactional.class)).thenReturn(transactional);
-
-		// when
-		List<Annotation> servicesMeta = service.scanMethodAnnotations(managedMethod);
-
-		// then
-		assertThat(servicesMeta, not(empty()));
-	}
-
-	@Test
-	public void GivenNotTransactionalMethod_WhenScanMethod_ThenEmptyServicesMeta() {
-		// given
-		when(managedMethod.scanAnnotation(Transactional.class)).thenReturn(transactional);
-
-		// when
-		List<Annotation> servicesMeta = service.scanMethodAnnotations(managedMethod);
-
-		// then
-		assertThat(servicesMeta, not(empty()));
-	}
-
-	@Test
 	public void GivenNotTransactionalMethod_WhenInvoke_ThenNextProcessor() throws Exception {
 		// given
 
@@ -134,7 +81,7 @@ public class TransactionServiceTest {
 	@Test
 	public void GivenImmutableTransaction_WhenInvoke_ThenNoCommitOrRollback() throws Exception {
 		// given
-		when(managedMethod.getAnnotation(Transactional.class)).thenReturn(transactionalMeta);
+		when(managedMethod.scanAnnotation(Transactional.class)).thenReturn(transactionalMeta);
 
 		// when
 		service.onMethodInvocation(processorsChain, methodInvocation);
@@ -164,7 +111,7 @@ public class TransactionServiceTest {
 	@Test
 	public void GivenNestedImmutableTransaction_WhenInvoke_ThenNoResourceManagerRelease() throws Exception {
 		// given
-		when(managedMethod.getAnnotation(Transactional.class)).thenReturn(transactionalMeta);
+		when(managedMethod.scanAnnotation(Transactional.class)).thenReturn(transactionalMeta);
 		when(transaction.close()).thenReturn(false);
 
 		// when
@@ -180,7 +127,7 @@ public class TransactionServiceTest {
 	@Test
 	public void GivenExceptionOnImmutableTransaction_WhenInvoke_ThenNoCommitOrRollback() throws Exception {
 		// given
-		when(managedMethod.getAnnotation(Transactional.class)).thenReturn(transactionalMeta);
+		when(managedMethod.scanAnnotation(Transactional.class)).thenReturn(transactionalMeta);
 		when(processorsChain.invokeNextProcessor(methodInvocation)).thenThrow(IOException.class);
 
 		// when
@@ -199,7 +146,7 @@ public class TransactionServiceTest {
 	@Test(expected = InvocationException.class)
 	public void GivenExceptionOnImmutableTransaction_WhenInvoke_ThenInvocationException() throws Exception {
 		// given
-		when(managedMethod.getAnnotation(Transactional.class)).thenReturn(transactionalMeta);
+		when(managedMethod.scanAnnotation(Transactional.class)).thenReturn(transactionalMeta);
 		when(processorsChain.invokeNextProcessor(methodInvocation)).thenThrow(IOException.class);
 
 		// when
@@ -211,8 +158,8 @@ public class TransactionServiceTest {
 	@Test
 	public void GivenMutableTransaction_WhenInvoke_ThenCommit() throws Exception {
 		// given
-		when(managedMethod.getAnnotation(Transactional.class)).thenReturn(transactionalMeta);
-		when(managedMethod.getAnnotation(Mutable.class)).thenReturn(Mockito.mock(Mutable.class));
+		when(managedMethod.scanAnnotation(Transactional.class)).thenReturn(transactionalMeta);
+		when(managedMethod.scanAnnotation(Mutable.class)).thenReturn(Mockito.mock(Mutable.class));
 
 		// when
 		service.onMethodInvocation(processorsChain, methodInvocation);
@@ -228,7 +175,7 @@ public class TransactionServiceTest {
 	public void GivenInheritedMutableTransaction_WhenInvoke_ThenCommit() throws Exception {
 		// given
 		when(managedClass.getAnnotation(Transactional.class)).thenReturn(transactionalMeta);
-		when(managedMethod.getAnnotation(Mutable.class)).thenReturn(Mockito.mock(Mutable.class));
+		when(managedMethod.scanAnnotation(Mutable.class)).thenReturn(Mockito.mock(Mutable.class));
 
 		// when
 		service.onMethodInvocation(processorsChain, methodInvocation);
@@ -243,8 +190,8 @@ public class TransactionServiceTest {
 	@Test
 	public void GivenNestedMutableTransaction_WhenInvoke_ThenNoResourceManagerRelease() throws Exception {
 		// given
-		when(managedMethod.getAnnotation(Transactional.class)).thenReturn(transactionalMeta);
-		when(managedMethod.getAnnotation(Mutable.class)).thenReturn(Mockito.mock(Mutable.class));
+		when(managedMethod.scanAnnotation(Transactional.class)).thenReturn(transactionalMeta);
+		when(managedMethod.scanAnnotation(Mutable.class)).thenReturn(Mockito.mock(Mutable.class));
 		when(transaction.close()).thenReturn(false);
 
 		// when
@@ -260,8 +207,8 @@ public class TransactionServiceTest {
 	@Test
 	public void GivenExceptionOnMutableTransaction_WhenInvoke_ThenRollback() throws Exception {
 		// given
-		when(managedMethod.getAnnotation(Transactional.class)).thenReturn(transactionalMeta);
-		when(managedMethod.getAnnotation(Mutable.class)).thenReturn(Mockito.mock(Mutable.class));
+		when(managedMethod.scanAnnotation(Transactional.class)).thenReturn(transactionalMeta);
+		when(managedMethod.scanAnnotation(Mutable.class)).thenReturn(Mockito.mock(Mutable.class));
 		when(processorsChain.invokeNextProcessor(methodInvocation)).thenThrow(IOException.class);
 
 		// when
@@ -280,8 +227,8 @@ public class TransactionServiceTest {
 	@Test(expected = InvocationException.class)
 	public void GivenExceptionOnMutableTransaction_WhenInvoke_ThenInvocationException() throws Exception {
 		// given
-		when(managedMethod.getAnnotation(Transactional.class)).thenReturn(transactionalMeta);
-		when(managedMethod.getAnnotation(Mutable.class)).thenReturn(Mockito.mock(Mutable.class));
+		when(managedMethod.scanAnnotation(Transactional.class)).thenReturn(transactionalMeta);
+		when(managedMethod.scanAnnotation(Mutable.class)).thenReturn(Mockito.mock(Mutable.class));
 		when(processorsChain.invokeNextProcessor(methodInvocation)).thenThrow(IOException.class);
 
 		// when

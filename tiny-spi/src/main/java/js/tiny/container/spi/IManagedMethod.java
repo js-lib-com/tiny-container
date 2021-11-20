@@ -3,6 +3,7 @@ package js.tiny.container.spi;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
+import java.util.Collection;
 
 /**
  * Managed method service provider interface. Although public, this interface is designed for library internal usage. User space
@@ -34,7 +35,7 @@ public interface IManagedMethod extends IMethodInvocationProcessor {
 	Method getMethod();
 
 	boolean isPublic();
-	
+
 	/**
 	 * Get managed method parameter types. If a formal parameter type is a parameterized type, the Type object returned for it
 	 * must accurately reflect the actual type parameters used in the source code.
@@ -61,7 +62,16 @@ public interface IManagedMethod extends IMethodInvocationProcessor {
 	 */
 	<T> T invoke(Object object, Object... args) throws Exception;
 
-	<T extends Annotation> T scanAnnotation(Class<T> type);
+	/**
+	 * TODO: this documentation is incorect.
+	 * 
+	 * Scan this method for requested annotation in both implementation and interface classes, in this order.
+	 * 
+	 * @param annotationClass annotation class to search for.
+	 * @return method annotation instance or null if not found.
+	 * @param <T> generic annotation type.
+	 */
+	<T extends Annotation> T scanAnnotation(Class<T> annotationClass);
 
 	void addAnnotation(Annotation annotation);
 
@@ -71,4 +81,5 @@ public interface IManagedMethod extends IMethodInvocationProcessor {
 
 	<T> T getAttribute(Object context, String name, Class<T> type);
 
+	void scanServices(Collection<IContainerService> services);
 }

@@ -17,6 +17,20 @@ package js.tiny.container.spi;
  */
 public interface IMethodInvocationProcessor extends IFlowProcessor {
 
+	Priority getPriority();
+
+	/**
+	 * Bind managed method to invocation processor and return true if binding succeed. Implementation is expected to scan the
+	 * method for specific annotations and return true if found. Optionally implementation may cache annotation values or other
+	 * pre-processed immutable state for reuse on {@link #onMethodInvocation(IInvocationProcessorsChain, IInvocation)}.
+	 * 
+	 * @param managedMethod
+	 * @return true if binding succeed.
+	 */
+	default boolean bind(IManagedMethod managedMethod) {
+		return true;
+	}
+
 	/**
 	 * Execute container service logic implemented by current invocation processor then invoke the next processor from chain.
 	 * Current service logic can be executed before, after or around next processor logic. It is legal for current processor to
@@ -28,8 +42,6 @@ public interface IMethodInvocationProcessor extends IFlowProcessor {
 	 * @throws Exception if service processing fails for whatever reason.
 	 */
 	Object onMethodInvocation(IInvocationProcessorsChain chain, IInvocation invocation) throws Exception;
-
-	Priority getPriority();
 
 	/**
 	 * Predefined priorities available to invocation processor implementations.

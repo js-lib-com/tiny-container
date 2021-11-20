@@ -1,6 +1,5 @@
 package js.tiny.container.cdi;
 
-
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.not;
@@ -39,13 +38,14 @@ import js.tiny.container.spi.InstanceScope;
 import js.tiny.container.spi.InstanceType;
 
 @RunWith(MockitoJUnitRunner.class)
+@Ignore
 public class CDITest {
 	@Mock
 	private IClassDescriptor<Object> classDescriptor;
 	@Mock
 	private Function<IClassDescriptor<?>, IManagedClass<?>> managedClassFactory;
 	@Mock
-	private IInstancePostConstructionListener<Object> instanceListener;
+	private IInstanceCreatedListener instanceListener;
 
 	private CDI cdi;
 
@@ -68,11 +68,11 @@ public class CDITest {
 		cdi.configure(Arrays.asList(classDescriptor), managedClassFactory);
 
 		// when
-		Object instance = cdi.getInstance(Object.class, instanceListener);
+		Object instance = cdi.getInstance(Object.class);
 
 		// then
 		assertThat(instance, notNullValue());
-		verify(instanceListener, times(1)).onInstancePostConstruction(instance);
+		verify(instanceListener, times(1)).onInstanceCreated(instance);
 	}
 
 	@Test
@@ -81,7 +81,7 @@ public class CDITest {
 	public void GivenTypePROXY_WhenGetInstance_ThenCreateNew() {
 		// given
 		IClassDescriptor<IService> managedClass = mock(IClassDescriptor.class);
-		IInstancePostConstructionListener<IService> instanceListener = mock(IInstancePostConstructionListener.class);
+		IInstanceCreatedListener instanceListener = mock(IInstanceCreatedListener.class);
 
 		when(managedClass.getInterfaceClass()).thenReturn(IService.class);
 		doReturn(Service.class).when(managedClass).getImplementationClass();
@@ -91,11 +91,11 @@ public class CDITest {
 		cdi.configure(Arrays.asList(classDescriptor), managedClassFactory);
 
 		// when
-		IService instance = cdi.getInstance(IService.class, instanceListener);
+		IService instance = cdi.getInstance(IService.class);
 
 		// then
 		assertThat(instance, notNullValue());
-		verify(instanceListener, times(1)).onInstancePostConstruction(instance);
+		verify(instanceListener, times(1)).onInstanceCreated(instance);
 	}
 
 	@Test
@@ -106,11 +106,11 @@ public class CDITest {
 		cdi.configure(Arrays.asList(classDescriptor), managedClassFactory);
 
 		// when
-		Object instance = cdi.getInstance(Object.class, instanceListener);
+		Object instance = cdi.getInstance(Object.class);
 
 		// then
 		assertThat(instance, notNullValue());
-		verify(instanceListener, times(0)).onInstancePostConstruction(any());
+		verify(instanceListener, times(0)).onInstanceCreated(any());
 	}
 
 	@Test
@@ -119,7 +119,7 @@ public class CDITest {
 	public void GivenTypeSERVICE_WhenGetInstance_ThenCreateNew() {
 		// given
 		IClassDescriptor<IService> managedClass = mock(IClassDescriptor.class);
-		IInstancePostConstructionListener<IService> instanceListener = mock(IInstancePostConstructionListener.class);
+		IInstanceCreatedListener instanceListener = mock(IInstanceCreatedListener.class);
 
 		when(managedClass.getInterfaceClass()).thenReturn(IService.class);
 		when(managedClass.getInstanceType()).thenReturn(InstanceType.SERVICE);
@@ -128,11 +128,11 @@ public class CDITest {
 		cdi.configure(Arrays.asList(classDescriptor), managedClassFactory);
 
 		// when
-		IService instance = cdi.getInstance(IService.class, instanceListener);
+		IService instance = cdi.getInstance(IService.class);
 
 		// then
 		assertThat(instance, notNullValue());
-		verify(instanceListener, times(1)).onInstancePostConstruction(instance);
+		verify(instanceListener, times(1)).onInstanceCreated(instance);
 		assertThat(instance.name(), equalTo("service"));
 	}
 
@@ -143,8 +143,8 @@ public class CDITest {
 		cdi.configure(Arrays.asList(classDescriptor), managedClassFactory);
 
 		// when
-		Object instance1 = cdi.getInstance(Object.class, instanceListener);
-		Object instance2 = cdi.getInstance(Object.class, instanceListener);
+		Object instance1 = cdi.getInstance(Object.class);
+		Object instance2 = cdi.getInstance(Object.class);
 
 		// then
 		assertThat(instance1, notNullValue());
@@ -159,8 +159,8 @@ public class CDITest {
 		cdi.configure(Arrays.asList(classDescriptor), managedClassFactory);
 
 		// when
-		Object instance1 = cdi.getInstance(Object.class, instanceListener);
-		Object instance2 = cdi.getInstance(Object.class, instanceListener);
+		Object instance1 = cdi.getInstance(Object.class);
+		Object instance2 = cdi.getInstance(Object.class);
 
 		// then
 		assertThat(instance1, notNullValue());
@@ -175,11 +175,11 @@ public class CDITest {
 		cdi.configure(Arrays.asList(classDescriptor), managedClassFactory);
 
 		// when
-		Object instance = cdi.getInstance(Object.class, instanceListener);
-		
+		Object instance = cdi.getInstance(Object.class);
+
 		final ThreadData<Object> threadData = new ThreadData<>();
 		Thread thread = new Thread(() -> {
-			threadData.instance = cdi.getInstance(Object.class, instanceListener);
+			threadData.instance = cdi.getInstance(Object.class);
 		});
 		thread.start();
 		thread.join();
@@ -197,8 +197,8 @@ public class CDITest {
 		cdi.configure(Arrays.asList(classDescriptor), managedClassFactory);
 
 		// when
-		Object instance1 = cdi.getInstance(Object.class, instanceListener);
-		Object instance2 = cdi.getInstance(Object.class, instanceListener);
+		Object instance1 = cdi.getInstance(Object.class);
+		Object instance2 = cdi.getInstance(Object.class);
 
 		// then
 		assertThat(instance1, notNullValue());
@@ -213,11 +213,11 @@ public class CDITest {
 		cdi.configure(Arrays.asList(classDescriptor), managedClassFactory);
 
 		// when
-		Object instance = cdi.getInstance(Object.class, instanceListener);
+		Object instance = cdi.getInstance(Object.class);
 
 		final ThreadData<Object> threadData = new ThreadData<>();
 		Thread thread = new Thread(() -> {
-			threadData.instance = cdi.getInstance(Object.class, instanceListener);
+			threadData.instance = cdi.getInstance(Object.class);
 		});
 		thread.start();
 		thread.join();
@@ -235,7 +235,7 @@ public class CDITest {
 		cdi.configure(Arrays.asList(classDescriptor), managedClassFactory);
 
 		// when
-		cdi.getInstance(Object.class, instanceListener);
+		cdi.getInstance(Object.class);
 
 		// then
 	}
@@ -247,13 +247,13 @@ public class CDITest {
 		cdi.configure(Arrays.asList(classDescriptor), managedClassFactory);
 
 		// when
-		Object instance1 = cdi.getInstance(Object.class, instanceListener);
-		Object instance2 = cdi.getInstance(Object.class, instanceListener);
+		Object instance1 = cdi.getInstance(Object.class);
+		Object instance2 = cdi.getInstance(Object.class);
 
 		// then
-		verify(instanceListener, times(2)).onInstancePostConstruction(any());
-		verify(instanceListener, times(1)).onInstancePostConstruction(instance1);
-		verify(instanceListener, times(1)).onInstancePostConstruction(instance2);
+		verify(instanceListener, times(2)).onInstanceCreated(any());
+		verify(instanceListener, times(1)).onInstanceCreated(instance1);
+		verify(instanceListener, times(1)).onInstanceCreated(instance2);
 	}
 
 	@Test
@@ -263,11 +263,11 @@ public class CDITest {
 		cdi.configure(Arrays.asList(classDescriptor), managedClassFactory);
 
 		// when
-		cdi.getInstance(Object.class, instanceListener);
-		cdi.getInstance(Object.class, instanceListener);
+		cdi.getInstance(Object.class);
+		cdi.getInstance(Object.class);
 
 		// then
-		verify(instanceListener, times(1)).onInstancePostConstruction(any());
+		verify(instanceListener, times(1)).onInstanceCreated(any());
 	}
 
 	@Test(expected = IllegalStateException.class)
@@ -297,7 +297,7 @@ public class CDITest {
 		// given
 
 		// when
-		cdi.getInstance(Object.class, instanceListener);
+		cdi.getInstance(Object.class);
 
 		// then
 	}
@@ -321,7 +321,7 @@ public class CDITest {
 		when(classDescriptor.getInstanceScope()).thenReturn(InstanceScope.APPLICATION);
 		cdi.configure(Arrays.asList(classDescriptor), managedClassFactory);
 		// get instance to fill scope provider cache
-		cdi.getInstance(Object.class, instanceListener);
+		cdi.getInstance(Object.class);
 
 		// when
 		Object instance = cdi.getScopeInstance(Object.class);
@@ -351,8 +351,8 @@ public class CDITest {
 		cdi.configure(Collections.emptyList(), managedClassFactory);
 
 		// when
-		Object instance1 = cdi.getInstance(Object.class, instanceListener);
-		Object instance2 = cdi.getInstance(Object.class, instanceListener);
+		Object instance1 = cdi.getInstance(Object.class);
+		Object instance2 = cdi.getInstance(Object.class);
 
 		// then
 		assertThat(instance1, equalTo(instance));
@@ -373,7 +373,7 @@ public class CDITest {
 		cdi.configure(Arrays.asList(classDescriptor), managedClassFactory);
 
 		// when
-		Object instance = cdi.getInstance(Object.class, instanceListener);
+		Object instance = cdi.getInstance(Object.class);
 
 		// then
 		assertThat(instance, notNullValue());

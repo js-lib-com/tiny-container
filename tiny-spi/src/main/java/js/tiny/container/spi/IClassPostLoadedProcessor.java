@@ -8,14 +8,14 @@ package js.tiny.container.spi;
  */
 public interface IClassPostLoadedProcessor extends IFlowProcessor {
 
+	Priority getPriority();
+
 	/**
 	 * Execute container service logic after managed class loaded.
 	 * 
 	 * @param managedClass just loaded managed class.
 	 */
 	<T> void onClassPostLoaded(IManagedClass<T> managedClass);
-
-	Priority getPriority();
 
 	/**
 	 * Predefined priorities available to class post-load processors.

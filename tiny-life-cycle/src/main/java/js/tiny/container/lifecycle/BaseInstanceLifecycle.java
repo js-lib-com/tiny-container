@@ -9,26 +9,19 @@ import java.util.Map;
 
 import js.util.Types;
 
-abstract class BaseInstanceLifeCycle {
-	protected Method getAnnotatedMethod(Map<Class<?>, Method> cache, Class<?> implementationClass, Class<? extends Annotation> annotationClass) {
-		if (!cache.containsKey(implementationClass)) {
-			synchronized (this) {
-				if (!cache.containsKey(implementationClass)) {
-					for (Method method : implementationClass.getDeclaredMethods()) {
-						if (hasLifeCycleAnnotation(method, annotationClass)) {
-							method.setAccessible(true);
-							if (cache.put(implementationClass, method) != null) {
-								throw new IllegalStateException(format("Class |%s| should contain at most one method annotated with |%s|.", implementationClass.getCanonicalName(), annotationClass.getCanonicalName()));
-							}
-						}
-					}
-				}
+abstract class BaseInstanceLifecycle {
+	protected boolean scanAnnotatedMethod(Map<Class<?>, Method> cache, Class<?> implementationClass, Class<? extends Annotation> annotationClass) {
+		for (Method method : implementationClass.getDeclaredMethods()) {
+			if (hasLifecycleAnnotation(method, annotationClass)) {
+				method.setAccessible(true);
+				cache.put(implementationClass, method);
+				return true;
 			}
 		}
-		return cache.get(implementationClass);
+		return false;
 	}
 
-	private boolean hasLifeCycleAnnotation(Method method, Class<? extends Annotation> annotationClass) {
+	private boolean hasLifecycleAnnotation(Method method, Class<? extends Annotation> annotationClass) {
 		Annotation annotation = method.getAnnotation(annotationClass);
 		if (annotation == null) {
 			return false;

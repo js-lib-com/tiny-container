@@ -35,12 +35,12 @@ public class ResourceConnector implements IConnector, IClassPostLoadedProcessor 
 	@Override
 	public <T> void onClassPostLoaded(IManagedClass<T> managedClass) {
 		log.trace("onClassPostLoaded(IManagedClass<T>)");
-		Controller controller = managedClass.scanAnnotation(Controller.class);
+		Controller controller = managedClass.getAnnotation(Controller.class);
 		if (controller == null) {
 			return;
 		}
 
-		log.debug("Scan MVC controller |%s|.", managedClass.getInterfaceClass());
+		log.debug("Scan MVC controller |%s|.", managedClass.getSignature());
 		for (IManagedMethod managedMethod : managedClass.getManagedMethods()) {
 			if (managedMethod.isPublic() && Types.isKindOf(managedMethod.getReturnType(), Resource.class)) {
 				String path = cache.add(managedMethod);

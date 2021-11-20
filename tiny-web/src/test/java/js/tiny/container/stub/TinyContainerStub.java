@@ -4,7 +4,6 @@ import java.security.Principal;
 
 import js.tiny.container.servlet.ITinyContainer;
 import js.tiny.container.spi.IManagedClass;
-import js.tiny.container.spi.IManagedMethod;
 
 public class TinyContainerStub implements ITinyContainer {
 	@Override
@@ -55,11 +54,6 @@ public class TinyContainerStub implements ITinyContainer {
 	@Override
 	public Iterable<IManagedClass<?>> getManagedClasses() {
 		throw new UnsupportedOperationException("getManagedClasses()");
-	}
-
-	@Override
-	public Iterable<IManagedMethod> getManagedMethods() {
-		throw new UnsupportedOperationException("getManagedMethods()");
 	}
 
 	@Override

@@ -1,2 +1,2 @@
-js.tiny.container.lifecycle.InstancePostConstructProcessor
-js.tiny.container.lifecycle.InstancePreDestroyProcessor
+js.tiny.container.lifecycle.InstancePostConstructor
+js.tiny.container.lifecycle.InstancePreDestructor

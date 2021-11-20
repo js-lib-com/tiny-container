@@ -33,7 +33,7 @@ public class MethodsCacheTest {
 	@Before
 	public void beforeTest() {
 		when(classPath.value()).thenReturn("resource");
-		when(managedClass.scanAnnotation(Path.class)).thenReturn(classPath);
+		when(managedClass.getAnnotation(Path.class)).thenReturn(classPath);
 
 		when(methodPath.value()).thenReturn("resource");
 		when(managedMethod.scanAnnotation(Path.class)).thenReturn(methodPath);
@@ -57,7 +57,7 @@ public class MethodsCacheTest {
 	@Test
 	public void GivenRootContext_WhenCreateStorageKey_ThenNoAppContext() throws Exception {
 		// given
-		when(managedClass.scanAnnotation(Path.class)).thenReturn(null);
+		when(managedClass.getAnnotation(Path.class)).thenReturn(null);
 		when(methodPath.value()).thenReturn("sub-resource");
 
 		// when

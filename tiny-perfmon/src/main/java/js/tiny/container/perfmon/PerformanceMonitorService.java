@@ -1,19 +1,13 @@
 package js.tiny.container.perfmon;
 
-import java.lang.annotation.Annotation;
-import java.util.Collections;
-import java.util.List;
-
 import js.log.Log;
 import js.log.LogFactory;
-import js.tiny.container.spi.IAnnotationsScanner;
 import js.tiny.container.spi.IInvocation;
 import js.tiny.container.spi.IInvocationProcessorsChain;
-import js.tiny.container.spi.IManagedClass;
 import js.tiny.container.spi.IManagedMethod;
 import js.tiny.container.spi.IMethodInvocationProcessor;
 
-public class PerformanceMonitorService implements IMethodInvocationProcessor, IAnnotationsScanner {
+public class PerformanceMonitorService implements IMethodInvocationProcessor {
 	private static final Log log = LogFactory.getLog(PerformanceMonitorService.class);
 
 	private final MetersStore metersStore;
@@ -29,14 +23,9 @@ public class PerformanceMonitorService implements IMethodInvocationProcessor, IA
 	}
 
 	@Override
-	public List<Annotation> scanClassAnnotations(IManagedClass<?> managedClass) {
-		return Collections.emptyList();
-	}
-
-	@Override
-	public List<Annotation> scanMethodAnnotations(IManagedMethod managedMethod) {
+	public boolean bind(IManagedMethod managedMethod) {
 		metersStore.createMeter(managedMethod);
-		return Collections.emptyList();
+		return true;
 	}
 
 	@Override

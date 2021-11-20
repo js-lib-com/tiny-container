@@ -1,7 +1,5 @@
 package js.tiny.container.timer;
 
-import java.lang.annotation.Annotation;
-import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -19,10 +17,9 @@ import js.log.LogFactory;
 import js.tiny.container.spi.IInstancePostConstructProcessor;
 import js.tiny.container.spi.IManagedClass;
 import js.tiny.container.spi.IManagedMethod;
-import js.tiny.container.spi.IAnnotationsScanner;
 import js.util.Params;
 
-public class CalendarTimerService implements IInstancePostConstructProcessor, IAnnotationsScanner {
+public class CalendarTimerService implements IInstancePostConstructProcessor {
 	private static final Log log = LogFactory.getLog(CalendarTimerService.class);
 
 	private static final int SCHEDULERS_THREAD_POLL = 2;
@@ -41,36 +38,32 @@ public class CalendarTimerService implements IInstancePostConstructProcessor, IA
 	}
 
 	@Override
-	public Iterable<Annotation> scanClassAnnotations(IManagedClass<?> managedClass) {
-		return Collections.emptyList();
-	}
-
-	@Override
-	public Iterable<Annotation> scanMethodAnnotations(IManagedMethod managedMethod) {
-		Schedule schedule = managedMethod.scanAnnotation(Schedule.class);
-		if (schedule != null) {
-			Set<IManagedMethod> timerMethods = classTimers.get(managedMethod.getDeclaringClass().getImplementationClass());
-			if (timerMethods == null) {
-				timerMethods = new HashSet<>();
-				classTimers.put(managedMethod.getDeclaringClass().getImplementationClass(), timerMethods);
-			}
-			timerMethods.add(managedMethod);
-		}
-		return Collections.emptyList();
-	}
-
-	@Override
 	public Priority getPriority() {
 		return Priority.TIMER;
+	}
+
+	@Override
+	public <T> boolean bind(IManagedClass<T> managedClass) {
+		final Set<IManagedMethod> timers = new HashSet<>();
+		managedClass.getManagedMethods().forEach(managedMethod -> {
+			Schedule schedule = managedMethod.scanAnnotation(Schedule.class);
+			if (schedule != null) {
+				timers.add(managedMethod);
+			}
+		});
+		if (timers.isEmpty()) {
+			return false;
+		}
+		classTimers.put(managedClass.getImplementationClass(), timers);
+		return true;
 	}
 
 	@Override
 	public <T> void onInstancePostConstruct(final T instance) {
 		Class<?> implementationClass = instance.getClass();
 		Set<IManagedMethod> timerMethods = classTimers.get(implementationClass);
-		if (timerMethods == null) {
-			return;
-		}
+		assert timerMethods != null;
+
 		// computed remaining time can be zero in which case managed method is executed instantly
 		timerMethods.forEach(managedMethod -> {
 			schedule(new TimerTask(this, instance, managedMethod), computeDelay(managedMethod.scanAnnotation(Schedule.class)));

@@ -24,15 +24,8 @@ public interface IManagedClass<T> {
 	 */
 	IContainer getContainer();
 
-	/**
-	 * Get the key uniquely identifying this managed class. Returned key is created incrementally, but not necessarily in
-	 * sequence, and can be used to sort managed classes in creation order; creation order is the order of class descriptor
-	 * declarations on application descriptor.
-	 * 
-	 * @return managed class unique key.
-	 */
-	Integer getKey();
-
+	String getSignature();
+	
 	/**
 	 * Get managed interface class. Note that returned class is not mandatory Java interface. Here term <code>interface</code>
 	 * denotes a class that identify managed class and indeed usually is Java interface. Anyway, it can be as well an abstract
@@ -87,8 +80,6 @@ public interface IManagedClass<T> {
 	 */
 	T getInstance();
 
-	<A extends Annotation> A scanAnnotation(Class<A> type);
-
-	<A extends Annotation> A getAnnotation(Class<A> type);
+	<A extends Annotation> A getAnnotation(Class<A> annotationClass);
 
 }

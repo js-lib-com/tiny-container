@@ -1,8 +1,7 @@
 package js.tiny.container.interceptor;
 
-import java.lang.annotation.Annotation;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 
 import js.lang.InvocationException;
 import js.log.Log;
@@ -10,14 +9,14 @@ import js.log.LogFactory;
 import js.tiny.container.spi.IContainer;
 import js.tiny.container.spi.IInvocation;
 import js.tiny.container.spi.IInvocationProcessorsChain;
-import js.tiny.container.spi.IManagedClass;
 import js.tiny.container.spi.IManagedMethod;
 import js.tiny.container.spi.IMethodInvocationProcessor;
-import js.tiny.container.spi.IAnnotationsScanner;
 import js.util.Classes;
 
-public class InterceptorService implements IMethodInvocationProcessor, IAnnotationsScanner {
+public class InterceptorService implements IMethodInvocationProcessor {
 	private static final Log log = LogFactory.getLog(InterceptorService.class);
+
+	private static final Map<IManagedMethod, Interceptor> cache = new HashMap<>();
 
 	private IContainer container;
 
@@ -37,27 +36,21 @@ public class InterceptorService implements IMethodInvocationProcessor, IAnnotati
 	}
 
 	@Override
-	public List<Annotation> scanClassAnnotations(IManagedClass<?> managedClass) {
-		List<Annotation> annotations = new ArrayList<>();
-
-		Intercepted intercepted = managedClass.scanAnnotation(Intercepted.class);
-		if (intercepted != null) {
-			annotations.add(intercepted);
-		}
-
-		return annotations;
-	}
-
-	@Override
-	public List<Annotation> scanMethodAnnotations(IManagedMethod managedMethod) {
-		List<Annotation> annotations = new ArrayList<>();
-
+	public boolean bind(IManagedMethod managedMethod) {
 		Intercepted intercepted = managedMethod.scanAnnotation(Intercepted.class);
-		if (intercepted != null) {
-			annotations.add(intercepted);
+		if (intercepted == null) {
+			intercepted = managedMethod.getDeclaringClass().getAnnotation(Intercepted.class);
 		}
-
-		return annotations;
+		if (intercepted == null) {
+			return false;
+		}
+		
+		Interceptor interceptor = container.getOptionalInstance(intercepted.value());
+		if (interceptor == null) {
+			interceptor = Classes.newInstance(intercepted.value());
+		}
+		cache.put(managedMethod, interceptor);
+		return true;
 	}
 
 	@Override
@@ -65,18 +58,8 @@ public class InterceptorService implements IMethodInvocationProcessor, IAnnotati
 		final IManagedMethod managedMethod = invocation.method();
 		final Object[] arguments = invocation.arguments();
 
-		Intercepted intercepted = managedMethod.getAnnotation(Intercepted.class);
-		if (intercepted == null) {
-			intercepted = managedMethod.getDeclaringClass().getAnnotation(Intercepted.class);
-		}
-		if (intercepted == null) {
-			return chain.invokeNextProcessor(invocation);
-		}
-
-		Interceptor interceptor = container.getOptionalInstance(intercepted.value());
-		if (interceptor == null) {
-			interceptor = Classes.newInstance(intercepted.value());
-		}
+		Interceptor interceptor = cache.get(managedMethod);
+		assert interceptor != null;
 
 		if (interceptor instanceof PreInvokeInterceptor) {
 			log.debug("Execute pre-invoke interceptor for method |%s|.", managedMethod);

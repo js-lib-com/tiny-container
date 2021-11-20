@@ -5,6 +5,7 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -12,6 +13,7 @@ import java.util.Objects;
 
 import js.log.Log;
 import js.log.LogFactory;
+import js.tiny.container.spi.IContainerService;
 import js.tiny.container.spi.IInvocation;
 import js.tiny.container.spi.IInvocationProcessorsChain;
 import js.tiny.container.spi.IManagedClass;
@@ -40,10 +42,7 @@ public class ManagedMethod implements IManagedMethod {
 	/** The managed class declaring this managed method. */
 	private final IManagedClass<?> declaringClass;
 
-	/**
-	 * Wrapped Java reflective method. This method instance reflects the method declared by managed class interface, see
-	 * {@link IManagedClass#getInterfaceClass()}.
-	 */
+	/** Wrapped Java reflective method. This method instance reflects the method declared by managed class implementation. */
 	private final Method method;
 
 	/** Managed method signature, mainly for debugging. */
@@ -77,6 +76,19 @@ public class ManagedMethod implements IManagedMethod {
 			formalParameters.add(formalParameter.getSimpleName());
 		}
 		signature = String.format(QUALIFIED_NAME_FORMAT, declaringClass.getImplementationClass().getCanonicalName(), method.getName(), Strings.join(formalParameters, ','));
+	}
+
+	@Override
+	public void scanServices(Collection<IContainerService> services) {
+		services.forEach(service -> {
+			// current implementation consider only method invocation processors
+			if (service instanceof IMethodInvocationProcessor) {
+				IMethodInvocationProcessor processor = (IMethodInvocationProcessor) service;
+				if (processor.bind(this)) {
+					invocationProcessors.add(processor);
+				}
+			}
+		});
 	}
 
 	@Override
@@ -164,20 +176,20 @@ public class ManagedMethod implements IManagedMethod {
 	}
 
 	@Override
-	public <T extends Annotation> T scanAnnotation(Class<T> type) {
-		T annotation = method.getAnnotation(type);
+	public <T extends Annotation> T scanAnnotation(Class<T> annotationClass) {
+		T annotation = method.getAnnotation(annotationClass);
 		if (annotation == null) {
-			try {
-				annotation = declaringClass.getImplementationClass().getMethod(method.getName(), method.getParameterTypes()).getAnnotation(type);
-			} catch (NoSuchMethodException | SecurityException e) {
-			}
+			final String name = method.getName();
+			final Class<?>[] parameterTypes = method.getParameterTypes();
 			if (annotation == null) {
-				try {
-					annotation = declaringClass.getInterfaceClass().getMethod(method.getName(), method.getParameterTypes()).getAnnotation(type);
-					if (annotation != null) {
-						return annotation;
+				for (Class<?> interfaceClass : method.getDeclaringClass().getInterfaces()) {
+					try {
+						annotation = interfaceClass.getMethod(name, parameterTypes).getAnnotation(annotationClass);
+						if (annotation != null) {
+							break;
+						}
+					} catch (NoSuchMethodException unused) {
 					}
-				} catch (NoSuchMethodException unused) {
 				}
 			}
 		}

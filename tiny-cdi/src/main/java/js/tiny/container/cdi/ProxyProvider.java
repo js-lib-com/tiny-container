@@ -9,6 +9,7 @@ import java.util.function.Function;
 import javax.inject.Provider;
 
 import js.lang.BugError;
+import js.lang.InstanceInvocationHandler;
 import js.lang.InvocationException;
 import js.log.Log;
 import js.log.LogFactory;
@@ -55,13 +56,18 @@ class ProxyProvider<T> implements Provider<T> {
 	 * 
 	 * @author Iulian Rotaru
 	 */
-	private static class ProxyHandler<T> implements InvocationHandler {
+	private static class ProxyHandler<T> implements InstanceInvocationHandler<T> {
 		private final IManagedClass<T> managedClass;
 		private final T managedInstance;
 
 		public ProxyHandler(IManagedClass<T> managedClass, T managedInstance) {
 			this.managedClass = managedClass;
 			this.managedInstance = managedInstance;
+		}
+
+		@Override
+		public T getWrappedInstance() {
+			return managedInstance;
 		}
 
 		@Override

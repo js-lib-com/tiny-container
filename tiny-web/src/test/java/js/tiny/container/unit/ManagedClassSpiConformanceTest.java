@@ -1,7 +1,5 @@
 package js.tiny.container.unit;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -10,10 +8,10 @@ import static org.junit.Assert.assertTrue;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
 
+import javax.annotation.PostConstruct;
+import javax.annotation.PreDestroy;
 import javax.annotation.security.DenyAll;
 import javax.ejb.Remote;
 import javax.inject.Inject;
@@ -24,7 +22,6 @@ import org.junit.Test;
 
 import js.lang.BugError;
 import js.lang.Config;
-import js.lang.ManagedLifeCycle;
 import js.tiny.container.core.ClassDescriptor;
 import js.tiny.container.core.Container;
 import js.tiny.container.core.ManagedClass;
@@ -32,32 +29,12 @@ import js.tiny.container.servlet.TinyConfigBuilder;
 import js.tiny.container.spi.IManagedClass;
 import js.tiny.container.spi.IManagedMethod;
 import js.tiny.container.stub.ContainerStub;
-import js.util.Classes;
 
 public class ManagedClassSpiConformanceTest {
 	@Test
 	public void getContainer() throws Exception {
 		String config = "<test class='js.tiny.container.unit.ManagedClassSpiConformanceTest$CarImpl' />";
 		assertEquals(MockContainer.class, getManagedClass(config(config)).getContainer().getClass());
-	}
-
-	@Test
-	public void getKey() throws Exception {
-		// reset key seed for this test case in order to have predictable sequence
-		AtomicInteger keySeed = Classes.getFieldValue(ManagedClass.class, "KEY_SEED");
-		keySeed.set(0);
-
-		String config = config("<test class='js.tiny.container.unit.ManagedClassSpiConformanceTest$CarImpl' />");
-		List<Integer> keys = new ArrayList<>(4);
-		for (int i = 0; i < keys.size(); ++i) {
-			keys.add(getManagedClass(config).getKey());
-		}
-
-		List<Integer> sortedKeys = new ArrayList<>(keys.size());
-		Collections.copy(sortedKeys, keys);
-		Collections.sort(sortedKeys);
-
-		assertThat(keys, equalTo(sortedKeys));
 	}
 
 	@Test
@@ -107,7 +84,7 @@ public class ManagedClassSpiConformanceTest {
 	@Test
 	public void getManagedMethod() throws Exception {
 		String config = "<test interface='js.tiny.container.unit.ManagedClassSpiConformanceTest$Car' class='js.tiny.container.unit.ManagedClassSpiConformanceTest$CarImpl' type='PROXY' />";
-		Method method = Car.class.getDeclaredMethod("getModel");
+		Method method = CarImpl.class.getDeclaredMethod("getModel");
 		IManagedMethod managedMethod = getManagedClass(config(config)).getManagedMethod(method.getName());
 
 		assertNotNull(managedMethod);
@@ -156,12 +133,12 @@ public class ManagedClassSpiConformanceTest {
 		String getModel();
 	}
 
-	private static class CarImpl implements Car, ManagedLifeCycle {
-		@Override
+	private static class CarImpl implements Car {
+		@PostConstruct
 		public void postConstruct() throws Exception {
 		}
 
-		@Override
+		@PreDestroy
 		public void preDestroy() throws Exception {
 		}
 

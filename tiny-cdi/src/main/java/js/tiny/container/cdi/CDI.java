@@ -13,6 +13,7 @@ import javax.inject.Singleton;
 import com.jslib.injector.IBindingBuilder;
 import com.jslib.injector.IInjector;
 import com.jslib.injector.IModule;
+import com.jslib.injector.IProvisionInvocation;
 import com.jslib.injector.IProvisionListener;
 import com.jslib.injector.IScope;
 import com.jslib.injector.Key;
@@ -35,7 +36,7 @@ import js.util.Params;
  * 
  * @author Iulian Rotaru
  */
-public class CDI {
+public class CDI implements IProvisionListener<Object> {
 	private static final Log log = LogFactory.getLog(CDI.class);
 
 	public static CDI create() {
@@ -128,23 +129,24 @@ public class CDI {
 	 * @throws ProvisionException if there is no bindings for requested interface.
 	 * @param <T> instance generic type.
 	 */
-	public <T> T getInstance(Class<T> interfaceClass, IInstancePostConstructionListener<T> instanceListener) {
+	public <T> T getInstance(Class<T> interfaceClass) {
 		Params.notNull(interfaceClass, "Interface class");
-		Params.notNull(instanceListener, "Instance listener");
-
 		if (!configured.get()) {
 			throw new IllegalStateException("Attempt to retrieve instance before injector configuration: " + interfaceClass);
 		}
+		return injector.getInstance(Key.get(interfaceClass));
+	}
 
-		IProvisionListener<T> provisionListener = invocation -> {
-			instanceListener.onInstancePostConstruction(invocation.instance());
-		};
-		injector.bindListener(provisionListener);
-		try {
-			return injector.getInstance(Key.get(interfaceClass));
-		} finally {
-			injector.unbindListener(provisionListener);
-		}
+	@Override
+	public void onProvision(IProvisionInvocation<Object> invocation) {
+		listener.onInstanceCreated(invocation.instance());
+	}
+
+	private IInstanceCreatedListener listener;
+
+	public void bindListener(IInstanceCreatedListener listener) {
+		injector.bindListener(this);
+		this.listener = listener;
 	}
 
 	/**

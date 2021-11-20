@@ -5,7 +5,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import js.lang.Config;
 import js.lang.ConfigException;
-import js.lang.ManagedLifeCycle;
 import js.tiny.container.spi.IClassDescriptor;
 import js.tiny.container.spi.InstanceScope;
 import js.tiny.container.spi.InstanceType;
@@ -100,9 +99,6 @@ public class ClassDescriptor<T> implements IClassDescriptor<T> {
 		int implementationModifiers = implementationClass.getModifiers();
 		if (Modifier.isAbstract(implementationModifiers)) {
 			throw new ConfigException("Managed class implementation |%s| cannot be abstract. See class descriptor |%s|.", implementationClass, descriptor);
-		}
-		if (Types.isKindOf(implementationClass, ManagedLifeCycle.class) && !InstanceScope.APPLICATION.equals(instanceScope)) {
-			throw new ConfigException("Bad scope |%s| used with managed life cycle. See class descriptor |%s|.", instanceScope, descriptor);
 		}
 
 		return implementationClass;

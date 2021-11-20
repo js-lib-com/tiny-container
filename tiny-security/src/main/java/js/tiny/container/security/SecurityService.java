@@ -1,9 +1,5 @@
 package js.tiny.container.security;
 
-import java.lang.annotation.Annotation;
-import java.util.ArrayList;
-import java.util.List;
-
 import javax.annotation.security.DenyAll;
 import javax.annotation.security.PermitAll;
 import javax.annotation.security.RolesAllowed;
@@ -19,16 +15,13 @@ import js.tiny.container.spi.AuthorizationException;
 import js.tiny.container.spi.IContainer;
 import js.tiny.container.spi.IInvocation;
 import js.tiny.container.spi.IInvocationProcessorsChain;
-import js.tiny.container.spi.IManagedClass;
 import js.tiny.container.spi.IManagedMethod;
 import js.tiny.container.spi.IMethodInvocationProcessor;
-import js.tiny.container.spi.IAnnotationsScanner;
 
-public class SecurityService implements IMethodInvocationProcessor, IAnnotationsScanner {
+public class SecurityService implements IMethodInvocationProcessor {
 	private static final Log log = LogFactory.getLog(SecurityService.class);
 
 	private IContainer container;
-	private boolean enabled;
 
 	public SecurityService() {
 		log.trace("SecurityService()");
@@ -46,63 +39,22 @@ public class SecurityService implements IMethodInvocationProcessor, IAnnotations
 	}
 
 	@Override
-	public List<Annotation> scanClassAnnotations(IManagedClass<?> managedClass) {
-		List<Annotation> annotations = new ArrayList<>();
-
-		RolesAllowed rolesAllowed = managedClass.scanAnnotation(RolesAllowed.class);
-		if (rolesAllowed != null) {
-			annotations.add(rolesAllowed);
+	public boolean bind(IManagedMethod managedMethod) {
+		// if method or is declaring class is 'PermitAll' there is no need to bind security processor
+		if (managedMethod.scanAnnotation(PermitAll.class) != null) {
+			return false;
 		}
-
-		DenyAll denyAll = managedClass.scanAnnotation(DenyAll.class);
-		if (denyAll != null) {
-			annotations.add(denyAll);
+		if (managedMethod.getDeclaringClass().getAnnotation(PermitAll.class) != null) {
+			return false;
 		}
-
-		PermitAll permitAll = managedClass.scanAnnotation(PermitAll.class);
-		if (permitAll != null) {
-			annotations.add(permitAll);
-		}
-
-		if (!annotations.isEmpty()) {
-			enabled = true;
-		}
-		return annotations;
-	}
-
-	@Override
-	public List<Annotation> scanMethodAnnotations(IManagedMethod managedMethod) {
-		List<Annotation> annotations = new ArrayList<>();
-
-		RolesAllowed rolesAllowed = managedMethod.scanAnnotation(RolesAllowed.class);
-		if (rolesAllowed != null) {
-			annotations.add(rolesAllowed);
-		}
-
-		DenyAll denyAll = managedMethod.scanAnnotation(DenyAll.class);
-		if (denyAll != null) {
-			annotations.add(denyAll);
-		}
-
-		PermitAll permitAll = managedMethod.scanAnnotation(PermitAll.class);
-		if (permitAll != null) {
-			annotations.add(permitAll);
-		}
-
-		if (!annotations.isEmpty()) {
-			enabled = true;
-		}
-		return annotations;
+		
+		// if public access is not granted return true to bind security processor  
+		return true;
 	}
 
 	@Override
 	public Object onMethodInvocation(IInvocationProcessorsChain chain, IInvocation invocation) throws Exception {
 		final IManagedMethod managedMethod = invocation.method();
-		// if there is no metadata related to security, grant unchecked access to everything
-		if (!enabled) {
-			log.debug("Not enabled security service. Grant unchecked access to |%s|!", managedMethod);
-			return chain.invokeNextProcessor(invocation);
-		}
 
 		final RequestContext requestContext = container.getOptionalInstance(RequestContext.class);
 		// grant unchecked access for methods executed outside HTTP request
@@ -117,11 +69,6 @@ public class SecurityService implements IMethodInvocationProcessor, IAnnotations
 			throw new AuthorizationException();
 		}
 
-		if (isPermitAll(managedMethod)) {
-			log.debug("Public access to |%s|.", managedMethod);
-			return chain.invokeNextProcessor(invocation);
-		}
-
 		if (!isAuthorized(requestContext.getRequest(), getRoles(managedMethod))) {
 			log.info("Reject not authorized access to |%s|.", managedMethod);
 			throw new AuthorizationException();
@@ -133,17 +80,13 @@ public class SecurityService implements IMethodInvocationProcessor, IAnnotations
 	// --------------------------------------------------------------------------------------------
 
 	private static boolean isDenyAll(IManagedMethod managedMethod) {
-		return managedMethod.getAnnotation(DenyAll.class) != null || managedMethod.getDeclaringClass().getAnnotation(DenyAll.class) != null;
-	}
-
-	private static boolean isPermitAll(IManagedMethod managedMethod) {
-		return managedMethod.getAnnotation(PermitAll.class) != null || managedMethod.getDeclaringClass().getAnnotation(PermitAll.class) != null;
+		return managedMethod.scanAnnotation(DenyAll.class) != null || managedMethod.getDeclaringClass().getAnnotation(DenyAll.class) != null;
 	}
 
 	private static final String[] EMPTY_ROLES = new String[0];
 
 	private static String[] getRoles(IManagedMethod managedMethod) {
-		RolesAllowed rolesAllowed = managedMethod.getAnnotation(RolesAllowed.class);
+		RolesAllowed rolesAllowed = managedMethod.scanAnnotation(RolesAllowed.class);
 		if (rolesAllowed == null) {
 			rolesAllowed = managedMethod.getDeclaringClass().getAnnotation(RolesAllowed.class);
 		}

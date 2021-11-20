@@ -4,8 +4,9 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.TimerTask;
 
+import javax.annotation.PreDestroy;
+
 import js.lang.AsyncExceptionListener;
-import js.lang.ManagedLifeCycle;
 import js.log.Log;
 import js.log.LogFactory;
 import js.tiny.container.spi.IContainer;
@@ -27,7 +28,7 @@ import js.tiny.container.spi.IContainer;
  * 
  * @author Iulian Rotaru
  */
-public final class Timer implements ManagedLifeCycle {
+public final class Timer  {
 	private static final Log log = LogFactory.getLog(Timer.class);
 
 
@@ -45,12 +46,8 @@ public final class Timer implements ManagedLifeCycle {
 		this.tasks = new HashMap<Object, TimerTask>();
 	}
 
-	@Override
-	public synchronized void postConstruct() throws Exception {
-	}
-
-	@Override
-	public synchronized void preDestroy() throws Exception {
+	@PreDestroy
+	public synchronized void preDestroy() {
 		for (TimerTask task : this.tasks.values()) {
 			task.cancel();
 		}

@@ -25,7 +25,7 @@ public class ResourceConnectorTest {
 
 	@Before
 	public void beforeTest() {
-		when(managedClass.scanAnnotation(Controller.class)).thenReturn(controller);
+		when(managedClass.getAnnotation(Controller.class)).thenReturn(controller);
 		
 		connector = new ResourceConnector(cache);
 	}

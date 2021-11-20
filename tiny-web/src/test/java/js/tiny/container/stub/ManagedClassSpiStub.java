@@ -8,11 +8,6 @@ import js.tiny.container.spi.IManagedMethod;
 
 public class ManagedClassSpiStub<T> implements IManagedClass<T> {
 	@Override
-	public Integer getKey() {
-		throw new UnsupportedOperationException("getKey()");
-	}
-
-	@Override
 	public Class<T> getInterfaceClass() {
 		throw new UnsupportedOperationException("getInterfaceClass()");
 	}
@@ -38,17 +33,18 @@ public class ManagedClassSpiStub<T> implements IManagedClass<T> {
 	}
 
 	@Override
-	public <S extends Annotation> S getAnnotation(Class<S> type) {
-		throw new UnsupportedOperationException("getServiceMeta(Class<T> type)");
-	}
-
-	@Override
-	public <A extends Annotation> A scanAnnotation(Class<A> type) {
+	public <A extends Annotation> A getAnnotation(Class<A> type) {
 		throw new UnsupportedOperationException("getAnnotation(Class<T> type)");
 	}
 
 	@Override
 	public T getInstance() {
 		throw new UnsupportedOperationException("getInstance()");
+	}
+
+	@Override
+	public String getSignature() {
+		// TODO Auto-generated method stub
+		return null;
 	}
 }

@@ -13,6 +13,7 @@ import js.lang.ManagedPostConstruct;
 import js.log.Log;
 import js.log.LogFactory;
 import js.tiny.container.spi.IInstancePostConstructProcessor;
+import js.tiny.container.spi.IManagedClass;
 import js.util.Params;
 
 /**
@@ -21,19 +22,24 @@ import js.util.Params;
  * 
  * @author Iulian Rotaru
  */
-public class InstancePostConstructProcessor extends BaseInstanceLifeCycle implements IInstancePostConstructProcessor {
-	private static final Log log = LogFactory.getLog(InstancePostConstructProcessor.class);
+public class InstancePostConstructor extends BaseInstanceLifecycle implements IInstancePostConstructProcessor {
+	private static final Log log = LogFactory.getLog(InstancePostConstructor.class);
 
 	/** Cache for @PostConstruct methods filled on the fly. */
 	private static final Map<Class<?>, Method> POST_CONSTRUCT_METHODS = new HashMap<>();
 
-	public InstancePostConstructProcessor() {
+	public InstancePostConstructor() {
 		log.trace("InstancePostConstructProcessor()");
 	}
 
 	@Override
 	public Priority getPriority() {
 		return Priority.CONSTRUCTOR;
+	}
+
+	@Override
+	public <T> boolean bind(IManagedClass<T> managedClass) {
+		return scanAnnotatedMethod(POST_CONSTRUCT_METHODS, managedClass.getImplementationClass(), PostConstruct.class);
 	}
 
 	/**
@@ -47,13 +53,13 @@ public class InstancePostConstructProcessor extends BaseInstanceLifeCycle implem
 	public <T> void onInstancePostConstruct(T instance) {
 		Params.notNull(instance, "Instance");
 		final Class<?> implementationClass = instance.getClass();
+		log.debug("Post-construct managed instance |%s|", implementationClass);
 
-		Method method = getAnnotatedMethod(POST_CONSTRUCT_METHODS, implementationClass, PostConstruct.class);
+		Method method = POST_CONSTRUCT_METHODS.get(implementationClass);
 		if (method == null) {
-			return;
+			throw new IllegalStateException(format("Missing post-construct method on implementation class |%s|.", implementationClass));
 		}
 
-		log.debug("Post-construct managed instance |%s|", instance.getClass());
 		try {
 			method.invoke(instance);
 		} catch (Throwable t) {
@@ -63,9 +69,9 @@ public class InstancePostConstructProcessor extends BaseInstanceLifeCycle implem
 			throw new RuntimeException(format("Managed instance |%s| post-construct fail: %s", implementationClass.getCanonicalName(), t.getMessage()));
 		}
 	}
-	
+
 	// --------------------------------------------------------------------------------------------
-	
+
 	void resetCache() {
 		POST_CONSTRUCT_METHODS.clear();
 	}

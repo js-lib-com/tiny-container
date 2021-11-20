@@ -3,9 +3,11 @@ package js.tiny.container.stub;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
+import java.util.Collection;
 
 import js.lang.InvocationException;
 import js.tiny.container.spi.AuthorizationException;
+import js.tiny.container.spi.IContainerService;
 import js.tiny.container.spi.IInvocation;
 import js.tiny.container.spi.IInvocationProcessorsChain;
 import js.tiny.container.spi.IManagedClass;
@@ -85,5 +87,9 @@ public class ManagedMethodSpiStub implements IManagedMethod {
 	@Override
 	public Priority getPriority() {
 		throw new UnsupportedOperationException("getPriority()");
+	}
+
+	@Override
+	public void scanServices(Collection<IContainerService> services) {
 	}
 }
