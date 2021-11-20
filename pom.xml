@@ -42,7 +42,7 @@
 		<module>tiny-timer</module>
 		<module>tiny-interceptor</module>
 		<module>tiny-resource</module>
-		<module>tiny-life-cycle</module>
+		<module>tiny-lifecycle</module>
 	</modules>
 
 	<properties>
