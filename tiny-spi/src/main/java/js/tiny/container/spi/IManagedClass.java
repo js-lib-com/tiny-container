@@ -24,8 +24,6 @@ public interface IManagedClass<T> {
 	 */
 	IContainer getContainer();
 
-	String getSignature();
-	
 	/**
 	 * Get managed interface class. Note that returned class is not mandatory Java interface. Here term <code>interface</code>
 	 * denotes a class that identify managed class and indeed usually is Java interface. Anyway, it can be as well an abstract
@@ -80,6 +78,14 @@ public interface IManagedClass<T> {
 	 */
 	T getInstance();
 
+	/**
+	 * Gets managed class annotation or null if not present. Should scan for requested annotation on both implementation and
+	 * interface classes, in this order.
+	 * 
+	 * @param annotationClass annotation class.
+	 * @return annotation instance or null if not present.
+	 * @param <A> annotation generic type.
+	 */
 	<A extends Annotation> A getAnnotation(Class<A> annotationClass);
 
 }

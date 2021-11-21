@@ -7,6 +7,7 @@ import js.app.container.AppContainer;
 import js.app.container.AppContainerException;
 import js.app.container.AppContainerProvider;
 import js.lang.Config;
+import js.lang.ConfigBuilder;
 import js.lang.ConfigException;
 import js.log.Log;
 import js.log.LogFactory;
@@ -34,7 +35,11 @@ public class Bootstrap implements AppContainerProvider {
 	}
 
 	public void startContainer(Container container, Object... arguments) throws ConfigException {
-		if (arguments.length == 1 && arguments[0] instanceof Config) {
+		if(arguments.length == 0) {
+			ConfigBuilder builder = new ConfigBuilder(getClass().getResourceAsStream("/app.xml"));
+			config(container, builder.build());
+		}
+		else if (arguments.length == 1 && arguments[0] instanceof Config) {
 			config(container, (Config) arguments[0]);
 		} else {
 			modules(container, arguments);

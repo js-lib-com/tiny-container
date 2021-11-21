@@ -15,7 +15,6 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
 import js.lang.BugError;
-import js.lang.ManagedPreDestroy;
 import js.tiny.container.spi.IContainer;
 import js.transaction.TransactionManager;
 
@@ -133,7 +132,7 @@ public class TransactionalResourceTest {
 		// given
 
 		// when
-		ManagedPreDestroy transactionalResource = new TransactionalResource(container);
+		TransactionalResource transactionalResource = new TransactionalResource(container);
 		transactionalResource.preDestroy();
 
 		// then

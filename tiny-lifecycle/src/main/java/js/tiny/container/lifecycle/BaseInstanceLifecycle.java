@@ -28,16 +28,16 @@ abstract class BaseInstanceLifecycle {
 		}
 
 		if (Modifier.isStatic(method.getModifiers())) {
-			throw new IllegalStateException(format("Method annotated with |%s| should not be static.", annotationClass.getCanonicalName()));
+			throw new IllegalStateException(format("Method |%s| annotated with |%s| should not be static.", method, annotationClass.getCanonicalName()));
 		}
 		if (method.getParameterCount() != 0) {
-			throw new IllegalStateException(format("Method annotated with |%s| should have no parameter.", annotationClass.getCanonicalName()));
+			throw new IllegalStateException(format("Method |%s| annotated with |%s| should have no parameter.", method, annotationClass.getCanonicalName()));
 		}
 		if (!Types.isVoid(method.getGenericReturnType())) {
-			throw new IllegalStateException(format("Method annotated with |%s| should not return any value.", annotationClass.getCanonicalName()));
+			throw new IllegalStateException(format("Method |%s| annotated with |%s| should not return any value.", method, annotationClass.getCanonicalName()));
 		}
 		if (method.getExceptionTypes().length != 0) {
-			throw new IllegalStateException(format("Method annotated with |%s| should not throw any checked exception.", annotationClass.getCanonicalName()));
+			throw new IllegalStateException(format("Method |%s| annotated with |%s| should not throw any checked exception.", method, annotationClass.getCanonicalName()));
 		}
 		return true;
 	}

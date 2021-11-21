@@ -3,8 +3,8 @@ package js.tiny.container.core;
 import java.lang.reflect.Proxy;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
@@ -39,7 +39,7 @@ public class Container implements IContainer, AppContainer, IInstanceCreatedList
 
 	protected final CDI cdi;
 
-	private final Set<IContainerService> containerServices = new HashSet<>();
+	private final Set<IContainerService> services = new HashSet<>();
 
 	/**
 	 * Master cache for all managed classes registered to container. Since an application has one container instance, managed
@@ -48,10 +48,10 @@ public class Container implements IContainer, AppContainer, IInstanceCreatedList
 	private List<IManagedClass<?>> managedClasses = new ArrayList<>();
 
 	/** Managed classes indexed by interface class. */
-	private final Map<Class<?>, IManagedClass<?>> managedClassesByInterface = new LinkedHashMap<>();
+	private final Map<Class<?>, IManagedClass<?>> managedClassesByInterface = new HashMap<>();
 
 	/** Managed classes indexed by implementation class. */
-	private final Map<Class<?>, ManagedClass<?>> managedClassesByImplementation = new LinkedHashMap<>();
+	private final Map<Class<?>, ManagedClass<?>> managedClassesByImplementation = new HashMap<>();
 
 	private final FlowProcessorsSet<IContainerStartProcessor> containerStartProcessors = new FlowProcessorsSet<>();
 
@@ -65,6 +65,7 @@ public class Container implements IContainer, AppContainer, IInstanceCreatedList
 	 */
 	public Container(CDI cdi) {
 		this.cdi = cdi;
+		this.cdi.setInstanceCreatedListener(this);
 		this.cdi.bindInstance(IContainer.class, this);
 		this.cdi.bindInstance(AppContainer.class, this);
 	}
@@ -79,12 +80,11 @@ public class Container implements IContainer, AppContainer, IInstanceCreatedList
 	public void config(List<IClassDescriptor<?>> descriptors) throws ConfigException {
 		log.trace("config(Config)");
 		cdi.configure(descriptors, descriptor -> managedClassesByInterface.get(descriptor.getInterfaceClass()));
-		cdi.bindListener(this);
 
 		for (IContainerService service : ServiceLoader.load(IContainerService.class)) {
 			log.debug("Load container service |%s|.", service.getClass());
 			service.create(this);
-			containerServices.add(service);
+			services.add(service);
 
 			if (service instanceof IContainerStartProcessor) {
 				containerStartProcessors.add((IContainerStartProcessor) service);
@@ -92,7 +92,12 @@ public class Container implements IContainer, AppContainer, IInstanceCreatedList
 		}
 
 		for (IClassDescriptor<?> descriptor : descriptors) {
-			ManagedClass<?> managedClass = new ManagedClass<>(this, descriptor);
+			if(descriptor.getImplementationClass() == null) {
+				continue;
+			}
+			ManagedClass<?> managedClass = new ManagedClass(this, descriptor.getInterfaceClass(), descriptor.getImplementationClass());
+			managedClass.scanServices();
+
 			log.debug("Register managed class |%s|.", managedClass);
 			managedClasses.add(managedClass);
 
@@ -118,19 +123,20 @@ public class Container implements IContainer, AppContainer, IInstanceCreatedList
 	public void close() {
 		log.trace("close()");
 
-		ListIterator<IManagedClass<?>> iterator = managedClasses.listIterator();
+		// although not specified in apidoc, list iterator size should be provided
+		ListIterator<IManagedClass<?>> iterator = managedClasses.listIterator(managedClasses.size());
 		while (iterator.hasPrevious()) {
 			IManagedClass<?> managedClass = iterator.previous();
 			Object instance = cdi.getScopeInstance(managedClass.getInterfaceClass());
 			if (instance == null) {
-				return;
+				continue;
 			}
 
 			// in case instance is a Java Proxy takes care to execute pre-destroy hook on wrapped instance
 			// in order to avoid adding container services to this finalization hook
 			if (instance instanceof Proxy) {
 				if (!(Proxy.getInvocationHandler(instance) instanceof InstanceInvocationHandler)) {
-					return;
+					continue;
 				}
 				instance = Classes.unproxy(instance);
 			}
@@ -139,7 +145,7 @@ public class Container implements IContainer, AppContainer, IInstanceCreatedList
 			((ManagedClass<?>) managedClass).executeInstancePreDestructors(instance);
 		}
 
-		for (IContainerService service : containerServices) {
+		for (IContainerService service : services) {
 			log.debug("Destroy container service |%s|.", service);
 			service.destroy();
 		}
@@ -195,6 +201,6 @@ public class Container implements IContainer, AppContainer, IInstanceCreatedList
 	}
 
 	Collection<IContainerService> getServices() {
-		return containerServices;
+		return services;
 	}
 }

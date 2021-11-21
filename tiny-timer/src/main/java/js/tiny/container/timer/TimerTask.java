@@ -32,5 +32,6 @@ class TimerTask implements Runnable {
 		} catch (Throwable t) {
 			log.dump(String.format("Fail on timer method |%s|: ", managedMethod), t);
 		}
+		log.debug("Close timer method |%s|.", managedMethod);
 	}
 }

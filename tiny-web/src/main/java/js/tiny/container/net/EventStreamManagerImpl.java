@@ -5,10 +5,10 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.annotation.PreDestroy;
 import javax.inject.Inject;
 
 import js.lang.Event;
-import js.lang.ManagedPreDestroy;
 import js.log.Log;
 import js.log.LogFactory;
 import js.tiny.container.spi.IContainer;
@@ -54,7 +54,7 @@ import js.tiny.container.spi.IContainer;
  * @author Iulian Rotaru
  * @version final
  */
-public class EventStreamManagerImpl implements EventStreamManager, ManagedPreDestroy {
+public class EventStreamManagerImpl implements EventStreamManager {
 	private static final Log log = LogFactory.getLog(EventStreamManagerImpl.class);
 
 	/** Parent container back reference. */
@@ -92,7 +92,7 @@ public class EventStreamManagerImpl implements EventStreamManager, ManagedPreDes
 	}
 
 	/** Closes all event streams still opened when event stream manager is destroyed. */
-	@Override
+	@PreDestroy
 	public void preDestroy() {
 		synchronized (eventStreams) {
 			if (eventStreams.isEmpty()) {

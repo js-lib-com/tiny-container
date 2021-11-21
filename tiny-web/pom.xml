@@ -14,6 +14,11 @@
 			<version>${project.parent.version}</version>
 		</dependency>
 		<dependency>
+			<groupId>${project.parent.groupId}</groupId>
+			<artifactId>tiny-lifecycle</artifactId>
+			<version>${project.parent.version}</version>
+		</dependency>
+		<dependency>
 			<groupId>com.js-lib</groupId>
 			<artifactId>js-servlet-api</artifactId>
 			<version>1.0-SNAPSHOT</version>

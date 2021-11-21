@@ -1,20 +1,25 @@
 package js.tiny.container.servlet;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.security.Principal;
 import java.util.Enumeration;
 import java.util.List;
-import java.util.Properties;
 
+import javax.inject.Singleton;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
 import javax.servlet.http.HttpSessionEvent;
 import javax.servlet.http.HttpSessionListener;
 
+import com.jslib.injector.ThreadScoped;
+
 import js.converter.ConverterRegistry;
 import js.lang.BugError;
 import js.lang.Config;
+import js.lang.ConfigBuilder;
 import js.lang.ConfigException;
 import js.log.Log;
 import js.log.LogContext;
@@ -23,6 +28,9 @@ import js.tiny.container.cdi.CDI;
 import js.tiny.container.cdi.SessionScoped;
 import js.tiny.container.core.Bootstrap;
 import js.tiny.container.core.Container;
+import js.tiny.container.net.EventStream;
+import js.tiny.container.net.EventStreamManager;
+import js.tiny.container.net.EventStreamManagerImpl;
 import js.tiny.container.spi.IClassDescriptor;
 import js.tiny.container.spi.InstanceScope;
 
@@ -112,17 +120,6 @@ public class TinyContainer extends Container implements ServletContextListener, 
 	/** Diagnostic context name for context path, aka application. */
 	private static final String LOG_CONTEXT_APP = "app";
 
-	/**
-	 * Server and container properties loaded from context parameters defined on external descriptors. Context parameters are
-	 * optional and this properties instance can be empty. If present, context parameters are used by {@link TinyConfigBuilder}
-	 * to inject variables. Also can be retrieved by application using {@link #getProperty(String)}.
-	 * <p>
-	 * Tiny container uses {@link ServletContext#getInitParameter(String)} to load this context parameters. Context parameters
-	 * source may depend on web server implementation but <code>context-param</code> from deployment descriptor is always
-	 * supported.
-	 */
-	private final Properties contextParameters = new Properties();
-
 	/** The name of web application that own this tiny container. Default value to <code>test-app</code>. */
 	private String appName = "test-app";
 
@@ -165,23 +162,21 @@ public class TinyContainer extends Container implements ServletContextListener, 
 
 	private TinySecurity security;
 
-	private final TinyConfigBuilder configBuilder;
-
 	public TinyContainer() {
-		this(CDI.create(), new TinyConfigBuilder(), new TinySecurity());
+		this(CDI.create(), new TinySecurity());
 	}
 
-	/**
-	 * Test constructor.
-	 */
-	public TinyContainer(CDI cdi, TinyConfigBuilder configBuilder, TinySecurity security) {
+	/** Test constructor. */
+	public TinyContainer(CDI cdi, TinySecurity security) {
 		super(cdi);
-		log.trace("TinyContainer(CDI, TinyConfigBuilder, TinySecurity)");
-		this.configBuilder = configBuilder;
+		log.trace("TinyContainer(CDI, TinySecurity)");
 
 		this.cdi.bindInstance(ITinyContainer.class, this);
 		this.cdi.bindInstance(WebContext.class, this);
 		this.cdi.bindInstance(SecurityContext.class, this);
+		this.cdi.bind(RequestContext.class, ThreadScoped.class);
+		this.cdi.bind(EventStreamManager.class, EventStreamManagerImpl.class, Singleton.class);
+		this.cdi.bind(EventStream.class);
 		this.cdi.bindScope(SessionScoped.class, new SessionScopeProvider.Factory<>());
 
 		this.security = security;
@@ -237,16 +232,20 @@ public class TinyContainer extends Container implements ServletContextListener, 
 		while (parameterNames.hasMoreElements()) {
 			final String name = parameterNames.nextElement();
 			final String value = servletContext.getInitParameter(name);
-			contextParameters.setProperty(name, value);
-			log.debug("Load context parameter |%s| value |%s|.", name, value);
+			System.setProperty(name, value);
+			log.debug("Load context parameter |%s| value |%s| into system properties.", name, value);
 		}
 
 		// WARN: if development context is declared it can access private resources without authentication
-		developmentContext = contextParameters.getProperty("js.tiny.container.dev.context");
+		developmentContext = System.getProperty("js.tiny.container.dev.context");
 
 		Bootstrap bootstrap = new Bootstrap();
 		try {
-			configBuilder.configure(servletContext, contextParameters);
+			File contextDir = new File(servletContext.getRealPath(""));
+			File webinfDir = new File(contextDir, "WEB-INF");
+			File appDescriptorfile = new File(webinfDir, "app.xml");
+			ConfigBuilder configBuilder = new ConfigBuilder(new FileInputStream(appDescriptorfile));
+
 			bootstrap.startContainer(this, configBuilder.build());
 
 			// set tiny container reference on servlet context attribute ONLY if no exception
@@ -255,6 +254,9 @@ public class TinyContainer extends Container implements ServletContextListener, 
 		} catch (ConfigException e) {
 			log.error(e);
 			log.fatal("Bad container |%s| configuration.", appName);
+		} catch (FileNotFoundException e) {
+			// TODO Auto-generated catch block
+			log.error(e);
 		} catch (Error | RuntimeException e) {
 			log.dump(String.format("Fatal error on container |%s| start:", appName), e);
 			log.debug("Signal fatal error |%s| to host container. Application abort.", e.getClass());
@@ -315,7 +317,8 @@ public class TinyContainer extends Container implements ServletContextListener, 
 
 	@Override
 	public <T> T getProperty(String name, Class<T> type) {
-		return ConverterRegistry.getConverter().asObject(contextParameters.getProperty(name), type);
+		// TODO: move contextParameters to global JVM system properties
+		return ConverterRegistry.getConverter().asObject(System.getProperty(name), type);
 	}
 
 	@Override

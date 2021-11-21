@@ -28,12 +28,11 @@ import js.tiny.container.spi.IContainer;
  * 
  * @author Iulian Rotaru
  */
-public final class Timer  {
+public final class Timer {
 	private static final Log log = LogFactory.getLog(Timer.class);
 
-
 	private final IContainer container;
-	
+
 	/** Java {@link java.util.Timer} instance. */
 	private final java.util.Timer timer;
 
@@ -41,18 +40,18 @@ public final class Timer  {
 	private final Map<Object, TimerTask> tasks;
 
 	public Timer(IContainer container) {
+		log.trace("Timer(IContainer)");
 		this.container = container;
 		this.timer = new java.util.Timer();
-		this.tasks = new HashMap<Object, TimerTask>();
+		this.tasks = new HashMap<>();
 	}
 
 	@PreDestroy
 	public synchronized void preDestroy() {
-		for (TimerTask task : this.tasks.values()) {
-			task.cancel();
-		}
-		this.tasks.clear();
-		this.timer.cancel();
+		log.trace("preDestroy()");
+		tasks.values().forEach(task -> task.cancel());
+		tasks.clear();
+		timer.cancel();
 	}
 
 	/**
@@ -63,8 +62,8 @@ public final class Timer  {
 	 */
 	public synchronized void period(final PeriodicTask periodicTask, long period) {
 		TimerTask task = new PeriodicTaskImpl(periodicTask);
-		this.tasks.put(periodicTask, task);
-		this.timer.schedule(task, 0L, period);
+		tasks.put(periodicTask, task);
+		timer.schedule(task, 0L, period);
 	}
 
 	/**
@@ -74,14 +73,14 @@ public final class Timer  {
 	 * @param timeout timeout value, milliseconds.
 	 */
 	public synchronized void timeout(final TimeoutTask timeoutTask, long timeout) {
-		TimerTask task = this.tasks.get(timeoutTask);
+		TimerTask task = tasks.get(timeoutTask);
 		if (task != null) {
 			task.cancel();
-			this.tasks.values().remove(task);
+			tasks.values().remove(task);
 		}
 		task = new TimeoutTaskImpl(timeoutTask);
-		this.tasks.put(timeoutTask, task);
-		this.timer.schedule(task, timeout);
+		tasks.put(timeoutTask, task);
+		timer.schedule(task, timeout);
 	}
 
 	/**
@@ -108,10 +107,10 @@ public final class Timer  {
 	 * @param task pending user defined task.
 	 */
 	private void purgeTask(Object task) {
-		TimerTask timerTask = this.tasks.get(task);
+		TimerTask timerTask = tasks.get(task);
 		if (timerTask != null) {
 			timerTask.cancel();
-			this.tasks.values().remove(timerTask);
+			tasks.values().remove(timerTask);
 		}
 	}
 

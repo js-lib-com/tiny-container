@@ -5,10 +5,8 @@ import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
 
-import js.lang.ConfigException;
 import js.log.Log;
 import js.log.LogFactory;
-import js.tiny.container.spi.IClassDescriptor;
 import js.tiny.container.spi.IClassPostLoadedProcessor;
 import js.tiny.container.spi.IContainer;
 import js.tiny.container.spi.IContainerService;
@@ -17,6 +15,7 @@ import js.tiny.container.spi.IInstancePreDestroyProcessor;
 import js.tiny.container.spi.IManagedClass;
 import js.tiny.container.spi.IManagedMethod;
 import js.tiny.container.spi.InstanceType;
+import js.util.Params;
 
 /**
  * Managed class implements extension points for class and instance services and facilitates remote access to business methods
@@ -37,8 +36,8 @@ public final class ManagedClass<T> implements IManagedClass<T> {
 	private final Class<T> interfaceClass;
 
 	/**
-	 * Optional managed class implementation has value only if {@link InstanceType#requiresImplementation()} says so. It can be
-	 * null if managed class does not require implementation, for example if is a remote class.
+	 * Optional managed class implementation. It can be null if managed class does not require implementation, for example if is
+	 * a remote class or a Java service.
 	 */
 	private final Class<? extends T> implementationClass;
 
@@ -48,9 +47,6 @@ public final class ManagedClass<T> implements IManagedClass<T> {
 	 */
 	private final Map<String, IManagedMethod> methodsPool = new HashMap<>();
 
-	/** Cached value of managed class string representation, merely for logging. */
-	private final String string;
-
 	/**
 	 * Instance post-processors are executed only on newly created managed instances. If instance is reused from scope cache
 	 * this processors are not executed. They add instance specific services. This list contains processors in execution order.
@@ -59,43 +55,17 @@ public final class ManagedClass<T> implements IManagedClass<T> {
 
 	private final FlowProcessorsSet<IInstancePreDestroyProcessor> instancePreDestructors = new FlowProcessorsSet<>();
 
-	/**
-	 * Loads this managed class state from class descriptor then delegates {@link #scan()}. Annotations scanning is performed
-	 * only if this managed class type requires implementation, see {@link InstanceType#requiresImplementation()}.
-	 * 
-	 * @param container parent container,
-	 * @param descriptor class descriptor from <code>managed-class</code> section.
-	 * @throws ConfigException if configuration is invalid.
-	 */
-	public ManagedClass(Container container, IClassDescriptor<T> descriptor) throws ConfigException {
+	public ManagedClass(Container container, Class<T> interfaceClass, Class<? extends T> implementationClass) {
+		Params.notNull(container, "Container");
+		Params.notNull(interfaceClass, "Interface class");
+		Params.notNull(implementationClass, "Implementation class");
+
 		this.container = container;
-
-		this.interfaceClass = descriptor.getInterfaceClass();
-		this.implementationClass = descriptor.getImplementationClass();
-		this.string = buildStringRepresentation(descriptor);
-
-		if (descriptor.getInstanceType().requiresImplementation()) {
-			scan();
-		}
+		this.interfaceClass = interfaceClass;
+		this.implementationClass = implementationClass;
 	}
 
-	/**
-	 * This managed class string representation.
-	 * 
-	 * @return string representation.
-	 * @see #string
-	 */
-	@Override
-	public String toString() {
-		return string;
-	}
-
-	@Override
-	public String getSignature() {
-		return interfaceClass.getCanonicalName();
-	}
-
-	private void scan() {
+	void scanServices() {
 		for (Method method : implementationClass.getDeclaredMethods()) {
 			IManagedMethod managedMethod = new ManagedMethod(this, method);
 			managedMethod.scanServices(container.getServices());
@@ -135,9 +105,6 @@ public final class ManagedClass<T> implements IManagedClass<T> {
 		});
 	}
 
-	// --------------------------------------------------------------------------------------------
-	// MANAGED CLASS SPI
-
 	@Override
 	public IContainer getContainer() {
 		return container;
@@ -173,52 +140,17 @@ public final class ManagedClass<T> implements IManagedClass<T> {
 		return container.getInstance(interfaceClass);
 	}
 
-	// --------------------------------------------------------------------------------------------
-	// CLASS DESCRIPTOR UTILITY METHODS
-
-	/**
-	 * Build and return this managed class string representation.
-	 * 
-	 * @param descriptor managed class descriptor.
-	 * @return this managed class string representation.
-	 */
-	private String buildStringRepresentation(IClassDescriptor<T> descriptor) {
-		StringBuilder builder = new StringBuilder();
-		if (descriptor.getInterfaceClass() != null) {
-			builder.append(descriptor.getInterfaceClass().getName());
-			builder.append(':');
-		}
-		if (descriptor.getImplementationClass() != null) {
-			builder.append(descriptor.getImplementationClass().getName());
-			builder.append(':');
-		}
-		builder.append(descriptor.getInstanceType());
-		builder.append(':');
-		builder.append(descriptor.getInstanceScope());
-		if (descriptor.getImplementationURL() != null) {
-			builder.append(':');
-			builder.append(descriptor.getImplementationURL());
-		}
-		return builder.toString();
-	}
-
-	// --------------------------------------------------------------------------------------------
-	// ANNOTATIONS SCANNER UTILITY METHODS
-
 	@Override
 	public <A extends Annotation> A getAnnotation(Class<A> annotationClass) {
-		if (implementationClass == null) {
-			return null;
-		}
 		A annotation = implementationClass.getAnnotation(annotationClass);
 		if (annotation == null) {
-			for (Class<?> interfaceClass : implementationClass.getInterfaces()) {
-				annotation = interfaceClass.getAnnotation(annotationClass);
-				if (annotation != null) {
-					break;
-				}
-			}
+			annotation = interfaceClass.getAnnotation(annotationClass);
 		}
 		return annotation;
+	}
+
+	@Override
+	public String toString() {
+		return interfaceClass.getCanonicalName();
 	}
 }

@@ -71,14 +71,14 @@ public class CalendarTimerService implements IInstancePostConstructProcessor {
 	}
 
 	@Override
-	public void destroy() {
+	public synchronized void destroy() {
 		log.trace("destroy()");
 		classTimers.clear();
 		List<Runnable> timers = scheduler.shutdownNow();
 		log.debug("Shutdown %d unprocessed timer(s).", timers.size());
 	}
 
-	public void schedule(TimerTask task, Long delay) {
+	public synchronized void schedule(TimerTask task, Long delay) {
 		Params.notNull(task, "Timer task");
 		Params.notNull(delay, "Delay");
 		scheduler.schedule(task, delay, TimeUnit.MILLISECONDS);

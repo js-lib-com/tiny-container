@@ -41,10 +41,4 @@ public class ManagedClassSpiStub<T> implements IManagedClass<T> {
 	public T getInstance() {
 		throw new UnsupportedOperationException("getInstance()");
 	}
-
-	@Override
-	public String getSignature() {
-		// TODO Auto-generated method stub
-		return null;
-	}
 }

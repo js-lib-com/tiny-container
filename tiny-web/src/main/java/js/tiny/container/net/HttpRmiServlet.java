@@ -227,11 +227,11 @@ public final class HttpRmiServlet extends AppServlet {
 	private static IManagedMethod getManagedMethod(IManagedClass<?> managedClass, String methodName, String requestURI) throws NoSuchMethodException {
 		IManagedMethod managedMethod = managedClass.getManagedMethod(methodName);
 		if (managedMethod == null) {
-			log.error("HTTP-RMI request for not existing managed method |%s#%s|.", managedClass.getSignature(), methodName);
+			log.error("HTTP-RMI request for not existing managed method |%s#%s|.", managedClass, methodName);
 			throw new NoSuchMethodException(requestURI);
 		}
 		if (Types.isKindOf(managedMethod.getReturnType(), Resource.class)) {
-			log.error("HTTP-RMI request for managed method |%s#%s| returning a resource.", managedClass.getSignature(), methodName);
+			log.error("HTTP-RMI request for managed method |%s#%s| returning a resource.", managedClass, methodName);
 			throw new NoSuchMethodException(requestURI);
 		}
 		return managedMethod;

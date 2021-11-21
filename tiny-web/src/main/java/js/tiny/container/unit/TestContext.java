@@ -4,9 +4,9 @@ import java.io.File;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Properties;
 
 import js.lang.Config;
+import js.lang.ConfigBuilder;
 import js.tiny.container.core.ClassDescriptor;
 import js.tiny.container.servlet.ITinyContainer;
 import js.tiny.container.servlet.TinyContainer;
@@ -15,23 +15,19 @@ import js.tiny.container.spi.IClassDescriptor;
 
 public final class TestContext {
 	public static ITinyContainer start() throws Exception {
-		return init(new TestConfigBuilder().build());
+		return init(new ConfigBuilder("<app></app>").build());
 	}
 
 	public static ITinyContainer start(File config) throws Exception {
-		return init(new TestConfigBuilder(config).build());
+		return init(new ConfigBuilder(config).build());
 	}
 
 	public static ITinyContainer start(String config) throws Exception {
-		return init(new TestConfigBuilder(config).build());
-	}
-
-	public static ITinyContainer start(String config, Properties properties) throws Exception {
-		return init(new TestConfigBuilder(config, properties).build());
+		return init(new ConfigBuilder(config).build());
 	}
 
 	public static ITinyContainer start(InputStream config) throws Exception {
-		return init(new TestConfigBuilder(config).build());
+		return init(new ConfigBuilder(config).build());
 	}
 	
 	private static ITinyContainer init(Config config) throws Exception {

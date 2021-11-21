@@ -25,8 +25,6 @@ import js.lang.ConfigException;
 import js.tiny.container.cdi.CDI;
 import js.tiny.container.spi.IClassDescriptor;
 import js.tiny.container.spi.IManagedClass;
-import js.tiny.container.spi.InstanceScope;
-import js.tiny.container.spi.InstanceType;
 
 @RunWith(MockitoJUnitRunner.class)
 public class ContainerLifeCycleTest {
@@ -43,8 +41,6 @@ public class ContainerLifeCycleTest {
 	public void beforeTest() {
 		when(descriptor.getInterfaceClass()).thenReturn(Object.class);
 		doReturn(Object.class).when(descriptor).getImplementationClass();
-		when(descriptor.getInstanceType()).thenReturn(InstanceType.POJO);
-		when(descriptor.getInstanceScope()).thenReturn(InstanceScope.APPLICATION);
 		
 		container = new Container(cdi);
 	}

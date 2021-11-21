@@ -36,7 +36,7 @@ import js.util.Params;
  * 
  * @author Iulian Rotaru
  */
-public class CDI implements IProvisionListener<Object> {
+public class CDI implements IProvisionListener {
 	private static final Log log = LogFactory.getLog(CDI.class);
 
 	public static CDI create() {
@@ -100,6 +100,18 @@ public class CDI implements IProvisionListener<Object> {
 		return configBuilder.build();
 	}
 
+	public <T> void bind(Class<T> interfaceClass) {
+		explicitBindings.bindings.add(new Binding<T>(interfaceClass));
+	}
+
+	public <T> void bind(Class<T> interfaceClass, Class<? extends Annotation> scopeClass) {
+		explicitBindings.bindings.add(new Binding<T>(interfaceClass, scopeClass));
+	}
+
+	public <T> void bind(Class<T> interfaceClass, Class<? extends T> implementationClass, Class<? extends Annotation> scopeClass) {
+		explicitBindings.bindings.add(new Binding<T>(interfaceClass, implementationClass, scopeClass));
+	}
+
 	public <T> void bindInstance(Class<T> interfaceClass, T instance) {
 		if (configured.get()) {
 			throw new IllegalStateException("Attempt to bind instance after injector configuration: " + interfaceClass);
@@ -138,13 +150,13 @@ public class CDI implements IProvisionListener<Object> {
 	}
 
 	@Override
-	public void onProvision(IProvisionInvocation<Object> invocation) {
+	public <T> void onProvision(IProvisionInvocation<T> invocation) {
 		listener.onInstanceCreated(invocation.instance());
 	}
 
 	private IInstanceCreatedListener listener;
 
-	public void bindListener(IInstanceCreatedListener listener) {
+	public void setInstanceCreatedListener(IInstanceCreatedListener listener) {
 		injector.bindListener(this);
 		this.listener = listener;
 	}
@@ -172,12 +184,23 @@ public class CDI implements IProvisionListener<Object> {
 	 * @author Iulian Rotaru
 	 */
 	private class ExplicitBindingModule extends AbstractModule {
+		final List<Binding<?>> bindings = new ArrayList<>();
 		final Map<Class<?>, Object> instances = new HashMap<>();
 		final Map<Class<? extends Annotation>, IScope<?>> scopes = new HashMap<>();
 
-		@SuppressWarnings("unchecked")
+		@SuppressWarnings({ "unchecked", "rawtypes" })
 		@Override
 		protected void configure() {
+			bindings.forEach(binding -> {
+				IBindingBuilder<?> builder = bind(binding.interfaceClass);
+				if (binding.implementationClass != null) {
+					builder.to((Class) binding.implementationClass);
+				}
+				if (binding.scopeClass != null) {
+					builder.in(binding.scopeClass);
+				}
+			});
+
 			instances.forEach((interfaceClass, instance) -> {
 				log.debug("CDI register instance for |%s|.", interfaceClass);
 				bindInstance((Class<Object>) interfaceClass, instance);
@@ -187,6 +210,33 @@ public class CDI implements IProvisionListener<Object> {
 				log.debug("CDI register scope |%s|.", annotation);
 				injector.bindScope(annotation, scope);
 			});
+		}
+	}
+
+	private class Binding<T> {
+		final Class<T> interfaceClass;
+		final Class<? extends T> implementationClass;
+		final Class<? extends Annotation> scopeClass;
+
+		public Binding(Class<T> interfaceClass) {
+			super();
+			this.interfaceClass = interfaceClass;
+			this.implementationClass = null;
+			this.scopeClass = null;
+		}
+
+		public Binding(Class<T> interfaceClass, Class<? extends Annotation> scopeClass) {
+			super();
+			this.interfaceClass = interfaceClass;
+			this.implementationClass = null;
+			this.scopeClass = scopeClass;
+		}
+
+		public Binding(Class<T> interfaceClass, Class<? extends T> implementationClass, Class<? extends Annotation> scopeClass) {
+			super();
+			this.interfaceClass = interfaceClass;
+			this.implementationClass = implementationClass;
+			this.scopeClass = scopeClass;
 		}
 	}
 

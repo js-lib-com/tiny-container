@@ -65,8 +65,6 @@ public class TinyContainerUnitTest {
 	private IInstanceCreatedListener instanceListener;
 	
 	@Mock
-	private TinyConfigBuilder configBuilder;
-	@Mock
 	private TinySecurity securityProvider;
 
 	private TinyContainer container;
@@ -86,7 +84,7 @@ public class TinyContainerUnitTest {
 	public void beforeTest() throws ConfigException {
 		//when(cdi.getInstance(RequestContext.class, instanceListener)).thenReturn(requestContext);
 		
-		container = new TinyContainer(cdi, configBuilder, securityProvider);
+		container = new TinyContainer(cdi, securityProvider);
 		
 		//when(requestContextManagedClass.getInterfaceClass()).thenReturn(RequestContext.class);
 		container.config(requestContextManagedClass);

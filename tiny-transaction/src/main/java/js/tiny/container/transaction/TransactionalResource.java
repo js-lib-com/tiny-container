@@ -1,7 +1,8 @@
 package js.tiny.container.transaction;
 
+import javax.annotation.PreDestroy;
+
 import js.lang.BugError;
-import js.lang.ManagedPreDestroy;
 import js.log.Log;
 import js.log.LogFactory;
 import js.tiny.container.spi.IContainer;
@@ -25,9 +26,8 @@ import js.transaction.TransactionManager;
  * specified behavior.
  * 
  * @author Iulian Rotaru
- * @version draft
  */
-final class TransactionalResource implements ITransactionalResource, ManagedPreDestroy {
+final class TransactionalResource implements ITransactionalResource {
 	private static final Log log = LogFactory.getLog(ITransactionalResource.class);
 
 	/**
@@ -57,8 +57,8 @@ final class TransactionalResource implements ITransactionalResource, ManagedPreD
 	}
 
 	/** Destroy transaction manager and release all resources like caches and connection pools. */
-	@Override
-	public void preDestroy() throws Exception {
+	@PreDestroy
+	public void preDestroy() {
 		log.trace("preDestroy()");
 		transactionManager.destroy();
 	}
