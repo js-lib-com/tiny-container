@@ -1,7 +1,5 @@
 package js.tiny.container.cdi;
 
-import com.jslib.injector.IInjector;
-import com.jslib.injector.IProvisionInvocation;
 import com.jslib.injector.ITypedProvider;
 import com.jslib.injector.ProvisionException;
 
@@ -18,11 +16,9 @@ import js.util.Classes;
  * @author Iulian Rotaru
  */
 class ServiceProvider<T> implements ITypedProvider<T> {
-	private final IInjector injector;
 	private final Class<T> type;
 
-	public ServiceProvider(IInjector injector, Class<T> type) {
-		this.injector = injector;
+	public ServiceProvider(Class<T> type) {
 		this.type = type;
 	}
 
@@ -39,9 +35,7 @@ class ServiceProvider<T> implements ITypedProvider<T> {
 	@Override
 	public T get() {
 		try {
-			T instance = Classes.loadService(type);
-			injector.fireEvent(IProvisionInvocation.create(this, instance));
-			return instance;
+			return Classes.loadService(type);
 		} catch (NoProviderException e) {
 			throw new ProvisionException(e);
 		}

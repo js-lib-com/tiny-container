@@ -8,24 +8,19 @@ import static org.hamcrest.Matchers.notNullValue;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
-import com.jslib.injector.IInjector;
 import com.jslib.injector.ProvisionException;
 
 import js.tiny.container.fixture.IService;
 
 @RunWith(MockitoJUnitRunner.class)
 public class ServiceProviderTest {
-	@Mock
-	private IInjector injector;
-
 	private ServiceProvider<IService> service;
 
 	@Before
 	public void beforeTest() {
-		service = new ServiceProvider<>(injector, IService.class);
+		service = new ServiceProvider<>(IService.class);
 	}
 
 	@Test
@@ -43,7 +38,7 @@ public class ServiceProviderTest {
 	@Test(expected = ProvisionException.class)
 	public void GivenMissingService_WhenGet_ThenException() {
 		// given
-		ServiceProvider<Object> service = new ServiceProvider<Object>(injector, Object.class);
+		ServiceProvider<Object> service = new ServiceProvider<Object>(Object.class);
 
 		// when
 		service.get();

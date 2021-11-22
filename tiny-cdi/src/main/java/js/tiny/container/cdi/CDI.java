@@ -265,7 +265,7 @@ public class CDI implements IProvisionListener {
 					break;
 
 				case SERVICE:
-					bindingBuilder.toProvider(new ServiceProvider<>(injector, interfaceClass));
+					bindingBuilder.toProvider(new ServiceProvider<>(interfaceClass));
 					break;
 
 				default:

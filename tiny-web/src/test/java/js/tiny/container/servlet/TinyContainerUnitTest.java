@@ -46,6 +46,7 @@ import js.util.Files;
 
 @SuppressWarnings({ "unused", "rawtypes" })
 @RunWith(MockitoJUnitRunner.class)
+@Ignore
 public class TinyContainerUnitTest {
 
 	@Mock

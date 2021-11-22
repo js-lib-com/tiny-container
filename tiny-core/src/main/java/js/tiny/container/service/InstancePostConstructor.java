@@ -1,4 +1,4 @@
-package js.tiny.container.lifecycle;
+package js.tiny.container.service;
 
 import static java.lang.String.format;
 

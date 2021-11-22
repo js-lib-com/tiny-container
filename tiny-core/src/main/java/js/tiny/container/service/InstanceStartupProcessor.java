@@ -1,4 +1,4 @@
-package js.tiny.container.start;
+package js.tiny.container.service;
 
 import javax.annotation.PostConstruct;
 import javax.ejb.Startup;
