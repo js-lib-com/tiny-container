@@ -19,9 +19,9 @@ import js.lang.ConfigException;
 import js.lang.InstanceInvocationHandler;
 import js.log.Log;
 import js.log.LogFactory;
+import js.tiny.container.cdi.Binding;
 import js.tiny.container.cdi.CDI;
 import js.tiny.container.cdi.IInstanceCreatedListener;
-import js.tiny.container.spi.IClassDescriptor;
 import js.tiny.container.spi.IContainer;
 import js.tiny.container.spi.IContainerService;
 import js.tiny.container.spi.IContainerStartProcessor;
@@ -48,10 +48,10 @@ public class Container implements IContainer, AppContainer, IInstanceCreatedList
 	private List<IManagedClass<?>> managedClasses = new ArrayList<>();
 
 	/** Managed classes indexed by interface class. */
-	private final Map<Class<?>, IManagedClass<?>> managedClassesByInterface = new HashMap<>();
+	private final Map<Class<?>, IManagedClass<?>> managedInterfaces = new HashMap<>();
 
 	/** Managed classes indexed by implementation class. */
-	private final Map<Class<?>, ManagedClass<?>> managedClassesByImplementation = new HashMap<>();
+	private final Map<Class<?>, ManagedClass<?>> managedImplementations = new HashMap<>();
 
 	private final FlowProcessorsSet<IContainerStartProcessor> containerStartProcessors = new FlowProcessorsSet<>();
 
@@ -75,11 +75,10 @@ public class Container implements IContainer, AppContainer, IInstanceCreatedList
 	 * class execute {@link #classPostLoadedProcessors}. After managed classes initialization configure CDI.
 	 * 
 	 * @param config container configuration object.
-	 * @throws ConfigException if container configuration fails.
 	 */
-	public void config(List<IClassDescriptor<?>> descriptors) throws ConfigException {
+	public void config(Config config) {
 		log.trace("config(Config)");
-		cdi.configure(descriptors, descriptor -> managedClassesByInterface.get(descriptor.getInterfaceClass()));
+		List<Binding<?>> bindings = cdi.configure(config, interfaceClass -> managedInterfaces.get(interfaceClass));
 
 		for (IContainerService service : ServiceLoader.load(IContainerService.class)) {
 			log.debug("Load container service |%s|.", service.getClass());
@@ -91,18 +90,15 @@ public class Container implements IContainer, AppContainer, IInstanceCreatedList
 			}
 		}
 
-		for (IClassDescriptor<?> descriptor : descriptors) {
-			if(descriptor.getImplementationClass() == null) {
-				continue;
-			}
-			ManagedClass<?> managedClass = new ManagedClass(this, descriptor.getInterfaceClass(), descriptor.getImplementationClass());
+		for (Binding<?> binding : bindings) {
+			ManagedClass<?> managedClass = new ManagedClass<>(this, binding);
 			managedClass.scanServices();
 
 			log.debug("Register managed class |%s|.", managedClass);
 			managedClasses.add(managedClass);
 
-			managedClassesByInterface.put(descriptor.getInterfaceClass(), managedClass);
-			managedClassesByImplementation.put(descriptor.getImplementationClass(), managedClass);
+			managedInterfaces.put(binding.getInterfaceClass(), managedClass);
+			managedImplementations.put(binding.getImplementationClass(), managedClass);
 		}
 	}
 
@@ -161,7 +157,7 @@ public class Container implements IContainer, AppContainer, IInstanceCreatedList
 
 	@Override
 	public void onInstanceCreated(Object instance) {
-		ManagedClass<?> managedClass = managedClassesByImplementation.get(instance.getClass());
+		ManagedClass<?> managedClass = managedImplementations.get(instance.getClass());
 		// is legal to have instances without managed classes, e.g. POJO
 		if (managedClass != null) {
 			managedClass.executeInstancePostConstructors(instance);
@@ -184,23 +180,24 @@ public class Container implements IContainer, AppContainer, IInstanceCreatedList
 	}
 
 	@Override
-	public Iterable<IManagedClass<?>> getManagedClasses() {
+	public List<IManagedClass<?>> getManagedClasses() {
 		return managedClasses;
 	}
 
 	@SuppressWarnings("unchecked")
 	@Override
 	public <T> IManagedClass<T> getManagedClass(Class<T> interfaceClass) {
-		return (IManagedClass<T>) managedClassesByInterface.get(interfaceClass);
+		return (IManagedClass<T>) managedInterfaces.get(interfaceClass);
 	}
 
 	// --------------------------------------------------------------------------------------------
 
-	Map<Class<?>, IManagedClass<?>> classesPool() {
-		return managedClassesByInterface;
-	}
-
 	Collection<IContainerService> getServices() {
 		return services;
 	}
+
+	Map<Class<?>, IManagedClass<?>> managedClassesByInterface() {
+		return managedInterfaces;
+	}
+
 }

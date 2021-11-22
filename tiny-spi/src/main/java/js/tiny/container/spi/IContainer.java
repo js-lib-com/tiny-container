@@ -1,5 +1,7 @@
 package js.tiny.container.spi;
 
+import java.util.List;
+
 /**
  * Container services for framework internals and plugins. This interface is a service provider interface and is not intended
  * for applications consumption. It deals with container extensions, and managed classes and methods.
@@ -51,6 +53,6 @@ public interface IContainer {
 	 * 
 	 * @return container managed classes, in no particular order.
 	 */
-	Iterable<IManagedClass<?>> getManagedClasses();
+	List<IManagedClass<?>> getManagedClasses();
 
 }

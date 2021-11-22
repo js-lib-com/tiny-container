@@ -24,7 +24,7 @@ import js.lang.BugError;
 import js.lang.Config;
 import js.lang.ConfigBuilder;
 import js.lang.ConfigException;
-import js.tiny.container.core.ClassDescriptor;
+import js.tiny.container.cdi.Binding;
 import js.tiny.container.core.Container;
 import js.tiny.container.core.ManagedClass;
 import js.tiny.container.spi.IManagedClass;
@@ -33,6 +33,7 @@ import js.tiny.container.stub.ContainerStub;
 import js.util.Classes;
 
 @SuppressWarnings("unused")
+@Ignore
 public class ManagedClassUnitTest {
 	@BeforeClass
 	public static void beforeClass() {
@@ -276,8 +277,11 @@ public class ManagedClassUnitTest {
 			}
 		}
 
-		ClassDescriptor<?> d = new ClassDescriptor<>(classDescriptor);
-		return new ManagedClass(container, d.getInterfaceClass(), d.getImplementationClass());
+		Class<?> interfaceClass = classDescriptor.getAttribute("interface", Class.class);
+		Class<?> implementationClass = classDescriptor.getAttribute("class", Class.class);
+		
+		Binding<?> binding = new Binding(interfaceClass, implementationClass);
+		return new ManagedClass<>(container, binding);
 	}
 
 	private static String config(String classDescriptor) {

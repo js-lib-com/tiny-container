@@ -2,16 +2,12 @@ package js.tiny.container.unit;
 
 import java.io.File;
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.List;
 
 import js.lang.Config;
 import js.lang.ConfigBuilder;
-import js.tiny.container.core.ClassDescriptor;
 import js.tiny.container.servlet.ITinyContainer;
 import js.tiny.container.servlet.TinyContainer;
 import js.tiny.container.spi.Factory;
-import js.tiny.container.spi.IClassDescriptor;
 
 public final class TestContext {
 	public static ITinyContainer start() throws Exception {
@@ -41,14 +37,7 @@ public final class TestContext {
 		}
 
 		TinyContainer container = new TinyContainer();
-		
-		List<IClassDescriptor<?>> descriptors = new ArrayList<>();
-		for (Config managedClasses : config.findChildren("managed-classes")) {
-			for (Config managedClass : managedClasses.getChildren()) {
-				descriptors.add(new ClassDescriptor<>(managedClass));
-			}
-		}
-		container.config(descriptors);
+		container.config(config);
 
 		Factory.bind(container);
 		container.start();

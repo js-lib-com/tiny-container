@@ -40,7 +40,7 @@ public class ContainerInstanceRetrievalTest {
 	@Test
 	public void GivenExistingManagedClass_WhenGetInstance_ThenNotNull() {
 		// given
-		container.classesPool().put(Object.class, managedClass);
+		container.managedClassesByInterface().put(Object.class, managedClass);
 
 		// when
 		Object instance = container.getInstance(Object.class);
@@ -54,7 +54,7 @@ public class ContainerInstanceRetrievalTest {
 	@Test(expected = ProvisionException.class)
 	public void GivenCDIException_WhenGetInstance_ThenException() {
 		// given
-		container.classesPool().put(Object.class, managedClass);
+		container.managedClassesByInterface().put(Object.class, managedClass);
 		when(cdi.getInstance(any())).thenThrow(ProvisionException.class);
 
 		// when
@@ -91,7 +91,7 @@ public class ContainerInstanceRetrievalTest {
 	@Test
 	public void GivenExistingManagedClass_WhenGetOptionalInstance_ThenNotNull() {
 		// given
-		container.classesPool().put(Object.class, managedClass);
+		container.managedClassesByInterface().put(Object.class, managedClass);
 
 		// when
 		Object instance = container.getOptionalInstance(Object.class);
@@ -104,7 +104,7 @@ public class ContainerInstanceRetrievalTest {
 	@Test
 	public void GivenCDIException_WhenGetOptionalInstance_ThenNull() {
 		// given
-		container.classesPool().put(Object.class, managedClass);
+		container.managedClassesByInterface().put(Object.class, managedClass);
 		when(cdi.getInstance(any())).thenThrow(ProvisionException.class);
 
 		// when

@@ -13,7 +13,6 @@ import js.lang.InstanceInvocationHandler;
 import js.lang.InvocationException;
 import js.log.Log;
 import js.log.LogFactory;
-import js.tiny.container.spi.IClassDescriptor;
 import js.tiny.container.spi.IManagedClass;
 import js.tiny.container.spi.IManagedMethod;
 
@@ -26,13 +25,13 @@ import js.tiny.container.spi.IManagedMethod;
 class ProxyProvider<T> implements Provider<T> {
 	private static final Log log = LogFactory.getLog(ProxyProvider.class);
 
-	private final IClassDescriptor<T> classDescriptor;
-	private Function<IClassDescriptor<T>, IManagedClass<T>> managedClassFactory;
+	private final Class<T> interfaceClass;
+	private Function<Class<T>, IManagedClass<T>> managedClassFactory;
 	private final Provider<T> provider;
 
-	public ProxyProvider(IClassDescriptor<T> classDescriptor, Function<IClassDescriptor<T>, IManagedClass<T>> managedClassFactory, Provider<T> provider) {
-		log.trace("IClassDescriptor<T>, Function<IClassDescriptor<T>, IManagedClass<T>>, Provider");
-		this.classDescriptor = classDescriptor;
+	public ProxyProvider(Class<T> interfaceClass, Function<Class<T>, IManagedClass<T>> managedClassFactory, Provider<T> provider) {
+		log.trace("Class<T>, Function<IClassDescriptor<T>, IManagedClass<T>>, Provider");
+		this.interfaceClass = interfaceClass;
 		this.managedClassFactory = managedClassFactory;
 		this.provider = provider;
 	}
@@ -40,9 +39,9 @@ class ProxyProvider<T> implements Provider<T> {
 	@SuppressWarnings("unchecked")
 	@Override
 	public T get() {
-		final ClassLoader classLoader = classDescriptor.getImplementationClass().getClassLoader();
-		final Class<T>[] interfaces = new Class[] { classDescriptor.getInterfaceClass() };
-		final InvocationHandler handler = new ProxyHandler<>(managedClassFactory.apply(classDescriptor), provider.get());
+		final ClassLoader classLoader = interfaceClass.getClassLoader();
+		final Class<T>[] interfaces = new Class[] { interfaceClass };
+		final InvocationHandler handler = new ProxyHandler<>(managedClassFactory.apply(interfaceClass), provider.get());
 		return (T) Proxy.newProxyInstance(classLoader, interfaces, handler);
 	}
 

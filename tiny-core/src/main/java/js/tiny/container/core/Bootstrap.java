@@ -1,8 +1,5 @@
 package js.tiny.container.core;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import js.app.container.AppContainer;
 import js.app.container.AppContainerException;
 import js.app.container.AppContainerProvider;
@@ -12,7 +9,6 @@ import js.lang.ConfigException;
 import js.log.Log;
 import js.log.LogFactory;
 import js.tiny.container.spi.Factory;
-import js.tiny.container.spi.IClassDescriptor;
 
 public class Bootstrap implements AppContainerProvider {
 	private static final Log log = LogFactory.getLog(Bootstrap.class);
@@ -35,33 +31,16 @@ public class Bootstrap implements AppContainerProvider {
 	}
 
 	public void startContainer(Container container, Object... arguments) throws ConfigException {
-		if(arguments.length == 0) {
+		if (arguments.length == 0) {
 			ConfigBuilder builder = new ConfigBuilder(getClass().getResourceAsStream("/app.xml"));
-			config(container, builder.build());
-		}
-		else if (arguments.length == 1 && arguments[0] instanceof Config) {
-			config(container, (Config) arguments[0]);
+			container.config(builder.build());
+		} else if (arguments.length == 1 && arguments[0] instanceof Config) {
+			container.config((Config) arguments[0]);
 		} else {
-			modules(container, arguments);
+			container.config(arguments);
 		}
+		
 		Factory.bind(container);
 		container.start();
-	}
-
-	private void config(Container container, Config config) throws ConfigException {
-		log.trace("config(Container, Config)");
-
-		List<IClassDescriptor<?>> descriptors = new ArrayList<>();
-		for (Config managedClasses : config.findChildren("managed-classes")) {
-			for (Config managedClass : managedClasses.getChildren()) {
-				descriptors.add(new ClassDescriptor<>(managedClass));
-			}
-		}
-		container.config(descriptors);
-	}
-
-	private void modules(Container container, Object... modules) throws ConfigException {
-		log.trace("modules(Container, Object...");
-		container.config(modules);
 	}
 }

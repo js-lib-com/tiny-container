@@ -5,7 +5,6 @@ import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -21,7 +20,6 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
 import js.lang.BugError;
-import js.tiny.container.spi.IClassDescriptor;
 import js.tiny.container.spi.IManagedClass;
 import js.tiny.container.spi.IManagedMethod;
 
@@ -33,9 +31,7 @@ public class ProxyProviderTest {
 	private IManagedMethod managedMethod;
 
 	@Mock
-	private IClassDescriptor<IPerson> classDescriptor;
-	@Mock
-	private Function<IClassDescriptor<IPerson>, IManagedClass<IPerson>> managedClassFactory;
+	private Function<Class<IPerson>, IManagedClass<IPerson>> managedClassFactory;
 	@Mock
 	private Provider<IPerson> provider;
 
@@ -43,14 +39,12 @@ public class ProxyProviderTest {
 
 	@Before
 	public void beforeTest() throws Exception {
-		when(classDescriptor.getInterfaceClass()).thenReturn(IPerson.class);
-		doReturn(Person.class).when(classDescriptor).getImplementationClass();
-		when(managedClassFactory.apply(classDescriptor)).thenReturn(managedClass);
-
+		when(managedClassFactory.apply(IPerson.class)).thenReturn(managedClass);
+		
 		when(managedClass.getManagedMethod("name")).thenReturn(managedMethod);
 		when(provider.get()).thenReturn(new Person());
-
-		proxy = new ProxyProvider<IPerson>(classDescriptor, managedClassFactory, provider);
+		
+		proxy = new ProxyProvider<IPerson>(IPerson.class, managedClassFactory, provider);
 	}
 
 	@Test

@@ -1,7 +1,6 @@
 package js.tiny.container.core;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.anEmptyMap;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.mockito.ArgumentMatchers.any;
@@ -11,6 +10,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import org.junit.Before;
@@ -20,10 +20,9 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
 import js.lang.Config;
-import js.lang.ConfigBuilder;
 import js.lang.ConfigException;
+import js.tiny.container.cdi.Binding;
 import js.tiny.container.cdi.CDI;
-import js.tiny.container.spi.IClassDescriptor;
 import js.tiny.container.spi.IManagedClass;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -31,16 +30,17 @@ public class ContainerLifeCycleTest {
 	@Mock
 	private CDI cdi;
 	@Mock
-	private Config config;
+	private Binding<Object> binding;
 	@Mock
-	private IClassDescriptor<Object> descriptor;
+	private Config config;
 
 	private Container container;
 
 	@Before
 	public void beforeTest() {
-		when(descriptor.getInterfaceClass()).thenReturn(Object.class);
-		doReturn(Object.class).when(descriptor).getImplementationClass();
+		when(binding.getInterfaceClass()).thenReturn(Object.class);
+		doReturn(Object.class).when(binding).getImplementationClass();
+		when(cdi.configure(any(), any())).thenReturn(Arrays.asList(binding));
 		
 		container = new Container(cdi);
 	}
@@ -50,10 +50,10 @@ public class ContainerLifeCycleTest {
 		// given
 
 		// when
-		container.config(Arrays.asList(descriptor));
+		container.config(config);
 
 		// then
-		assertThat(container.classesPool().get(Object.class), notNullValue());
+		assertThat(container.getManagedClasses().get(0), notNullValue());
 	}
 
 	@Test
@@ -62,10 +62,10 @@ public class ContainerLifeCycleTest {
 		
 		
 		// when
-		container.config(Arrays.asList(descriptor));
+		container.config(config);
 
 		// then
-		IManagedClass<?> managedClass = container.classesPool().get(Object.class);
+		IManagedClass<?> managedClass = container.getManagedClasses().get(0);
 		assertThat(managedClass, notNullValue());
 		assertThat(managedClass.getInterfaceClass(), equalTo(Object.class));
 		assertThat(managedClass.getImplementationClass(), equalTo(Object.class));
@@ -74,30 +74,24 @@ public class ContainerLifeCycleTest {
 	@Test
 	public void GivenMissingManagedClassesSection_WhenConfig_ThenEmptyClassesPool() throws ConfigException {
 		// given
-		String descriptor = "<config>" + //
-				"	<managed-classes-fake>" + //
-				"		<test class='java.lang.Object' />" + //
-				"	</managed-classes-fake>" + //
-				"</config>";
-		ConfigBuilder builder = new ConfigBuilder(descriptor);
+		when(cdi.configure(any(), any())).thenReturn(Collections.emptyList());
 
 		// when
-		container.config(builder.build());
+		container.config(config);
 
 		// then
-		assertThat(container.classesPool(), anEmptyMap());
+		assertThat(container.getManagedClasses().size(), equalTo(0));
 	}
 
-	@SuppressWarnings("unchecked")
 	@Test
 	public void GivenDefaults_WhenConfig_ThenCDIConfigure() throws ConfigException {
 		// given
 
 		// when
-		container.config(Arrays.asList(descriptor));
+		container.config(config);
 
 		// then
-		verify(cdi, times(1)).configure(any(List.class), any());
+		verify(cdi, times(1)).configure(any(Config.class), any());
 	}
 
 	@Test

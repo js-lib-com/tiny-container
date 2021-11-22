@@ -5,7 +5,6 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.security.Principal;
 import java.util.Enumeration;
-import java.util.List;
 
 import javax.inject.Singleton;
 import javax.servlet.ServletContext;
@@ -24,6 +23,7 @@ import js.lang.ConfigException;
 import js.log.Log;
 import js.log.LogContext;
 import js.log.LogFactory;
+import js.tiny.container.cdi.Binding;
 import js.tiny.container.cdi.CDI;
 import js.tiny.container.cdi.SessionScoped;
 import js.tiny.container.core.Bootstrap;
@@ -31,7 +31,6 @@ import js.tiny.container.core.Container;
 import js.tiny.container.net.EventStream;
 import js.tiny.container.net.EventStreamManager;
 import js.tiny.container.net.EventStreamManagerImpl;
-import js.tiny.container.spi.IClassDescriptor;
 import js.tiny.container.spi.InstanceScope;
 
 /**
@@ -174,17 +173,19 @@ public class TinyContainer extends Container implements ServletContextListener, 
 		this.cdi.bindInstance(ITinyContainer.class, this);
 		this.cdi.bindInstance(WebContext.class, this);
 		this.cdi.bindInstance(SecurityContext.class, this);
-		this.cdi.bind(RequestContext.class, ThreadScoped.class);
-		this.cdi.bind(EventStreamManager.class, EventStreamManagerImpl.class, Singleton.class);
-		this.cdi.bind(EventStream.class);
+		
+		this.cdi.bind(new Binding<>(RequestContext.class, RequestContext.class, ThreadScoped.class));
+		this.cdi.bind(new Binding<>(EventStreamManager.class, EventStreamManagerImpl.class, Singleton.class));
+		this.cdi.bind(new Binding<>(EventStream.class));
+		
 		this.cdi.bindScope(SessionScoped.class, new SessionScopeProvider.Factory<>());
 
 		this.security = security;
 	}
 
 	@Override
-	public void config(List<IClassDescriptor<?>> descriptors) throws ConfigException {
-		super.config(descriptors);
+	public void config(Config config) {
+		super.config(config);
 
 		// by convention configuration object name is the web application name
 		// appName = config.getName();

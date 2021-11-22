@@ -3,7 +3,6 @@ package js.tiny.container.timer;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Executors;
@@ -22,6 +21,8 @@ import js.util.Params;
 public class CalendarTimerService implements IInstancePostConstructProcessor {
 	private static final Log log = LogFactory.getLog(CalendarTimerService.class);
 
+	private static final long TIMER_TERMINATE_TIMEOUT = 4000;
+	
 	private static final int SCHEDULERS_THREAD_POLL = 2;
 	private final ScheduledExecutorService scheduler;
 
@@ -58,6 +59,7 @@ public class CalendarTimerService implements IInstancePostConstructProcessor {
 		return true;
 	}
 
+	// TODO: use onInstancePreDestroy to purge instance related timer(s)
 	@Override
 	public <T> void onInstancePostConstruct(final T instance) {
 		Class<?> implementationClass = instance.getClass();
@@ -74,8 +76,16 @@ public class CalendarTimerService implements IInstancePostConstructProcessor {
 	public synchronized void destroy() {
 		log.trace("destroy()");
 		classTimers.clear();
-		List<Runnable> timers = scheduler.shutdownNow();
-		log.debug("Shutdown %d unprocessed timer(s).", timers.size());
+		try {
+			log.debug("Initiate graceful scheduler shutdown.");
+			scheduler.shutdown();
+			if (!scheduler.awaitTermination(TIMER_TERMINATE_TIMEOUT, TimeUnit.MILLISECONDS)) {
+				log.warn("Timeout waiting for timer termination. Force scheduler shutdown now.");
+				scheduler.shutdownNow();
+			}
+		} catch (InterruptedException e) {
+			log.error(e);
+		}
 	}
 
 	public synchronized void schedule(TimerTask task, Long delay) {

@@ -1,6 +1,7 @@
 package js.tiny.container.stub;
 
 import java.security.Principal;
+import java.util.List;
 
 import js.tiny.container.servlet.ITinyContainer;
 import js.tiny.container.spi.IManagedClass;
@@ -52,7 +53,7 @@ public class TinyContainerStub implements ITinyContainer {
 	}
 
 	@Override
-	public Iterable<IManagedClass<?>> getManagedClasses() {
+	public List<IManagedClass<?>> getManagedClasses() {
 		throw new UnsupportedOperationException("getManagedClasses()");
 	}
 

@@ -1,5 +1,7 @@
 package js.tiny.container.stub;
 
+import java.util.List;
+
 import js.tiny.container.spi.IContainer;
 import js.tiny.container.spi.IManagedClass;
 
@@ -20,7 +22,7 @@ public class ContainerSpiStub implements IContainer {
 	}
 
 	@Override
-	public Iterable<IManagedClass<?>> getManagedClasses() {
+	public List<IManagedClass<?>> getManagedClasses() {
 		throw new UnsupportedOperationException("getManagedClasses()");
 	}
 }

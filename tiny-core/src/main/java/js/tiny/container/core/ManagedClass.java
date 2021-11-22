@@ -7,6 +7,7 @@ import java.util.Map;
 
 import js.log.Log;
 import js.log.LogFactory;
+import js.tiny.container.cdi.Binding;
 import js.tiny.container.spi.IClassPostLoadedProcessor;
 import js.tiny.container.spi.IContainer;
 import js.tiny.container.spi.IContainerService;
@@ -55,14 +56,15 @@ public final class ManagedClass<T> implements IManagedClass<T> {
 
 	private final FlowProcessorsSet<IInstancePreDestroyProcessor> instancePreDestructors = new FlowProcessorsSet<>();
 
-	public ManagedClass(Container container, Class<T> interfaceClass, Class<? extends T> implementationClass) {
+	public ManagedClass(Container container, Binding<T> binding) {
 		Params.notNull(container, "Container");
-		Params.notNull(interfaceClass, "Interface class");
-		Params.notNull(implementationClass, "Implementation class");
+		Params.notNull(binding, "Binding");
+		Params.notNull(binding.getInterfaceClass(), "Binding interface");
+		Params.notNull(binding.getImplementationClass(), "Binding implementation");
 
 		this.container = container;
-		this.interfaceClass = interfaceClass;
-		this.implementationClass = implementationClass;
+		this.interfaceClass = binding.getInterfaceClass();
+		this.implementationClass = binding.getImplementationClass();
 	}
 
 	void scanServices() {
