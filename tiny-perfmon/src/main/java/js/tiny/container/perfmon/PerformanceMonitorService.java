@@ -2,6 +2,7 @@ package js.tiny.container.perfmon;
 
 import js.log.Log;
 import js.log.LogFactory;
+import js.tiny.container.spi.IContainer;
 import js.tiny.container.spi.IInvocation;
 import js.tiny.container.spi.IInvocationProcessorsChain;
 import js.tiny.container.spi.IManagedMethod;
@@ -15,6 +16,11 @@ public class PerformanceMonitorService implements IMethodInvocationProcessor {
 	public PerformanceMonitorService() {
 		log.trace("PerformanceMonitorService()");
 		this.metersStore = MetersStore.instance();
+	}
+
+	@Override
+	public void create(IContainer container) {
+		container.bind(Observer.class).build();
 	}
 
 	@Override

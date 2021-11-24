@@ -37,7 +37,7 @@ public final class TestContext {
 		}
 
 		TinyContainer container = new TinyContainer();
-		container.config(config);
+		container.configure(config);
 
 		Factory.bind(container);
 		container.start();

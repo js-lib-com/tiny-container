@@ -3,8 +3,6 @@ package js.tiny.container.cdi;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.notNullValue;
 
-import java.util.function.Function;
-
 import javax.inject.Inject;
 
 import org.junit.Before;
@@ -14,14 +12,11 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
 import js.lang.Config;
-import js.tiny.container.spi.IManagedClass;
 
 @RunWith(MockitoJUnitRunner.class)
 public class CDIConformityTest {
 	@Mock
 	private Config config;
-	@Mock
-	private Function<Class<?>, IManagedClass<?>> managedClassFactory;
 
 	private CDI cdi;
 
@@ -35,7 +30,7 @@ public class CDIConformityTest {
 		// given
 		cdi.bind(new Binding<>(Task.class));
 		cdi.bind(new Binding<>(TaskService.class));
-		cdi.configure(config, managedClassFactory);
+		cdi.configure(config);
 
 		// when
 		TaskService service = cdi.getInstance(TaskService.class);
@@ -49,7 +44,7 @@ public class CDIConformityTest {
 		// given
 		cdi.bind(new Binding<>(Task.class));
 		cdi.bind(new Binding<>(TwoTasksService.class));
-		cdi.configure(config, managedClassFactory);
+		cdi.configure(config);
 
 		// when
 		TwoTasksService service = cdi.getInstance(TwoTasksService.class);

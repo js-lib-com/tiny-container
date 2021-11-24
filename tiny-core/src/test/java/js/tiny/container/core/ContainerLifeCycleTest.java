@@ -11,7 +11,6 @@ import static org.mockito.Mockito.when;
 
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.List;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -40,7 +39,7 @@ public class ContainerLifeCycleTest {
 	public void beforeTest() {
 		when(binding.getInterfaceClass()).thenReturn(Object.class);
 		doReturn(Object.class).when(binding).getImplementationClass();
-		when(cdi.configure(any(), any())).thenReturn(Arrays.asList(binding));
+		when(cdi.configure(config)).thenReturn(Arrays.asList(binding));
 		
 		container = new Container(cdi);
 	}
@@ -50,7 +49,7 @@ public class ContainerLifeCycleTest {
 		// given
 
 		// when
-		container.config(config);
+		container.configure(config);
 
 		// then
 		assertThat(container.getManagedClasses().get(0), notNullValue());
@@ -62,7 +61,7 @@ public class ContainerLifeCycleTest {
 		
 		
 		// when
-		container.config(config);
+		container.configure(config);
 
 		// then
 		IManagedClass<?> managedClass = container.getManagedClasses().get(0);
@@ -74,10 +73,10 @@ public class ContainerLifeCycleTest {
 	@Test
 	public void GivenMissingManagedClassesSection_WhenConfig_ThenEmptyClassesPool() throws ConfigException {
 		// given
-		when(cdi.configure(any(), any())).thenReturn(Collections.emptyList());
+		when(cdi.configure(config)).thenReturn(Collections.emptyList());
 
 		// when
-		container.config(config);
+		container.configure(config);
 
 		// then
 		assertThat(container.getManagedClasses().size(), equalTo(0));
@@ -88,10 +87,10 @@ public class ContainerLifeCycleTest {
 		// given
 
 		// when
-		container.config(config);
+		container.configure(config);
 
 		// then
-		verify(cdi, times(1)).configure(any(Config.class), any());
+		verify(cdi, times(1)).configure(any(Config.class));
 	}
 
 	@Test

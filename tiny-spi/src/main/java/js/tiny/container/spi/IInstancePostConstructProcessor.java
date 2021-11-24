@@ -15,8 +15,6 @@ public interface IInstancePostConstructProcessor extends IFlowProcessor {
 
 	Priority getPriority();
 
-//	<T> boolean bind(IManagedClass<T> managedClass);
-
 	default <T> boolean bind(IManagedClass<T> managedClass) {
 		return true;
 	}
@@ -42,8 +40,6 @@ public interface IInstancePostConstructProcessor extends IFlowProcessor {
 		/** 2 - application specific initialization logic is executed after initialization and configuration */
 		CONSTRUCTOR,
 		/** 3 - timer services */
-		TIMER,
-		/** 4 - dump instance informations to logger */
-		LOGGER
+		TIMER
 	}
 }

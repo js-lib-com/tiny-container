@@ -10,10 +10,12 @@ import js.tiny.container.spi.IInvocation;
 import js.tiny.container.spi.IInvocationProcessorsChain;
 import js.tiny.container.spi.IManagedMethod;
 import js.tiny.container.spi.IMethodInvocationProcessor;
+import js.tiny.container.spi.InstanceType;
 import js.transaction.Immutable;
 import js.transaction.Mutable;
 import js.transaction.Transaction;
 import js.transaction.TransactionContext;
+import js.transaction.TransactionManager;
 import js.transaction.Transactional;
 
 public class TransactionService implements IMethodInvocationProcessor {
@@ -29,6 +31,9 @@ public class TransactionService implements IMethodInvocationProcessor {
 	public void create(IContainer container) {
 		log.trace("create(IContainer)");
 		this.container = container;
+
+		container.bind(TransactionManager.class).type(InstanceType.SERVICE).build();
+		container.bind(TransactionContext.class).to(TransactionalResource.class).build();
 	}
 
 	@Override

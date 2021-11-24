@@ -9,11 +9,9 @@ public interface IInstancePreDestroyProcessor extends IFlowProcessor {
 
 	Priority getPriority();
 
-	<T> boolean bind(IManagedClass<T> managedClass);
-	
-//	default <T> boolean bind(IManagedClass<T> managedClass) {
-//		return true;
-//	}
+	default <T> boolean bind(IManagedClass<T> managedClass) {
+		return true;
+	}
 
 	<T> void onInstancePreDestroy(T instance);
 

@@ -6,14 +6,11 @@ import java.io.FileNotFoundException;
 import java.security.Principal;
 import java.util.Enumeration;
 
-import javax.inject.Singleton;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
 import javax.servlet.http.HttpSessionEvent;
 import javax.servlet.http.HttpSessionListener;
-
-import com.jslib.injector.ThreadScoped;
 
 import js.converter.ConverterRegistry;
 import js.lang.BugError;
@@ -23,12 +20,10 @@ import js.lang.ConfigException;
 import js.log.Log;
 import js.log.LogContext;
 import js.log.LogFactory;
-import js.tiny.container.cdi.Binding;
 import js.tiny.container.cdi.CDI;
 import js.tiny.container.cdi.SessionScoped;
 import js.tiny.container.core.Bootstrap;
 import js.tiny.container.core.Container;
-import js.tiny.container.net.EventStream;
 import js.tiny.container.net.EventStreamManager;
 import js.tiny.container.net.EventStreamManagerImpl;
 import js.tiny.container.spi.InstanceScope;
@@ -67,7 +62,7 @@ import js.tiny.container.spi.InstanceScope;
  * <li>from now on logic is executed by above event handler:
  * <li>initialize {@link #contextParameters} from external descriptors,
  * <li>create {@link TinyConfigBuilder} that parses application descriptor,
- * <li>configure tiny container with created configuration object, see {@link #config(Config)},
+ * <li>configure tiny container with created configuration object, see {@link #configure(Config)},
  * <li>bind tiny container instance to master factory,
  * <li>finalize tiny container creation by calling {@link #start()}.
  * </ul>
@@ -170,22 +165,22 @@ public class TinyContainer extends Container implements ServletContextListener, 
 		super(cdi);
 		log.trace("TinyContainer(CDI, TinySecurity)");
 
-		this.cdi.bindInstance(ITinyContainer.class, this);
-		this.cdi.bindInstance(WebContext.class, this);
-		this.cdi.bindInstance(SecurityContext.class, this);
+		bind(ITinyContainer.class).instance(this).build();
+		bind(WebContext.class).instance(this).build();
+		bind(SecurityContext.class).instance(this).build();
 		
-		this.cdi.bind(new Binding<>(RequestContext.class, RequestContext.class, ThreadScoped.class));
-		this.cdi.bind(new Binding<>(EventStreamManager.class, EventStreamManagerImpl.class, Singleton.class));
-		this.cdi.bind(new Binding<>(EventStream.class));
-		
+		bind(RequestContext.class).scope(InstanceScope.THREAD).build();
+		bind(EventStreamManager.class).to(EventStreamManagerImpl.class).scope(InstanceScope.APPLICATION);
+
+		// TODO: dependency on injector implementation
 		this.cdi.bindScope(SessionScoped.class, new SessionScopeProvider.Factory<>());
 
 		this.security = security;
 	}
 
 	@Override
-	public void config(Config config) {
-		super.config(config);
+	public void configure(Config config) {
+		super.configure(config);
 
 		// by convention configuration object name is the web application name
 		// appName = config.getName();

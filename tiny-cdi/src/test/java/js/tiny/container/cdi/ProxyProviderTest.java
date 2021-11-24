@@ -10,8 +10,6 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import java.util.function.Function;
-
 import javax.inject.Provider;
 
 import org.junit.Before;
@@ -32,7 +30,7 @@ public class ProxyProviderTest {
 	private IManagedMethod managedMethod;
 
 	@Mock
-	private Function<Class<IPerson>, IManagedClass<IPerson>> managedClassFactory;
+	private IManagedLoader managedFactory;
 	@Mock
 	private Provider<IPerson> provider;
 
@@ -40,12 +38,12 @@ public class ProxyProviderTest {
 
 	@Before
 	public void beforeTest() throws Exception {
-		when(managedClassFactory.apply(IPerson.class)).thenReturn(managedClass);
+		when(managedFactory.getManagedClass(IPerson.class)).thenReturn(managedClass);
 		
 		when(managedClass.getManagedMethod("name")).thenReturn(managedMethod);
 		when(provider.get()).thenReturn(new Person());
 		
-		proxy = new ProxyProvider<IPerson>(IPerson.class, managedClassFactory, provider);
+		proxy = new ProxyProvider<IPerson>(IPerson.class, managedFactory, provider);
 	}
 
 	@Test

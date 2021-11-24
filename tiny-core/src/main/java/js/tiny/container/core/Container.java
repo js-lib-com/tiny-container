@@ -22,6 +22,8 @@ import js.log.LogFactory;
 import js.tiny.container.cdi.Binding;
 import js.tiny.container.cdi.CDI;
 import js.tiny.container.cdi.IInstanceCreatedListener;
+import js.tiny.container.cdi.IManagedLoader;
+import js.tiny.container.spi.IBindingBuilder;
 import js.tiny.container.spi.IContainer;
 import js.tiny.container.spi.IContainerService;
 import js.tiny.container.spi.IContainerStartProcessor;
@@ -34,9 +36,10 @@ import js.util.Params;
  * 
  * @author Iulian Rotaru
  */
-public class Container implements IContainer, AppContainer, IInstanceCreatedListener {
+public class Container implements IContainer, AppContainer, IInstanceCreatedListener, IManagedLoader {
 	private static final Log log = LogFactory.getLog(Container.class);
 
+	// TODO: CDI exposed only for session scope bindings
 	protected final CDI cdi;
 
 	private final Set<IContainerService> services = new HashSet<>();
@@ -60,14 +63,21 @@ public class Container implements IContainer, AppContainer, IInstanceCreatedList
 	}
 
 	/**
-	 * Create factories and processors for instance retrieval but leave classes pool loading for {@link #config(Config)}. This
+	 * Create factories and processors for instance retrieval but leave classes pool loading for {@link #configure(Config)}. This
 	 * constructor creates built-in factories and processors but subclass may add its own.
 	 */
 	public Container(CDI cdi) {
 		this.cdi = cdi;
+		this.cdi.setManagedLoader(this);
 		this.cdi.setInstanceCreatedListener(this);
-		this.cdi.bindInstance(IContainer.class, this);
-		this.cdi.bindInstance(AppContainer.class, this);
+		
+		bind(IContainer.class).instance(this).build();
+		bind(AppContainer.class).instance(this).build();
+	}
+
+	@Override
+	public <T> IBindingBuilder<T> bind(Class<T> interfaceClass) {
+		return new BindingBuilder<>(cdi, interfaceClass);
 	}
 
 	/**
@@ -76,9 +86,8 @@ public class Container implements IContainer, AppContainer, IInstanceCreatedList
 	 * 
 	 * @param config container configuration object.
 	 */
-	public void config(Config config) {
-		log.trace("config(Config)");
-		List<Binding<?>> bindings = cdi.configure(config, interfaceClass -> managedInterfaces.get(interfaceClass));
+	public void configure(Config config) {
+		log.trace("configure(Config)");
 
 		for (IContainerService service : ServiceLoader.load(IContainerService.class)) {
 			log.debug("Load container service |%s|.", service.getClass());
@@ -89,6 +98,8 @@ public class Container implements IContainer, AppContainer, IInstanceCreatedList
 				containerStartProcessors.add((IContainerStartProcessor) service);
 			}
 		}
+
+		List<Binding<?>> bindings = cdi.configure(config);
 
 		for (Binding<?> binding : bindings) {
 			ManagedClass<?> managedClass = new ManagedClass<>(this, binding);

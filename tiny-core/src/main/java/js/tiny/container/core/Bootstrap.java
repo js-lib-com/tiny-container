@@ -33,9 +33,9 @@ public class Bootstrap implements AppContainerProvider {
 	public void startContainer(Container container, Object... arguments) throws ConfigException {
 		if (arguments.length == 0) {
 			ConfigBuilder builder = new ConfigBuilder(getClass().getResourceAsStream("/app.xml"));
-			container.config(builder.build());
+			container.configure(builder.build());
 		} else if (arguments.length == 1 && arguments[0] instanceof Config) {
-			container.config((Config) arguments[0]);
+			container.configure((Config) arguments[0]);
 		} else {
 			container.config(arguments);
 		}

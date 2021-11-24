@@ -1,14 +1,11 @@
 package js.tiny.container.cdi;
 
 import java.lang.annotation.Annotation;
-import java.net.URI;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 
 import javax.inject.Singleton;
 
@@ -28,9 +25,6 @@ import js.lang.Config;
 import js.lang.ConfigException;
 import js.log.Log;
 import js.log.LogFactory;
-import js.tiny.container.spi.IManagedClass;
-import js.tiny.container.spi.InstanceScope;
-import js.tiny.container.spi.InstanceType;
 import js.util.Params;
 
 /**
@@ -48,8 +42,8 @@ public class CDI implements IProvisionListener {
 
 	// --------------------------------------------------------------------------------------------
 
-	/** Explicit instance and scope bindings collected from container. */
-	private final ExplicitBindingModule explicitBindings;
+	/** Explicit bindings, and instance and scope bindings collected from container. */
+	private final StaticModule staticModule;
 
 	/**
 	 * Injector implementation used by this CDI instance. Injector is immutable; once configured is forbidden to alter its
@@ -60,10 +54,49 @@ public class CDI implements IProvisionListener {
 	/** Flag true only after CDI configuration complete. Used to assert CDI internal state consistency. */
 	private final AtomicBoolean configured = new AtomicBoolean(false);
 
+	private IManagedLoader managedLoader;
+	private IInstanceCreatedListener instanceCreatedListener;
+
 	private CDI() {
 		log.trace("CDI()");
-		this.explicitBindings = new ExplicitBindingModule();
+		this.staticModule = new StaticModule();
 		this.injector = new Injector();
+	}
+
+	public void setManagedLoader(IManagedLoader managedLoader) {
+		if (configured.get()) {
+			throw new IllegalStateException("Attempt to set managed class loader after injector configuration.");
+		}
+		this.managedLoader = managedLoader;
+	}
+
+	public void setInstanceCreatedListener(IInstanceCreatedListener instanceCreatedListener) {
+		if (configured.get()) {
+			throw new IllegalStateException("Attempt to set instance created listener after injector configuration.");
+		}
+		injector.bindListener(this);
+		this.instanceCreatedListener = instanceCreatedListener;
+	}
+
+	public <T> void bind(Binding<T> binding) {
+		if (configured.get()) {
+			throw new IllegalStateException("Attempt to add binding after injector configuration: " + binding);
+		}
+		staticModule.bindings.add(binding);
+	}
+
+	public <T> void bindInstance(Class<T> interfaceClass, T instance) {
+		if (configured.get()) {
+			throw new IllegalStateException("Attempt to bind instance after injector configuration: " + interfaceClass);
+		}
+		staticModule.instances.put(interfaceClass, instance);
+	}
+
+	public void bindScope(Class<? extends Annotation> annotation, IScope<?> scope) {
+		if (configured.get()) {
+			throw new IllegalStateException("Attempt to bind scope after injector configuration: " + annotation);
+		}
+		staticModule.scopes.put(annotation, scope);
 	}
 
 	/**
@@ -71,23 +104,23 @@ public class CDI implements IProvisionListener {
 	 * 
 	 * @param classDescriptors container managed classes.
 	 */
-	public List<Binding<?>> configure(Config config, Function<Class<?>, IManagedClass<?>> managedClassFactory) {
+	public List<Binding<?>> configure(Config config) {
 		log.trace("configure(Config)");
 
-		ManagedClassesModule managedClassesModule = new ManagedClassesModule(config, managedClassFactory);
-		injector.configure(explicitBindings, managedClassesModule);
+		ConfigModule configModule = new ConfigModule(config);
+		injector.configure(staticModule, configModule);
 		configured.set(true);
 
 		List<Binding<?>> containerBindings = new ArrayList<>();
-		containerBindings.addAll(explicitBindings.bindings.stream().filter(binding -> binding.getImplementationClass() != null).collect(Collectors.toList()));
-		containerBindings.addAll(managedClassesModule.containerBindings);
+		containerBindings.addAll(staticModule.containerBindings);
+		containerBindings.addAll(configModule.containerBindings);
 		return containerBindings;
 	}
 
 	public Config configure(Object... modules) throws ConfigException {
 		log.trace("configure(Object...)");
 		List<IModule> injectorModules = new ArrayList<>();
-		injectorModules.add(explicitBindings);
+		injectorModules.add(staticModule);
 
 		for (Object module : modules) {
 			if (!(module instanceof IModule)) {
@@ -98,7 +131,7 @@ public class CDI implements IProvisionListener {
 
 		// configBuilder.getManagedClasses().forEach(managedClass->{});
 
-		injector.configure(injectorModules.toArray(new IModule[0]));
+		injector.configure(injectorModules.toArray(new IModule[injectorModules.size()]));
 
 		CDIConfigBuilder configBuilder = new CDIConfigBuilder();
 		for (Object module : modules) {
@@ -107,27 +140,6 @@ public class CDI implements IProvisionListener {
 
 		// configured.set(true);
 		return configBuilder.build();
-	}
-
-	public <T> void bind(Binding<T> binding) {
-		if (configured.get()) {
-			throw new IllegalStateException("Attempt to add binding after injector configuration: " + binding);
-		}
-		explicitBindings.bindings.add(binding);
-	}
-
-	public <T> void bindInstance(Class<T> interfaceClass, T instance) {
-		if (configured.get()) {
-			throw new IllegalStateException("Attempt to bind instance after injector configuration: " + interfaceClass);
-		}
-		explicitBindings.instances.put(interfaceClass, instance);
-	}
-
-	public void bindScope(Class<? extends Annotation> annotation, IScope<?> scope) {
-		if (configured.get()) {
-			throw new IllegalStateException("Attempt to bind scope after injector configuration: " + annotation);
-		}
-		explicitBindings.scopes.put(annotation, scope);
 	}
 
 	/**
@@ -155,14 +167,7 @@ public class CDI implements IProvisionListener {
 
 	@Override
 	public <T> void onProvision(IProvisionInvocation<T> invocation) {
-		listener.onInstanceCreated(invocation.instance());
-	}
-
-	private IInstanceCreatedListener listener;
-
-	public void setInstanceCreatedListener(IInstanceCreatedListener listener) {
-		injector.bindListener(this);
-		this.listener = listener;
+		instanceCreatedListener.onInstanceCreated(invocation.instance());
 	}
 
 	/**
@@ -187,23 +192,17 @@ public class CDI implements IProvisionListener {
 	 * 
 	 * @author Iulian Rotaru
 	 */
-	private class ExplicitBindingModule extends AbstractModule {
+	private class StaticModule extends AbstractModule {
 		final List<Binding<?>> bindings = new ArrayList<>();
 		final Map<Class<?>, Object> instances = new HashMap<>();
 		final Map<Class<? extends Annotation>, IScope<?>> scopes = new HashMap<>();
 
-		@SuppressWarnings({ "unchecked", "rawtypes" })
+		final List<Binding<?>> containerBindings = new ArrayList<>();
+
+		@SuppressWarnings("unchecked")
 		@Override
 		protected void configure() {
-			bindings.forEach(binding -> {
-				IBindingBuilder<?> builder = bind(binding.getInterfaceClass());
-				if (binding.getImplementationClass() != null) {
-					builder.to((Class) binding.getImplementationClass());
-				}
-				if (binding.getScopeClass() != null) {
-					builder.in(binding.getScopeClass());
-				}
-			});
+			bindings.forEach(this::configure);
 
 			instances.forEach((interfaceClass, instance) -> {
 				log.debug("CDI register instance for |%s|.", interfaceClass);
@@ -215,6 +214,46 @@ public class CDI implements IProvisionListener {
 				injector.bindScope(annotation, scope);
 			});
 		}
+
+		protected <T> void configure(Binding<T> binding) {
+			IBindingBuilder<T> bindingBuilder = bind(binding.getInterfaceClass());
+
+			switch (binding.getInstanceType()) {
+			case POJO:
+				bindingBuilder.to(binding.getImplementationClass());
+				containerBindings.add(new Binding<>(binding.getInterfaceClass(), binding.getImplementationClass()));
+				break;
+
+			case PROXY:
+				bindingBuilder.to(binding.getImplementationClass());
+				bindingBuilder.toProvider(new ProxyProvider<>(binding.getInterfaceClass(), managedLoader, bindingBuilder.getProvider()));
+				containerBindings.add(new Binding<>(binding.getInterfaceClass(), binding.getImplementationClass()));
+				break;
+
+			case REMOTE:
+				bindingBuilder.on(binding.getImplementationURL());
+				break;
+
+			case SERVICE:
+				bindingBuilder.toProvider(new ServiceProvider<>(binding.getInterfaceClass()));
+				break;
+
+			default:
+				throw new IllegalStateException("No provider for instance type " + binding.getInstanceType());
+			}
+
+			if (binding.getInstanceScope().isLOCAL()) {
+				// local scope always creates a new instance
+			} else if (binding.getInstanceScope().isAPPLICATION()) {
+				bindingBuilder.in(Singleton.class);
+			} else if (binding.getInstanceScope().isTHREAD()) {
+				bindingBuilder.in(ThreadScoped.class);
+			} else if (binding.getInstanceScope().isSESSION()) {
+				bindingBuilder.in(SessionScoped.class);
+			} else {
+				throw new IllegalStateException("No provider for instance scope " + binding.getInstanceScope());
+			}
+		}
 	}
 
 	/**
@@ -223,66 +262,18 @@ public class CDI implements IProvisionListener {
 	 * 
 	 * @author Iulian Rotaru
 	 */
-	private class ManagedClassesModule extends AbstractModule {
+	private class ConfigModule extends StaticModule {
 		private final Config config;
-		private final Function<Class<?>, IManagedClass<?>> managedClassFactory;
 
-		private final List<Binding<?>> containerBindings = new ArrayList<>();
-
-		public ManagedClassesModule(Config config, Function<Class<?>, IManagedClass<?>> managedClassFactory) {
+		public ConfigModule(Config config) {
 			this.config = config;
-			this.managedClassFactory = managedClassFactory;
 		}
 
-		@SuppressWarnings({ "unchecked", "rawtypes" })
 		@Override
 		protected void configure() {
 			for (Config managedClassConfig : config.getChildren()) {
-
-				final Class<?> implementationClass = managedClassConfig.getAttribute("class", Class.class);
-				final Class<?> interfaceClass = managedClassConfig.getAttribute("interface", Class.class, implementationClass);
-				final InstanceType instanceType = managedClassConfig.getAttribute("type", InstanceType.class, InstanceType.POJO);
-				final InstanceScope instanceScope = managedClassConfig.getAttribute("scope", InstanceScope.class, InstanceScope.APPLICATION);
-				final URI implementationURL = managedClassConfig.getAttribute("url", URI.class);
-
-				log.debug("CDI register managed class |%s|.", managedClassConfig);
-				IBindingBuilder bindingBuilder = bind(interfaceClass);
-
-				switch (instanceType) {
-				case POJO:
-					bindingBuilder.to(implementationClass);
-					containerBindings.add(new Binding(interfaceClass, implementationClass));
-					break;
-
-				case PROXY:
-					bindingBuilder.to(implementationClass);
-					bindingBuilder.toProvider(new ProxyProvider(interfaceClass, managedClassFactory, bindingBuilder.getProvider()));
-					containerBindings.add(new Binding(interfaceClass, implementationClass));
-					break;
-
-				case REMOTE:
-					bindingBuilder.on(implementationURL);
-					break;
-
-				case SERVICE:
-					bindingBuilder.toProvider(new ServiceProvider<>(interfaceClass));
-					break;
-
-				default:
-					throw new IllegalStateException("No provider for instance type " + instanceType);
-				}
-
-				if (instanceScope.isLOCAL()) {
-					// local scope always creates a new instance
-				} else if (instanceScope.isAPPLICATION()) {
-					bindingBuilder.in(Singleton.class);
-				} else if (instanceScope.isTHREAD()) {
-					bindingBuilder.in(ThreadScoped.class);
-				} else if (instanceScope.isSESSION()) {
-					bindingBuilder.in(SessionScoped.class);
-				} else {
-					throw new IllegalStateException("No provider for instance scope " + instanceScope);
-				}
+				Binding<?> binding = new Binding<>(managedClassConfig);
+				configure(binding);
 			}
 		}
 	}

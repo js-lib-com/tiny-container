@@ -14,7 +14,6 @@ import static org.mockito.Mockito.when;
 import java.net.URI;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.function.Function;
 
 import javax.inject.Provider;
 import javax.inject.Singleton;
@@ -32,18 +31,15 @@ import js.lang.Config;
 import js.tiny.container.fixture.IService;
 import js.tiny.container.fixture.Service;
 import js.tiny.container.fixture.ThreadData;
-import js.tiny.container.spi.IManagedClass;
 import js.tiny.container.spi.InstanceScope;
 import js.tiny.container.spi.InstanceType;
 
 @RunWith(MockitoJUnitRunner.class)
 public class CDIUnitTest {
 	@Mock
-	private Config config;
+	private Config containerConfig;
 	@Mock
-	private Config managedClassConfig;
-	@Mock
-	private Function<Class<?>, IManagedClass<?>> managedClassFactory;
+	private Config classConfig;
 	@Mock
 	private IInstanceCreatedListener instanceListener;
 
@@ -53,11 +49,11 @@ public class CDIUnitTest {
 	public void beforeTest() {
 		IScope.clearCache();
 
-		when(config.getChildren()).thenReturn(Arrays.asList(managedClassConfig));
-		when(managedClassConfig.getAttribute("interface", Class.class, Object.class)).thenReturn(Object.class);
-		when(managedClassConfig.getAttribute("class", Class.class)).thenReturn(Object.class);
-		when(managedClassConfig.getAttribute("type", InstanceType.class, InstanceType.POJO)).thenReturn(InstanceType.POJO);
-		when(managedClassConfig.getAttribute("scope", InstanceScope.class, InstanceScope.APPLICATION)).thenReturn(InstanceScope.LOCAL);
+		when(containerConfig.getChildren()).thenReturn(Arrays.asList(classConfig));
+		when(classConfig.getAttribute("interface", Class.class, Object.class)).thenReturn(Object.class);
+		when(classConfig.getAttribute("class", Class.class)).thenReturn(Object.class);
+		when(classConfig.getAttribute("type", InstanceType.class, InstanceType.POJO)).thenReturn(InstanceType.POJO);
+		when(classConfig.getAttribute("scope", InstanceScope.class, InstanceScope.APPLICATION)).thenReturn(InstanceScope.LOCAL);
 
 		cdi = CDI.create();
 		cdi.setInstanceCreatedListener(instanceListener);
@@ -66,7 +62,7 @@ public class CDIUnitTest {
 	@Test
 	public void GivenTypePOJO_WhenGetInstance_ThenCreateNew() {
 		// given
-		cdi.configure(config, managedClassFactory);
+		cdi.configure(containerConfig);
 
 		// when
 		Object instance = cdi.getInstance(Object.class);
@@ -79,12 +75,13 @@ public class CDIUnitTest {
 	@Test
 	public void GivenTypePROXY_WhenGetInstance_ThenCreateNew() {
 		// given
-		when(managedClassConfig.getAttribute("interface", Class.class, Service.class)).thenReturn(IService.class);
-		when(managedClassConfig.getAttribute("class", Class.class)).thenReturn(Service.class);
-		when(managedClassConfig.getAttribute("type", InstanceType.class, InstanceType.POJO)).thenReturn(InstanceType.PROXY);
-		when(managedClassConfig.getAttribute("scope", InstanceScope.class, InstanceScope.APPLICATION)).thenReturn(InstanceScope.LOCAL);
+		when(classConfig.getAttribute("interface", Class.class, Service.class)).thenReturn(IService.class);
+		when(classConfig.getAttribute("class", Class.class)).thenReturn(Service.class);
+		when(classConfig.getAttribute("type", InstanceType.class, InstanceType.POJO)).thenReturn(InstanceType.PROXY);
+		when(classConfig.getAttribute("scope", InstanceScope.class, InstanceScope.APPLICATION)).thenReturn(InstanceScope.LOCAL);
 
-		cdi.configure(config, managedClassFactory);
+		cdi.setManagedLoader(mock(IManagedLoader.class));
+		cdi.configure(containerConfig);
 
 		// when
 		IService instance = cdi.getInstance(IService.class);
@@ -97,9 +94,9 @@ public class CDIUnitTest {
 	@Test
 	public void GivenTypeREMOTE_WhenGetInstance_ThenNotNull() {
 		// given
-		when(managedClassConfig.getAttribute("type", InstanceType.class, InstanceType.POJO)).thenReturn(InstanceType.REMOTE);
-		when(managedClassConfig.getAttribute("url", URI.class)).thenReturn(URI.create("http://localhost/"));
-		cdi.configure(config, managedClassFactory);
+		when(classConfig.getAttribute("type", InstanceType.class, InstanceType.POJO)).thenReturn(InstanceType.REMOTE);
+		when(classConfig.getAttribute("url", URI.class)).thenReturn(URI.create("http://localhost/"));
+		cdi.configure(containerConfig);
 
 		// when
 		Object instance = cdi.getInstance(Object.class);
@@ -111,9 +108,9 @@ public class CDIUnitTest {
 	@Test
 	public void GivenTypeREMOTE_WhenGetInstance_ThenNoInstanceCreated() {
 		// given
-		when(managedClassConfig.getAttribute("type", InstanceType.class, InstanceType.POJO)).thenReturn(InstanceType.REMOTE);
-		when(managedClassConfig.getAttribute("url", URI.class)).thenReturn(URI.create("http://localhost/"));
-		cdi.configure(config, managedClassFactory);
+		when(classConfig.getAttribute("type", InstanceType.class, InstanceType.POJO)).thenReturn(InstanceType.REMOTE);
+		when(classConfig.getAttribute("url", URI.class)).thenReturn(URI.create("http://localhost/"));
+		cdi.configure(containerConfig);
 
 		// when
 		cdi.getInstance(Object.class);
@@ -125,10 +122,10 @@ public class CDIUnitTest {
 	@Test
 	public void GivenTypeSERVICE_WhenGetInstance_ThenNotNull() {
 		// given
-		when(managedClassConfig.getAttribute("interface", Class.class, Service.class)).thenReturn(IService.class);
-		when(managedClassConfig.getAttribute("class", Class.class)).thenReturn(Service.class);
-		when(managedClassConfig.getAttribute("type", InstanceType.class, InstanceType.POJO)).thenReturn(InstanceType.SERVICE);
-		cdi.configure(config, managedClassFactory);
+		when(classConfig.getAttribute("interface", Class.class, Service.class)).thenReturn(IService.class);
+		when(classConfig.getAttribute("class", Class.class)).thenReturn(Service.class);
+		when(classConfig.getAttribute("type", InstanceType.class, InstanceType.POJO)).thenReturn(InstanceType.SERVICE);
+		cdi.configure(containerConfig);
 
 		// when
 		IService instance = cdi.getInstance(IService.class);
@@ -141,10 +138,10 @@ public class CDIUnitTest {
 	@Test
 	public void GivenTypeSERVICE_WhenGetInstance_ThenNoInstanceCreated() {
 		// given
-		when(managedClassConfig.getAttribute("interface", Class.class, Service.class)).thenReturn(IService.class);
-		when(managedClassConfig.getAttribute("class", Class.class)).thenReturn(Service.class);
-		when(managedClassConfig.getAttribute("type", InstanceType.class, InstanceType.POJO)).thenReturn(InstanceType.SERVICE);
-		cdi.configure(config, managedClassFactory);
+		when(classConfig.getAttribute("interface", Class.class, Service.class)).thenReturn(IService.class);
+		when(classConfig.getAttribute("class", Class.class)).thenReturn(Service.class);
+		when(classConfig.getAttribute("type", InstanceType.class, InstanceType.POJO)).thenReturn(InstanceType.SERVICE);
+		cdi.configure(containerConfig);
 
 		// when
 		cdi.getInstance(IService.class);
@@ -156,8 +153,8 @@ public class CDIUnitTest {
 	@Test
 	public void GivenScopeLOCAL_WhenGetInstanceTwice_ThenNotEqual() {
 		// given
-		when(managedClassConfig.getAttribute("scope", InstanceScope.class, InstanceScope.APPLICATION)).thenReturn(InstanceScope.LOCAL);
-		cdi.configure(config, managedClassFactory);
+		when(classConfig.getAttribute("scope", InstanceScope.class, InstanceScope.APPLICATION)).thenReturn(InstanceScope.LOCAL);
+		cdi.configure(containerConfig);
 
 		// when
 		Object instance1 = cdi.getInstance(Object.class);
@@ -172,8 +169,8 @@ public class CDIUnitTest {
 	@Test
 	public void GivenScopeAPPLICATION_WhenGetInstanceTwice_ThenEqual() {
 		// given
-		when(managedClassConfig.getAttribute("scope", InstanceScope.class, InstanceScope.APPLICATION)).thenReturn(InstanceScope.APPLICATION);
-		cdi.configure(config, managedClassFactory);
+		when(classConfig.getAttribute("scope", InstanceScope.class, InstanceScope.APPLICATION)).thenReturn(InstanceScope.APPLICATION);
+		cdi.configure(containerConfig);
 
 		// when
 		Object instance1 = cdi.getInstance(Object.class);
@@ -188,8 +185,8 @@ public class CDIUnitTest {
 	@Test
 	public void GivenScopeAPPLICATION_WhenGetInstanceFromDifferentThreads_ThenEqual() throws InterruptedException {
 		// given
-		when(managedClassConfig.getAttribute("scope", InstanceScope.class, InstanceScope.APPLICATION)).thenReturn(InstanceScope.APPLICATION);
-		cdi.configure(config, managedClassFactory);
+		when(classConfig.getAttribute("scope", InstanceScope.class, InstanceScope.APPLICATION)).thenReturn(InstanceScope.APPLICATION);
+		cdi.configure(containerConfig);
 
 		// when
 		Object instance = cdi.getInstance(Object.class);
@@ -210,8 +207,8 @@ public class CDIUnitTest {
 	@Test
 	public void GivenScopeTHREAD_WhenGetInstanceTwice_ThenEqual() {
 		// given
-		when(managedClassConfig.getAttribute("scope", InstanceScope.class, InstanceScope.APPLICATION)).thenReturn(InstanceScope.THREAD);
-		cdi.configure(config, managedClassFactory);
+		when(classConfig.getAttribute("scope", InstanceScope.class, InstanceScope.APPLICATION)).thenReturn(InstanceScope.THREAD);
+		cdi.configure(containerConfig);
 
 		// when
 		Object instance1 = cdi.getInstance(Object.class);
@@ -226,8 +223,8 @@ public class CDIUnitTest {
 	@Test
 	public void GivenScopeTHREAD_WhenGetInstanceFromDifferentThreads_ThenNotEqual() throws InterruptedException {
 		// given
-		when(managedClassConfig.getAttribute("scope", InstanceScope.class, InstanceScope.APPLICATION)).thenReturn(InstanceScope.THREAD);
-		cdi.configure(config, managedClassFactory);
+		when(classConfig.getAttribute("scope", InstanceScope.class, InstanceScope.APPLICATION)).thenReturn(InstanceScope.THREAD);
+		cdi.configure(containerConfig);
 
 		// when
 		Object instance = cdi.getInstance(Object.class);
@@ -248,8 +245,8 @@ public class CDIUnitTest {
 	@Test(expected = IllegalStateException.class)
 	public void GivenScopeSESSION_WhenGetInstance_ThenException() {
 		// given
-		when(managedClassConfig.getAttribute("scope", InstanceScope.class, InstanceScope.APPLICATION)).thenReturn(InstanceScope.SESSION);
-		cdi.configure(config, managedClassFactory);
+		when(classConfig.getAttribute("scope", InstanceScope.class, InstanceScope.APPLICATION)).thenReturn(InstanceScope.SESSION);
+		cdi.configure(containerConfig);
 
 		// when
 		cdi.getInstance(Object.class);
@@ -260,8 +257,8 @@ public class CDIUnitTest {
 	@Test
 	public void GivenScopeLOCAL_WhenGetInstanceTwice_ThenListenerTwice() {
 		// given
-		when(managedClassConfig.getAttribute("scope", InstanceScope.class, InstanceScope.APPLICATION)).thenReturn(InstanceScope.LOCAL);
-		cdi.configure(config, managedClassFactory);
+		when(classConfig.getAttribute("scope", InstanceScope.class, InstanceScope.APPLICATION)).thenReturn(InstanceScope.LOCAL);
+		cdi.configure(containerConfig);
 
 		// when
 		Object instance1 = cdi.getInstance(Object.class);
@@ -276,8 +273,8 @@ public class CDIUnitTest {
 	@Test
 	public void GivenScopeAPPLICATION_WhenGetInstanceTwice_ThenListenerOnce() {
 		// given
-		when(managedClassConfig.getAttribute("scope", InstanceScope.class, InstanceScope.APPLICATION)).thenReturn(InstanceScope.APPLICATION);
-		cdi.configure(config, managedClassFactory);
+		when(classConfig.getAttribute("scope", InstanceScope.class, InstanceScope.APPLICATION)).thenReturn(InstanceScope.APPLICATION);
+		cdi.configure(containerConfig);
 
 		// when
 		cdi.getInstance(Object.class);
@@ -290,7 +287,7 @@ public class CDIUnitTest {
 	@Test(expected = IllegalStateException.class)
 	public void GivenConfigured_WhenBindInstance_ThenException() {
 		// given
-		cdi.configure(config, managedClassFactory);
+		cdi.configure(containerConfig);
 
 		// when
 		cdi.bindInstance(Object.class, new Object());
@@ -301,7 +298,7 @@ public class CDIUnitTest {
 	@Test(expected = IllegalStateException.class)
 	public void GivenConfigured_WhenBindScope_ThenException() {
 		// given
-		cdi.configure(config, managedClassFactory);
+		cdi.configure(containerConfig);
 
 		// when
 		cdi.bindScope(Singleton.class, mock(IScope.class));
@@ -322,8 +319,8 @@ public class CDIUnitTest {
 	@Test
 	public void GivenScopeAPPLICATION_WhenGetScopeInstance_ThenNull() {
 		// given
-		when(managedClassConfig.getAttribute("scope", InstanceScope.class, InstanceScope.APPLICATION)).thenReturn(InstanceScope.APPLICATION);
-		cdi.configure(config, managedClassFactory);
+		when(classConfig.getAttribute("scope", InstanceScope.class, InstanceScope.APPLICATION)).thenReturn(InstanceScope.APPLICATION);
+		cdi.configure(containerConfig);
 
 		// when
 		Object instance = cdi.getScopeInstance(Object.class);
@@ -335,8 +332,8 @@ public class CDIUnitTest {
 	@Test
 	public void GivenScopeAPPLICATIONAndCache_WhenGetScopeInstanceSecondTime_ThenNotNull() {
 		// given
-		when(managedClassConfig.getAttribute("scope", InstanceScope.class, InstanceScope.APPLICATION)).thenReturn(InstanceScope.APPLICATION);
-		cdi.configure(config, managedClassFactory);
+		when(classConfig.getAttribute("scope", InstanceScope.class, InstanceScope.APPLICATION)).thenReturn(InstanceScope.APPLICATION);
+		cdi.configure(containerConfig);
 		// get instance to fill scope provider cache
 		cdi.getInstance(Object.class);
 
@@ -350,8 +347,8 @@ public class CDIUnitTest {
 	@Test
 	public void GivenScopeAPPLICATIONAndNoCache_WhenGetScopeInstanceSecondTime_ThenNull() {
 		// given
-		when(managedClassConfig.getAttribute("scope", InstanceScope.class, InstanceScope.APPLICATION)).thenReturn(InstanceScope.APPLICATION);
-		cdi.configure(config, managedClassFactory);
+		when(classConfig.getAttribute("scope", InstanceScope.class, InstanceScope.APPLICATION)).thenReturn(InstanceScope.APPLICATION);
+		cdi.configure(containerConfig);
 
 		// when
 		Object instance = cdi.getScopeInstance(Object.class);
@@ -366,8 +363,8 @@ public class CDIUnitTest {
 		Object instance = new Object();
 		cdi.bindInstance(Object.class, instance);
 
-		when(config.getChildren()).thenReturn(Collections.emptyList());
-		cdi.configure(config, managedClassFactory);
+		when(containerConfig.getChildren()).thenReturn(Collections.emptyList());
+		cdi.configure(containerConfig);
 
 		// when
 		Object instance1 = cdi.getInstance(Object.class);
@@ -388,8 +385,8 @@ public class CDIUnitTest {
 			}
 		});
 
-		when(managedClassConfig.getAttribute("scope", InstanceScope.class, InstanceScope.APPLICATION)).thenReturn(InstanceScope.SESSION);
-		cdi.configure(config, managedClassFactory);
+		when(classConfig.getAttribute("scope", InstanceScope.class, InstanceScope.APPLICATION)).thenReturn(InstanceScope.SESSION);
+		cdi.configure(containerConfig);
 
 		// when
 		Object instance = cdi.getInstance(Object.class);

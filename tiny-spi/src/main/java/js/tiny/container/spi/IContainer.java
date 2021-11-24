@@ -10,6 +10,8 @@ import java.util.List;
  */
 public interface IContainer {
 
+	<T> IBindingBuilder<T> bind(Class<T> interfaceClass);
+	
 	/**
 	 * Retrieve a not null managed instance, be it newly created or reused from a scope cache. Throws an implementation specific
 	 * runtime exception if there is no binding for requested interface.

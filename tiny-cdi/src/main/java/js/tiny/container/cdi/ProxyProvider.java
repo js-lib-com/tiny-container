@@ -4,7 +4,6 @@ import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
-import java.util.function.Function;
 
 import javax.inject.Provider;
 
@@ -26,13 +25,13 @@ class ProxyProvider<T> implements Provider<T> {
 	private static final Log log = LogFactory.getLog(ProxyProvider.class);
 
 	private final Class<T> interfaceClass;
-	private Function<Class<T>, IManagedClass<T>> managedClassFactory;
+	private final IManagedLoader managedLoader;
 	private final Provider<T> provider;
 
-	public ProxyProvider(Class<T> interfaceClass, Function<Class<T>, IManagedClass<T>> managedClassFactory, Provider<T> provider) {
-		log.trace("Class<T>, Function<IClassDescriptor<T>, IManagedClass<T>>, Provider");
+	public ProxyProvider(Class<T> interfaceClass, IManagedLoader managedLoader, Provider<T> provider) {
+		log.trace("Class<T>, IManagedLoader, IManagedClass<T>>, Provider");
 		this.interfaceClass = interfaceClass;
-		this.managedClassFactory = managedClassFactory;
+		this.managedLoader = managedLoader;
 		this.provider = provider;
 	}
 
@@ -41,7 +40,7 @@ class ProxyProvider<T> implements Provider<T> {
 	public T get() {
 		final ClassLoader classLoader = interfaceClass.getClassLoader();
 		final Class<T>[] interfaces = new Class[] { interfaceClass };
-		final InvocationHandler handler = new ProxyHandler<>(managedClassFactory.apply(interfaceClass), provider.get());
+		final InvocationHandler handler = new ProxyHandler<>(managedLoader.getManagedClass(interfaceClass), provider.get());
 		return (T) Proxy.newProxyInstance(classLoader, interfaces, handler);
 	}
 

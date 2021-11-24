@@ -1,10 +1,9 @@
 package js.tiny.container.transaction;
 
-
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 import java.io.IOException;
 
@@ -16,6 +15,7 @@ import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
 
 import js.lang.InvocationException;
+import js.tiny.container.spi.IBindingBuilder;
 import js.tiny.container.spi.IContainer;
 import js.tiny.container.spi.IInvocation;
 import js.tiny.container.spi.IInvocationProcessorsChain;
@@ -30,6 +30,8 @@ import js.transaction.Transactional;
 public class TransactionServiceTest {
 	@Mock
 	private IContainer container;
+	@Mock
+	private IBindingBuilder<?> bindingBuilder;
 	@Mock
 	private IManagedClass<?> managedClass;
 	@Mock
@@ -54,6 +56,10 @@ public class TransactionServiceTest {
 
 	@Before
 	public void beforeTest() {
+		doReturn(bindingBuilder).when(container).bind(any());
+		doReturn(bindingBuilder).when(bindingBuilder).type(any());
+		doReturn(bindingBuilder).when(bindingBuilder).to(any());
+		
 		when(container.getInstance(TransactionContext.class)).thenReturn(transactionalResource);
 		when(transactionalResource.createTransaction(null)).thenReturn(transaction);
 		when(transactionalResource.createReadOnlyTransaction(null)).thenReturn(transaction);

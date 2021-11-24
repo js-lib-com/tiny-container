@@ -119,7 +119,7 @@ public class TinyContainerUnitTest {
 			int startProbe;
 
 			@Override
-			public void config(Config config) {
+			public void configure(Config config) {
 				++configProbe;
 			}
 
@@ -175,7 +175,7 @@ public class TinyContainerUnitTest {
 	public void contextInitialized_ConfigException() {
 		class MockContainer extends TinyContainer {
 			@Override
-			public void config(Config config) {
+			public void configure(Config config) {
 				throw new RuntimeException("config exception");
 			}
 		}
@@ -320,7 +320,7 @@ public class TinyContainerUnitTest {
 				"</test-app>";
 		ConfigBuilder builder = new ConfigBuilder(config);
 		TinyContainer container = new TinyContainer();
-		container.config(builder.build());
+		container.configure(builder.build());
 		return container;
 	}
 

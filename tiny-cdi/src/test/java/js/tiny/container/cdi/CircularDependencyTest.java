@@ -1,9 +1,8 @@
 package js.tiny.container.cdi;
 
-import static org.hamcrest.MatcherAssert.*;
-import static org.hamcrest.Matchers.*;
-
-import java.util.function.Function;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.notNullValue;
+import static org.hamcrest.Matchers.startsWith;
 
 import javax.inject.Inject;
 
@@ -14,14 +13,11 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
 import js.lang.Config;
-import js.tiny.container.spi.IManagedClass;
 
 @RunWith(MockitoJUnitRunner.class)
 public class CircularDependencyTest {
 	@Mock
 	private Config config;
-	@Mock
-	private Function<Class<?>, IManagedClass<?>> managedClassFactory;
 
 	private CDI cdi;
 
@@ -34,7 +30,7 @@ public class CircularDependencyTest {
 	public void GivenFieldCircularDependency_WhenGetInstance_ThenException() {
 		// given
 		cdi.bind(new Binding<>(FieldService.class));
-		cdi.configure(config, managedClassFactory);
+		cdi.configure(config);
 
 		// when
 		String exception = null;
@@ -53,7 +49,7 @@ public class CircularDependencyTest {
 	public void GivenConstructorCircularDependency_WhenGetInstance_ThenException() {
 		// given
 		cdi.bind(new Binding<>(ConstructorService.class));
-		cdi.configure(config, managedClassFactory);
+		cdi.configure(config);
 
 		// when
 		String exception = null;
@@ -72,7 +68,7 @@ public class CircularDependencyTest {
 	public void GivenMethodCircularDependency_WhenGetInstance_ThenException() {
 		// given
 		cdi.bind(new Binding<>(MethodService.class));
-		cdi.configure(config, managedClassFactory);
+		cdi.configure(config);
 
 		// when
 		String exception = null;
@@ -93,7 +89,7 @@ public class CircularDependencyTest {
 		cdi.bind(new Binding<>(Grandfather.class));
 		cdi.bind(new Binding<>(Father.class));
 		cdi.bind(new Binding<>(Son.class));
-		cdi.configure(config, managedClassFactory);
+		cdi.configure(config);
 
 		// when
 		String exception = null;
