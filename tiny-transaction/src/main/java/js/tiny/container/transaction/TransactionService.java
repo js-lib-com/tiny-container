@@ -2,6 +2,8 @@ package js.tiny.container.transaction;
 
 import java.lang.reflect.InvocationTargetException;
 
+import javax.inject.Singleton;
+
 import js.lang.InvocationException;
 import js.log.Log;
 import js.log.LogFactory;
@@ -10,7 +12,6 @@ import js.tiny.container.spi.IInvocation;
 import js.tiny.container.spi.IInvocationProcessorsChain;
 import js.tiny.container.spi.IManagedMethod;
 import js.tiny.container.spi.IMethodInvocationProcessor;
-import js.tiny.container.spi.InstanceType;
 import js.transaction.Immutable;
 import js.transaction.Mutable;
 import js.transaction.Transaction;
@@ -32,8 +33,8 @@ public class TransactionService implements IMethodInvocationProcessor {
 		log.trace("create(IContainer)");
 		this.container = container;
 
-		container.bind(TransactionManager.class).type(InstanceType.SERVICE).build();
-		container.bind(TransactionContext.class).to(TransactionalResource.class).build();
+		container.bind(TransactionManager.class).service().in(Singleton.class).build();
+		container.bind(TransactionContext.class).to(TransactionalResource.class).in(Singleton.class).build();
 	}
 
 	@Override
@@ -171,7 +172,7 @@ public class TransactionService implements IMethodInvocationProcessor {
 		if (transactional == null) {
 			return null;
 		}
-		if(transactional.schema() == null) {
+		if (transactional.schema() == null) {
 			return null;
 		}
 		return transactional.schema().isEmpty() ? null : transactional.schema();

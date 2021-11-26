@@ -2,6 +2,8 @@ package js.tiny.container.spi;
 
 import java.util.List;
 
+import js.injector.IBindingBuilder;
+
 /**
  * Container services for framework internals and plugins. This interface is a service provider interface and is not intended
  * for applications consumption. It deals with container extensions, and managed classes and methods.

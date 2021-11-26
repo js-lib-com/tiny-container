@@ -25,8 +25,7 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import com.jslib.injector.IScope;
-
+import js.injector.IInjector;
 import js.tiny.container.spi.IContainer;
 import js.tiny.container.unit.FilterConfigStub;
 import js.tiny.container.unit.HttpServletRequestStub;
@@ -46,7 +45,9 @@ public class RequestPreprocessorUnitTest {
 
 	@Before
 	public void beforeTest() throws Exception {
-		IScope.clearCache();
+		IInjector injector = Classes.loadService(IInjector.class);
+		injector.clearCache();
+
 		container = (IContainer) TestContext.start();
 	}
 

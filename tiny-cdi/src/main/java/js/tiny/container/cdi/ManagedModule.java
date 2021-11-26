@@ -9,11 +9,11 @@ import javax.ejb.Stateful;
 import javax.ejb.Stateless;
 import javax.inject.Provider;
 
-import com.jslib.injector.IBinding;
-import com.jslib.injector.IInjector;
-import com.jslib.injector.IModule;
-import com.jslib.injector.ITypedProvider;
-import com.jslib.injector.ScopedProvider;
+import js.injector.IBinding;
+import js.injector.IInjector;
+import js.injector.IModule;
+import js.injector.ITypedProvider;
+import js.injector.ScopedProvider;
 
 class ManagedModule implements IModule {
 
@@ -26,13 +26,17 @@ class ManagedModule implements IModule {
 
 	private final IInjector injector;
 	private final IManagedLoader managedLoader;
-	private final List<Binding<?>> containerBindings = new ArrayList<>();
+	private final List<ClassBinding<?>> classBindings = new ArrayList<>();
 
-	private final List<IBinding<?>> bindings = new ArrayList<>();
+	private final List<IBinding<?>> injectorBindings = new ArrayList<>();
 
 	public ManagedModule(IInjector injector, IManagedLoader managedLoader) {
 		this.injector = injector;
 		this.managedLoader = managedLoader;
+	}
+
+	public void addBindings(List<IBinding<?>> bindings) {
+		this.injectorBindings.addAll(bindings);
 	}
 
 	public void addModule(IModule module) {
@@ -46,19 +50,19 @@ class ManagedModule implements IModule {
 			provider = ((ScopedProvider<T>) provider).getProvisioningProvider();
 		}
 		if (!(provider instanceof ITypedProvider)) {
-			bindings.add(binding);
+			injectorBindings.add(binding);
 			return;
 		}
 
 		Class<T> interfaceClass = binding.key().type();
 		Class<? extends T> implementationClass = ((ITypedProvider<T>) provider).type();
-		containerBindings.add(new Binding<>(interfaceClass, implementationClass));
+		classBindings.add(new ClassBinding<>(interfaceClass, implementationClass));
 
 		if (isAnnotationPresent(interfaceClass, implementationClass)) {
 			System.out.println("--- managed bean: " + interfaceClass);
-			bindings.add(ProxyBinding.create(managedLoader, binding));
+			injectorBindings.add(ProxyBinding.create(managedLoader, binding));
 		} else {
-			bindings.add(binding);
+			injectorBindings.add(binding);
 		}
 	}
 
@@ -74,8 +78,8 @@ class ManagedModule implements IModule {
 		return false;
 	}
 
-	public List<Binding<?>> getContainerBindings() {
-		return containerBindings;
+	public List<ClassBinding<?>> getClassBindings() {
+		return classBindings;
 	}
 
 	@Override
@@ -85,6 +89,6 @@ class ManagedModule implements IModule {
 
 	@Override
 	public List<IBinding<?>> bindings() {
-		return bindings;
+		return injectorBindings;
 	}
 }

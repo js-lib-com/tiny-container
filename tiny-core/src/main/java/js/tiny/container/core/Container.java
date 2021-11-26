@@ -11,19 +11,18 @@ import java.util.Map;
 import java.util.ServiceLoader;
 import java.util.Set;
 
-import com.jslib.injector.ProvisionException;
-
 import js.app.container.AppContainer;
+import js.injector.IBindingBuilder;
+import js.injector.ProvisionException;
 import js.lang.Config;
 import js.lang.ConfigException;
 import js.lang.InstanceInvocationHandler;
 import js.log.Log;
 import js.log.LogFactory;
-import js.tiny.container.cdi.Binding;
 import js.tiny.container.cdi.CDI;
+import js.tiny.container.cdi.ClassBinding;
 import js.tiny.container.cdi.IInstanceCreatedListener;
 import js.tiny.container.cdi.IManagedLoader;
-import js.tiny.container.spi.IBindingBuilder;
 import js.tiny.container.spi.IContainer;
 import js.tiny.container.spi.IContainerService;
 import js.tiny.container.spi.IContainerStartProcessor;
@@ -105,8 +104,8 @@ public class Container implements IContainer, AppContainer, IInstanceCreatedList
 		createManagedClasses(cdi.configure(modules));
 	}
 
-	private void createManagedClasses(List<Binding<?>> bindings) {
-		for (Binding<?> binding : bindings) {
+	private void createManagedClasses(List<ClassBinding<?>> bindings) {
+		for (ClassBinding<?> binding : bindings) {
 			ManagedClass<?> managedClass = new ManagedClass<>(this, binding);
 			managedClass.scanServices();
 

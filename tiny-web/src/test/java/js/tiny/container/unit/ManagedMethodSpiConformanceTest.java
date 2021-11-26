@@ -3,15 +3,12 @@ package js.tiny.container.unit;
 import static org.junit.Assert.assertEquals;
 
 import java.lang.reflect.Method;
-import java.util.Collections;
 import java.util.Date;
-import java.util.Set;
 
 import org.junit.Before;
 import org.junit.Test;
 
 import js.tiny.container.spi.IContainer;
-import js.tiny.container.spi.IContainerService;
 import js.tiny.container.spi.IManagedMethod;
 import js.tiny.container.stub.ManagedClassSpiStub;
 import js.util.Classes;

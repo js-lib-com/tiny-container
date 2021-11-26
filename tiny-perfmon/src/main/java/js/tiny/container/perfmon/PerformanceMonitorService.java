@@ -1,5 +1,7 @@
 package js.tiny.container.perfmon;
 
+import javax.inject.Singleton;
+
 import js.log.Log;
 import js.log.LogFactory;
 import js.tiny.container.spi.IContainer;
@@ -20,7 +22,7 @@ public class PerformanceMonitorService implements IMethodInvocationProcessor {
 
 	@Override
 	public void create(IContainer container) {
-		container.bind(Observer.class).build();
+		container.bind(Observer.class).in(Singleton.class).build();
 	}
 
 	@Override

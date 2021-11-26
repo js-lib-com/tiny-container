@@ -2,7 +2,7 @@ package js.tiny.container.stub;
 
 import java.util.List;
 
-import js.tiny.container.spi.IBindingBuilder;
+import js.injector.IBindingBuilder;
 import js.tiny.container.spi.IContainer;
 import js.tiny.container.spi.IManagedClass;
 

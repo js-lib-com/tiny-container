@@ -17,7 +17,7 @@ import js.lang.Config;
 public class CDIConformityTest {
 	@Mock
 	private Config config;
-
+	
 	private CDI cdi;
 
 	@Before
@@ -28,8 +28,8 @@ public class CDIConformityTest {
 	@Test
 	public void GivenTaskService_WhenGetInstance_ThenTaskInjected() {
 		// given
-		cdi.bind(new Binding<>(Task.class));
-		cdi.bind(new Binding<>(TaskService.class));
+		cdi.bind(new ContainerBinding<>(Task.class));
+		cdi.bind(new ContainerBinding<>(TaskService.class));
 		cdi.configure(config);
 
 		// when
@@ -42,8 +42,8 @@ public class CDIConformityTest {
 	@Test
 	public void GivenTwoTasksService_WhenGetInstance_ThenBothTasksInjected() {
 		// given
-		cdi.bind(new Binding<>(Task.class));
-		cdi.bind(new Binding<>(TwoTasksService.class));
+		cdi.bind(new ContainerBinding<>(Task.class));
+		cdi.bind(new ContainerBinding<>(TwoTasksService.class));
 		cdi.configure(config);
 
 		// when

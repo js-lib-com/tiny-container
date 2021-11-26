@@ -20,7 +20,7 @@ import org.mockito.junit.MockitoJUnitRunner;
 
 import js.lang.Config;
 import js.lang.ConfigException;
-import js.tiny.container.cdi.Binding;
+import js.tiny.container.cdi.ClassBinding;
 import js.tiny.container.cdi.CDI;
 import js.tiny.container.spi.IManagedClass;
 
@@ -29,7 +29,7 @@ public class ContainerLifeCycleTest {
 	@Mock
 	private CDI cdi;
 	@Mock
-	private Binding<Object> binding;
+	private ClassBinding<Object> binding;
 	@Mock
 	private Config config;
 

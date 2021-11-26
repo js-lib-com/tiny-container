@@ -7,7 +7,7 @@ import java.util.Map;
 
 import js.log.Log;
 import js.log.LogFactory;
-import js.tiny.container.cdi.Binding;
+import js.tiny.container.cdi.ClassBinding;
 import js.tiny.container.spi.IClassPostLoadedProcessor;
 import js.tiny.container.spi.IContainer;
 import js.tiny.container.spi.IContainerService;
@@ -15,7 +15,6 @@ import js.tiny.container.spi.IInstancePostConstructProcessor;
 import js.tiny.container.spi.IInstancePreDestroyProcessor;
 import js.tiny.container.spi.IManagedClass;
 import js.tiny.container.spi.IManagedMethod;
-import js.tiny.container.spi.InstanceType;
 import js.util.Params;
 
 /**
@@ -42,10 +41,6 @@ public final class ManagedClass<T> implements IManagedClass<T> {
 	 */
 	private final Class<? extends T> implementationClass;
 
-	/**
-	 * Managed methods pool for managed classes of type {@link InstanceType#PROXY}. Used to find out managed method bound to
-	 * interface method.
-	 */
 	private final Map<String, IManagedMethod> methodsPool = new HashMap<>();
 
 	/**
@@ -56,7 +51,7 @@ public final class ManagedClass<T> implements IManagedClass<T> {
 
 	private final FlowProcessorsSet<IInstancePreDestroyProcessor> instancePreDestructors = new FlowProcessorsSet<>();
 
-	public ManagedClass(Container container, Binding<T> binding) {
+	public ManagedClass(Container container, ClassBinding<T> binding) {
 		Params.notNull(container, "Container");
 		Params.notNull(binding, "Binding");
 		Params.notNull(binding.getInterfaceClass(), "Binding interface");

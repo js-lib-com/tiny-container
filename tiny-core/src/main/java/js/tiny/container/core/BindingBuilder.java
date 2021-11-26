@@ -1,74 +1,96 @@
 package js.tiny.container.core;
 
+import java.lang.annotation.Annotation;
 import java.net.URI;
 
-import js.tiny.container.cdi.Binding;
+import javax.inject.Provider;
+
+import js.injector.IBinding;
+import js.injector.IBindingBuilder;
+import js.injector.ITypedProvider;
 import js.tiny.container.cdi.CDI;
-import js.tiny.container.spi.IBindingBuilder;
-import js.tiny.container.spi.InstanceScope;
-import js.tiny.container.spi.InstanceType;
+import js.tiny.container.cdi.ContainerBinding;
 
-public class BindingBuilder<T> implements IBindingBuilder<T> {
+class BindingBuilder<T> implements IBindingBuilder<T> {
 	private final CDI cdi;
-	private final Class<T> interfaceClass;
-
-	private Class<? extends T> implementationClass;
-	private T instance;
-	private InstanceType instanceType;
-	private InstanceScope instanceScope;
-	private URI implementationURL;
+	private final ContainerBinding<T> binding;
 
 	public BindingBuilder(CDI cdi, Class<T> interfaceClass) {
 		this.cdi = cdi;
-		this.interfaceClass = interfaceClass;
+		this.binding = new ContainerBinding<>(interfaceClass);
 	}
 
 	@Override
 	public IBindingBuilder<T> to(Class<? extends T> implementationClass) {
-		this.implementationClass = implementationClass;
+		binding.setImplementationClass(implementationClass);
 		return this;
 	}
 
 	@Override
 	public IBindingBuilder<T> instance(T instance) {
-		this.instance = instance;
-		return this;
-	}
-
-	@Override
-	public IBindingBuilder<T> type(InstanceType instanceType) {
-		this.instanceType = instanceType;
-		return this;
-	}
-
-	@Override
-	public IBindingBuilder<T> scope(InstanceScope instanceScope) {
-		this.instanceScope = instanceScope;
+		binding.setInstance(instance);
 		return this;
 	}
 
 	@Override
 	public IBindingBuilder<T> on(URI implementationURL) {
-		this.implementationURL = implementationURL;
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public IBindingBuilder<T> with(Annotation qualifier) {
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public IBindingBuilder<T> with(Class<? extends Annotation> qualifierType) {
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public IBindingBuilder<T> named(String name) {
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public IBindingBuilder<T> provider(Provider<T> provider) {
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public IBindingBuilder<T> provider(ITypedProvider<T> provider) {
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public IBindingBuilder<T> service() {
+		binding.setService(true);
 		return this;
 	}
 
 	@Override
-	public void build() {
-		if (instance != null) {
-			cdi.bindInstance(interfaceClass, instance);
-			return;
-		}
-		if (implementationClass == null) {
-			implementationClass = interfaceClass;
-		}
-		if (instanceType == null) {
-			instanceType = InstanceType.POJO;
-		}
-		if (instanceScope == null) {
-			instanceScope = InstanceScope.APPLICATION;
-		}
-		Binding<T> binding = new Binding<>(interfaceClass, implementationClass, instanceType, instanceScope, implementationURL);
+	public IBindingBuilder<T> on(String implementationURL) {
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public IBindingBuilder<T> in(Class<? extends Annotation> scopeType) {
+		binding.setScope(scopeType);
+		return this;
+	}
+
+	@Override
+	public Provider<T> getProvider() {
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public IBinding<T> getBinding() {
+		throw new UnsupportedOperationException();
+	}
+
+	public IBindingBuilder<T> build() {
 		cdi.bind(binding);
+		return this;
 	}
 }

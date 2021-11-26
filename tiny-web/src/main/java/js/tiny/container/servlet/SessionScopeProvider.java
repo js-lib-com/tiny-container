@@ -4,11 +4,9 @@ import javax.inject.Provider;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
-// TODO: dependencies on injector implementation
-import com.jslib.injector.IScope;
-import com.jslib.injector.Key;
-import com.jslib.injector.ScopedProvider;
-
+import js.injector.IScope;
+import js.injector.Key;
+import js.injector.ScopedProvider;
 import js.lang.BugError;
 
 public class SessionScopeProvider<T> extends ScopedProvider<T> {

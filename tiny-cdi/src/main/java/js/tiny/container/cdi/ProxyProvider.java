@@ -7,8 +7,7 @@ import java.lang.reflect.Proxy;
 
 import javax.inject.Provider;
 
-import com.jslib.injector.ITypedProvider;
-
+import js.injector.ITypedProvider;
 import js.lang.BugError;
 import js.lang.InstanceInvocationHandler;
 import js.lang.InvocationException;

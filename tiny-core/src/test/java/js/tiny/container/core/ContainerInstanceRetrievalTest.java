@@ -15,8 +15,7 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
-import com.jslib.injector.ProvisionException;
-
+import js.injector.ProvisionException;
 import js.tiny.container.cdi.CDI;
 import js.tiny.container.spi.IManagedClass;
 

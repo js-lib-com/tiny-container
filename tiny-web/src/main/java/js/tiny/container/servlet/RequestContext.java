@@ -3,6 +3,7 @@ package js.tiny.container.servlet;
 import java.util.Enumeration;
 import java.util.Locale;
 
+import javax.inject.Singleton;
 import javax.servlet.RequestDispatcher;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -10,17 +11,17 @@ import javax.servlet.http.HttpSession;
 
 import js.converter.Converter;
 import js.converter.ConverterRegistry;
+import js.injector.ThreadScoped;
 import js.lang.BugError;
 import js.log.Log;
 import js.log.LogFactory;
-import js.tiny.container.spi.InstanceScope;
 
-/**
+/**	
  * Request context stored on current HTTP servlet request thread. This class allows access to container public services and to
  * relatively low level servlet abstractions like {@link HttpServletRequest}. Since exposes tiny container and servlet APIs this
  * class is primarily for framework internal needs. Anyway, there is no formal restriction on using it from applications.
  * <p>
- * Request context instance has {@link InstanceScope#THREAD} scope but is valid to be used only within HTTP request boundaries.
+ * Request context instance has {@link ThreadScoped} scope but is valid to be used only within HTTP request boundaries.
  * Request context instance is {@link #attach(HttpServletRequest, HttpServletResponse)}ed on new HTTP request thread and
  * {@link #detach()}ed on HTTP request end.
  * <p>
@@ -41,10 +42,10 @@ import js.tiny.container.spi.InstanceScope;
  * }
  * </pre>
  * <p>
- * Request context can also be injected into field. Now, controller is a managed class with {@link InstanceScope#APPLICATION}
- * scope whereas request context scope is {@link InstanceScope#THREAD}. Since request context life span is smaller than
- * controller, request context may become invalid while controller still handles requests. Container dependency injection takes
- * care and replace injected request context instance with a Java proxy.
+ * Request context can also be injected into field. Now, controller is a managed class with {@link Singleton} scope whereas
+ * request context scope is {@link ThreadScoped}. Since request context life span is smaller than controller, request context
+ * may become invalid while controller still handles requests. Container dependency injection takes care and replace injected
+ * request context instance with a Java proxy.
  * 
  * <pre>
  * class Controller {

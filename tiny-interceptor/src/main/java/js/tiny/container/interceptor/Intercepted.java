@@ -5,15 +5,11 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-import js.tiny.container.spi.InstanceType;
-
 /**
  * An intercepted managed method executes an interceptor cross-cutting logic whenever is invoked. Works in conjunction with
  * {@link Interceptor} interface to facilitate a basic aspect programming. {@literal @}Intercepted is used to annotate specific
  * public method or if this annotation is used on a class, all class public methods. Using this annotation on private or
- * protected methods is silently ignored. Also {@literal @}Intercepted should be used on managed class of
- * {@link InstanceType#PROXY} type or {@link InstanceType#POJO} annotated with {@link Remote}, {@link Controller} or
- * {@link Service}; otherwise is considered a bug.
+ * protected methods is silently ignored.
  * <p>
  * Interceptor is executed every time an intercepted managed method is invoked.
  * <p>

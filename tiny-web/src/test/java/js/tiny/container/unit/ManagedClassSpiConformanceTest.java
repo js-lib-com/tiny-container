@@ -23,7 +23,7 @@ import org.junit.Test;
 import js.lang.BugError;
 import js.lang.Config;
 import js.lang.ConfigBuilder;
-import js.tiny.container.cdi.Binding;
+import js.tiny.container.cdi.ClassBinding;
 import js.tiny.container.core.Container;
 import js.tiny.container.core.ManagedClass;
 import js.tiny.container.spi.IManagedClass;
@@ -121,7 +121,7 @@ public class ManagedClassSpiConformanceTest {
 		Class<?> interfaceClass = classDescriptor.getAttribute("interface", Class.class);
 		Class<?> implementationClass = classDescriptor.getAttribute("class", Class.class);
 		
-		Binding<?> binding = new Binding(interfaceClass, implementationClass);
+		ClassBinding<?> binding = new ClassBinding(interfaceClass, implementationClass);
 		return new ManagedClass<>(container, binding);
 	}
 

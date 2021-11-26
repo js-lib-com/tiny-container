@@ -6,6 +6,7 @@ import java.io.FileNotFoundException;
 import java.security.Principal;
 import java.util.Enumeration;
 
+import javax.inject.Singleton;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
@@ -13,6 +14,8 @@ import javax.servlet.http.HttpSessionEvent;
 import javax.servlet.http.HttpSessionListener;
 
 import js.converter.ConverterRegistry;
+import js.injector.SessionScoped;
+import js.injector.ThreadScoped;
 import js.lang.BugError;
 import js.lang.Config;
 import js.lang.ConfigBuilder;
@@ -21,16 +24,14 @@ import js.log.Log;
 import js.log.LogContext;
 import js.log.LogFactory;
 import js.tiny.container.cdi.CDI;
-import js.tiny.container.cdi.SessionScoped;
 import js.tiny.container.core.Bootstrap;
 import js.tiny.container.core.Container;
 import js.tiny.container.net.EventStreamManager;
 import js.tiny.container.net.EventStreamManagerImpl;
-import js.tiny.container.spi.InstanceScope;
 
 /**
  * Container specialization for web applications. This class extends {@link Container} adding implementation for
- * {@link InstanceScope#SESSION}, application context services and security context. Tiny container instance is accessible to
+ * {@link SessionScoped}, application context services and security context. Tiny container instance is accessible to
  * application code through {@link AppContext} interface.
  * <p>
  * This class also implements {@link SecurityContext} services. For servlet container authentication this class delegates HTTP
@@ -168,9 +169,9 @@ public class TinyContainer extends Container implements ServletContextListener, 
 		bind(ITinyContainer.class).instance(this).build();
 		bind(WebContext.class).instance(this).build();
 		bind(SecurityContext.class).instance(this).build();
-		
-		bind(RequestContext.class).scope(InstanceScope.THREAD).build();
-		bind(EventStreamManager.class).to(EventStreamManagerImpl.class).scope(InstanceScope.APPLICATION);
+
+		bind(RequestContext.class).in(ThreadScoped.class).build();
+		bind(EventStreamManager.class).to(EventStreamManagerImpl.class).in(Singleton.class).build();
 
 		// TODO: dependency on injector implementation
 		this.cdi.bindScope(SessionScoped.class, new SessionScopeProvider.Factory<>());

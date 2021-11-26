@@ -25,8 +25,7 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
 
-import com.jslib.injector.Key;
-
+import js.injector.Key;
 import js.lang.BugError;
 import js.tiny.container.spi.Factory;
 import js.tiny.container.spi.IContainer;

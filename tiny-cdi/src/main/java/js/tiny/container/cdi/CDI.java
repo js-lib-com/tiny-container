@@ -1,26 +1,19 @@
 package js.tiny.container.cdi;
 
 import java.lang.annotation.Annotation;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import javax.inject.Singleton;
-
-import com.jslib.injector.IBindingBuilder;
-import com.jslib.injector.IInjector;
-import com.jslib.injector.IModule;
-import com.jslib.injector.IProvisionInvocation;
-import com.jslib.injector.IProvisionListener;
-import com.jslib.injector.IScope;
-import com.jslib.injector.Key;
-import com.jslib.injector.ProvisionException;
-import com.jslib.injector.ThreadScoped;
-import com.jslib.injector.impl.AbstractModule;
-import com.jslib.injector.impl.Injector;
-
+import js.injector.AbstractModule;
+import js.injector.IInjector;
+import js.injector.IModule;
+import js.injector.IProvisionInvocation;
+import js.injector.IProvisionListener;
+import js.injector.IScope;
+import js.injector.Key;
+import js.injector.ProvisionException;
 import js.lang.Config;
 import js.log.Log;
 import js.log.LogFactory;
@@ -44,6 +37,8 @@ public class CDI implements IProvisionListener {
 	/** Explicit bindings, and instance and scope bindings collected from container. */
 	private final StaticModule staticModule;
 
+	private final ContainerModule containerModule;
+
 	/**
 	 * Injector implementation used by this CDI instance. Injector is immutable; once configured is forbidden to alter its
 	 * bindings.
@@ -59,7 +54,8 @@ public class CDI implements IProvisionListener {
 	private CDI() {
 		log.trace("CDI()");
 		this.staticModule = new StaticModule();
-		this.injector = new Injector();
+		this.containerModule = new ContainerModule();
+		this.injector = IInjector.create();
 	}
 
 	public void setManagedLoader(IManagedLoader managedLoader) {
@@ -77,11 +73,11 @@ public class CDI implements IProvisionListener {
 		this.instanceCreatedListener = instanceCreatedListener;
 	}
 
-	public <T> void bind(Binding<T> binding) {
+	public <T> void bind(ContainerBinding<T> binding) {
 		if (configured.get()) {
 			throw new IllegalStateException("Attempt to add binding after injector configuration: " + binding);
 		}
-		staticModule.bindings.add(binding);
+		containerModule.addBinding(binding);
 	}
 
 	public <T> void bindInstance(Class<T> interfaceClass, T instance) {
@@ -103,17 +99,17 @@ public class CDI implements IProvisionListener {
 	 * 
 	 * @param classDescriptors container managed classes.
 	 */
-	public List<Binding<?>> configure(Config config) {
+	public List<ClassBinding<?>> configure(Config config) {
 		log.trace("configure(Config)");
-		ConfigModule configModule = new ConfigModule(config);
-		return configure(configModule);
+		return configure(new ConfigModule(config));
 	}
 
-	public List<Binding<?>> configure(Object... arguments) {
+	public List<ClassBinding<?>> configure(Object... arguments) {
 		log.trace("configure(Object...)");
 
 		ManagedModule managedModule = new ManagedModule(injector, managedLoader);
 		managedModule.addModule(staticModule);
+		managedModule.addModule(containerModule);
 		for (Object argument : arguments) {
 			if (!(argument instanceof IModule)) {
 				throw new IllegalArgumentException("Invalid module type " + argument.getClass());
@@ -124,7 +120,7 @@ public class CDI implements IProvisionListener {
 		injector.configure(managedModule);
 		configured.set(true);
 
-		return managedModule.getContainerBindings();
+		return managedModule.getClassBindings();
 	}
 
 	/**
@@ -178,15 +174,12 @@ public class CDI implements IProvisionListener {
 	 * @author Iulian Rotaru
 	 */
 	private class StaticModule extends AbstractModule {
-		final List<Binding<?>> bindings = new ArrayList<>();
 		final Map<Class<?>, Object> instances = new HashMap<>();
 		final Map<Class<? extends Annotation>, IScope<?>> scopes = new HashMap<>();
 
 		@SuppressWarnings("unchecked")
 		@Override
 		protected void configure() {
-			bindings.forEach(this::configure);
-
 			instances.forEach((interfaceClass, instance) -> {
 				log.debug("CDI register instance for |%s|.", interfaceClass);
 				bindInstance((Class<Object>) interfaceClass, instance);
@@ -196,66 +189,6 @@ public class CDI implements IProvisionListener {
 				log.debug("CDI register scope |%s|.", annotation);
 				injector.bindScope(annotation, scope);
 			});
-		}
-
-		protected <T> void configure(Binding<T> binding) {
-			IBindingBuilder<T> bindingBuilder = bind(binding.getInterfaceClass());
-
-			switch (binding.getInstanceType()) {
-			case POJO:
-				bindingBuilder.to(binding.getImplementationClass());
-				break;
-
-			case PROXY:
-				bindingBuilder.to(binding.getImplementationClass());
-				bindingBuilder.toProvider(new ProxyProvider<>(binding.getInterfaceClass(), managedLoader, bindingBuilder.getProvider()));
-				break;
-
-			case REMOTE:
-				bindingBuilder.on(binding.getImplementationURL());
-				break;
-
-			case SERVICE:
-				bindingBuilder.service();
-				break;
-
-			default:
-				throw new IllegalStateException("No provider for instance type " + binding.getInstanceType());
-			}
-
-			if (binding.getInstanceScope().isLOCAL()) {
-				// local scope always creates a new instance
-			} else if (binding.getInstanceScope().isAPPLICATION()) {
-				bindingBuilder.in(Singleton.class);
-			} else if (binding.getInstanceScope().isTHREAD()) {
-				bindingBuilder.in(ThreadScoped.class);
-			} else if (binding.getInstanceScope().isSESSION()) {
-				bindingBuilder.in(SessionScoped.class);
-			} else {
-				throw new IllegalStateException("No provider for instance scope " + binding.getInstanceScope());
-			}
-		}
-	}
-
-	/**
-	 * Injector module initialized from managed classes collection. This specialized module traverses container managed classes,
-	 * creating injector bindings accordingly managed class instance type and scope.
-	 * 
-	 * @author Iulian Rotaru
-	 */
-	private class ConfigModule extends StaticModule {
-		private final Config config;
-
-		public ConfigModule(Config config) {
-			this.config = config;
-		}
-
-		@Override
-		protected void configure() {
-			for (Config managedClassConfig : config.getChildren()) {
-				Binding<?> binding = new Binding<>(managedClassConfig);
-				configure(binding);
-			}
 		}
 	}
 }

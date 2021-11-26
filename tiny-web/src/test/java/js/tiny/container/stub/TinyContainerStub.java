@@ -3,8 +3,8 @@ package js.tiny.container.stub;
 import java.security.Principal;
 import java.util.List;
 
+import js.injector.IBindingBuilder;
 import js.tiny.container.servlet.ITinyContainer;
-import js.tiny.container.spi.IBindingBuilder;
 import js.tiny.container.spi.IManagedClass;
 
 public class TinyContainerStub implements ITinyContainer {

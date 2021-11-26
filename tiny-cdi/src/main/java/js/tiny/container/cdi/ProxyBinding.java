@@ -2,9 +2,9 @@ package js.tiny.container.cdi;
 
 import javax.inject.Provider;
 
-import com.jslib.injector.IBinding;
-import com.jslib.injector.Key;
-import com.jslib.injector.ScopedProvider;
+import js.injector.IBinding;
+import js.injector.Key;
+import js.injector.ScopedProvider;
 
 class ProxyBinding<T> implements IBinding<T> {
 	public static <T> IBinding<T> create(IManagedLoader managedLoader, IBinding<T> binding) {
