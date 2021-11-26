@@ -29,7 +29,6 @@
 
 	<modules>
 		<module>tiny-spi</module>
-		<module>tiny-cdi</module>
 		<module>tiny-core</module>
 		<module>tiny-web</module>
 		<module>tiny-context-param</module>

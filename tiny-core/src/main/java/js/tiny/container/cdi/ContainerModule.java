@@ -6,7 +6,7 @@ import java.util.List;
 import js.injector.AbstractModule;
 import js.injector.IBindingBuilder;
 
-public class ContainerModule extends AbstractModule {
+class ContainerModule extends AbstractModule {
 
 	private final List<ContainerBinding<?>> bindings = new ArrayList<>();
 

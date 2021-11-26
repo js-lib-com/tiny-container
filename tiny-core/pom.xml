@@ -9,14 +9,20 @@
 
 	<dependencies>
 		<dependency>
+			<groupId>${project.parent.groupId}</groupId>
+			<artifactId>tiny-spi</artifactId>
+			<version>${project.parent.version}</version>
+		</dependency>
+		<dependency>
 			<groupId>com.js-lib</groupId>
 			<artifactId>app-container-api</artifactId>
 			<version>1.0</version>
 		</dependency>
 		<dependency>
-			<groupId>${project.parent.groupId}</groupId>
-			<artifactId>tiny-cdi</artifactId>
-			<version>${project.parent.version}</version>
+			<groupId>com.js-lib</groupId>
+			<artifactId>js-injector</artifactId>
+			<version>0.0.1-SNAPSHOT</version>
+			<scope>test</scope>
 		</dependency>
 	</dependencies>
 
