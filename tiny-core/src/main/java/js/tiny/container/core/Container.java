@@ -63,16 +63,26 @@ public class Container implements IContainer, AppContainer, IInstanceCreatedList
 	}
 
 	/**
-	 * Create factories and processors for instance retrieval but leave classes pool loading for {@link #configure(Config)}. This
-	 * constructor creates built-in factories and processors but subclass may add its own.
+	 * Create factories and processors for instance retrieval but leave classes pool loading for {@link #configure(Config)}.
+	 * This constructor creates built-in factories and processors but subclass may add its own.
 	 */
 	public Container(CDI cdi) {
 		this.cdi = cdi;
 		this.cdi.setManagedLoader(this);
 		this.cdi.setInstanceCreatedListener(this);
-		
+
 		bind(IContainer.class).instance(this).build();
 		bind(AppContainer.class).instance(this).build();
+
+		for (IContainerService service : ServiceLoader.load(IContainerService.class)) {
+			log.debug("Load container service |%s|.", service.getClass());
+			service.create(this);
+			services.add(service);
+
+			if (service instanceof IContainerStartProcessor) {
+				containerStartProcessors.add((IContainerStartProcessor) service);
+			}
+		}
 	}
 
 	@Override
@@ -88,33 +98,24 @@ public class Container implements IContainer, AppContainer, IInstanceCreatedList
 	 */
 	public void configure(Config config) {
 		log.trace("configure(Config)");
+		createManagedClasses(cdi.configure(config));
+	}
 
-		for (IContainerService service : ServiceLoader.load(IContainerService.class)) {
-			log.debug("Load container service |%s|.", service.getClass());
-			service.create(this);
-			services.add(service);
+	public void configure(Object... modules) throws ConfigException {
+		createManagedClasses(cdi.configure(modules));
+	}
 
-			if (service instanceof IContainerStartProcessor) {
-				containerStartProcessors.add((IContainerStartProcessor) service);
-			}
-		}
-
-		List<Binding<?>> bindings = cdi.configure(config);
-
+	private void createManagedClasses(List<Binding<?>> bindings) {
 		for (Binding<?> binding : bindings) {
 			ManagedClass<?> managedClass = new ManagedClass<>(this, binding);
 			managedClass.scanServices();
 
-			log.debug("Register managed class |%s|.", managedClass);
+			log.debug("Create managed class |%s|.", managedClass);
 			managedClasses.add(managedClass);
 
 			managedInterfaces.put(binding.getInterfaceClass(), managedClass);
 			managedImplementations.put(binding.getImplementationClass(), managedClass);
 		}
-	}
-
-	public void config(Object... modules) throws ConfigException {
-		cdi.configure(modules);
 	}
 
 	/** Execute container services registered to {@link #containerStartProcessors}. */
@@ -169,7 +170,7 @@ public class Container implements IContainer, AppContainer, IInstanceCreatedList
 	@Override
 	public void onInstanceCreated(Object instance) {
 		ManagedClass<?> managedClass = managedImplementations.get(instance.getClass());
-		// is legal to have instances without managed classes, e.g. POJO
+		// is legal to have instances without managed classes
 		if (managedClass != null) {
 			managedClass.executeInstancePostConstructors(instance);
 		}

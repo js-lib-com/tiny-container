@@ -22,7 +22,6 @@ import com.jslib.injector.impl.AbstractModule;
 import com.jslib.injector.impl.Injector;
 
 import js.lang.Config;
-import js.lang.ConfigException;
 import js.log.Log;
 import js.log.LogFactory;
 import js.util.Params;
@@ -106,40 +105,26 @@ public class CDI implements IProvisionListener {
 	 */
 	public List<Binding<?>> configure(Config config) {
 		log.trace("configure(Config)");
-
 		ConfigModule configModule = new ConfigModule(config);
-		injector.configure(staticModule, configModule);
-		configured.set(true);
-
-		List<Binding<?>> containerBindings = new ArrayList<>();
-		containerBindings.addAll(staticModule.containerBindings);
-		containerBindings.addAll(configModule.containerBindings);
-		return containerBindings;
+		return configure(configModule);
 	}
 
-	public Config configure(Object... modules) throws ConfigException {
+	public List<Binding<?>> configure(Object... arguments) {
 		log.trace("configure(Object...)");
-		List<IModule> injectorModules = new ArrayList<>();
-		injectorModules.add(staticModule);
 
-		for (Object module : modules) {
-			if (!(module instanceof IModule)) {
-				throw new IllegalArgumentException("Invalid module type " + module.getClass());
+		ManagedModule managedModule = new ManagedModule(injector, managedLoader);
+		managedModule.addModule(staticModule);
+		for (Object argument : arguments) {
+			if (!(argument instanceof IModule)) {
+				throw new IllegalArgumentException("Invalid module type " + argument.getClass());
 			}
-			injectorModules.add((IModule) module);
+			managedModule.addModule((IModule) argument);
 		}
 
-		// configBuilder.getManagedClasses().forEach(managedClass->{});
+		injector.configure(managedModule);
+		configured.set(true);
 
-		injector.configure(injectorModules.toArray(new IModule[injectorModules.size()]));
-
-		CDIConfigBuilder configBuilder = new CDIConfigBuilder();
-		for (Object module : modules) {
-			configBuilder.addModule((IModule) module);
-		}
-
-		// configured.set(true);
-		return configBuilder.build();
+		return managedModule.getContainerBindings();
 	}
 
 	/**
@@ -197,8 +182,6 @@ public class CDI implements IProvisionListener {
 		final Map<Class<?>, Object> instances = new HashMap<>();
 		final Map<Class<? extends Annotation>, IScope<?>> scopes = new HashMap<>();
 
-		final List<Binding<?>> containerBindings = new ArrayList<>();
-
 		@SuppressWarnings("unchecked")
 		@Override
 		protected void configure() {
@@ -221,13 +204,11 @@ public class CDI implements IProvisionListener {
 			switch (binding.getInstanceType()) {
 			case POJO:
 				bindingBuilder.to(binding.getImplementationClass());
-				containerBindings.add(new Binding<>(binding.getInterfaceClass(), binding.getImplementationClass()));
 				break;
 
 			case PROXY:
 				bindingBuilder.to(binding.getImplementationClass());
 				bindingBuilder.toProvider(new ProxyProvider<>(binding.getInterfaceClass(), managedLoader, bindingBuilder.getProvider()));
-				containerBindings.add(new Binding<>(binding.getInterfaceClass(), binding.getImplementationClass()));
 				break;
 
 			case REMOTE:
@@ -235,7 +216,7 @@ public class CDI implements IProvisionListener {
 				break;
 
 			case SERVICE:
-				bindingBuilder.toProvider(new ServiceProvider<>(binding.getInterfaceClass()));
+				bindingBuilder.service();
 				break;
 
 			default:

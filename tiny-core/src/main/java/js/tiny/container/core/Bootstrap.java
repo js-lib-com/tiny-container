@@ -37,7 +37,7 @@ public class Bootstrap implements AppContainerProvider {
 		} else if (arguments.length == 1 && arguments[0] instanceof Config) {
 			container.configure((Config) arguments[0]);
 		} else {
-			container.config(arguments);
+			container.configure(arguments);
 		}
 		
 		Factory.bind(container);

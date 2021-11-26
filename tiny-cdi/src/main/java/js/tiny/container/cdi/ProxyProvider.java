@@ -7,6 +7,8 @@ import java.lang.reflect.Proxy;
 
 import javax.inject.Provider;
 
+import com.jslib.injector.ITypedProvider;
+
 import js.lang.BugError;
 import js.lang.InstanceInvocationHandler;
 import js.lang.InvocationException;
@@ -21,7 +23,7 @@ import js.tiny.container.spi.IManagedMethod;
  * 
  * @author Iulian Rotaru
  */
-class ProxyProvider<T> implements Provider<T> {
+class ProxyProvider<T> implements ITypedProvider<T> {
 	private static final Log log = LogFactory.getLog(ProxyProvider.class);
 
 	private final Class<T> interfaceClass;
@@ -29,10 +31,15 @@ class ProxyProvider<T> implements Provider<T> {
 	private final Provider<T> provider;
 
 	public ProxyProvider(Class<T> interfaceClass, IManagedLoader managedLoader, Provider<T> provider) {
-		log.trace("Class<T>, IManagedLoader, IManagedClass<T>>, Provider");
+		log.trace("ProxyProvider(Class<T>, IManagedLoader, IManagedClass<T>>, Provider)");
 		this.interfaceClass = interfaceClass;
 		this.managedLoader = managedLoader;
 		this.provider = provider;
+	}
+
+	@Override
+	public Class<? extends T> type() {
+		return ((ITypedProvider<T>)provider).type();
 	}
 
 	@SuppressWarnings("unchecked")

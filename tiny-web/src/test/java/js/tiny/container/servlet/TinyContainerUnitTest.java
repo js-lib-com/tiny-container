@@ -83,7 +83,7 @@ public class TinyContainerUnitTest {
 		container = new TinyContainer(cdi, securityProvider);
 		
 		//when(requestContextManagedClass.getInterfaceClass()).thenReturn(RequestContext.class);
-		container.config(requestContextManagedClass);
+		container.configure(requestContextManagedClass);
 	}
 
 	private static void assertClass(String expected, Object object) {
@@ -102,7 +102,7 @@ public class TinyContainerUnitTest {
 		new File("fixture/tomcat/work/Applications/test-app").delete();
 
 		TinyContainer container = new TinyContainer();
-		container.config(Collections.emptyList());
+		container.configure(Collections.emptyList());
 
 		File privateDir = Classes.getFieldValue(container, "privateDir");
 		assertNotNull(privateDir);
