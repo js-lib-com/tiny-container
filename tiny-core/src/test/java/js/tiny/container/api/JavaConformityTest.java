@@ -1,4 +1,4 @@
-package js.tiny.container.unit;
+package js.tiny.container.api;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -26,8 +26,8 @@ public class JavaConformityTest {
 		TestClassLoader loader2 = new TestClassLoader();
 		assertFalse(loader1.equals(loader2));
 
-		Class<?> clsA = Class.forName("js.tiny.container.unit.JavaConformityTest$TestClass", true, loader1);
-		Class<?> clsB = Class.forName("js.tiny.container.unit.JavaConformityTest$TestClass", true, loader2);
+		Class<?> clsA = Class.forName("js.tiny.container.api.JavaConformityTest$TestClass", true, loader1);
+		Class<?> clsB = Class.forName("js.tiny.container.api.JavaConformityTest$TestClass", true, loader2);
 		assertFalse(clsA.equals(clsB));
 
 		Object instanceA = clsA.newInstance();

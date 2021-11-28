@@ -32,8 +32,15 @@ public class CDI implements IProvisionListener {
 		return new CDI();
 	}
 
+	public static CDI create(boolean proxyProcessing) {
+		log.trace("create(boolean)");
+		return new CDI(proxyProcessing);
+	}
+
 	// --------------------------------------------------------------------------------------------
 
+	private final boolean proxyProcessing;
+	
 	/** Explicit bindings, and instance and scope bindings collected from container. */
 	private final StaticModule staticModule;
 
@@ -47,12 +54,17 @@ public class CDI implements IProvisionListener {
 
 	/** Flag true only after CDI configuration complete. Used to assert CDI internal state consistency. */
 	private final AtomicBoolean configured = new AtomicBoolean(false);
-
+	
 	private IManagedLoader managedLoader;
 	private IInstanceCreatedListener instanceCreatedListener;
 
 	private CDI() {
-		log.trace("CDI()");
+		this(false);
+	}
+	
+	private CDI(boolean proxyProcessing) {
+		log.trace("CDI(boolean)");
+		this.proxyProcessing = proxyProcessing;
 		this.staticModule = new StaticModule();
 		this.containerModule = new ContainerModule();
 		this.injector = IInjector.create();
@@ -73,7 +85,7 @@ public class CDI implements IProvisionListener {
 		this.instanceCreatedListener = instanceCreatedListener;
 	}
 
-	public <T> void bind(ContainerBinding<T> binding) {
+	public <T> void bind(ContainerBindingParameters<T> binding) {
 		if (configured.get()) {
 			throw new IllegalStateException("Attempt to add binding after injector configuration: " + binding);
 		}
@@ -107,7 +119,7 @@ public class CDI implements IProvisionListener {
 	public List<ClassBinding<?>> configure(Object... arguments) {
 		log.trace("configure(Object...)");
 
-		ManagedModule managedModule = new ManagedModule(injector, managedLoader);
+		ManagedModule managedModule = new ManagedModule(injector, managedLoader, proxyProcessing);
 		managedModule.addModule(staticModule);
 		managedModule.addModule(containerModule);
 		for (Object argument : arguments) {

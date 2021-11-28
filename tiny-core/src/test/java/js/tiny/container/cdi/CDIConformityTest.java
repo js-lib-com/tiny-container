@@ -11,13 +11,14 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
+import js.injector.ProvisionException;
 import js.lang.Config;
 
 @RunWith(MockitoJUnitRunner.class)
 public class CDIConformityTest {
 	@Mock
 	private Config config;
-	
+
 	private CDI cdi;
 
 	@Before
@@ -28,8 +29,8 @@ public class CDIConformityTest {
 	@Test
 	public void GivenTaskService_WhenGetInstance_ThenTaskInjected() {
 		// given
-		cdi.bind(new ContainerBinding<>(Task.class));
-		cdi.bind(new ContainerBinding<>(TaskService.class));
+		cdi.bind(new ContainerBindingParameters<>(Task.class));
+		cdi.bind(new ContainerBindingParameters<>(TaskService.class));
 		cdi.configure(config);
 
 		// when
@@ -42,8 +43,8 @@ public class CDIConformityTest {
 	@Test
 	public void GivenTwoTasksService_WhenGetInstance_ThenBothTasksInjected() {
 		// given
-		cdi.bind(new ContainerBinding<>(Task.class));
-		cdi.bind(new ContainerBinding<>(TwoTasksService.class));
+		cdi.bind(new ContainerBindingParameters<>(Task.class));
+		cdi.bind(new ContainerBindingParameters<>(TwoTasksService.class));
 		cdi.configure(config);
 
 		// when
@@ -54,11 +55,37 @@ public class CDIConformityTest {
 		assertThat(service.task2, notNullValue());
 	}
 
-	@Test
-	public void Given_When_Then() {
+	@Test(expected = ProvisionException.class)
+	public void GivenMissingBinding_WhenGetInstance_ThenException() {
 		// given
+		cdi.configure(config);
 
 		// when
+		cdi.getInstance(Object.class);
+
+		// then
+	}
+
+	@Test(expected = ProvisionException.class)
+	public void GivenMissingService_WhenGetInstance_ThenException() {
+		// given
+		cdi.bind(new ContainerBindingParameters<>(IService.class).setService(true));
+		cdi.configure(config);
+
+		// when
+		cdi.getInstance(IService.class);
+
+		// then
+	}
+
+	@Test(expected = ProvisionException.class)
+	public void GivenConstructorFail_WhenGetInstance_ThenException() {
+		// given
+		cdi.bind(new ContainerBindingParameters<>(ExceptionalTask.class));
+		cdi.configure(config);
+
+		// when
+		cdi.getInstance(ExceptionalTask.class);
 
 		// then
 	}
@@ -80,5 +107,15 @@ public class CDIConformityTest {
 
 	private static class Task {
 
+	}
+
+	private static class ExceptionalTask {
+		@SuppressWarnings("unused")
+		public ExceptionalTask() {
+			throw new RuntimeException();
+		}
+	}
+
+	private interface IService {
 	}
 }

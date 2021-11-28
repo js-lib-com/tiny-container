@@ -1,4 +1,4 @@
-package js.tiny.container.core;
+package js.tiny.container.cdi;
 
 import java.lang.annotation.Annotation;
 import java.net.URI;
@@ -8,16 +8,21 @@ import javax.inject.Provider;
 import js.injector.IBinding;
 import js.injector.IBindingBuilder;
 import js.injector.ITypedProvider;
-import js.tiny.container.cdi.CDI;
-import js.tiny.container.cdi.ContainerBinding;
 
-class BindingBuilder<T> implements IBindingBuilder<T> {
+/**
+ * Container internal bindings builder. Created injector bindings are for container internal use only. This chained builder
+ * collects binding parameters into {@link ContainerBindingParameters} and send them to
+ * {@link CDI#bind(ContainerBindingParameters)} when {@link #build()} is invoked.
+ * 
+ * @author Iulian Rotaru
+ */
+public class ContainerBindingBuilder<T> implements IBindingBuilder<T> {
 	private final CDI cdi;
-	private final ContainerBinding<T> binding;
+	private final ContainerBindingParameters<T> binding;
 
-	public BindingBuilder(CDI cdi, Class<T> interfaceClass) {
+	public ContainerBindingBuilder(CDI cdi, Class<T> interfaceClass) {
 		this.cdi = cdi;
-		this.binding = new ContainerBinding<>(interfaceClass);
+		this.binding = new ContainerBindingParameters<>(interfaceClass);
 	}
 
 	@Override

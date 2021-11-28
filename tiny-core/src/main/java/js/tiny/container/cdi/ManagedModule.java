@@ -15,31 +15,41 @@ import js.injector.IModule;
 import js.injector.ITypedProvider;
 import js.injector.ScopedProvider;
 
+/**
+ * Managed module collects all container and application modules and pre-process them. Resulting injector bindings are used to
+ * configure injector service. Beside injector bindings this module creates a list of managed classes bindings used by container
+ * to actually create internal managed classes.
+ * 
+ * This module takes care to replace provider with {@link ProxyProvider} is given bound type has a {@link #PROXY_ANNOTATIONS}
+ * annotation, but only is proxy processing is enabled. Current implementation considers {@link ManagedBean}, {@link Stateful}
+ * and {@link Stateless} annotations for proxy processing.
+ * 
+ * @author Iulian Rotaru
+ */
 class ManagedModule implements IModule {
 
-	private static final List<Class<? extends Annotation>> MANAGED_CLASS_ANNOTATIONS = new ArrayList<>();
+	private static final List<Class<? extends Annotation>> PROXY_ANNOTATIONS = new ArrayList<>();
 	static {
-		MANAGED_CLASS_ANNOTATIONS.add(ManagedBean.class);
-		MANAGED_CLASS_ANNOTATIONS.add(Stateful.class);
-		MANAGED_CLASS_ANNOTATIONS.add(Stateless.class);
+		PROXY_ANNOTATIONS.add(ManagedBean.class);
+		PROXY_ANNOTATIONS.add(Stateful.class);
+		PROXY_ANNOTATIONS.add(Stateless.class);
 	}
 
 	private final IInjector injector;
 	private final IManagedLoader managedLoader;
+	private final boolean proxyProcessing;
 	private final List<ClassBinding<?>> classBindings = new ArrayList<>();
 
 	private final List<IBinding<?>> injectorBindings = new ArrayList<>();
 
-	public ManagedModule(IInjector injector, IManagedLoader managedLoader) {
+	public ManagedModule(IInjector injector, IManagedLoader managedLoader, boolean proxyProcessing) {
 		this.injector = injector;
 		this.managedLoader = managedLoader;
-	}
-
-	public void addBindings(List<IBinding<?>> bindings) {
-		this.injectorBindings.addAll(bindings);
+		this.proxyProcessing = proxyProcessing;
 	}
 
 	public void addModule(IModule module) {
+		// module configure resolves module bindings but does not alter injector state
 		module.configure(injector);
 		module.bindings().forEach(this::processBinding);
 	}
@@ -58,16 +68,15 @@ class ManagedModule implements IModule {
 		Class<? extends T> implementationClass = ((ITypedProvider<T>) provider).type();
 		classBindings.add(new ClassBinding<>(interfaceClass, implementationClass));
 
-		if (isAnnotationPresent(interfaceClass, implementationClass)) {
-			System.out.println("--- managed bean: " + interfaceClass);
+		if (proxyProcessing && isProxyAnnotationPresent(interfaceClass, implementationClass)) {
 			injectorBindings.add(ProxyBinding.create(managedLoader, binding));
 		} else {
 			injectorBindings.add(binding);
 		}
 	}
 
-	private static <T> boolean isAnnotationPresent(Class<T> interfaceClass, Class<? extends T> implementationClass) {
-		for (Class<? extends Annotation> annotation : MANAGED_CLASS_ANNOTATIONS) {
+	private static <T> boolean isProxyAnnotationPresent(Class<T> interfaceClass, Class<? extends T> implementationClass) {
+		for (Class<? extends Annotation> annotation : PROXY_ANNOTATIONS) {
 			if (interfaceClass.isAnnotationPresent(annotation)) {
 				return true;
 			}

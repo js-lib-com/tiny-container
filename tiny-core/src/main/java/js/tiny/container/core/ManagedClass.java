@@ -2,6 +2,7 @@ package js.tiny.container.core;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -15,7 +16,6 @@ import js.tiny.container.spi.IInstancePostConstructProcessor;
 import js.tiny.container.spi.IInstancePreDestroyProcessor;
 import js.tiny.container.spi.IManagedClass;
 import js.tiny.container.spi.IManagedMethod;
-import js.util.Params;
 
 /**
  * Managed class implements extension points for class and instance services and facilitates remote access to business methods
@@ -23,7 +23,7 @@ import js.util.Params;
  * 
  * @author Iulian Rotaru
  */
-public final class ManagedClass<T> implements IManagedClass<T> {
+class ManagedClass<T> implements IManagedClass<T> {
 	private static final Log log = LogFactory.getLog(ManagedClass.class);
 
 	/** Back reference to parent container. */
@@ -45,26 +45,25 @@ public final class ManagedClass<T> implements IManagedClass<T> {
 
 	/**
 	 * Instance post-processors are executed only on newly created managed instances. If instance is reused from scope cache
-	 * this processors are not executed. They add instance specific services. This list contains processors in execution order.
+	 * this processors are not executed. They add instance specific services.
 	 */
-	private final FlowProcessorsSet<IInstancePostConstructProcessor> instancePostConstructors = new FlowProcessorsSet<>();
+	private final FlowProcessorsSet<IInstancePostConstructProcessor> instancePostConstructors;
 
-	private final FlowProcessorsSet<IInstancePreDestroyProcessor> instancePreDestructors = new FlowProcessorsSet<>();
+	private final FlowProcessorsSet<IInstancePreDestroyProcessor> instancePreDestructors;
 
 	public ManagedClass(Container container, ClassBinding<T> binding) {
-		Params.notNull(container, "Container");
-		Params.notNull(binding, "Binding");
-		Params.notNull(binding.getInterfaceClass(), "Binding interface");
-		Params.notNull(binding.getImplementationClass(), "Binding implementation");
-
 		this.container = container;
 		this.interfaceClass = binding.getInterfaceClass();
 		this.implementationClass = binding.getImplementationClass();
+
+		this.instancePostConstructors = new FlowProcessorsSet<>();
+		this.instancePreDestructors = new FlowProcessorsSet<>();
 	}
 
-	void scanServices() {
+	/** Create managed methods for implementation class and scan container services. */
+	public void scanServices() {
 		for (Method method : implementationClass.getDeclaredMethods()) {
-			IManagedMethod managedMethod = new ManagedMethod(this, method);
+			ManagedMethod managedMethod = new ManagedMethod(this, method);
 			managedMethod.scanServices(container.getServices());
 			methodsPool.put(method.getName(), managedMethod);
 		}
@@ -90,13 +89,13 @@ public final class ManagedClass<T> implements IManagedClass<T> {
 
 	}
 
-	void executeInstancePostConstructors(Object instance) {
+	public void executeInstancePostConstructors(Object instance) {
 		instancePostConstructors.forEach(processor -> {
 			processor.onInstancePostConstruct(instance);
 		});
 	}
 
-	void executeInstancePreDestructors(Object instance) {
+	public void executeInstancePreDestructors(Object instance) {
 		instancePreDestructors.forEach(processor -> {
 			processor.onInstancePreDestroy(instance);
 		});
@@ -118,7 +117,7 @@ public final class ManagedClass<T> implements IManagedClass<T> {
 	}
 
 	@Override
-	public Iterable<IManagedMethod> getManagedMethods() {
+	public Collection<IManagedMethod> getManagedMethods() {
 		return methodsPool.values();
 	}
 
@@ -138,7 +137,7 @@ public final class ManagedClass<T> implements IManagedClass<T> {
 	}
 
 	@Override
-	public <A extends Annotation> A getAnnotation(Class<A> annotationClass) {
+	public <A extends Annotation> A scanAnnotation(Class<A> annotationClass) {
 		A annotation = implementationClass.getAnnotation(annotationClass);
 		if (annotation == null) {
 			annotation = interfaceClass.getAnnotation(annotationClass);
@@ -149,5 +148,15 @@ public final class ManagedClass<T> implements IManagedClass<T> {
 	@Override
 	public String toString() {
 		return interfaceClass.getCanonicalName();
+	}
+
+	// --------------------------------------------------------------------------------------------
+
+	FlowProcessorsSet<IInstancePostConstructProcessor> instancePostConstructors() {
+		return instancePostConstructors;
+	}
+
+	FlowProcessorsSet<IInstancePreDestroyProcessor> instancePreDestructors() {
+		return instancePreDestructors;
 	}
 }

@@ -173,8 +173,7 @@ public class TinyContainer extends Container implements ServletContextListener, 
 		bind(RequestContext.class).in(ThreadScoped.class).build();
 		bind(EventStreamManager.class).to(EventStreamManagerImpl.class).in(Singleton.class).build();
 
-		// TODO: dependency on injector implementation
-		this.cdi.bindScope(SessionScoped.class, new SessionScopeProvider.Factory<>());
+		bindScope(SessionScoped.class, new SessionScopeProvider.Factory<>());
 
 		this.security = security;
 	}

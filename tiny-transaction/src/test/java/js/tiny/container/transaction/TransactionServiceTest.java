@@ -104,7 +104,7 @@ public class TransactionServiceTest {
 	@Test
 	public void GivenInheritedImmutableTransaction_WhenInvoke_ThenNoCommitOrRollback() throws Exception {
 		// given
-		when(managedClass.getAnnotation(Transactional.class)).thenReturn(transactionalMeta);
+		when(managedClass.scanAnnotation(Transactional.class)).thenReturn(transactionalMeta);
 
 		// when
 		service.onMethodInvocation(processorsChain, methodInvocation);
@@ -182,7 +182,7 @@ public class TransactionServiceTest {
 	@Test
 	public void GivenInheritedMutableTransaction_WhenInvoke_ThenCommit() throws Exception {
 		// given
-		when(managedClass.getAnnotation(Transactional.class)).thenReturn(transactionalMeta);
+		when(managedClass.scanAnnotation(Transactional.class)).thenReturn(transactionalMeta);
 		when(managedMethod.scanAnnotation(Mutable.class)).thenReturn(Mockito.mock(Mutable.class));
 
 		// when

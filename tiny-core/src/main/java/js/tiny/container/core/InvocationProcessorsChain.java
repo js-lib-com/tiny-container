@@ -12,7 +12,7 @@ import js.tiny.container.spi.IInvocationProcessorsChain;
 import js.tiny.container.spi.IManagedMethod;
 import js.tiny.container.spi.IMethodInvocationProcessor;
 
-public class InvocationProcessorsChain implements IInvocationProcessorsChain {
+class InvocationProcessorsChain implements IInvocationProcessorsChain {
 	private static final Log log = LogFactory.getLog(InvocationProcessorsChain.class);
 
 	/** List of method invocation processors in the proper order for execution. */
@@ -37,7 +37,7 @@ public class InvocationProcessorsChain implements IInvocationProcessorsChain {
 	@Override
 	public Object invokeNextProcessor(IInvocation invocation) throws Exception {
 		if (!iterator.hasNext()) {
-			throw new BugError("Invocation processors chain was not properly ended. See ManagedMethod#executeService().");
+			throw new BugError("Invocation processors chain was not properly ended. See ManagedMethod#onMethodInvocation().");
 		}
 		return iterator.next().onMethodInvocation(this, invocation);
 	}

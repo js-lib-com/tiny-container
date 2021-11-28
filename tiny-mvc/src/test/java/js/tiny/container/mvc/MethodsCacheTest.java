@@ -39,7 +39,7 @@ public class MethodsCacheTest {
 
 		Controller controller = mock(Controller.class);
 		when(controller.value()).thenReturn("controller");
-		when(managedClass.getAnnotation(Controller.class)).thenReturn(controller);
+		when(managedClass.scanAnnotation(Controller.class)).thenReturn(controller);
 
 		// when
 		String key = MethodsCache.key(managedMethod);

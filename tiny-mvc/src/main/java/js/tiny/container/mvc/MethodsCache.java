@@ -55,7 +55,7 @@ public class MethodsCache {
 	}
 
 	private static String path(IManagedClass<?> managedClass) {
-		Controller controller = managedClass.getAnnotation(Controller.class);
+		Controller controller = managedClass.scanAnnotation(Controller.class);
 		String value = controller != null ? controller.value() : null;
 		if (value != null) {
 			value = value.trim();

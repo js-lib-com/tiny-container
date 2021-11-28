@@ -27,7 +27,7 @@ public class AsyncService implements IMethodInvocationProcessor {
 		if (managedMethod.scanAnnotation(Asynchronous.class) != null) {
 			return true;
 		}
-		return managedMethod.getDeclaringClass().getAnnotation(Asynchronous.class) != null;
+		return managedMethod.getDeclaringClass().scanAnnotation(Asynchronous.class) != null;
 	}
 
 	/**

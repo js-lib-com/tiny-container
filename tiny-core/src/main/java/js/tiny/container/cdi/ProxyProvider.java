@@ -18,7 +18,10 @@ import js.tiny.container.spi.IManagedMethod;
 
 /**
  * Create a Java {@link Proxy} that delegates all method invocations to given managed instance. This proxy allows invoking
- * managed methods via <code>member operator</code>, i.e. dot notation.
+ * managed methods via <code>member operator</code>, i.e. dot notation, while applying container method invocation services.
+ * 
+ * This provider is used by {@link ProxyBinding}. It is used only if container proxy processing is enabled, when create embedded
+ * container.
  * 
  * @author Iulian Rotaru
  */
@@ -38,7 +41,7 @@ class ProxyProvider<T> implements ITypedProvider<T> {
 
 	@Override
 	public Class<? extends T> type() {
-		return ((ITypedProvider<T>)provider).type();
+		return ((ITypedProvider<T>) provider).type();
 	}
 
 	@SuppressWarnings("unchecked")
@@ -56,7 +59,8 @@ class ProxyProvider<T> implements ITypedProvider<T> {
 	}
 
 	/**
-	 * Proxy invocation handler.
+	 * Invocation handler for proxy provider. It just delegates method invocations to
+	 * {@link IManagedMethod#invoke(Object, Object...)}.
 	 * 
 	 * @author Iulian Rotaru
 	 */

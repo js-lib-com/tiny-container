@@ -1,6 +1,7 @@
 package js.tiny.container.stub;
 
 import java.lang.annotation.Annotation;
+import java.util.Collection;
 
 import js.tiny.container.spi.IContainer;
 import js.tiny.container.spi.IManagedClass;
@@ -13,7 +14,7 @@ public class ManagedClassSpiStub<T> implements IManagedClass<T> {
 	}
 
 	@Override
-	public Iterable<IManagedMethod> getManagedMethods() {
+	public Collection<IManagedMethod> getManagedMethods() {
 		throw new UnsupportedOperationException("getManagedMethods()");
 	}
 
@@ -33,7 +34,7 @@ public class ManagedClassSpiStub<T> implements IManagedClass<T> {
 	}
 
 	@Override
-	public <A extends Annotation> A getAnnotation(Class<A> type) {
+	public <A extends Annotation> A scanAnnotation(Class<A> type) {
 		throw new UnsupportedOperationException("getAnnotation(Class<T> type)");
 	}
 

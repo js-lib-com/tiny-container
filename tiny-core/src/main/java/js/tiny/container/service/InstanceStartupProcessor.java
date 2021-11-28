@@ -37,7 +37,7 @@ public class InstanceStartupProcessor implements IContainerStartProcessor {
 	@Override
 	public void onContainerStart(IContainer container) {
 		for (IManagedClass<?> managedClass : container.getManagedClasses()) {
-			if (managedClass.getAnnotation(Startup.class) != null) {
+			if (managedClass.scanAnnotation(Startup.class) != null) {
 				// call getInstance to ensure managed instance with managed lifecycle is started
 				// getInstance() will create instance only if not already exist; returned value is ignored
 				log.debug("Create managed instance with managed lifecycle |%s|.", managedClass);

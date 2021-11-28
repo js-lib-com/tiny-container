@@ -1,5 +1,6 @@
 package js.tiny.container.core;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Proxy;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -13,12 +14,13 @@ import java.util.Set;
 
 import js.app.container.AppContainer;
 import js.injector.IBindingBuilder;
+import js.injector.IScope;
 import js.injector.ProvisionException;
 import js.lang.Config;
-import js.lang.ConfigException;
 import js.lang.InstanceInvocationHandler;
 import js.log.Log;
 import js.log.LogFactory;
+import js.tiny.container.cdi.ContainerBindingBuilder;
 import js.tiny.container.cdi.CDI;
 import js.tiny.container.cdi.ClassBinding;
 import js.tiny.container.cdi.IInstanceCreatedListener;
@@ -38,8 +40,7 @@ import js.util.Params;
 public class Container implements IContainer, AppContainer, IInstanceCreatedListener, IManagedLoader {
 	private static final Log log = LogFactory.getLog(Container.class);
 
-	// TODO: CDI exposed only for session scope bindings
-	protected final CDI cdi;
+	private final CDI cdi;
 
 	private final Set<IContainerService> services = new HashSet<>();
 
@@ -58,7 +59,11 @@ public class Container implements IContainer, AppContainer, IInstanceCreatedList
 	private final FlowProcessorsSet<IContainerStartProcessor> containerStartProcessors = new FlowProcessorsSet<>();
 
 	public Container() {
-		this(CDI.create());
+		this(false);
+	}
+
+	public Container(boolean proxyProcessing) {
+		this(CDI.create(proxyProcessing));
 	}
 
 	/**
@@ -86,7 +91,12 @@ public class Container implements IContainer, AppContainer, IInstanceCreatedList
 
 	@Override
 	public <T> IBindingBuilder<T> bind(Class<T> interfaceClass) {
-		return new BindingBuilder<>(cdi, interfaceClass);
+		return new ContainerBindingBuilder<>(cdi, interfaceClass);
+	}
+
+	@Override
+	public void bindScope(Class<? extends Annotation> annotation, IScope<?> scope) {
+		cdi.bindScope(annotation, scope);
 	}
 
 	/**
@@ -100,7 +110,7 @@ public class Container implements IContainer, AppContainer, IInstanceCreatedList
 		createManagedClasses(cdi.configure(config));
 	}
 
-	public void configure(Object... modules) throws ConfigException {
+	public void configure(Object... modules) {
 		createManagedClasses(cdi.configure(modules));
 	}
 

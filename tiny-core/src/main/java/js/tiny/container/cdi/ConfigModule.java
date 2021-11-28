@@ -11,8 +11,9 @@ import js.injector.ThreadScoped;
 import js.lang.Config;
 
 /**
- * Injector module initialized from managed classes collection. This specialized module traverses container managed classes,
- * creating injector bindings accordingly managed class instance type and scope.
+ * Injector module initialized from managed classes descriptor. This specialized module traverses descriptor elements, creating
+ * injector bindings accordingly managed class instance type and scope. It is used only if application uses XML descriptor,
+ * <code>app.xml</code>.
  * 
  * @author Iulian Rotaru
  */
@@ -53,7 +54,7 @@ class ConfigModule extends AbstractModule {
 		case LOCAL:
 			break;
 
-		case APPLICATION:
+		case SINGLETON:
 			bindingBuilder.in(Singleton.class);
 			break;
 
@@ -92,6 +93,6 @@ class ConfigModule extends AbstractModule {
 	}
 
 	enum InstanceScope {
-		LOCAL, APPLICATION, THREAD, SESSION
+		LOCAL, SINGLETON, THREAD, SESSION
 	}
 }

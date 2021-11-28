@@ -21,7 +21,7 @@ public class Bootstrap implements AppContainerProvider {
 	public AppContainer createAppContainer(Object... arguments) {
 		log.trace("createAppContainer(Object...)");
 		try {
-			Container container = new Container();
+			Container container = new Container(true);
 			startContainer(container, arguments);
 			return container;
 		} catch (Exception e) {

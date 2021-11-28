@@ -2,32 +2,41 @@ package js.tiny.container.cdi;
 
 import java.lang.annotation.Annotation;
 
-public class ContainerBinding<T> {
+/**
+ * Binding parameters collected by container internal bindings builder - {@link ContainerBindingBuilder}.
+ * 
+ * @author Iulian Rotaru
+ */
+class ContainerBindingParameters<T> {
 	private final Class<T> interfaceClass;
-	
+
 	private T instance;
 	private Class<? extends T> implementationClass;
 	private Class<? extends Annotation> scope;
 	private boolean service;
 
-	public ContainerBinding(Class<T> interfaceClass) {
+	public ContainerBindingParameters(Class<T> interfaceClass) {
 		this.interfaceClass = interfaceClass;
 	}
 
-	public void setInstance(T instance) {
+	public ContainerBindingParameters<T> setInstance(T instance) {
 		this.instance = instance;
+		return this;
 	}
 
-	public void setImplementationClass(Class<? extends T> implementationClass) {
+	public ContainerBindingParameters<T> setImplementationClass(Class<? extends T> implementationClass) {
 		this.implementationClass = implementationClass;
+		return this;
 	}
 
-	public void setScope(Class<? extends Annotation> scope) {
+	public ContainerBindingParameters<T> setScope(Class<? extends Annotation> scope) {
 		this.scope = scope;
+		return this;
 	}
 
-	public void setService(boolean service) {
+	public ContainerBindingParameters<T> setService(boolean service) {
 		this.service = service;
+		return this;
 	}
 
 	public Class<T> getInterfaceClass() {

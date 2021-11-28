@@ -1,85 +1,88 @@
 package js.tiny.container.spi;
 
 import java.lang.annotation.Annotation;
-import java.lang.reflect.Method;
 import java.lang.reflect.Type;
-import java.util.Collection;
 
 /**
- * Managed method service provider interface. Although public, this interface is designed for library internal usage. User space
- * code should consider this interface as volatile and subject to change without notice.
- * <p>
- * This interface exposes strictly needed functionality from managed method implementation.
+ * Managed method deals, beside the actual application method invocation, with container services execution. It is the central
+ * join point where container services cross-cut business services.
+ * 
+ * It is a thin wrapper for Java method and keeps a list of invocation processors ordered by processor priority. When
+ * {@link #invoke(Object, Object...)} managed method first executes registered invocation processors in sequence, and only after
+ * that delegates wrapped Java method. Managed method is also responsible for container services and annotations scanning.
+ *
+ * Implementation should ensure that wrapped Java method is from implementation class not from interface. Also implementation
+ * should properly implements equals and hash code; recommended solution is to delegate wrapped Java method.
  * 
  * @author Iulian Rotaru
- * @version final
  */
-public interface IManagedMethod extends IMethodInvocationProcessor {
+public interface IManagedMethod {
 
+	/**
+	 * Gets method simple name, that is, not qualified name.
+	 * 
+	 * @return method name.
+	 */
 	String getName();
 
+	/**
+	 * Gets method signature including declaring class and parameters.
+	 * 
+	 * @return method signature.
+	 */
 	String getSignature();
 
 	/**
-	 * Get managed class that declares this managed method.
+	 * Gets managed class that declares this managed method.
 	 * 
 	 * @return parent managed class.
 	 */
 	IManagedClass<?> getDeclaringClass();
 
 	/**
-	 * Get wrapped Java method.
+	 * Test if this method is public.
 	 * 
-	 * @return wrapped Java method.
+	 * @return true if this method is public.
 	 */
-	Method getMethod();
-
 	boolean isPublic();
 
 	/**
-	 * Get managed method parameter types. If a formal parameter type is a parameterized type, the Type object returned for it
-	 * must accurately reflect the actual type parameters used in the source code.
+	 * Gets managed method parameter types. If a formal parameter type is a parameterized type, the {@link Type} object returned
+	 * for it must accurately reflect the actual type parameters used in the source code.
 	 * 
 	 * @return this managed method parameter types.
 	 */
 	Type[] getParameterTypes();
 
 	/**
-	 * Get this managed method return type.
+	 * Gets this managed method return type. If return type is a parameterized type, the returned {@link Type} object must
+	 * accurately reflect the actual type parameter used in the source code.
 	 * 
 	 * @return this managed class return type.
 	 */
 	Type getReturnType();
 
 	/**
-	 * Invoke managed method taking care to execute container services, if any .
+	 * Invoke managed method taking care to execute container services, if any. First execute services then delegate wrapped
+	 * Java method. Any exception from method or container services execution is propagated to caller.
 	 * 
-	 * @param object managed instance against which method is executed,
-	 * @param args invocation arguments.
+	 * @param instance managed instance against which method is executed,
+	 * @param arguments invocation arguments.
 	 * @param <T> returned value type.
 	 * @return value returned by method or null for void.
 	 * @throws Exception any exception from method or container service execution is bubbled up.
 	 */
-	<T> T invoke(Object object, Object... args) throws Exception;
+	<T> T invoke(Object instance, Object... arguments) throws Exception;
 
 	/**
-	 * TODO: this documentation is incorect.
-	 * 
-	 * Scan this method for requested annotation in both implementation and interface classes, in this order.
+	 * Scans this method for requested annotation in both implementation and interface classes, in this order. Interface should
+	 * be that declared by parent managed class - see {@link IManagedClass#getInterfaceClass()}, not detected from Java method
+	 * declaring class.
 	 * 
 	 * @param annotationClass annotation class to search for.
 	 * @return method annotation instance or null if not found.
 	 * @param <T> generic annotation type.
 	 */
-	<T extends Annotation> T scanAnnotation(Class<T> annotationClass);
+	<A extends Annotation> A scanAnnotation(Class<A> annotationClass);
 
-	void addAnnotation(Annotation annotation);
-
-	<T extends Annotation> T getAnnotation(Class<T> type);
-
-	void setAttribute(Object context, String name, Object value);
-
-	<T> T getAttribute(Object context, String name, Class<T> type);
-
-	void scanServices(Collection<IContainerService> services);
 }

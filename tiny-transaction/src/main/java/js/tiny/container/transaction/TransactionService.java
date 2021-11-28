@@ -47,7 +47,7 @@ public class TransactionService implements IMethodInvocationProcessor {
 		if (managedMethod.scanAnnotation(Transactional.class) != null) {
 			return true;
 		}
-		if (managedMethod.getDeclaringClass().getAnnotation(Transactional.class) != null) {
+		if (managedMethod.getDeclaringClass().scanAnnotation(Transactional.class) != null) {
 			return true;
 		}
 		return false;
@@ -157,7 +157,7 @@ public class TransactionService implements IMethodInvocationProcessor {
 			return false;
 		}
 		// at this point business method has no transaction related annotations
-		if (managedMethod.getDeclaringClass().getAnnotation(Mutable.class) != null) {
+		if (managedMethod.getDeclaringClass().scanAnnotation(Mutable.class) != null) {
 			return true;
 		}
 		// by default transactional class is immutable
@@ -167,7 +167,7 @@ public class TransactionService implements IMethodInvocationProcessor {
 	private static String getScheme(IManagedMethod managedMethod) {
 		Transactional transactional = managedMethod.scanAnnotation(Transactional.class);
 		if (transactional == null) {
-			transactional = managedMethod.getDeclaringClass().getAnnotation(Transactional.class);
+			transactional = managedMethod.getDeclaringClass().scanAnnotation(Transactional.class);
 		}
 		if (transactional == null) {
 			return null;

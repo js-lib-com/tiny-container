@@ -35,7 +35,7 @@ public class RestConnector implements IConnector, IClassPostLoadedProcessor {
 	@Override
 	public <T> void onClassPostLoaded(IManagedClass<T> managedClass) {
 		log.trace("onClassPostLoaded(IManagedClass<T>)");
-		Remote remote = managedClass.getAnnotation(Remote.class);
+		Remote remote = managedClass.scanAnnotation(Remote.class);
 		if (remote == null) {
 			return;
 		}

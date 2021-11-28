@@ -139,7 +139,7 @@ public class ResourceServlet extends AppServlet {
 				throw new BugError("Null resource for request |%s| returned by method |%s|.", httpRequest.getRequestURI(), method);
 			}
 
-			ResponseContentType responseContentType = method.getAnnotation(ResponseContentType.class);
+			ResponseContentType responseContentType = method.scanAnnotation(ResponseContentType.class);
 			if (responseContentType != null) {
 				httpResponse.setContentType(responseContentType.value());
 			}

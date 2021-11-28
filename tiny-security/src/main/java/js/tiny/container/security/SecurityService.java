@@ -44,7 +44,7 @@ public class SecurityService implements IMethodInvocationProcessor {
 		if (managedMethod.scanAnnotation(PermitAll.class) != null) {
 			return false;
 		}
-		if (managedMethod.getDeclaringClass().getAnnotation(PermitAll.class) != null) {
+		if (managedMethod.getDeclaringClass().scanAnnotation(PermitAll.class) != null) {
 			return false;
 		}
 		
@@ -80,7 +80,7 @@ public class SecurityService implements IMethodInvocationProcessor {
 	// --------------------------------------------------------------------------------------------
 
 	private static boolean isDenyAll(IManagedMethod managedMethod) {
-		return managedMethod.scanAnnotation(DenyAll.class) != null || managedMethod.getDeclaringClass().getAnnotation(DenyAll.class) != null;
+		return managedMethod.scanAnnotation(DenyAll.class) != null || managedMethod.getDeclaringClass().scanAnnotation(DenyAll.class) != null;
 	}
 
 	private static final String[] EMPTY_ROLES = new String[0];
@@ -88,7 +88,7 @@ public class SecurityService implements IMethodInvocationProcessor {
 	private static String[] getRoles(IManagedMethod managedMethod) {
 		RolesAllowed rolesAllowed = managedMethod.scanAnnotation(RolesAllowed.class);
 		if (rolesAllowed == null) {
-			rolesAllowed = managedMethod.getDeclaringClass().getAnnotation(RolesAllowed.class);
+			rolesAllowed = managedMethod.getDeclaringClass().scanAnnotation(RolesAllowed.class);
 		}
 		return rolesAllowed != null ? rolesAllowed.value() : EMPTY_ROLES;
 	}

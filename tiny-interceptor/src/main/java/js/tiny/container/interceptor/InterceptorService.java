@@ -39,7 +39,7 @@ public class InterceptorService implements IMethodInvocationProcessor {
 	public boolean bind(IManagedMethod managedMethod) {
 		Intercepted intercepted = managedMethod.scanAnnotation(Intercepted.class);
 		if (intercepted == null) {
-			intercepted = managedMethod.getDeclaringClass().getAnnotation(Intercepted.class);
+			intercepted = managedMethod.getDeclaringClass().scanAnnotation(Intercepted.class);
 		}
 		if (intercepted == null) {
 			return false;

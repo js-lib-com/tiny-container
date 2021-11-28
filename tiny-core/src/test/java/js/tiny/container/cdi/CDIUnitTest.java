@@ -63,7 +63,7 @@ public class CDIUnitTest {
 	}
 
 	@Test
-	public void GivenTypePOJO_WhenGetInstance_ThenCreateNew() {
+	public void GivenTypeLOCAL_WhenGetInstance_ThenCreateNew() {
 		// given
 		cdi.configure(containerConfig);
 
@@ -171,7 +171,7 @@ public class CDIUnitTest {
 	@Test
 	public void GivenScopeAPPLICATION_WhenGetInstanceTwice_ThenEqual() {
 		// given
-		when(classConfig.getAttribute("scope", InstanceScope.class, InstanceScope.LOCAL)).thenReturn(InstanceScope.APPLICATION);
+		when(classConfig.getAttribute("scope", InstanceScope.class, InstanceScope.LOCAL)).thenReturn(InstanceScope.SINGLETON);
 		cdi.configure(containerConfig);
 
 		// when
@@ -187,7 +187,7 @@ public class CDIUnitTest {
 	@Test
 	public void GivenScopeAPPLICATION_WhenGetInstanceFromDifferentThreads_ThenEqual() throws InterruptedException {
 		// given
-		when(classConfig.getAttribute("scope", InstanceScope.class, InstanceScope.LOCAL)).thenReturn(InstanceScope.APPLICATION);
+		when(classConfig.getAttribute("scope", InstanceScope.class, InstanceScope.LOCAL)).thenReturn(InstanceScope.SINGLETON);
 		cdi.configure(containerConfig);
 
 		// when
@@ -275,7 +275,7 @@ public class CDIUnitTest {
 	@Test
 	public void GivenScopeAPPLICATION_WhenGetInstanceTwice_ThenListenerOnce() {
 		// given
-		when(classConfig.getAttribute("scope", InstanceScope.class, InstanceScope.LOCAL)).thenReturn(InstanceScope.APPLICATION);
+		when(classConfig.getAttribute("scope", InstanceScope.class, InstanceScope.LOCAL)).thenReturn(InstanceScope.SINGLETON);
 		cdi.configure(containerConfig);
 
 		// when
@@ -321,7 +321,7 @@ public class CDIUnitTest {
 	@Test
 	public void GivenScopeAPPLICATION_WhenGetScopeInstance_ThenNull() {
 		// given
-		when(classConfig.getAttribute("scope", InstanceScope.class, InstanceScope.LOCAL)).thenReturn(InstanceScope.APPLICATION);
+		when(classConfig.getAttribute("scope", InstanceScope.class, InstanceScope.LOCAL)).thenReturn(InstanceScope.SINGLETON);
 		cdi.configure(containerConfig);
 
 		// when
@@ -334,7 +334,7 @@ public class CDIUnitTest {
 	@Test
 	public void GivenScopeAPPLICATIONAndCache_WhenGetScopeInstanceSecondTime_ThenNotNull() {
 		// given
-		when(classConfig.getAttribute("scope", InstanceScope.class, InstanceScope.LOCAL)).thenReturn(InstanceScope.APPLICATION);
+		when(classConfig.getAttribute("scope", InstanceScope.class, InstanceScope.LOCAL)).thenReturn(InstanceScope.SINGLETON);
 		cdi.configure(containerConfig);
 		// get instance to fill scope provider cache
 		cdi.getInstance(Object.class);
@@ -349,7 +349,7 @@ public class CDIUnitTest {
 	@Test
 	public void GivenScopeAPPLICATIONAndNoCache_WhenGetScopeInstanceSecondTime_ThenNull() {
 		// given
-		when(classConfig.getAttribute("scope", InstanceScope.class, InstanceScope.LOCAL)).thenReturn(InstanceScope.APPLICATION);
+		when(classConfig.getAttribute("scope", InstanceScope.class, InstanceScope.LOCAL)).thenReturn(InstanceScope.SINGLETON);
 		cdi.configure(containerConfig);
 
 		// when

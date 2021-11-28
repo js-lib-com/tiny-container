@@ -195,7 +195,7 @@ public class RestServlet extends AppServlet {
 		// JSON but with limited capacity; if capacity is not exceeded set response content length; if capacity is exceeded
 		// switch to chunked transfer
 
-		Produces producesMeta = managedMethod.getAnnotation(Produces.class);
+		Produces producesMeta = managedMethod.scanAnnotation(Produces.class);
 		String produces = producesMeta != null ? producesMeta.value().length > 0 ? producesMeta.value()[0] : null : null;
 
 		ContentType contentType = ContentType.valueOf(produces);

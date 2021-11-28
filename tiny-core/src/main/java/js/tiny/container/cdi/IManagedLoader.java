@@ -2,6 +2,12 @@ package js.tiny.container.cdi;
 
 import js.tiny.container.spi.IManagedClass;
 
+/**
+ * Retrieve a managed class from container. This interface is designed specifically for {@link ProxyProvider} and is used only
+ * for embedded containers when proxy processing is enabled.
+ * 
+ * @author Iulian Rotaru
+ */
 public interface IManagedLoader {
 
 	/**

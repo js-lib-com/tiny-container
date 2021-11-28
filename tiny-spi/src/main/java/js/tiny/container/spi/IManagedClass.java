@@ -2,30 +2,28 @@ package js.tiny.container.spi;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationTargetException;
+import java.util.Collection;
 
 import js.lang.InvocationException;
 import js.lang.NoProviderException;
 
 /**
- * Service provider interface for managed class. Although public, this interface is designed for library internal usage.
- * Application should consider this interface as volatile and subject to change without notice.
- * 
- * Basically this interface provides utility methods for miscellaneous library needs. Its existing rationale is to hide managed
- * class implementation as much as possible.
+ * Managed class provides extension points for class and instance services and facilitates remote access to business methods,
+ * via reflection.
  * 
  * @author Iulian Rotaru
  */
 public interface IManagedClass<T> {
 
 	/**
-	 * Get parent container that created this managed class.
+	 * Gets parent container that creates this managed class.
 	 * 
 	 * @return parent container.
 	 */
 	IContainer getContainer();
 
 	/**
-	 * Get managed interface class. Note that returned class is not mandatory Java interface. Here term <code>interface</code>
+	 * Gets managed interface class. Note that returned class is not mandatory Java interface. Here term <code>interface</code>
 	 * denotes a class that identify managed class and indeed usually is Java interface. Anyway, it can be as well an abstract
 	 * or a concrete base class. The point is, managed class implementation must implement or extend this
 	 * <code>interface</code>.
@@ -35,30 +33,25 @@ public interface IManagedClass<T> {
 	Class<T> getInterfaceClass();
 
 	/**
-	 * Get optional implementation class, possible null. Not all managed classes require implementation, e.g. managed classes of
-	 * {@link InstanceType#REMOTE} or {@link InstanceType#SERVICE} types. Anyway, if instance type requires so, implementation
-	 * class should be not null.
+	 * Gets implementation class, extending {@link #getInterfaceClass()}.
 	 * 
-	 * @return managed class implementation, possible null.
-	 * @see InstanceType#requiresImplementation()
+	 * @return managed class implementation.
 	 */
 	Class<? extends T> getImplementationClass();
 
 	/**
-	 * Get managed methods owned by this managed class, sequence with no order guaranteed and possible empty. Note that managed
-	 * class is not required to create managed methods for every method declared on interface classes. For example a managed
-	 * class may have only few methods declared remotely accessible and will create managed methods only for those.
+	 * Gets managed methods owned by this managed class.
 	 * 
 	 * @return managed methods sequence, in no particular order and possible empty.
 	 */
-	Iterable<IManagedMethod> getManagedMethods();
+	Collection<IManagedMethod> getManagedMethods();
 
 	/**
-	 * Get managed method by name. This getter tries to locate named managed method declared by this managed class and return
+	 * Gets managed method by name. This getter tries to locate named managed method declared by this managed class and returns
 	 * it; if not found returns null.
 	 * 
-	 * @param methodName the name of managed method.
-	 * @return requested managed method, possible null.
+	 * @param methodName simple managed method name, as returned by {@link IManagedMethod#getName()}.
+	 * @return requested managed method or null if no method with requested name.
 	 */
 	IManagedMethod getManagedMethod(String methodName);
 
@@ -79,13 +72,14 @@ public interface IManagedClass<T> {
 	T getInstance();
 
 	/**
-	 * Gets managed class annotation or null if not present. Should scan for requested annotation on both implementation and
-	 * interface classes, in this order.
+	 * Scan managed class annotation and return it or null if annotation not present. Should scan for requested annotation on
+	 * both implementation and interface classes, in this order. Interface should be that declared by this managed class - see
+	 * {@link #getInterfaceClass()}, not detected from wrapped Java class.
 	 * 
 	 * @param annotationClass annotation class.
 	 * @return annotation instance or null if not present.
 	 * @param <A> annotation generic type.
 	 */
-	<A extends Annotation> A getAnnotation(Class<A> annotationClass);
+	<A extends Annotation> A scanAnnotation(Class<A> annotationClass);
 
 }

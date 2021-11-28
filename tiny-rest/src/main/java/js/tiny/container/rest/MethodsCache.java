@@ -73,7 +73,7 @@ public class MethodsCache {
 	}
 
 	private static String path(IManagedClass<?> managedClass) {
-		return path(managedClass.getAnnotation(Path.class));
+		return path(managedClass.scanAnnotation(Path.class));
 	}
 
 	private static String path(IManagedMethod managedMethod) {

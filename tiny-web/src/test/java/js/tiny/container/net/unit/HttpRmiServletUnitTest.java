@@ -10,12 +10,12 @@ import java.util.regex.Pattern;
 
 import org.junit.Test;
 
+import js.tiny.container.core.Container;
 import js.tiny.container.http.Resource;
 import js.tiny.container.net.HttpRmiServlet;
 import js.tiny.container.spi.IContainer;
 import js.tiny.container.spi.IManagedClass;
 import js.tiny.container.spi.IManagedMethod;
-import js.tiny.container.stub.ContainerStub;
 import js.tiny.container.stub.ManagedClassSpiStub;
 import js.tiny.container.stub.ManagedMethodSpiStub;
 import js.util.Classes;
@@ -117,7 +117,7 @@ public class HttpRmiServletUnitTest {
 	// --------------------------------------------------------------------------------------------
 	// FIXTURE
 
-	private static class MockContainer extends ContainerStub {
+	private static class MockContainer extends Container {
 		private MockManagedClass<?> managedClass = new MockManagedClass<>();
 
 		@SuppressWarnings("unchecked")

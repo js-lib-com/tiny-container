@@ -5,14 +5,9 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 
-import js.log.Log;
-import js.log.LogFactory;
 import js.tiny.container.spi.IContainerService;
 import js.tiny.container.spi.IInvocation;
 import js.tiny.container.spi.IInvocationProcessorsChain;
@@ -20,7 +15,6 @@ import js.tiny.container.spi.IManagedClass;
 import js.tiny.container.spi.IManagedMethod;
 import js.tiny.container.spi.IMethodInvocationProcessor;
 import js.util.Strings;
-import js.util.Types;
 
 /**
  * A managed method, aka business or application method, is a thin wrapper around Java reflective method. It has methods to
@@ -30,9 +24,7 @@ import js.util.Types;
  * 
  * @author Iulian Rotaru
  */
-public class ManagedMethod implements IManagedMethod {
-	private static final Log log = LogFactory.getLog(IManagedMethod.class);
-
+class ManagedMethod implements IManagedMethod, IMethodInvocationProcessor {
 	/** Format string for managed method simple name, without class name. */
 	private static final String SIMPLE_NAME_FORMAT = "%s(%s)";
 
@@ -50,8 +42,6 @@ public class ManagedMethod implements IManagedMethod {
 
 	private final ArgumentsValidator argumentsValidator = new ArgumentsValidator();
 
-	private final Map<Class<? extends Annotation>, Annotation> annotations = new HashMap<>();
-
 	/**
 	 * Join point processors attached to {@link #invoke(Object, Object...)} method. When this method is executed all processors
 	 * hold by this join point are executed followed by {@link #onMethodInvocation(IInvocationProcessorsChain, IInvocation)}
@@ -59,13 +49,6 @@ public class ManagedMethod implements IManagedMethod {
 	 */
 	private final FlowProcessorsSet<IMethodInvocationProcessor> invocationProcessors = new FlowProcessorsSet<>();
 
-	/**
-	 * Construct a managed method. Store declaring class and Java reflective method, initialize this managed method signature
-	 * and arguments processor.
-	 * 
-	 * @param declaringClass declaring managed class,
-	 * @param method Java reflective method wrapped by this managed method.
-	 */
 	public ManagedMethod(IManagedClass<?> declaringClass, Method method) {
 		this.declaringClass = declaringClass;
 		this.method = method;
@@ -78,8 +61,13 @@ public class ManagedMethod implements IManagedMethod {
 		signature = String.format(QUALIFIED_NAME_FORMAT, declaringClass.getImplementationClass().getCanonicalName(), method.getName(), Strings.join(formalParameters, ','));
 	}
 
-	@Override
-	public void scanServices(Collection<IContainerService> services) {
+	/**
+	 * Scan container services and register discovered invocation processors. Only invocation processors that bind successfully
+	 * to this managed method are added to {@link #invocationProcessors} list.
+	 * 
+	 * @param services container services.
+	 */
+	public void scanServices(Iterable<IContainerService> services) {
 		services.forEach(service -> {
 			// current implementation consider only method invocation processors
 			if (service instanceof IMethodInvocationProcessor) {
@@ -104,11 +92,6 @@ public class ManagedMethod implements IManagedMethod {
 	@Override
 	public String getSignature() {
 		return signature;
-	}
-
-	@Override
-	public Method getMethod() {
-		return method;
 	}
 
 	@Override
@@ -158,9 +141,9 @@ public class ManagedMethod implements IManagedMethod {
 
 	/**
 	 * Managed method implements {@link IMethodInvocationProcessor} interface so that it can be part of invocation processors
-	 * chain, created and executed by {@link #invoke(Object, Object...)}. This managed method also inherits default priority
-	 * value - see {@link #getPriority()}; its value guarantees that managed method is executed last, after all container
-	 * services were executed.
+	 * chain, created and executed by {@link #invoke(Object, Object...)}. This managed method also define priority value - see
+	 * {@link #getPriority()}; its value guarantees that managed method is executed last, after all container services were
+	 * executed.
 	 * 
 	 * This method gets invocation processors chain parameter, mandated by interface signature. Anyway, it is not unused; this
 	 * method does not call {@link IInvocationProcessorsChain#invokeNextProcessor(IInvocation)}, and as a consequence processing
@@ -181,59 +164,13 @@ public class ManagedMethod implements IManagedMethod {
 		if (annotation == null) {
 			final String name = method.getName();
 			final Class<?>[] parameterTypes = method.getParameterTypes();
-			if (annotation == null) {
-				for (Class<?> interfaceClass : method.getDeclaringClass().getInterfaces()) {
-					try {
-						annotation = interfaceClass.getMethod(name, parameterTypes).getAnnotation(annotationClass);
-						if (annotation != null) {
-							break;
-						}
-					} catch (NoSuchMethodException unused) {
-					}
-				}
+			final Class<?> interfaceClass = declaringClass.getInterfaceClass();
+			try {
+				annotation = interfaceClass.getMethod(name, parameterTypes).getAnnotation(annotationClass);
+			} catch (NoSuchMethodException unused) {
 			}
 		}
 		return annotation;
-	}
-
-	@Override
-	public void addAnnotation(Annotation serviceMeta) {
-		log.debug("Add service meta |%s| to managed method |%s|", serviceMeta.getClass(), this);
-		annotations.put(serviceMeta.annotationType(), serviceMeta);
-	}
-
-	@SuppressWarnings("unchecked")
-	@Override
-	public <T extends Annotation> T getAnnotation(Class<T> type) {
-		return (T) annotations.get(type);
-	}
-
-	private final Map<String, Object> attributes = new HashMap<>();
-
-	@Override
-	public void setAttribute(Object context, String name, Object value) {
-		attributes.put(key(context, name), value);
-	}
-
-	@SuppressWarnings("unchecked")
-	@Override
-	public <T> T getAttribute(Object context, String name, Class<T> type) {
-		String key = key(context, name);
-		Object value = attributes.get(key);
-		if (value == null) {
-			return null;
-		}
-		if (!Types.isInstanceOf(value, type)) {
-			throw new ClassCastException(String.format("Cannot cast attribute |%s| to type |%s|.", key, type));
-		}
-		return (T) value;
-	}
-
-	private static final String key(Object context, String name) {
-		if (!(context instanceof Class)) {
-			context = context.getClass();
-		}
-		return Strings.concat(((Class<?>) context).getCanonicalName(), '#', name);
 	}
 
 	@Override
@@ -256,12 +193,5 @@ public class ManagedMethod implements IManagedMethod {
 			return false;
 		ManagedMethod other = (ManagedMethod) obj;
 		return Objects.equals(method, other.method);
-	}
-
-	// --------------------------------------------------------------------------------------------
-	// PACKAGE METHODS
-
-	void addInvocationProcessor(IMethodInvocationProcessor invocationProcessor) {
-		invocationProcessors.add(invocationProcessor);
 	}
 }

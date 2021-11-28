@@ -1,9 +1,11 @@
 package js.tiny.container.stub;
 
+import java.lang.annotation.Annotation;
 import java.security.Principal;
 import java.util.List;
 
 import js.injector.IBindingBuilder;
+import js.injector.IScope;
 import js.tiny.container.servlet.ITinyContainer;
 import js.tiny.container.spi.IManagedClass;
 
@@ -12,6 +14,12 @@ public class TinyContainerStub implements ITinyContainer {
 	public <T> IBindingBuilder<T> bind(Class<T> interfaceClass) {
 		// TODO Auto-generated method stub
 		return null;
+	}
+
+	@Override
+	public void bindScope(Class<? extends Annotation> annotation, IScope<?> scope) {
+		// TODO Auto-generated method stub
+		
 	}
 
 	@Override

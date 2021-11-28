@@ -7,6 +7,8 @@
 	</parent>
 	<artifactId>tiny-core</artifactId>
 
+	<description>Tiny Container micro kernel with dependency injection.</description>
+	
 	<dependencies>
 		<dependency>
 			<groupId>${project.parent.groupId}</groupId>

@@ -1,8 +1,10 @@
 package js.tiny.container.spi;
 
+import java.lang.annotation.Annotation;
 import java.util.List;
 
 import js.injector.IBindingBuilder;
+import js.injector.IScope;
 
 /**
  * Container services for framework internals and plugins. This interface is a service provider interface and is not intended
@@ -13,6 +15,8 @@ import js.injector.IBindingBuilder;
 public interface IContainer {
 
 	<T> IBindingBuilder<T> bind(Class<T> interfaceClass);
+	
+	void bindScope(Class<? extends Annotation> annotation, IScope<?> scope);
 	
 	/**
 	 * Retrieve a not null managed instance, be it newly created or reused from a scope cache. Throws an implementation specific
