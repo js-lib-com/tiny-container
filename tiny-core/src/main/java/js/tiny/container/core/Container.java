@@ -1,7 +1,6 @@
 package js.tiny.container.core;
 
 import java.lang.annotation.Annotation;
-import java.lang.reflect.Proxy;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -17,19 +16,17 @@ import js.injector.IBindingBuilder;
 import js.injector.IScope;
 import js.injector.ProvisionException;
 import js.lang.Config;
-import js.lang.InstanceInvocationHandler;
 import js.log.Log;
 import js.log.LogFactory;
-import js.tiny.container.cdi.ContainerBindingBuilder;
 import js.tiny.container.cdi.CDI;
 import js.tiny.container.cdi.ClassBinding;
+import js.tiny.container.cdi.ContainerBindingBuilder;
 import js.tiny.container.cdi.IInstanceCreatedListener;
 import js.tiny.container.cdi.IManagedLoader;
 import js.tiny.container.spi.IContainer;
 import js.tiny.container.spi.IContainerService;
 import js.tiny.container.spi.IContainerStartProcessor;
 import js.tiny.container.spi.IManagedClass;
-import js.util.Classes;
 import js.util.Params;
 
 /**
@@ -135,7 +132,7 @@ public class Container implements IContainer, AppContainer, IInstanceCreatedList
 		});
 	}
 
-	/** Clean-up managed classes by invoking pre-destroy method in reverse creation order then destroy all services. */
+	/** Close managed classes in reverse creation order then destroy all services. */
 	@Override
 	public void close() {
 		log.trace("close()");
@@ -143,29 +140,10 @@ public class Container implements IContainer, AppContainer, IInstanceCreatedList
 		// although not specified in apidoc, list iterator size should be provided
 		ListIterator<IManagedClass<?>> iterator = managedClasses.listIterator(managedClasses.size());
 		while (iterator.hasPrevious()) {
-			IManagedClass<?> managedClass = iterator.previous();
-			Object instance = cdi.getScopeInstance(managedClass.getInterfaceClass());
-			if (instance == null) {
-				continue;
-			}
-
-			// in case instance is a Java Proxy takes care to execute pre-destroy hook on wrapped instance
-			// in order to avoid adding container services to this finalization hook
-			if (instance instanceof Proxy) {
-				if (!(Proxy.getInvocationHandler(instance) instanceof InstanceInvocationHandler)) {
-					continue;
-				}
-				instance = Classes.unproxy(instance);
-			}
-
-			log.debug("Pre-destroy managed instance |%s|.", managedClass);
-			((ManagedClass<?>) managedClass).executeInstancePreDestructors(instance);
+			iterator.previous().close();
 		}
 
-		for (IContainerService service : services) {
-			log.debug("Destroy container service |%s|.", service);
-			service.destroy();
-		}
+		services.forEach(service -> service.destroy());
 	}
 
 	// --------------------------------------------------------------------------------------------
@@ -179,9 +157,9 @@ public class Container implements IContainer, AppContainer, IInstanceCreatedList
 	@Override
 	public void onInstanceCreated(Object instance) {
 		ManagedClass<?> managedClass = managedImplementations.get(instance.getClass());
-		// is legal to have instances without managed classes
+		// not all instances created by injector have managed classes
 		if (managedClass != null) {
-			managedClass.executeInstancePostConstructors(instance);
+			managedClass.onInstanceCreated(instance);
 		}
 	}
 
@@ -198,6 +176,10 @@ public class Container implements IContainer, AppContainer, IInstanceCreatedList
 		} catch (ProvisionException e) {
 			return null;
 		}
+	}
+
+	public <T> T getScopeInstance(Class<T> interfaceClass) {
+		return cdi.getScopeInstance(interfaceClass);
 	}
 
 	@Override

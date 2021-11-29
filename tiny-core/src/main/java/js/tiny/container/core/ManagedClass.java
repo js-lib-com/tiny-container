@@ -2,13 +2,16 @@ package js.tiny.container.core;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
+import java.lang.reflect.Proxy;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
+import js.lang.InstanceInvocationHandler;
 import js.log.Log;
 import js.log.LogFactory;
 import js.tiny.container.cdi.ClassBinding;
+import js.tiny.container.cdi.IInstanceCreatedListener;
 import js.tiny.container.spi.IClassPostLoadedProcessor;
 import js.tiny.container.spi.IContainer;
 import js.tiny.container.spi.IContainerService;
@@ -16,13 +19,14 @@ import js.tiny.container.spi.IInstancePostConstructProcessor;
 import js.tiny.container.spi.IInstancePreDestroyProcessor;
 import js.tiny.container.spi.IManagedClass;
 import js.tiny.container.spi.IManagedMethod;
+import js.util.Classes;
 
 /**
  * Implementation for {@link IManagedClass} interface.
  * 
  * @author Iulian Rotaru
  */
-class ManagedClass<T> implements IManagedClass<T> {
+class ManagedClass<T> implements IManagedClass<T>, IInstanceCreatedListener {
 	private static final Log log = LogFactory.getLog(ManagedClass.class);
 
 	/** Back reference to parent container. */
@@ -34,7 +38,7 @@ class ManagedClass<T> implements IManagedClass<T> {
 	/** Wrapped business class exposed by {@link #getImplementationClass()}. */
 	private final Class<? extends T> implementationClass;
 
-	private final Map<String, IManagedMethod> methodsPool = new HashMap<>();
+	private final Map<String, IManagedMethod> managedMethods = new HashMap<>();
 
 	/**
 	 * Instance post-processors are executed only on newly created managed instances. If instance is reused from scope cache
@@ -58,7 +62,7 @@ class ManagedClass<T> implements IManagedClass<T> {
 		for (Method method : implementationClass.getDeclaredMethods()) {
 			ManagedMethod managedMethod = new ManagedMethod(this, method);
 			managedMethod.scanServices(container.getServices());
-			methodsPool.put(method.getName(), managedMethod);
+			managedMethods.put(method.getName(), managedMethod);
 		}
 
 		for (IContainerService service : container.getServices()) {
@@ -82,16 +86,31 @@ class ManagedClass<T> implements IManagedClass<T> {
 
 	}
 
-	public void executeInstancePostConstructors(Object instance) {
-		instancePostConstructors.forEach(processor -> {
-			processor.onInstancePostConstruct(instance);
-		});
+	@Override
+	public void close() {
+		Object instance = container.getScopeInstance(interfaceClass);
+		if (instance == null) {
+			return;
+		}
+
+		// in case instance is a Java Proxy takes care to execute pre-destroy processors on wrapped instance in order to avoid
+		// adding container services to this finalization hook
+		if (instance instanceof Proxy) {
+			if (!(Proxy.getInvocationHandler(instance) instanceof InstanceInvocationHandler)) {
+				return;
+			}
+			instance = Classes.unproxy(instance);
+		}
+
+		log.debug("Pre-destroy managed instance |%s|.", this);
+		for (IInstancePreDestroyProcessor processor : instancePreDestructors) {
+			processor.onInstancePreDestroy(instance);
+		}
 	}
 
-	public void executeInstancePreDestructors(Object instance) {
-		instancePreDestructors.forEach(processor -> {
-			processor.onInstancePreDestroy(instance);
-		});
+	@Override
+	public void onInstanceCreated(Object instance) {
+		instancePostConstructors.forEach(processor -> processor.onInstancePostConstruct(instance));
 	}
 
 	@Override
@@ -111,12 +130,12 @@ class ManagedClass<T> implements IManagedClass<T> {
 
 	@Override
 	public Collection<IManagedMethod> getManagedMethods() {
-		return methodsPool.values();
+		return managedMethods.values();
 	}
 
 	@Override
 	public IManagedMethod getManagedMethod(String methodName) {
-		IManagedMethod managedMethod = methodsPool.get(methodName);
+		IManagedMethod managedMethod = managedMethods.get(methodName);
 		if (managedMethod == null) {
 			log.error("Missing remote method |%s| from |%s|.", methodName, implementationClass);
 			return null;

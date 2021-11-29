@@ -4,6 +4,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -140,7 +141,7 @@ public class ManagedClassTest {
 	}
 
 	@Test
-	public void GivenExistingProcessor_WhenExecuteInstancePostConstructors_ThenExecute() {
+	public void GivenExistingProcessor_WhenOnInstanceCreated_ThenExecute() {
 		// given
 		when(container.getServices()).thenReturn(Arrays.asList(postConstructorProcessor));
 		managedClass.scanServices();
@@ -148,25 +149,24 @@ public class ManagedClassTest {
 		Object instance = new Object();
 
 		// when
-		managedClass.executeInstancePostConstructors(instance);
+		managedClass.onInstanceCreated(instance);
 
 		// then
 		verify(postConstructorProcessor, times(1)).onInstancePostConstruct(instance);
 	}
 
 	@Test
-	public void GivenExistingProcessor_WhenExecuteInstancePreDestructors_Thenexecute() {
+	public void GivenExistingProcessor_WhenClose_Thenexecute() {
 		// given
 		when(container.getServices()).thenReturn(Arrays.asList(preDestroyProcessor));
 		managedClass.scanServices();
-
-		Object instance = new Object();
+		when(container.getScopeInstance(Object.class)).thenReturn(new Object());
 
 		// when
-		managedClass.executeInstancePreDestructors(instance);
+		managedClass.close();
 
 		// then
-		verify(preDestroyProcessor, times(1)).onInstancePreDestroy(instance);
+		verify(preDestroyProcessor, times(1)).onInstancePreDestroy(any());
 	}
 
 	@Test

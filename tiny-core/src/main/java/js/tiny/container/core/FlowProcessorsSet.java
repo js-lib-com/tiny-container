@@ -3,7 +3,6 @@ package js.tiny.container.core;
 import java.util.Iterator;
 import java.util.SortedSet;
 import java.util.TreeSet;
-import java.util.function.Consumer;
 
 import js.tiny.container.spi.IFlowProcessor;
 
@@ -13,7 +12,7 @@ import js.tiny.container.spi.IFlowProcessor;
  * 
  * @author Iulian Rotaru
  */
-public class FlowProcessorsSet<T extends IFlowProcessor> {
+public class FlowProcessorsSet<T extends IFlowProcessor> implements Iterable<T> {
 	private final SortedSet<T> processors;
 
 	public FlowProcessorsSet() {
@@ -34,12 +33,6 @@ public class FlowProcessorsSet<T extends IFlowProcessor> {
 
 	public Iterator<T> iterator() {
 		return processors.iterator();
-	}
-
-	public void forEach(Consumer<T> callback) {
-		for (T processor : processors) {
-			callback.accept(processor);
-		}
 	}
 
 	public void clear() {
