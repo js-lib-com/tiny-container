@@ -18,8 +18,7 @@ import js.tiny.container.spi.IManagedClass;
 import js.tiny.container.spi.IManagedMethod;
 
 /**
- * Managed class implements extension points for class and instance services and facilitates remote access to business methods
- * via reflection.
+ * Implementation for {@link IManagedClass} interface.
  * 
  * @author Iulian Rotaru
  */
@@ -29,16 +28,10 @@ class ManagedClass<T> implements IManagedClass<T> {
 	/** Back reference to parent container. */
 	private final Container container;
 
-	/**
-	 * Managed class interface. If class descriptor has only <code>class</code> attribute this field is initialized from
-	 * {@link #implementationClass}.
-	 */
+	/** Wrapped business interface exposed by {@link #getInterfaceClass()}. */
 	private final Class<T> interfaceClass;
 
-	/**
-	 * Optional managed class implementation. It can be null if managed class does not require implementation, for example if is
-	 * a remote class or a Java service.
-	 */
+	/** Wrapped business class exposed by {@link #getImplementationClass()}. */
 	private final Class<? extends T> implementationClass;
 
 	private final Map<String, IManagedMethod> methodsPool = new HashMap<>();

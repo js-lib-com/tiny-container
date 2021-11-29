@@ -23,6 +23,7 @@ public class ResourceConnector implements IConnector, IClassPostLoadedProcessor 
 		this.cache = MethodsCache.instance();
 	}
 
+	/** Test constructor. */
 	public ResourceConnector(MethodsCache cache) {
 		this.cache = cache;
 	}

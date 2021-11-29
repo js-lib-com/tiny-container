@@ -23,6 +23,7 @@ public class RestConnector implements IConnector, IClassPostLoadedProcessor {
 		this.cache = MethodsCache.instance();
 	}
 
+	/** Test constructor. */
 	public RestConnector(MethodsCache cache) {
 		this.cache = cache;
 	}

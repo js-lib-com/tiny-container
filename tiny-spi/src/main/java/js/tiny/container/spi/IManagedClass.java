@@ -8,8 +8,25 @@ import js.lang.InvocationException;
 import js.lang.NoProviderException;
 
 /**
- * Managed class provides extension points for class and instance services and facilitates remote access to business methods,
- * via reflection.
+ * Managed class implements class and instance container services and facilitates remote access to business methods, via
+ * reflection. A managed class is created by a parent container and is a this wrapper for Java class implementing application
+ * business logic. Managed class is immutable.
+ * 
+ * Container services are provided at relevant extension points and are grouped into:
+ * <ul>
+ * <li>{@link IClassPostLoadedProcessor}: services executed after managed class creation,
+ * <li>{@link IInstancePostConstructProcessor}: services executed after instances creation,
+ * <li>{@link IInstancePreDestroyProcessor}: services executed before instances destruction.
+ * 
+ * Container services are implemented as extension modules - discovered and loaded at runtime with standard Java service loader,
+ * and custom services are supported. At application code level container services are declared with Java annotations with
+ * runtime retention. Managed class provides an utility method for annotations scanning - see {@link #scanAnnotation(Class)}.
+ * 
+ * A managed class has a bind declared to container injector with a scope depending on application needs. There is a method to
+ * retrieve managed class instance, see {@link #getInstance()}. On injector bindings managed class is identified by
+ * <code>interface class</code>, see {@link #getInterfaceClass()}.
+ * 
+ * Managed class provides access to implementation methods via method name allowing business method invocation via reflection.
  * 
  * @author Iulian Rotaru
  */
@@ -42,7 +59,7 @@ public interface IManagedClass<T> {
 	/**
 	 * Gets managed methods owned by this managed class.
 	 * 
-	 * @return managed methods sequence, in no particular order and possible empty.
+	 * @return managed methods collection, in no particular order.
 	 */
 	Collection<IManagedMethod> getManagedMethods();
 
