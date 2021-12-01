@@ -75,10 +75,8 @@ import js.log.LogFactory;
  * request context is safe to use.
  * 
  * @author Iulian Rotaru
- * @version final
  */
 public class RequestContext {
-	/** Class logger. */
 	private static final Log log = LogFactory.getLog(RequestContext.class);
 
 	private final Converter converter;
@@ -224,6 +222,9 @@ public class RequestContext {
 		cookies = null;
 		requestPath = null;
 		requestURL = null;
+		httpRequest = null;
+		httpResponse = null;
+		cookies = null;
 	}
 
 	/**

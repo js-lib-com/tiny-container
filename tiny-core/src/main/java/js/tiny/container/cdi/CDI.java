@@ -40,7 +40,7 @@ public class CDI implements IProvisionListener {
 	// --------------------------------------------------------------------------------------------
 
 	private final boolean proxyProcessing;
-	
+
 	/** Explicit bindings, and instance and scope bindings collected from container. */
 	private final StaticModule staticModule;
 
@@ -54,14 +54,14 @@ public class CDI implements IProvisionListener {
 
 	/** Flag true only after CDI configuration complete. Used to assert CDI internal state consistency. */
 	private final AtomicBoolean configured = new AtomicBoolean(false);
-	
+
 	private IManagedLoader managedLoader;
 	private IInstanceCreatedListener instanceCreatedListener;
 
 	private CDI() {
 		this(false);
 	}
-	
+
 	private CDI(boolean proxyProcessing) {
 		log.trace("CDI(boolean)");
 		this.proxyProcessing = proxyProcessing;

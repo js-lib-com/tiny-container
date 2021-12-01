@@ -16,6 +16,7 @@ import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -56,7 +57,7 @@ public class ResourceServletHandlerTest {
 	@Mock
 	private ITinyContainer container;
 	@Mock
-	private IContainerService service;
+	private IContainerService containerService;
 	@Mock
 	private IManagedClass<?> managedClass;
 	@Mock
@@ -69,11 +70,10 @@ public class ResourceServletHandlerTest {
 
 	@Mock
 	private Resource resource;
-
 	@Mock
-	private MethodsCache cache;
+	private MethodsCache methodCache;
 
-	private RequestContext context;
+	private RequestContext requestContext;
 	private ResourceServlet servlet;
 
 	@Before
@@ -95,21 +95,26 @@ public class ResourceServletHandlerTest {
 		when(argumentsFactory.getArgumentsReader(httpRequest, managedMethod.getParameterTypes())).thenReturn(argumentsReader);
 		when(argumentsReader.read(httpRequest, managedMethod.getParameterTypes())).thenReturn(new Object[] { "value" });
 
-		context = new RequestContext(container);
-		context.attach(httpRequest, httpResponse);
+		requestContext = new RequestContext(container);
+		requestContext.attach(httpRequest, httpResponse);
 
-		when(cache.get("/controller/index")).thenReturn(managedMethod);
+		when(methodCache.get("/controller/index")).thenReturn(managedMethod);
 
-		servlet = new ResourceServlet(cache, argumentsFactory);
+		servlet = new ResourceServlet(methodCache, argumentsFactory);
 		servlet.init(servletConfig);
 	}
 
+	@After
+	public void afterTest() {
+		requestContext.detach();
+	}
+	
 	@Test
 	public void GivenDefaults_WhenInvoke_Then200() throws Exception {
 		// given
 
 		// when
-		servlet.handleRequest(context);
+		servlet.handleRequest(requestContext);
 
 		// then
 		verify(managedMethod, times(1)).invoke(any(), any());
@@ -123,7 +128,7 @@ public class ResourceServletHandlerTest {
 		when(managedMethod.getParameterTypes()).thenReturn(new Type[] { String.class });
 
 		// when
-		servlet.handleRequest(context);
+		servlet.handleRequest(requestContext);
 
 		// then
 		verify(managedMethod, times(1)).invoke(any(), eq("value"));
@@ -138,7 +143,7 @@ public class ResourceServletHandlerTest {
 		when(managedMethod.invoke(any(), any())).thenThrow(AuthorizationException.class);
 
 		// when
-		servlet.handleRequest(context);
+		servlet.handleRequest(requestContext);
 
 		// then
 		verify(httpRequest, times(1)).authenticate(httpResponse);
@@ -152,7 +157,7 @@ public class ResourceServletHandlerTest {
 		when(managedMethod.invoke(any(), any())).thenThrow(AuthorizationException.class);
 
 		// when
-		servlet.handleRequest(context);
+		servlet.handleRequest(requestContext);
 
 		// then
 		verify(httpResponse, times(1)).sendRedirect("login-form.htm");
@@ -164,7 +169,7 @@ public class ResourceServletHandlerTest {
 		when(managedMethod.invoke(any(), any())).thenThrow(new InvocationException(new Exception("exception")));
 
 		// when
-		servlet.handleRequest(context);
+		servlet.handleRequest(requestContext);
 
 		// then
 		verify(httpResponse, times(1)).sendError(500, "exception");
@@ -177,7 +182,7 @@ public class ResourceServletHandlerTest {
 		when(managedMethod.invoke(any(), any())).thenThrow(new IllegalArgumentException("exception"));
 
 		// when
-		servlet.handleRequest(context);
+		servlet.handleRequest(requestContext);
 
 		// then
 		verify(httpResponse, times(1)).sendError(404, "/test-app/controller/index");
@@ -186,10 +191,10 @@ public class ResourceServletHandlerTest {
 	@Test
 	public void GivenMissingMethod_WhenInvoke_Then404() throws Exception {
 		// given
-		when(cache.get("/controller/index")).thenReturn(null);
+		when(methodCache.get("/controller/index")).thenReturn(null);
 
 		// when
-		servlet.handleRequest(context);
+		servlet.handleRequest(requestContext);
 
 		// then
 		verify(httpResponse, times(1)).sendError(404, "/test-app/controller/index");
@@ -201,7 +206,7 @@ public class ResourceServletHandlerTest {
 		when(managedMethod.invoke(any(), any())).thenThrow(new InvocationException(new NoSuchResourceException()));
 
 		// when
-		servlet.handleRequest(context);
+		servlet.handleRequest(requestContext);
 
 		// then
 		verify(httpResponse, times(1)).sendError(404, "/test-app/controller/index");
@@ -214,7 +219,7 @@ public class ResourceServletHandlerTest {
 		when(managedMethod.invoke(any(), any())).thenReturn(null);
 
 		// when
-		servlet.handleRequest(context);
+		servlet.handleRequest(requestContext);
 
 		// then
 	}

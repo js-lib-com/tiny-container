@@ -7,7 +7,6 @@ import java.io.OutputStreamWriter;
 import java.io.Writer;
 
 import js.json.Json;
-import js.tiny.container.http.ContentType;
 import js.util.Classes;
 import js.util.Strings;
 
@@ -23,11 +22,6 @@ import js.util.Strings;
  */
 final class SsiView extends AbstractView {
 	private static final String SSI_CONTENT = "js.SSI-CONTENT";
-
-	@Override
-	public ContentType getContentType() {
-		return ContentType.TEXT_HTML;
-	}
 
 	public void serialize(OutputStream outputStream) throws IOException {
 		String html = Strings.load(meta.getTemplateFile());

@@ -251,7 +251,6 @@ public class TinyContainer extends Container implements ServletContextListener, 
 			log.error(e);
 			log.fatal("Bad container |%s| configuration.", appName);
 		} catch (FileNotFoundException e) {
-			// TODO Auto-generated catch block
 			log.error(e);
 		} catch (Error | RuntimeException e) {
 			log.dump(String.format("Fatal error on container |%s| start:", appName), e);
@@ -313,7 +312,6 @@ public class TinyContainer extends Container implements ServletContextListener, 
 
 	@Override
 	public <T> T getProperty(String name, Class<T> type) {
-		// TODO: move contextParameters to global JVM system properties
 		return ConverterRegistry.getConverter().asObject(System.getProperty(name), type);
 	}
 

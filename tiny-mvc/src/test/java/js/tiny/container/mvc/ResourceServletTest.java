@@ -29,7 +29,7 @@ public class ResourceServletTest {
 	@Mock
 	private ITinyContainer container;
 	@Mock
-	private IContainerService service;
+	private IContainerService containerService;
 	@Mock
 	private IManagedClass<?> managedClass;
 	@Mock

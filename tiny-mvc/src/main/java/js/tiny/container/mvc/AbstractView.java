@@ -5,7 +5,6 @@ import java.io.OutputStream;
 
 import javax.servlet.http.HttpServletResponse;
 
-import js.tiny.container.http.ContentType;
 import js.tiny.container.http.HttpHeader;
 
 /**
@@ -17,12 +16,21 @@ import js.tiny.container.http.HttpHeader;
  * @version final
  */
 public abstract class AbstractView implements View {
+	protected String contentType = "text/html;charset=UTF-8";
+
+	@Override
+	public void setContentType(String contentType) {
+		this.contentType = contentType;
+	}
+
 	/**
 	 * Get generated stream content type.
 	 * 
 	 * @return this view content type.
 	 */
-	protected abstract ContentType getContentType();
+	protected String getContentType() {
+		return contentType;
+	}
 
 	/**
 	 * Perform the actual content serialization to given output stream. Implementation has access to both view-meta and domain
@@ -67,7 +75,7 @@ public abstract class AbstractView implements View {
 		httpResponse.addHeader(HttpHeader.CACHE_CONTROL, HttpHeader.NO_STORE);
 		httpResponse.setHeader(HttpHeader.PRAGMA, HttpHeader.NO_CACHE);
 		httpResponse.setDateHeader(HttpHeader.EXPIRES, 0);
-		httpResponse.setContentType(getContentType().getValue());
+		httpResponse.setContentType(getContentType());
 
 		serialize(httpResponse.getOutputStream());
 	}

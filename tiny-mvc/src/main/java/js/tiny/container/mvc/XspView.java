@@ -8,7 +8,6 @@ import java.io.Writer;
 
 import js.template.Template;
 import js.template.TemplateEngine;
-import js.tiny.container.http.ContentType;
 import js.util.Classes;
 
 /**
@@ -37,11 +36,6 @@ import js.util.Classes;
 public final class XspView extends AbstractView {
 	/** Key for operator serialization property. */
 	private static final String OPERATOR_SERIALIZATION = "template.operator.serialization";
-
-	@Override
-	protected ContentType getContentType() {
-		return ContentType.TEXT_HTML;
-	}
 
 	/**
 	 * Uses template engine to inject model and serialize view on HTTP response. If meta-view contains

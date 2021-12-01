@@ -37,7 +37,7 @@ public class MethodsCache {
 	public IManagedMethod get(String requestPath) {
 		return cache.get(key(requestPath));
 	}
-
+	
 	static String key(IManagedMethod managedMethod) {
 		StringBuilder key = new StringBuilder();
 		String classPath = path(managedMethod.getDeclaringClass());

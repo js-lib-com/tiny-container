@@ -2,404 +2,365 @@ package js.tiny.container.servlet;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 
-import javax.servlet.Filter;
 import javax.servlet.FilterChain;
+import javax.servlet.FilterConfig;
 import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
 import javax.servlet.UnavailableException;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.Mock;
+import org.mockito.junit.MockitoJUnitRunner;
 
 import js.injector.IInjector;
 import js.tiny.container.spi.IContainer;
-import js.tiny.container.unit.FilterConfigStub;
-import js.tiny.container.unit.HttpServletRequestStub;
-import js.tiny.container.unit.HttpServletResponseStub;
-import js.tiny.container.unit.RequestDispatcherStub;
-import js.tiny.container.unit.ServletContextStub;
-import js.tiny.container.unit.TestContext;
 import js.util.Classes;
 
+@RunWith(MockitoJUnitRunner.class)
 public class RequestPreprocessorUnitTest {
 	@BeforeClass
 	public static void beforeClass() {
 		System.setProperty("catalina.base", "fixture/server/tomcat");
 	}
 
+	@Mock
+	private ServletContext servletContext;
+	@Mock
+	private RequestDispatcher requestDispatcher;
+	@Mock
+	private FilterChain filterChain;
+	@Mock
+	private FilterConfig filterConfig;
+	@Mock
+	private HttpServletRequest httpRequest;
+	@Mock
+	private HttpServletResponse httpResponse;
+
+	@Mock
+	private RequestContext requestContext;
+	@Mock
 	private IContainer container;
+
+	private RequestPreprocessor preprocessor;
 
 	@Before
 	public void beforeTest() throws Exception {
+		when(servletContext.getAttribute(TinyContainer.ATTR_INSTANCE)).thenReturn(container);
+		when(servletContext.getRealPath(any())).thenReturn("");
+
+		when(filterConfig.getServletContext()).thenReturn(servletContext);
+		when(filterConfig.getInitParameter("locale")).thenReturn("en,iw,ro");
+		when(filterConfig.getInitParameter("security-domain")).thenReturn("admin,editor,viewer");
+
+		when(httpRequest.getServletContext()).thenReturn(servletContext);
+		when(httpRequest.getRequestDispatcher(any())).thenReturn(requestDispatcher);
+		when(httpRequest.getContextPath()).thenReturn("/app");
+
+		when(container.getInstance(RequestContext.class)).thenReturn(requestContext);
+
 		IInjector injector = Classes.loadService(IInjector.class);
 		injector.clearCache();
 
-		container = (IContainer) TestContext.start();
+		preprocessor = new RequestPreprocessor();
 	}
 
 	/** Loads internal lists from initial parameters. */
 	@Test
-	public void init() throws UnavailableException {
-		MockFilterConfig config = new MockFilterConfig();
-		config.servletContext.container = container;
-		config.locale = "en,iw,ro";
-		config.securityDomain = "admin,editor,viewer";
+	public void GivenInitParameters_WhenInit_ThenLoadLocalesAndSecurity() throws UnavailableException {
+		// given
+		
+		// when
+		preprocessor.init(filterConfig);
 
-		RequestPreprocessor filter = new RequestPreprocessor();
-		filter.init(config);
-
-		List<String> locales = Classes.getFieldValue(filter, "locales");
+		// then
+		List<String> locales = preprocessor.locales();
 		assertEquals(3, locales.size());
 		assertEquals("en", locales.get(0));
 		assertEquals("iw", locales.get(1));
 		assertEquals("ro", locales.get(2));
 
-		List<String> securityDomains = Classes.getFieldValue(filter, "securityDomains");
+		List<String> securityDomains = preprocessor.securityDomains();
 		assertEquals(3, securityDomains.size());
 		assertEquals("admin", securityDomains.get(0));
 		assertEquals("editor", securityDomains.get(1));
 		assertEquals("viewer", securityDomains.get(2));
 	}
 
+	@Test
+	public void GivenLocaleWithSpaces_WhenInit_ThenLoadLocales() throws UnavailableException {
+		// given
+		when(filterConfig.getInitParameter("locale")).thenReturn("en, iw, ro");
+		
+		// when
+		preprocessor.init(filterConfig);
+
+		// then
+		List<String> locales = preprocessor.locales();
+		assertEquals(3, locales.size());
+		assertEquals("en", locales.get(0));
+		assertEquals("iw", locales.get(1));
+		assertEquals("ro", locales.get(2));
+	}
+
+	@Test
+	public void GivenSecurityWithSpaces_WhenInit_ThenLoadSecurity() throws UnavailableException {
+		// given
+		when(filterConfig.getInitParameter("security-domain")).thenReturn("admin, editor, viewer");
+		
+		// when
+		preprocessor.init(filterConfig);
+
+		// then
+		List<String> securityDomains = preprocessor.securityDomains();
+		assertEquals(3, securityDomains.size());
+		assertEquals("admin", securityDomains.get(0));
+		assertEquals("editor", securityDomains.get(1));
+		assertEquals("viewer", securityDomains.get(2));
+	}
+
+
 	/** Initialize instance with empty locale and security domain lists. */
 	@Test
-	public void init_NullInitParam() throws UnavailableException {
-		MockFilterConfig config = new MockFilterConfig();
-		config.servletContext.container = container;
+	public void GivenNullInitParameters_WhenInit_ThenEmptyLocaleAndSecurity() throws UnavailableException {
+		// given
+		when(filterConfig.getInitParameter("locale")).thenReturn(null);
+		when(filterConfig.getInitParameter("security-domain")).thenReturn(null);
+		
+		// when
+		preprocessor.init(filterConfig);
 
-		RequestPreprocessor filter = new RequestPreprocessor();
-		filter.init(config);
-
-		List<String> locales = Classes.getFieldValue(filter, "locales");
-		assertEquals(0, locales.size());
-
-		List<String> securityDomains = Classes.getFieldValue(filter, "securityDomains");
-		assertEquals(0, securityDomains.size());
+		// then
+		assertEquals(0, preprocessor.locales().size());
+		assertEquals(0, preprocessor.securityDomains().size());
 	}
 
 	@Test(expected = UnavailableException.class)
-	public void init_UnavailableException() throws UnavailableException {
-		RequestPreprocessor filter = new RequestPreprocessor();
-		filter.init(new MockFilterConfig());
+	public void GivenMissingContainer_WhenInit_ThenException() throws UnavailableException {
+		// given
+		when(servletContext.getAttribute(TinyContainer.ATTR_INSTANCE)).thenReturn(null);
+
+		// when
+		preprocessor.init(filterConfig);
+
+		// then
 	}
 
 	/** Filter conformity test. */
 	@Test
-	public void doFilter() throws IOException, ServletException {
-		MockHttpServletRequest request = new MockHttpServletRequest("/app/iw/editor/controller/resource");
-		MockHttpServletResponse response = new MockHttpServletResponse();
-		MockFilterChain chain = new MockFilterChain();
+	public void GivenAllGood_WhenDoFilter_ThenUpdateRequestContext() throws IOException, ServletException {
+		// given
+		when(httpRequest.getRequestURI()).thenReturn("/app/iw/editor/controller/resource");
+		preprocessor.init(filterConfig);
 
-		Filter filter = getFilter(Arrays.asList("en", "iw", "ro"), Arrays.asList("admin", "editor", "viewer"));
-		filter.doFilter(request, response, chain);
+		// when
+		preprocessor.doFilter(httpRequest, httpResponse, filterChain);
 
-		assertEquals("/controller/resource", request.forwardPath);
-		assertNull(chain.requestURI);
+		// then
+		verify(httpRequest, times(1)).getRequestDispatcher("/controller/resource");
+		verify(filterChain, times(0)).doFilter(httpRequest, httpResponse);
 
-		RequestContext context = getRequestContext();
-		assertEquals(new Locale("iw"), context.getLocale());
-		assertEquals("editor", context.getSecurityDomain());
-		assertEquals("/controller/resource", context.getRequestPath());
+		verify(requestContext, times(1)).setLocale(new Locale("iw"));
+		verify(requestContext, times(1)).setSecurityDomain("editor");
+		verify(requestContext, times(1)).setRequestPath("/controller/resource");
 	}
 
-	/** If request URI is for a static file redirect to filter chain. */
+	/** If httpRequest URI is for a static file redirect to filter chain. */
 	@Test
-	public void doFilter_ExistingFile() throws IOException, ServletException {
-		MockHttpServletRequest request = new MockHttpServletRequest("/app/src/main/java/js/tiny/container/servlet/RequestPreprocessor.java");
-		MockHttpServletResponse response = new MockHttpServletResponse();
-		MockFilterChain chain = new MockFilterChain();
+	public void GivenStaticFileRequest_WhenDoFilter_ThenFilterChain() throws IOException, ServletException {
+		// given
+		when(httpRequest.getRequestURI()).thenReturn("/app/src/test/resources/log4j.properties");
+		when(servletContext.getRealPath(any())).thenReturn("src/test/resources/log4j.properties");
+		preprocessor.init(filterConfig);
 
-		Filter filter = getFilter(Arrays.asList("en", "iw", "ro"), Arrays.asList("admin", "editor", "viewer"));
-		filter.doFilter(request, response, chain);
+		// when
+		preprocessor.doFilter(httpRequest, httpResponse, filterChain);
 
-		assertEquals("/app/src/main/java/js/tiny/container/servlet/RequestPreprocessor.java", chain.requestURI);
+		// then
+		verify(filterChain, times(1)).doFilter(httpRequest, httpResponse);
 	}
 
-	/** If application is configured with locale and request URI locale is not found redirect to 404. */
+	/** If application is configured with locale and httpRequest URI locale is not found do not set request context locale. */
 	@Test
-	public void doFilter_BadLocale() throws IOException, ServletException {
-		MockHttpServletRequest request = new MockHttpServletRequest("/app/jp/admin/controller/resource");
-		MockHttpServletResponse response = new MockHttpServletResponse();
-		MockFilterChain chain = new MockFilterChain();
+	public void GivenBadLocale_WhenDoFilter_ThenDoNotSetRequestContextLocale() throws IOException, ServletException {
+		// given jp locale not configured on init parameter
+		when(httpRequest.getRequestURI()).thenReturn("/app/jp/admin/controller/resource");
+		preprocessor.init(filterConfig);
 
-		Filter filter = getFilter(Arrays.asList("en", "iw", "ro"), Arrays.asList("admin", "editor", "viewer"));
-		filter.doFilter(request, response, chain);
+		// when
+		preprocessor.doFilter(httpRequest, httpResponse, filterChain);
 
-		assertEquals("/jp/admin/controller/resource", request.forwardPath);
-		assertNull(chain.requestURI);
+		// then
+		verify(httpRequest, times(1)).getRequestDispatcher("/jp/admin/controller/resource");
+		verify(filterChain, times(0)).doFilter(httpRequest, httpResponse);
 
-		RequestContext context = getRequestContext();
-		assertNull(context.getLocale());
-		assertNull(context.getSecurityDomain());
-		assertEquals("/jp/admin/controller/resource", context.getRequestPath());
+		verify(requestContext, times(0)).setLocale(any());
+		// TODO: if locale not found security domain cannot be processed
+		// there is security domain but because locale is not recognized security domain cannot be processed
+		verify(requestContext, times(0)).setSecurityDomain(any());
+		verify(requestContext, times(1)).setRequestPath("/jp/admin/controller/resource");
 	}
 
-	/** Null request preprocessor should leave request URI unchanged. */
+	/** Null httpRequest preprocessor should leave httpRequest URI unchanged. */
 	@Test
-	public void doFilter_NoLocale() throws IOException, ServletException {
-		MockHttpServletRequest request = new MockHttpServletRequest("/app/jp/admin/controller/resource");
-		MockHttpServletResponse response = new MockHttpServletResponse();
-		MockFilterChain chain = new MockFilterChain();
+	public void GivenNullInitParameters_WhenDoFilter_ThenRequestUriNotChanged() throws IOException, ServletException {
+		// given
+		when(httpRequest.getRequestURI()).thenReturn("/app/jp/admin/controller/resource");
+		when(filterConfig.getInitParameter("locale")).thenReturn(null);
+		when(filterConfig.getInitParameter("security-domain")).thenReturn(null);
+		preprocessor.init(filterConfig);
 
-		Filter filter = getFilter(null, null);
-		filter.doFilter(request, response, chain);
+		// when
+		preprocessor.doFilter(httpRequest, httpResponse, filterChain);
 
-		assertEquals("/jp/admin/controller/resource", request.forwardPath);
-		assertNull(chain.requestURI);
+		// then
+		verify(httpRequest, times(1)).getRequestDispatcher("/jp/admin/controller/resource");
+		verify(filterChain, times(0)).doFilter(httpRequest, httpResponse);
 
-		RequestContext context = getRequestContext();
-		assertNull(context.getLocale());
-		assertNull(context.getSecurityDomain());
-		assertEquals("/jp/admin/controller/resource", context.getRequestPath());
+		verify(requestContext, times(0)).setLocale(any());
+		verify(requestContext, times(0)).setSecurityDomain(any());
+		verify(requestContext, times(1)).setRequestPath("/jp/admin/controller/resource");
 	}
 
 	/** Request URI without security domain on a filter configured with security domains left unchanged. */
 	@Test
-	public void doFilter_MissingSecurityDomain() throws IOException, ServletException {
-		MockHttpServletRequest request = new MockHttpServletRequest("/app/controller/resource");
-		MockHttpServletResponse response = new MockHttpServletResponse();
-		MockFilterChain chain = new MockFilterChain();
+	public void GivenNullSecurityInitParameters_WhenDoFilter_ThenDoNotSetRequestContext() throws IOException, ServletException {
+		// given
+		when(httpRequest.getRequestURI()).thenReturn("/app/controller/resource");
+		when(filterConfig.getInitParameter("locale")).thenReturn(null);
+		preprocessor.init(filterConfig);
 
-		Filter filter = getFilter(null, Arrays.asList("admin", "editor", "viewer"));
-		filter.doFilter(request, response, chain);
+		// when
+		preprocessor.doFilter(httpRequest, httpResponse, filterChain);
 
-		assertEquals("/controller/resource", request.forwardPath);
-		assertNull(chain.requestURI);
+		// then
+		verify(httpRequest, times(1)).getRequestDispatcher("/controller/resource");
+		verify(filterChain, times(0)).doFilter(httpRequest, httpResponse);
 
-		RequestContext context = getRequestContext();
-		assertNull(context.getLocale());
-		assertNull(context.getSecurityDomain());
-		assertEquals("/controller/resource", context.getRequestPath());
+		verify(requestContext, times(0)).setLocale(any());
+		verify(requestContext, times(0)).setSecurityDomain(any());
+		verify(requestContext, times(1)).setRequestPath("/controller/resource");
 	}
 
 	/** Request URI with not configured security domain should remain unchanged. */
 	@Test
-	public void doFilter_BadSecurityDomain() throws IOException, ServletException {
-		MockHttpServletRequest request = new MockHttpServletRequest("/app/user/controller/resource");
-		MockHttpServletResponse response = new MockHttpServletResponse();
-		MockFilterChain chain = new MockFilterChain();
+	public void GivenMissingSecurity_WhenDoFilter_ThenRequestUriNotChanged() throws IOException, ServletException {
+		// given
+		when(httpRequest.getRequestURI()).thenReturn("/app/user/controller/resource");
+		when(filterConfig.getInitParameter("locale")).thenReturn(null);
+		preprocessor.init(filterConfig);
 
-		Filter filter = getFilter(null, Arrays.asList("admin", "editor", "viewer"));
-		filter.doFilter(request, response, chain);
+		// when
+		preprocessor.doFilter(httpRequest, httpResponse, filterChain);
 
-		assertEquals("/user/controller/resource", request.forwardPath);
-		assertNull(chain.requestURI);
+		// then
+		verify(httpRequest, times(1)).getRequestDispatcher("/user/controller/resource");
+		verify(filterChain, times(0)).doFilter(httpRequest, httpResponse);
 
-		RequestContext context = getRequestContext();
-		Classes.setFieldValue(context, "attached", true);
-		assertNull(context.getLocale());
-		assertNull(context.getSecurityDomain());
-		assertEquals("/user/controller/resource", context.getRequestPath());
+		verify(requestContext, times(0)).setLocale(any());
+		verify(requestContext, times(0)).setSecurityDomain(any());
+		verify(requestContext, times(1)).setRequestPath("/user/controller/resource");
 	}
 
 	@Test
-	public void startsWith() throws Exception {
-		assertTrue(startsWith("/admin/controller/resource", "admin"));
-		assertTrue(startsWith("/Admin/controller/resource", "admin"));
-		assertTrue(startsWith("/admin/controller/resource", "Admin"));
-
-		assertFalse(startsWith("/controller/resource", "admin"));
-		assertFalse(startsWith("/administrator/controller/resource", "admin"));
-		assertFalse(startsWith("/admin/controller/resource", "administrator"));
-		assertFalse(startsWith("/admin", "administrator"));
-		assertFalse(startsWith("admin/controller/resource", "admin"));
+	public void GivenValidRequestURI_WhenStartsWith_ThenTrue() throws Exception {
+		assertTrue(RequestPreprocessor.startsWith("/admin/controller/resource", "admin"));
+		assertTrue(RequestPreprocessor.startsWith("/Admin/controller/resource", "admin"));
+		assertTrue(RequestPreprocessor.startsWith("/admin/controller/resource", "Admin"));
 	}
 
-	private static boolean startsWith(String requestPath, String pathComponent) throws Exception {
-		return Classes.invoke(RequestPreprocessor.class, "startsWith", requestPath, pathComponent);
+	@Test
+	public void GivenInvalidRequestURI_WhenStartsWith_ThenFalse() throws Exception {
+		assertFalse(RequestPreprocessor.startsWith("/controller/resource", "admin"));
+		assertFalse(RequestPreprocessor.startsWith("/administrator/controller/resource", "admin"));
+		assertFalse(RequestPreprocessor.startsWith("/admin/controller/resource", "administrator"));
+		assertFalse(RequestPreprocessor.startsWith("/admin", "administrator"));
+		assertFalse(RequestPreprocessor.startsWith("admin/controller/resource", "admin"));
 	}
 
 	/**
 	 * REST servlet is always mapped by servlet path, that is, REST never uses extensions. For this reason {@link RestServlet}
 	 * uses {@link HttpServletRequest#getPathInfo()} to locate resources. As a consequence
-	 * {@link RequestContext#getRequestPath()} is not used and is initialized to the same value as request URI.
+	 * {@link RequestContext#getRequestPath()} is not used and is initialized to the same value as httpRequest URI.
 	 */
 	@Test
-	public void doFilter_REST() throws IOException, ServletException {
-		MockHttpServletRequest request = new MockHttpServletRequest("/app/iw/editor/rest/controller/resource");
-		MockHttpServletResponse response = new MockHttpServletResponse();
-		MockFilterChain chain = new MockFilterChain();
+	public void GivenRestRequestWithLocaleAndSecurity_WhenDoFilter_ThenRestPath() throws IOException, ServletException {
+		// given
+		when(httpRequest.getRequestURI()).thenReturn("/app/iw/editor/rest/controller/resource");
+		preprocessor.init(filterConfig);
 
-		Filter filter = getFilter(Arrays.asList("en", "iw", "ro"), Arrays.asList("admin", "editor", "viewer"));
-		filter.doFilter(request, response, chain);
+		// when
+		preprocessor.doFilter(httpRequest, httpResponse, filterChain);
 
-		assertEquals("/rest/controller/resource", request.forwardPath);
-		assertNull(chain.requestURI);
+		// then
+		verify(httpRequest, times(1)).getRequestDispatcher("/rest/controller/resource");
+		verify(filterChain, times(0)).doFilter(httpRequest, httpResponse);
 
-		RequestContext context = getRequestContext();
-		assertEquals(new Locale("iw"), context.getLocale());
-		assertEquals("editor", context.getSecurityDomain());
-		assertEquals("/rest/controller/resource", context.getRequestPath());
+		verify(requestContext, times(1)).setLocale(new Locale("iw"));
+		verify(requestContext, times(1)).setSecurityDomain("editor");
+		verify(requestContext, times(1)).setRequestPath("/rest/controller/resource");
 	}
 
-	/** Conformity test for HTTP-RMI request with locale and security domain. */
+	/** Conformity test for HTTP-RMI httpRequest with locale and security domain. */
 	@Test
-	public void doFilter_HttpRmi() throws IOException, ServletException {
-		MockHttpServletRequest request = new MockHttpServletRequest("/app/iw/editor/js/captcha/Captcha/getSession.rmi");
-		MockHttpServletResponse response = new MockHttpServletResponse();
-		MockFilterChain chain = new MockFilterChain();
+	public void GivenHttpRmiRequestWithLocaleAndSecurity_WhenDoFilter_ThenHttpRmiPath() throws IOException, ServletException {
+		// given
+		when(httpRequest.getRequestURI()).thenReturn("/app/iw/editor/js/captcha/Captcha/getSession.rmi");
+		preprocessor.init(filterConfig);
 
-		Filter filter = getFilter(Arrays.asList("en", "iw", "ro"), Arrays.asList("admin", "editor", "viewer"));
-		filter.doFilter(request, response, chain);
+		// when
+		preprocessor.doFilter(httpRequest, httpResponse, filterChain);
 
-		assertEquals("/js/captcha/Captcha/getSession.rmi", request.forwardPath);
-		assertNull(chain.requestURI);
+		// then
+		verify(httpRequest, times(1)).getRequestDispatcher("/js/captcha/Captcha/getSession.rmi");
+		verify(filterChain, times(0)).doFilter(httpRequest, httpResponse);
 
-		RequestContext context = getRequestContext();
-		assertEquals(new Locale("iw"), context.getLocale());
-		assertEquals("editor", context.getSecurityDomain());
-		assertEquals("/js/captcha/Captcha/getSession.rmi", context.getRequestPath());
+		verify(requestContext, times(1)).setLocale(new Locale("iw"));
+		verify(requestContext, times(1)).setSecurityDomain("editor");
+		verify(requestContext, times(1)).setRequestPath("/js/captcha/Captcha/getSession.rmi");
 	}
 
-	/** Query parameters should be passed to both forwarded and request paths. */
+	/** Query parameters should be passed to both forwarded and httpRequest paths. */
 	@Test
-	public void doFilter_QueryParameters() throws IOException, ServletException {
-		MockHttpServletRequest request = new MockHttpServletRequest("/app/iw/editor/controller/resource?id=1");
-		MockHttpServletResponse response = new MockHttpServletResponse();
-		MockFilterChain chain = new MockFilterChain();
+	public void GivenQueryParametersWithLocaleAndSecurity_WhenDoFilter_ThenPreserveQueryParameters() throws IOException, ServletException {
+		// given
+		when(httpRequest.getRequestURI()).thenReturn("/app/iw/editor/controller/resource?id=1");
+		preprocessor.init(filterConfig);
 
-		Filter filter = getFilter(Arrays.asList("en", "iw", "ro"), Arrays.asList("admin", "editor", "viewer"));
-		filter.doFilter(request, response, chain);
+		// when
+		preprocessor.doFilter(httpRequest, httpResponse, filterChain);
 
-		assertEquals("/controller/resource?id=1", request.forwardPath);
-		assertNull(chain.requestURI);
+		// then
+		verify(httpRequest, times(1)).getRequestDispatcher("/controller/resource?id=1");
+		verify(filterChain, times(0)).doFilter(httpRequest, httpResponse);
 
-		RequestContext context = getRequestContext();
-		assertEquals(new Locale("iw"), context.getLocale());
-		assertEquals("editor", context.getSecurityDomain());
-		assertEquals("/controller/resource?id=1", context.getRequestPath());
+		verify(requestContext, times(1)).setLocale(new Locale("iw"));
+		verify(requestContext, times(1)).setSecurityDomain("editor");
+		verify(requestContext, times(1)).setRequestPath("/controller/resource?id=1");
 	}
 
 	@Test
-	public void destroy() {
-		Filter filter = getFilter(null, null);
-		filter.destroy();
-	}
-
-	// --------------------------------------------------------------------------------------------
-	// UTILITY METHODS
-
-	private Filter getFilter(List<String> locales, List<String> securityDomains) {
-		Filter filter = new RequestPreprocessor();
-		Classes.setFieldValue(filter, "container", container);
-		Classes.setFieldValue(filter, "locales", locales != null ? locales : Collections.emptyList());
-		Classes.setFieldValue(filter, "securityDomains", securityDomains != null ? securityDomains : Collections.emptyList());
-		return filter;
-	}
-
-	private RequestContext getRequestContext() {
-		RequestContext context = container.getInstance(RequestContext.class);
-		Classes.setFieldValue(context, "attached", true);
-		return context;
-	}
-
-	// --------------------------------------------------------------------------------------------
-	// FIXTURE
-
-	private class MockFilterConfig extends FilterConfigStub {
-		private MockServletContext servletContext = new MockServletContext();
-		private String locale;
-		private String securityDomain;
-
-		@Override
-		public ServletContext getServletContext() {
-			return servletContext;
-		}
-
-		@Override
-		public String getInitParameter(String name) {
-			switch (name) {
-			case "locale":
-				return locale;
-
-			case "security-domain":
-				return securityDomain;
-			}
-			return null;
-		}
-	}
-
-	private class MockServletContext extends ServletContextStub {
-		private IContainer container;
-
-		@Override
-		public Object getAttribute(String name) {
-			return container;
-		}
-
-		@Override
-		public String getRealPath(String resource) {
-			return resource.substring(1);
-		}
-	}
-
-	private class MockHttpServletRequest extends HttpServletRequestStub {
-		private ServletContext context = new MockServletContext();
-		private RequestDispatcher dispatcher = new MockRequestDispatcher();
-		private String requestURI;
-		private String forwardPath;
-
-		public MockHttpServletRequest(String requestURI) {
-			super();
-			this.requestURI = requestURI;
-		}
-
-		@Override
-		public ServletContext getServletContext() {
-			return context;
-		}
-
-		@Override
-		public String getRequestURI() {
-			return requestURI;
-		}
-
-		@Override
-		public String getQueryString() {
-			return null;
-		}
-
-		@Override
-		public String getContextPath() {
-			return "/app";
-		}
-
-		@Override
-		public RequestDispatcher getRequestDispatcher(String path) {
-			forwardPath = path;
-			return dispatcher;
-		}
-	}
-
-	private static class MockHttpServletResponse extends HttpServletResponseStub {
-	}
-
-	private static class MockFilterChain implements FilterChain {
-		private String requestURI;
-
-		@Override
-		public void doFilter(ServletRequest request, ServletResponse response) throws IOException, ServletException {
-			requestURI = ((HttpServletRequest) request).getRequestURI();
-		}
-	}
-
-	private static class MockRequestDispatcher extends RequestDispatcherStub {
-		@Override
-		public void forward(ServletRequest request, ServletResponse response) throws ServletException, IOException {
-		}
+	public void Given_WhenDestroy_Then() {
+		// given
+		
+		// when
+		preprocessor.destroy();
+		
+		// then
 	}
 }

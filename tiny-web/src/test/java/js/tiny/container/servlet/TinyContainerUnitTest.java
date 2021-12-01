@@ -1,65 +1,61 @@
 package js.tiny.container.servlet;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import java.io.File;
-import java.io.IOException;
-import java.security.Principal;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.Locale;
-import java.util.Map;
 
+import javax.servlet.ServletContext;
 import javax.servlet.ServletContextEvent;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import javax.servlet.http.HttpSessionEvent;
 
+import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
 import js.lang.Config;
-import js.lang.ConfigBuilder;
 import js.lang.ConfigException;
 import js.tiny.container.cdi.CDI;
 import js.tiny.container.cdi.IInstanceCreatedListener;
-import js.tiny.container.spi.IManagedClass;
-import js.tiny.container.unit.HttpServletRequestStub;
-import js.tiny.container.unit.HttpServletResponseStub;
-import js.tiny.container.unit.HttpSessionStub;
-import js.tiny.container.unit.ServletContextStub;
-import js.util.Classes;
 import js.util.Files;
 
-@SuppressWarnings({ "unused", "rawtypes" })
 @RunWith(MockitoJUnitRunner.class)
-@Ignore
 public class TinyContainerUnitTest {
+	@Mock
+	private HttpServletResponse httpResponse;
+	@Mock
+	private ServletContextEvent servletContextEvent;
+	@Mock
+	private ServletContext servletContext;
+	@Mock
+	private HttpSession httpSession;
+	@Mock
+	private HttpSessionEvent httpSessionEvent;
 
 	@Mock
 	private RequestContext requestContext;
 
 	@Mock
-	private IManagedClass<RequestContext> requestContextManagedClass;
-	
-	@Mock
 	private CDI cdi;
 	@Mock
 	private IInstanceCreatedListener instanceListener;
-	
+
 	@Mock
 	private TinySecurity securityProvider;
 
@@ -78,187 +74,109 @@ public class TinyContainerUnitTest {
 
 	@Before
 	public void beforeTest() throws ConfigException {
-		//when(cdi.getInstance(RequestContext.class, instanceListener)).thenReturn(requestContext);
-		
+		when(servletContextEvent.getServletContext()).thenReturn(servletContext);
+		when(servletContext.getContextPath()).thenReturn("/test");
+		when(servletContext.getInitParameterNames()).thenReturn(Collections.emptyEnumeration());
+		when(servletContext.getRealPath("")).thenReturn("src/test/resources");
+
+		when(httpSessionEvent.getSession()).thenReturn(httpSession);
+
 		container = new TinyContainer(cdi, securityProvider);
-		
-		//when(requestContextManagedClass.getInterfaceClass()).thenReturn(RequestContext.class);
-		container.configure(requestContextManagedClass);
 	}
 
-	private static void assertClass(String expected, Object object) {
-		assertEquals(expected, object.getClass().getSimpleName());
-	}
-
-	@Test
-	@Ignore
-	public void config_NoPrivateDir() throws ConfigException {
-		String descriptor = "" + //
-				"<test-app>" + //
-				"</test-app>";
-		ConfigBuilder builder = new ConfigBuilder(descriptor);
-
-		new File("test-app").delete();
-		new File("fixture/tomcat/work/Applications/test-app").delete();
-
-		TinyContainer container = new TinyContainer();
-		container.configure(Collections.emptyList());
-
-		File privateDir = Classes.getFieldValue(container, "privateDir");
-		assertNotNull(privateDir);
-		assertTrue(privateDir.exists());
+	@After
+	public void afterTest() {
+		container.close();
 	}
 
 	// --------------------------------------------------------------------------------------------
 	// SERVLET CONTAINER LISTENERS
 
 	@Test
-	public void contextInitialized() {
-		class MockContainer extends TinyContainer {
-			int configProbe;
-			int startProbe;
+	public void GivenServletContextEvent_WhenContextInitialized_ThenConfigureAndStart() {
+		// given
+		TinyContainer containerSpy = spy(container);
 
-			@Override
-			public void configure(Config config) {
-				++configProbe;
-			}
+		// when
+		containerSpy.contextInitialized(servletContextEvent);
 
-			@Override
-			public void start() {
-				++startProbe;
-			}
-		}
-
-		MockServletContext servletContext = new MockServletContext();
-		ServletContextEvent contextEvent = new ServletContextEvent(servletContext);
-
-		MockContainer container = new MockContainer();
-		container.contextInitialized(contextEvent);
-
-		assertNotNull(servletContext.attributes.get(TinyContainer.ATTR_INSTANCE));
-		assertTrue(servletContext.attributes.get(TinyContainer.ATTR_INSTANCE) instanceof TinyContainer);
-		assertEquals(1, container.configProbe);
-		assertEquals(1, container.startProbe);
-	}
-
-	@Test
-	public void contextInitialized_Concurent() {
-		Thread[] threads = new Thread[10];
-		for (int i = 0; i < threads.length; ++i) {
-			threads[i] = new Thread((new Runnable() {
-				@Override
-				public void run() {
-					TinyContainer container = new TinyContainer();
-					MockServletContext servletContext = new MockServletContext();
-					ServletContextEvent contextEvent = new ServletContextEvent(servletContext);
-					container.contextInitialized(contextEvent);
-					assertNotNull(servletContext.attributes.get(TinyContainer.ATTR_INSTANCE));
-					assertTrue(servletContext.attributes.get(TinyContainer.ATTR_INSTANCE) instanceof TinyContainer);
-				}
-			}));
-		}
-
-		for (Thread thread : threads) {
-			thread.start();
-		}
-
-		for (Thread thread : threads) {
-			try {
-				thread.join(10000);
-			} catch (InterruptedException e) {
-			}
-		}
-	}
-
-	@Test
-	@Ignore
-	public void contextInitialized_ConfigException() {
-		class MockContainer extends TinyContainer {
-			@Override
-			public void configure(Config config) {
-				throw new RuntimeException("config exception");
-			}
-		}
-
-		MockServletContext servletContext = new MockServletContext();
-		ServletContextEvent contextEvent = new ServletContextEvent(servletContext);
-
-		MockContainer container = new MockContainer();
-		container.contextInitialized(contextEvent);
-		assertNull(servletContext.attributes.get(TinyContainer.ATTR_INSTANCE));
+		// then
+		verify(servletContext, times(1)).setAttribute(TinyContainer.ATTR_INSTANCE, containerSpy);
+		verify(containerSpy, times(1)).configure(any(Config.class));
+		verify(containerSpy, times(1)).start();
 	}
 
 	@Test(expected = RuntimeException.class)
-	public void contextInitialized_Throwable() {
-		class MockContainer extends TinyContainer {
-			@Override
-			public void start() {
-				throw new RuntimeException("runtime exception");
-			}
-		}
+	public void GivenConfigureException_WhenContextInitialized_ThenException() {
+		// given
+		TinyContainer containerSpy = spy(container);
+		doThrow(RuntimeException.class).when(containerSpy).configure(any(Config.class));
 
-		MockServletContext servletContext = new MockServletContext();
-		ServletContextEvent contextEvent = new ServletContextEvent(servletContext);
+		// when
+		containerSpy.contextInitialized(servletContextEvent);
 
-		MockContainer container = new MockContainer();
-		container.contextInitialized(contextEvent);
-		assertNull(servletContext.attributes.get(TinyContainer.ATTR_INSTANCE));
+		// then
+	}
+
+	@Test(expected = RuntimeException.class)
+	public void GivenStartException_WhenContextInitialized_ThenException() {
+		// given
+		TinyContainer containerSpy = spy(container);
+		doThrow(RuntimeException.class).when(containerSpy).start();
+
+		// when
+		containerSpy.contextInitialized(servletContextEvent);
+
+		// then
 	}
 
 	@Test
-	public void contextDestroyed() {
-		class MockContainer extends TinyContainer {
-			int destroyProbe;
+	public void GivenServletContextEvent_WhenContextDestroyed_ThenClose() {
+		// given
+		TinyContainer containerSpy = spy(container);
 
-			@Override
-			public void close() {
-				++destroyProbe;
-			}
-		}
+		// when
+		containerSpy.contextDestroyed(servletContextEvent);
 
-		MockServletContext servletContext = new MockServletContext();
-		ServletContextEvent contextEvent = new ServletContextEvent(servletContext);
-
-		MockContainer container = new MockContainer();
-		container.contextDestroyed(contextEvent);
-		assertEquals(1, container.destroyProbe);
+		// then
+		verify(containerSpy, times(1)).close();
 	}
 
 	@Test
-	public void contextDestroyed_Throwable() {
-		class MockContainer extends TinyContainer {
-			@Override
-			public void close() {
-				throw new RuntimeException("runtime exception");
-			}
-		}
+	public void GivenCloseException_WhenContextDestroyed_ThenDumpExceptionToLogger() {
+		// given
+		TinyContainer containerSpy = spy(container);
+		doThrow(RuntimeException.class).when(containerSpy).close();
 
-		MockServletContext servletContext = new MockServletContext();
-		ServletContextEvent contextEvent = new ServletContextEvent(servletContext);
+		// when
+		containerSpy.contextDestroyed(servletContextEvent);
 
-		MockContainer container = new MockContainer();
-		container.contextDestroyed(contextEvent);
-		// no assertion to test on exception beside context destroyed not throwing it
+		// then
+		verify(containerSpy, times(1)).close();
 	}
 
 	@Test
-	public void sessionCreated() {
-		MockHttpSession session = new MockHttpSession();
-		HttpSessionEvent sessionEvent = new HttpSessionEvent(session);
+	public void GivenHttpSessionEvent_WhneSessionCreated_ThenLogSessionId() {
+		// given
 
-		TinyContainer container = new TinyContainer();
-		container.sessionCreated(sessionEvent);
-		assertEquals(1, session.getIdProbe);
+		// when
+		container.sessionCreated(httpSessionEvent);
+
+		// then
+		verify(httpSessionEvent, times(1)).getSession();
+		verify(httpSession, times(1)).getId();
 	}
 
 	@Test
-	public void sessionDestroyed() {
-		MockHttpSession session = new MockHttpSession();
-		HttpSessionEvent sessionEvent = new HttpSessionEvent(session);
+	public void GivenHttpSessionEvent_WhneSessionDestroyed_ThenLogSessionId() {
+		// given
 
-		TinyContainer container = new TinyContainer();
-		container.sessionDestroyed(sessionEvent);
-		assertEquals(1, session.getIdProbe);
+		// when
+		container.sessionDestroyed(httpSessionEvent);
+
+		// then
+		verify(httpSessionEvent, times(1)).getSession();
+		verify(httpSession, times(1)).getId();
 	}
 
 	// --------------------------------------------------------------------------------------------
@@ -266,258 +184,57 @@ public class TinyContainerUnitTest {
 
 	@Test
 	public void getContextName() throws ConfigException {
-		TinyContainer container = getContainer();
 		assertEquals("test-app", container.getAppName());
 	}
 
 	@Test
-	public void getAppFile() throws ConfigException {
-		TinyContainer container = getContainer();
-		assertTrue(Files.path2unix(container.getAppFile("file").getPath()).endsWith("test-app/file"));
+	public void Given_WhenGetAppFile_Then() throws ConfigException {
+		// given
+
+		// when
+		File file = container.getAppFile("file");
+
+		// then
+		assertTrue(Files.path2unix(file.getPath()).endsWith("file"));
 	}
 
 	@Test
-	public void getProperty() throws ConfigException {
-		TinyContainer container = new TinyContainer();
-		container.contextInitialized(new ServletContextEvent(new MockServletContext()));
-		assertEquals("/server/base/dir", container.getProperty("server.base.dir", String.class));
+	public void GivenInitParameter_WhenGetProperty_ThenValue() throws ConfigException {
+		// given
+		when(servletContext.getInitParameterNames()).thenReturn(Collections.enumeration(Arrays.asList("server.base.dir")));
+		when(servletContext.getInitParameter("server.base.dir")).thenReturn("/server/base/dir");
+		container.contextInitialized(servletContextEvent);
+
+		// when
+		String value = container.getProperty("server.base.dir", String.class);
+
+		// then
+		assertEquals("/server/base/dir", value);
+	}
+
+	@Test
+	public void GivenInitParameter_WhenGetTypedProperty_ThenValue() throws ConfigException {
+		// given
+		when(servletContext.getInitParameterNames()).thenReturn(Collections.enumeration(Arrays.asList("server.base.dir")));
+		when(servletContext.getInitParameter("server.base.dir")).thenReturn("/server/base/dir");
+		container.contextInitialized(servletContextEvent);
+
+		// when
+		File file = container.getProperty("server.base.dir", File.class);
+
+		// then
+		assertEquals(new File("/server/base/dir"), file);
 	}
 
 	@Test
 	public void getProperty_NotDefined() throws ConfigException {
-		TinyContainer container = new TinyContainer();
-		container.contextInitialized(new ServletContextEvent(new MockServletContext()));
+		container.contextInitialized(servletContextEvent);
 		assertNull(container.getProperty("not.defined", String.class));
 	}
 
 	@Test
-	public void getTypeProperty() throws ConfigException {
-		TinyContainer container = new TinyContainer();
-		container.contextInitialized(new ServletContextEvent(new MockServletContext()));
-		assertEquals(new File("/server/base/dir"), container.getProperty("server.base.dir", File.class));
-	}
-
-	@Test
 	public void getTypeProperty_NotDefined() throws ConfigException {
-		TinyContainer container = new TinyContainer();
-		container.contextInitialized(new ServletContextEvent(new MockServletContext()));
+		container.contextInitialized(servletContextEvent);
 		assertNull(container.getProperty("not.defined", File.class));
-	}
-
-	// --------------------------------------------------------------------------------------------
-	// UTILITY METHODS
-
-	private static TinyContainer getContainer() throws ConfigException {
-		return getContainer("");
-	}
-
-	private static TinyContainer getContainer(String descriptor) throws ConfigException {
-		String config = "<?xml version='1.0' ?>" + //
-				"<test-app>" + //
-				"   <managed-classes>" + //
-				descriptor + //
-				"   </managed-classes>" + //
-				"</test-app>";
-		ConfigBuilder builder = new ConfigBuilder(config);
-		TinyContainer container = new TinyContainer();
-		container.configure(builder.build());
-		return container;
-	}
-
-	// --------------------------------------------------------------------------------------------
-	// FIXTURE
-
-	private static class MockServletContext extends ServletContextStub {
-		private Map<String, Object> attributes = new HashMap<>();
-
-		@Override
-		public String getContextPath() {
-			return "/test-app";
-		}
-
-		@Override
-		public String getRealPath(String resource) {
-			return new File(new File("fixture/tomcat/webapps/test-app/"), resource).getPath();
-		}
-
-		@Override
-		public Enumeration getInitParameterNames() {
-			return Collections.enumeration(Arrays.asList("server.base.dir"));
-		}
-
-		@Override
-		public String getInitParameter(String name) {
-			return "/server/base/dir";
-		}
-
-		@Override
-		public void setAttribute(String name, Object value) {
-			attributes.put(name, value);
-		}
-	}
-
-	private static class MockRequestContext extends RequestContext {
-		private MockHttpServletRequest request = new MockHttpServletRequest();
-		private MockHttpServletResponse response = new MockHttpServletResponse();
-
-		public MockRequestContext(ITinyContainer container) {
-			super(container);
-		}
-
-		@Override
-		public Locale getLocale() {
-			return Locale.ENGLISH;
-		}
-
-		@Override
-		public String getRemoteHost() {
-			return "1.2.3.4";
-		}
-
-		@Override
-		public HttpServletRequest getRequest() {
-			return request;
-		}
-
-		@Override
-		public HttpServletResponse getResponse() {
-			return response;
-		}
-	}
-
-	private static class MockHttpServletRequest extends HttpServletRequestStub {
-		private MockHttpSession session = new MockHttpSession();
-
-		private boolean exception;
-
-		private int loginProbe;
-		private String loginUsername;
-		private String loginPassword;
-
-		private int logoutProbe;
-
-		private int getSessionProbe;
-
-		@Override
-		public void login(String username, String password) throws ServletException {
-			if (exception) {
-				throw new ServletException();
-			}
-			++loginProbe;
-			loginUsername = username;
-			loginPassword = password;
-		}
-
-		@Override
-		public boolean authenticate(HttpServletResponse response) throws IOException, ServletException {
-			return true;
-		}
-
-		@Override
-		public void logout() throws ServletException {
-			if (exception) {
-				throw new ServletException();
-			}
-			++logoutProbe;
-		}
-
-		@Override
-		public HttpSession getSession(boolean create) {
-			++getSessionProbe;
-			return session;
-		}
-
-		@Override
-		public HttpSession getSession() {
-			++getSessionProbe;
-			return session;
-		}
-
-		@Override
-		public Principal getUserPrincipal() {
-			if (loginUsername != null && loginPassword != null) {
-				return new Principal() {
-					@Override
-					public String getName() {
-						return loginUsername;
-					}
-				};
-			}
-			return null;
-		}
-	}
-
-	private static class MockHttpServletResponse extends HttpServletResponseStub {
-	}
-
-	private static class MockHttpSession extends HttpSessionStub {
-		private boolean exception;
-		private Map<String, Object> attributes = new HashMap<>();
-
-		private int setAttributeProbe;
-		private int removeAttributeProbe;
-
-		private int setMaxInactiveIntervalProbe;
-		private int maxInactiveInterval;
-
-		private int invalidateProbe;
-
-		private int getIdProbe;
-
-		@Override
-		public void setAttribute(String name, Object value) {
-			if (exception) {
-				throw new IllegalStateException("exception");
-			}
-			++setAttributeProbe;
-			attributes.put(name, value);
-		}
-
-		@Override
-		public Object getAttribute(String name) {
-			if (exception) {
-				throw new IllegalStateException("exception");
-			}
-			return attributes.get(name);
-		}
-
-		@Override
-		public void removeAttribute(String name) {
-			++removeAttributeProbe;
-			attributes.remove(name);
-		}
-
-		@Override
-		public void setMaxInactiveInterval(int maxInactiveInterval) {
-			++setMaxInactiveIntervalProbe;
-			this.maxInactiveInterval = maxInactiveInterval;
-		}
-
-		@Override
-		public void invalidate() {
-			if (exception) {
-				throw new IllegalStateException("exception");
-			}
-			++invalidateProbe;
-		}
-
-		@Override
-		public String getId() {
-			++getIdProbe;
-			return "session";
-		}
-	}
-
-	// --------------------------------------------------------------------------------------------
-
-	private static interface Pojo {
-		String getString();
-	}
-
-	private static class PojoImpl implements Pojo {
-		@Override
-		public String getString() {
-			return "string";
-		}
 	}
 }

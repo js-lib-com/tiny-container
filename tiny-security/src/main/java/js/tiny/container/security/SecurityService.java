@@ -44,6 +44,12 @@ public class SecurityService implements IMethodInvocationProcessor {
 		if (managedMethod.scanAnnotation(PermitAll.class) != null) {
 			return false;
 		}
+		if (managedMethod.scanAnnotation(DenyAll.class) != null) {
+			return true;
+		}
+		if (managedMethod.scanAnnotation(RolesAllowed.class) != null) {
+			return true;
+		}
 		if (managedMethod.getDeclaringClass().scanAnnotation(PermitAll.class) != null) {
 			return false;
 		}

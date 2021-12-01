@@ -3,7 +3,6 @@ package js.tiny.container.mvc;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.io.File;
@@ -14,7 +13,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
@@ -25,7 +23,6 @@ import js.lang.ConfigBuilder;
 import js.lang.ConfigException;
 import js.tiny.container.servlet.RequestContext;
 import js.tiny.container.spi.IContainer;
-import js.tiny.container.unit.TestContext;
 import js.util.Classes;
 import js.util.Strings;
 
@@ -33,14 +30,14 @@ import js.util.Strings;
 @RunWith(MockitoJUnitRunner.class)
 public class ViewManagerUnitTest {
 	@Mock
+	private HttpServletRequest request;
+	@Mock
+	private HttpServletResponse response;
+
+	@Mock
 	private IContainer container;
 	@Mock
 	private RequestContext requestContext;
-
-	@BeforeClass
-	public static void beforeClass() {
-		System.setProperty("catalina.base", "fixture/server/tomcat");
-	}
 
 	@Before
 	public void beforeTest() {
@@ -49,8 +46,6 @@ public class ViewManagerUnitTest {
 
 	@Test
 	public void testViewMeta() throws Exception {
-		TestContext.start();
-
 		File file = new File("fixture/tomcat/webapps/app/about.htm");
 		Class implementation = XspView.class;
 		Properties properties = new Properties();
@@ -94,16 +89,7 @@ public class ViewManagerUnitTest {
 
 	@Test
 	public void getView() throws Exception {
-		HttpServletRequest request = mock(HttpServletRequest.class);
-		HttpServletResponse response = mock(HttpServletResponse.class);
-
-		when(request.getRequestURI()).thenReturn("/test-app/page.htm");
-		when(request.getContextPath()).thenReturn("/test-app");
-		when(request.getLocale()).thenReturn(Locale.US);
-
-		IContainer factory = TestContext.start();
-		RequestContext context = factory.getInstance(RequestContext.class);
-		context.attach(request, response);
+		requestContext.attach(request, response);
 
 		String config = "" + //
 				"<views>" + //
@@ -120,12 +106,7 @@ public class ViewManagerUnitTest {
 
 	@Test(expected = BugError.class)
 	public void getView_BadName() throws Exception {
-		HttpServletRequest request = mock(HttpServletRequest.class);
-		HttpServletResponse response = mock(HttpServletResponse.class);
-
-		IContainer factory = TestContext.start();
-		RequestContext context = factory.getInstance(RequestContext.class);
-		context.attach(request, response);
+		requestContext.attach(request, response);
 
 		String config = "" + //
 				"<views>" + //

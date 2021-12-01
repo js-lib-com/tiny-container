@@ -36,13 +36,11 @@ public class CaptchaTest {
 	private static final String CHALLENGE = "js.tiny.container.mvc.captcha.Challenge";
 
 	@Mock
-	private IContainer context;
-
+	private IContainer container;
 	@Mock
-	private RequestContext request;
-
+	private RequestContext requestContext;
 	@Mock
-	private HttpSession session;
+	private HttpSession httpSession;
 
 	/** Config method should initialize captcha manager state from configuration object. */
 	@Test
@@ -91,11 +89,11 @@ public class CaptchaTest {
 	/** CAPTCHA challenge getter should create a new challenge and store on HTTP session challenges store. */
 	@Test
 	public void captcha_getChallenge() throws Exception {
-		when(context.getInstance(RequestContext.class)).thenReturn(request);
-		when(request.getSession(true)).thenReturn(session);
-		when(session.getAttribute("challenges-key")).thenReturn(new HashMap<Integer, Challenge>());
+		when(container.getInstance(RequestContext.class)).thenReturn(requestContext);
+		when(requestContext.getSession(true)).thenReturn(httpSession);
+		when(httpSession.getAttribute("challenges-key")).thenReturn(new HashMap<Integer, Challenge>());
 
-		Object captcha = config(new File("src/test/resources/captcha"), 5, context);
+		Object captcha = config(new File("src/test/resources/captcha"), 5, container);
 		Object challenge = Classes.invoke(captcha, "getChallenge", 0);
 		assertNotNull(challenge);
 
@@ -116,11 +114,11 @@ public class CaptchaTest {
 	 */
 	@Test
 	public void captcha_getImage() throws Exception {
-		when(context.getInstance(RequestContext.class)).thenReturn(request);
-		when(request.getSession(true)).thenReturn(session);
-		when(session.getAttribute("challenges-key")).thenReturn(new HashMap<Integer, Challenge>());
+		when(container.getInstance(RequestContext.class)).thenReturn(requestContext);
+		when(requestContext.getSession(true)).thenReturn(httpSession);
+		when(httpSession.getAttribute("challenges-key")).thenReturn(new HashMap<Integer, Challenge>());
 
-		Object captcha = config(new File("src/test/resources/captcha"), 5, context);
+		Object captcha = config(new File("src/test/resources/captcha"), 5, container);
 		Object challenge = Classes.invoke(captcha, "getChallenge", 0);
 		assertNotNull(challenge);
 
@@ -134,11 +132,11 @@ public class CaptchaTest {
 	/** Get challenge image test with a large number of CAPTCHA instances. */
 	@Test
 	public void captcha_getImage_MultipleCaptchaInstances() throws Exception {
-		when(context.getInstance(RequestContext.class)).thenReturn(request);
-		when(request.getSession(true)).thenReturn(session);
-		when(session.getAttribute("challenges-key")).thenReturn(new HashMap<Integer, Challenge>());
+		when(container.getInstance(RequestContext.class)).thenReturn(requestContext);
+		when(requestContext.getSession(true)).thenReturn(httpSession);
+		when(httpSession.getAttribute("challenges-key")).thenReturn(new HashMap<Integer, Challenge>());
 
-		Object captcha = config(new File("src/test/resources/captcha"), 5, context);
+		Object captcha = config(new File("src/test/resources/captcha"), 5, container);
 
 		List<String> tokens = new ArrayList<>();
 		for (int i = 0; i < 100; ++i) {
@@ -160,19 +158,19 @@ public class CaptchaTest {
 	/** Missing challenge from session is considered resource not found. */
 	@Test(expected = NoSuchResourceException.class)
 	public void captcha_getImage_NoChallenge() throws Exception {
-		when(context.getInstance(RequestContext.class)).thenReturn(request);
-		when(request.getSession(true)).thenReturn(session);
+		when(container.getInstance(RequestContext.class)).thenReturn(requestContext);
+		when(requestContext.getSession(true)).thenReturn(httpSession);
 
-		Object captcha = config(new File("src/test/resources/captcha"), 5, context);
+		Object captcha = config(new File("src/test/resources/captcha"), 5, container);
 		Classes.invoke(captcha, "getImage", Strings.UUID());
 	}
 
 	@Test(expected = NoSuchResourceException.class)
 	public void captcha_getImage_BadToken() throws Exception {
-		when(context.getInstance(RequestContext.class)).thenReturn(request);
-		when(request.getSession(true)).thenReturn(session);
+		when(container.getInstance(RequestContext.class)).thenReturn(requestContext);
+		when(requestContext.getSession(true)).thenReturn(httpSession);
 
-		Object captcha = config(new File("src/test/resources/captcha"), 1, context);
+		Object captcha = config(new File("src/test/resources/captcha"), 1, container);
 		// getChallenge(int) should be called in order to generate challenge internal images set
 		Classes.invoke(captcha, "getChallenge", 0);
 		Classes.invoke(captcha, "getImage", Strings.UUID());
@@ -182,11 +180,11 @@ public class CaptchaTest {
 	public void captcha_verifyResponse() throws Exception {
 		int instanceIndex = 0;
 
-		when(context.getInstance(RequestContext.class)).thenReturn(request);
-		when(request.getSession(true)).thenReturn(session);
-		when(session.getAttribute("challenges-key")).thenReturn(new HashMap<Integer, Challenge>());
+		when(container.getInstance(RequestContext.class)).thenReturn(requestContext);
+		when(requestContext.getSession(true)).thenReturn(httpSession);
+		when(httpSession.getAttribute("challenges-key")).thenReturn(new HashMap<Integer, Challenge>());
 
-		Object captcha = config(new File("src/test/resources/captcha"), 5, context);
+		Object captcha = config(new File("src/test/resources/captcha"), 5, container);
 		Object challenge = Classes.invoke(captcha, "getChallenge", instanceIndex);
 		assertNotNull(challenge);
 
@@ -206,11 +204,11 @@ public class CaptchaTest {
 
 	@Test
 	public void captcha_verifyResponse_MultipleCaptchaInstances() throws Exception {
-		when(context.getInstance(RequestContext.class)).thenReturn(request);
-		when(request.getSession(true)).thenReturn(session);
-		when(session.getAttribute("challenges-key")).thenReturn(new HashMap<Integer, Challenge>());
+		when(container.getInstance(RequestContext.class)).thenReturn(requestContext);
+		when(requestContext.getSession(true)).thenReturn(httpSession);
+		when(httpSession.getAttribute("challenges-key")).thenReturn(new HashMap<Integer, Challenge>());
 
-		Object captcha = config(new File("src/test/resources/captcha"), 5, context);
+		Object captcha = config(new File("src/test/resources/captcha"), 5, container);
 
 		for (int i = 0; i < 100; ++i) {
 			Object challenge = Classes.invoke(captcha, "getChallenge", i);
@@ -234,10 +232,10 @@ public class CaptchaTest {
 	/** Invoking challenge response verify with no challenge on session should rise illegal state. */
 	@Test(expected = IllegalStateException.class)
 	public void captcha_verifyResponse_NoChallenge() throws Exception {
-		when(context.getInstance(RequestContext.class)).thenReturn(request);
-		when(request.getSession(true)).thenReturn(session);
+		when(container.getInstance(RequestContext.class)).thenReturn(requestContext);
+		when(requestContext.getSession(true)).thenReturn(httpSession);
 
-		Object captcha = config(new File("src/test/resources/captcha"), 5, context);
+		Object captcha = config(new File("src/test/resources/captcha"), 5, container);
 		Classes.invoke(captcha, "verifyResponse", 0, Strings.UUID());
 	}
 

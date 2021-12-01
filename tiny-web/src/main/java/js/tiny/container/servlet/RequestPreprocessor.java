@@ -36,8 +36,8 @@ import js.util.Strings;
  * </pre>
  * 
  * Note that servlet container security is enacted before this filter execution and deployment descriptor should consider locale
- * when mapping <code>web-resource-collection</code> from <code>security-constrain</code>. See routing details on <a
- * href="/container/overview-summary.html#request-routing">Request Routing</a> from Tiny Container Overview.
+ * when mapping <code>web-resource-collection</code> from <code>security-constrain</code>. See routing details on
+ * <a href="/container/overview-summary.html#request-routing">Request Routing</a> from Tiny Container Overview.
  * <p>
  * Current request pre-processor version has two filter parameters: <code>locale</code> and <code>security-domain</code>. Both
  * are comma separated lists. As stated <code>locale</code> item should be two letter language code and
@@ -93,7 +93,9 @@ public class RequestPreprocessor implements Filter {
 	/** Application tiny container, service provider interface. */
 	private IContainer container;
 
-	/** Locale list loaded from <code>locale</code> filter parameter, default to empty list if filter parameter is not declared. */
+	/**
+	 * Locale list loaded from <code>locale</code> filter parameter, default to empty list if filter parameter is not declared.
+	 */
 	private List<String> locales = Collections.emptyList();
 
 	/**
@@ -221,7 +223,7 @@ public class RequestPreprocessor implements Filter {
 	 * @param pathComponent path component that is compared with first path component from request path.
 	 * @return true if request path starts with path component.
 	 */
-	private static boolean startsWith(String requestPath, String pathComponent) {
+	static boolean startsWith(String requestPath, String pathComponent) {
 		if (requestPath.charAt(0) != '/') {
 			return false;
 		}
@@ -238,5 +240,15 @@ public class RequestPreprocessor implements Filter {
 			}
 		}
 		return false;
+	}
+
+	// --------------------------------------------------------------------------------------------
+
+	List<String> locales() {
+		return locales;
+	}
+
+	List<String> securityDomains() {
+		return securityDomains;
 	}
 }

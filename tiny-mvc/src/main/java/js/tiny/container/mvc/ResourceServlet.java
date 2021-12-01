@@ -133,15 +133,14 @@ public class ResourceServlet extends AppServlet {
 			argumentsReader = argumentsReaderFactory.getArgumentsReader(httpRequest, formalParameters);
 			Object[] arguments = argumentsReader.read(httpRequest, formalParameters);
 
-			Object controller = method.getDeclaringClass().getInstance();
-			resource = method.invoke(controller, arguments);
+			resource = method.invoke(method.getDeclaringClass().getInstance(), arguments);
 			if (resource == null) {
 				throw new BugError("Null resource for request |%s| returned by method |%s|.", httpRequest.getRequestURI(), method);
 			}
 
 			ResponseContentType responseContentType = method.scanAnnotation(ResponseContentType.class);
 			if (responseContentType != null) {
-				httpResponse.setContentType(responseContentType.value());
+				resource.setContentType(responseContentType.value());
 			}
 		} catch (AuthorizationException e) {
 			// at this point, resource is private and need to redirect to a login page

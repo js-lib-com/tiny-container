@@ -4,23 +4,40 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.when;
 
-import java.lang.reflect.Type;
 import java.util.regex.Pattern;
 
+import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.Mock;
+import org.mockito.junit.MockitoJUnitRunner;
 
-import js.tiny.container.core.Container;
 import js.tiny.container.http.Resource;
 import js.tiny.container.net.HttpRmiServlet;
 import js.tiny.container.spi.IContainer;
 import js.tiny.container.spi.IManagedClass;
 import js.tiny.container.spi.IManagedMethod;
-import js.tiny.container.stub.ManagedClassSpiStub;
-import js.tiny.container.stub.ManagedMethodSpiStub;
 import js.util.Classes;
 
+@RunWith(MockitoJUnitRunner.class)
 public class HttpRmiServletUnitTest {
+	@Mock
+	private IContainer container; 
+	@Mock
+	private IManagedClass<?> managedClass;
+	@Mock
+	private IManagedMethod managedMethod;
+	
+	@Before
+	public void beforeTest() {
+		doReturn(managedClass).when(container).getManagedClass(any());
+		when(managedClass.getManagedMethod(any())).thenReturn(managedMethod);
+	}
+	
 	@Test
 	public void constructor() {
 		HttpRmiServlet servlet = new HttpRmiServlet();
@@ -60,42 +77,36 @@ public class HttpRmiServletUnitTest {
 
 	@Test
 	public void getManagedClass() throws Exception {
-		MockContainer container = new MockContainer();
 		IManagedClass<?> managedClass = getManagedClass(container, "java.lang.Object", "/java/lang/Object/toString");
-		assertTrue(managedClass instanceof MockManagedClass);
+		assertTrue(managedClass instanceof IManagedClass);
 	}
 
 	@Test(expected = ClassNotFoundException.class)
 	public void getManagedClass_NoInterfaceClass() throws Exception {
-		MockContainer container = new MockContainer();
 		getManagedClass(container, "fake.interface.Class", "/java/lang/Object/toString");
 	}
 
 	@Test(expected = ClassNotFoundException.class)
 	public void getManagedClass_NoManagedClass() throws Exception {
-		MockContainer container = new MockContainer();
-		container.managedClass = null;
+		when(container.getManagedClass(any())).thenReturn(null);
 		getManagedClass(container, "java.lang.Object", "/java/lang/Object/toString");
 	}
 
 	@Test
 	public void getManagedMethod() throws Exception {
-		MockManagedClass<?> managedClass = new MockManagedClass<>();
 		IManagedMethod managedMethod = getManagedMethod(managedClass, "toString", "/java/lang/Object/toString");
-		assertTrue(managedMethod instanceof MockManagedMethod);
+		assertTrue(managedMethod instanceof IManagedMethod);
 	}
 
 	@Test(expected = NoSuchMethodException.class)
 	public void getManagedMethod_NoManagedMethod() throws Exception {
-		MockManagedClass<?> managedClass = new MockManagedClass<>();
-		managedClass.managedMethod = null;
+		when(managedClass.getManagedMethod(any())).thenThrow(NoSuchMethodException.class);
 		getManagedMethod(managedClass, "toString", "/java/lang/Object/toString");
 	}
 
 	@Test(expected = NoSuchMethodException.class)
 	public void getManagedMethod_IsResource() throws Exception {
-		MockManagedClass<?> managedClass = new MockManagedClass<>();
-		managedClass.managedMethod.returnType = Resource.class;
+		when(managedMethod.getReturnType()).thenReturn(Resource.class);
 		getManagedMethod(managedClass, "toString", "/java/lang/Object/toString");
 	}
 	
@@ -112,42 +123,5 @@ public class HttpRmiServletUnitTest {
 
 	private static IManagedMethod getManagedMethod(IManagedClass<?> managedClass, String methodName, String requestURI) throws Exception {
 		return Classes.invoke(HttpRmiServlet.class, "getManagedMethod", managedClass, methodName, requestURI);
-	}
-
-	// --------------------------------------------------------------------------------------------
-	// FIXTURE
-
-	private static class MockContainer extends Container {
-		private MockManagedClass<?> managedClass = new MockManagedClass<>();
-
-		@SuppressWarnings("unchecked")
-		@Override
-		public <T> IManagedClass<T> getManagedClass(Class<T> interfaceClass) {
-			return (IManagedClass<T>) managedClass;
-		}
-	}
-
-	private static class MockManagedClass<T> extends ManagedClassSpiStub<T> {
-		private MockManagedMethod managedMethod = new MockManagedMethod();
-
-		@SuppressWarnings("unchecked")
-		@Override
-		public Class<T> getInterfaceClass() {
-			return (Class<T>) Object.class;
-		}
-
-		@Override
-		public IManagedMethod getManagedMethod(String methodName) {
-			return managedMethod;
-		}
-	}
-
-	private static class MockManagedMethod extends ManagedMethodSpiStub {
-		private Type returnType = void.class;
-
-		@Override
-		public Type getReturnType() {
-			return returnType;
-		}
 	}
 }

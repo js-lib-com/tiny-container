@@ -4,36 +4,40 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.mockito.Mockito.when;
 
-import java.util.Arrays;
 import java.util.Collections;
-import java.util.Enumeration;
 import java.util.Locale;
 
-import javax.servlet.http.Cookie;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.Mock;
+import org.mockito.junit.MockitoJUnitRunner;
 
 import js.lang.BugError;
-import js.tiny.container.stub.TinyContainerStub;
-import js.tiny.container.unit.HttpServletRequestStub;
-import js.tiny.container.unit.HttpServletResponseStub;
-import js.tiny.container.unit.HttpSessionStub;
 import js.util.Classes;
 
-@SuppressWarnings({ "rawtypes" })
+@RunWith(MockitoJUnitRunner.class)
 public class RequestContextUnitTest {
-	private MockContainer container;
-	private MockHttpServletRequest httpRequest;
-	private MockHttpServletResponse httpResponse;
+	@Mock
+	private HttpServletRequest httpRequest;
+	@Mock
+	private HttpServletResponse httpResponse;
+	@Mock
+	private HttpSession httpSession;
+
+	@Mock
+	private ITinyContainer container;
 
 	@Before
 	public void beforeTest() {
-		container = new MockContainer();
-		httpRequest = new MockHttpServletRequest();
-		httpResponse = new MockHttpServletResponse();
+		when(httpRequest.getRequestURI()).thenReturn("/test-app/index.htm");
+		when(httpRequest.getContextPath()).thenReturn("/test-app");
 	}
 
 	@Test
@@ -53,8 +57,11 @@ public class RequestContextUnitTest {
 
 	@Test
 	public void locale_LoadFromHttpRequest() {
+		when(httpRequest.getLocale()).thenReturn(Locale.UK);
+
 		RequestContext context = new RequestContext(container);
 		context.attach(httpRequest, httpResponse);
+
 		assertEquals(Locale.UK, context.getLocale());
 	}
 
@@ -99,29 +106,41 @@ public class RequestContextUnitTest {
 
 	@Test
 	public void localName() {
+		when(httpRequest.getLocalName()).thenReturn("localhost");
+
 		RequestContext context = new RequestContext(container);
 		context.attach(httpRequest, httpResponse);
+
 		assertEquals("localhost", context.getLocalName());
 	}
 
 	@Test
 	public void localPort() {
+		when(httpRequest.getLocalPort()).thenReturn(80);
+
 		RequestContext context = new RequestContext(container);
 		context.attach(httpRequest, httpResponse);
+
 		assertEquals(80, context.getLocalPort());
 	}
 
 	@Test
 	public void remoteAddr() {
+		when(httpRequest.getRemoteHost()).thenReturn("server.com");
+
 		RequestContext context = new RequestContext(container);
 		context.attach(httpRequest, httpResponse);
+
 		assertEquals("server.com", context.getRemoteHost());
 	}
 
 	@Test
 	public void remotePort() {
+		when(httpRequest.getRemotePort()).thenReturn(1964);
+
 		RequestContext context = new RequestContext(container);
 		context.attach(httpRequest, httpResponse);
+
 		assertEquals(1964, context.getRemotePort());
 	}
 
@@ -141,11 +160,15 @@ public class RequestContextUnitTest {
 
 	@Test
 	public void session() {
+		when(httpRequest.getSession()).thenReturn(httpSession);
+		when(httpRequest.getSession(true)).thenReturn(httpSession);
+
 		RequestContext context = new RequestContext(container);
 		context.attach(httpRequest, httpResponse);
-		assertEquals(MockHttpSession.class, context.getSession().getClass());
+
+		assertEquals(httpSession, context.getSession());
 		assertNull(context.getSession(false));
-		assertEquals(MockHttpSession.class, context.getSession(true).getClass());
+		assertEquals(httpSession, context.getSession(true));
 	}
 
 	@Test
@@ -167,6 +190,8 @@ public class RequestContextUnitTest {
 
 	@Test
 	public void dump() {
+		when(httpRequest.getHeaderNames()).thenReturn(Collections.emptyEnumeration());
+
 		RequestContext context = new RequestContext(container);
 		context.attach(httpRequest, httpResponse);
 		context.dump();
@@ -251,95 +276,5 @@ public class RequestContextUnitTest {
 	public void dump_Detached() {
 		RequestContext context = new RequestContext(container);
 		context.dump();
-	}
-
-	// --------------------------------------------------------------------------------------------
-	// FIXTURE
-
-	class MockContainer extends TinyContainerStub {
-
-	}
-
-	class MockHttpServletRequest extends HttpServletRequestStub {
-		private String requestURI = "/test-app/index.htm";
-		private String contextPath = "/test-app";
-
-		@Override
-		public String getMethod() {
-			return "GET";
-		}
-
-		@Override
-		public String getRequestURI() {
-			return requestURI;
-		}
-
-		@Override
-		public String getContextPath() {
-			return contextPath;
-		}
-
-		@Override
-		public String getQueryString() {
-			return null;
-		}
-
-		@Override
-		public Enumeration getHeaderNames() {
-			return Collections.enumeration(Arrays.asList("Host"));
-		}
-
-		@Override
-		public String getHeader(String name) {
-			return "server.com";
-		}
-
-		@Override
-		public Locale getLocale() {
-			return Locale.UK;
-		}
-
-		@Override
-		public Cookie[] getCookies() {
-			return new Cookie[0];
-		}
-
-		@Override
-		public String getLocalName() {
-			return "localhost";
-		}
-
-		@Override
-		public int getLocalPort() {
-			return 80;
-		}
-
-		@Override
-		public int getRemotePort() {
-			return 1964;
-		}
-
-		@Override
-		public String getRemoteHost() {
-			return "server.com";
-		}
-
-		@Override
-		public HttpSession getSession() {
-			return new MockHttpSession();
-		}
-
-		@Override
-		public HttpSession getSession(boolean create) {
-			return create ? new MockHttpSession() : null;
-		}
-	}
-
-	class MockHttpServletResponse extends HttpServletResponseStub {
-
-	}
-
-	class MockHttpSession extends HttpSessionStub {
-
 	}
 }
