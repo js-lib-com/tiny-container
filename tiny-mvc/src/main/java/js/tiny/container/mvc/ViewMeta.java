@@ -12,7 +12,6 @@ import js.util.Strings;
  * path and view specific properties.
  * 
  * @author Iulian Rotaru
- * @version final
  */
 public final class ViewMeta {
 	/**

@@ -37,10 +37,8 @@ import js.util.Types;
  * </pre>
  * 
  * @author Iulian Rotaru
- * @version final
  */
 public final class ViewManagerImpl implements ViewManager {
-	/** Class logger. */
 	private static final Log log = LogFactory.getLog(ViewManager.class);
 
 	/** Default view implementation is {@link XspView}. */

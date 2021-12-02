@@ -3,6 +3,8 @@ package js.tiny.container.mvc;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
+import java.io.IOException;
+
 import javax.servlet.http.HttpServletResponse;
 
 import org.junit.Test;
@@ -11,40 +13,61 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
-public class RedirectUnitTest {
+public class RedirectTest {
 	@Mock
 	private HttpServletResponse httpResponse;
 	
 	@Test(expected = IllegalArgumentException.class)
-	public void constructor_NullLocation() {
+	public void GivenNullArgument_WhenConstructor_ThenException() {
 		new Redirect(null);
 	}
 
 	/** Empty string redirect should be accepted. */
 	@Test
-	public void constructor_EmptyLocation() {
-		new Redirect("");
+	public void GivenEmptyLocation_WhenSerialize_ThenSendRedirect() throws IOException {
+		// given
+		Redirect redirect = new Redirect("");
+		
+		// when
+		redirect.serialize(httpResponse);
+		
+		// then
+		verify(httpResponse, times(1)).sendRedirect("");
 	}
 
 	@Test
-	public void serialize_Relative() throws Exception {
+	public void GivenRelativePath_WhenSerialize_ThenSendRedirect() throws Exception {
+		// given
 		Redirect redirect = new Redirect("resource");
+		
+		// when
 		redirect.serialize(httpResponse);
 		
+		// then
 		verify(httpResponse, times(1)).sendRedirect("resource");
 	}
 
 	@Test
-	public void serialize_Absolute() throws Exception {
+	public void GivenAbsolutePath_WhenSerialize_ThenSendRedirect() throws Exception {
+		// given
 		Redirect redirect = new Redirect("/resource");
+		
+		// when
 		redirect.serialize(httpResponse);
+		
+		// then
 		verify(httpResponse, times(1)).sendRedirect("/resource");
 	}
 
 	@Test
-	public void serialize_NetworkPath() throws Exception {
+	public void GivenHostAbsolutePath_WhenSerialize_ThenSendRedirect() throws Exception {
+		// given
 		Redirect redirect = new Redirect("//server/resource");
+		
+		// when
 		redirect.serialize(httpResponse);
+		
+		// then
 		verify(httpResponse, times(1)).sendRedirect("//server/resource");
 	}
 }

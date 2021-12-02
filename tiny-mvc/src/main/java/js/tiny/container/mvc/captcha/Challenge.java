@@ -130,10 +130,24 @@ public final class Challenge implements Serializable {
 	 * @param file image file, null tolerated.
 	 * @return challenge value or null if given file is null.
 	 */
-	private static String getValue(File file) throws NullPointerException {
+	static String getValue(File file) throws NullPointerException {
 		if (file == null) {
 			return null;
 		}
 		return file.getName().toLowerCase().replaceAll(EXTENSION_REX, "").replaceAll(NOT_LETTERS_REX, " ");
+	}
+	
+	// --------------------------------------------------------------------------------------------
+	
+	String value() {
+		return value;
+	}
+	
+	Map<String, File> tokenedImageFiles() {
+		return tokenedImageFiles;
+	}
+	
+	List<String> images() {
+		return images;
 	}
 }

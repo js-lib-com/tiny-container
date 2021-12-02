@@ -28,7 +28,7 @@ import js.tiny.container.http.ContentType;
 import js.util.Classes;
 
 @RunWith(MockitoJUnitRunner.class)
-public class FileResourceUnitTest {
+public class FileResourceTest {
 	@Mock
 	private HttpServletResponse httpResponse;
 	@Mock

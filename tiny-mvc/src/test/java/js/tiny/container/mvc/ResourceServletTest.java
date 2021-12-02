@@ -46,9 +46,9 @@ public class ResourceServletTest {
 	@Test
 	public void GivenResourceMethod_WhenServletInit_ThenRegister() throws ServletException {
 		// given
+		ResourceServlet servlet = new ResourceServlet();
 
 		// when
-		ResourceServlet servlet = new ResourceServlet();
 		servlet.init(servletConfig);
 
 		// then

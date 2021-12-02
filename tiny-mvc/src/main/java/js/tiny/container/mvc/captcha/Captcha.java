@@ -106,9 +106,6 @@ final class Captcha {
 		if (!imagesRepositoryDir.isDirectory()) {
 			throw new ConfigException("CAPTCHA images repository |%s| is not a directory.", imagesRepositoryDir);
 		}
-		if (!imagesRepositoryDir.isAbsolute()) {
-			throw new ConfigException("CAPTCHA images repository |%s| is not absolute path.", imagesRepositoryDir);
-		}
 
 		int imagesCount = imagesRepositoryDir.list().length;
 		if (imagesCount == 0) {
@@ -203,7 +200,7 @@ final class Captcha {
 	 * @return challenge instances storage.
 	 * @throws IllegalStateException if attempt to create new session after response commit.
 	 */
-	private Map<Integer, Challenge> getChallenges() {
+	Map<Integer, Challenge> getChallenges() {
 		// here is a circular package dependency that is hard to avoid
 		// js.servlet package depends on js.http packages and this js.http.captcha package depends on js.servlet
 		// as a consequence js.http.captcha package cannot be used externally without js.servlet
@@ -216,5 +213,15 @@ final class Captcha {
 			session.setAttribute(CHALENGES_KEY, challenges);
 		}
 		return challenges;
+	}
+
+	// --------------------------------------------------------------------------------------------
+
+	File imagesRepositoryDir() {
+		return imagesRepositoryDir;
+	}
+
+	int challengeSetSize() {
+		return challengeSetSize;
 	}
 }

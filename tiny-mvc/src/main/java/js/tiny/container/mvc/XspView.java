@@ -31,7 +31,6 @@ import js.util.Classes;
  * </pre>
  * 
  * @author Iulian Rotaru
- * @version final
  */
 public final class XspView extends AbstractView {
 	/** Key for operator serialization property. */

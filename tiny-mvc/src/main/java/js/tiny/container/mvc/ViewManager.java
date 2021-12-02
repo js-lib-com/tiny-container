@@ -4,7 +4,6 @@ package js.tiny.container.mvc;
  * View manager creates named views. Views handled by this manager have a name unique per application.
  * 
  * @author Iulian Rotaru
- * @version final
  */
 public interface ViewManager {
 	/**
