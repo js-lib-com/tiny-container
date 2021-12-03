@@ -30,7 +30,9 @@ public class ClassContextParam extends BaseContextParam implements IClassPostLoa
 	}
 
 	@Override
-	public <T> void onClassPostLoaded(IManagedClass<T> managedClass) {
+	public <T> boolean onClassPostLoaded(IManagedClass<T> managedClass) {
 		processFields(managedClass.getImplementationClass(), field -> Modifier.isStatic(field.getModifiers()));
+		// this processor acts on class static field and does not use instance or method services 
+		return false;
 	}
 }

@@ -34,11 +34,11 @@ public class RestConnector implements IConnector, IClassPostLoadedProcessor {
 	}
 
 	@Override
-	public <T> void onClassPostLoaded(IManagedClass<T> managedClass) {
+	public <T> boolean onClassPostLoaded(IManagedClass<T> managedClass) {
 		log.trace("onClassPostLoaded(IManagedClass<T>)");
 		Remote remote = managedClass.scanAnnotation(Remote.class);
 		if (remote == null) {
-			return;
+			return false;
 		}
 
 		log.debug("Scan REST controller |%s|.", managedClass);
@@ -48,5 +48,6 @@ public class RestConnector implements IConnector, IClassPostLoadedProcessor {
 				log.debug("Register REST method |%s| to path |%s|.", managedMethod, path);
 			}
 		}
+		return true;
 	}
 }

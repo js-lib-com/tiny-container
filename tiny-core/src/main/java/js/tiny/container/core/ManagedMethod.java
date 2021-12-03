@@ -67,16 +67,24 @@ class ManagedMethod implements IManagedMethod, IMethodInvocationProcessor {
 	 * 
 	 * @param services container services.
 	 */
-	public void scanServices(Iterable<IContainerService> services) {
+	public boolean scanServices(Iterable<IContainerService> services) {
+		class ServicesFound {
+			boolean value;
+		}
+		final ServicesFound servicesFound = new ServicesFound();
+
 		services.forEach(service -> {
 			// current implementation consider only method invocation processors
 			if (service instanceof IMethodInvocationProcessor) {
 				IMethodInvocationProcessor processor = (IMethodInvocationProcessor) service;
 				if (processor.bind(this)) {
+					servicesFound.value = true;
 					invocationProcessors.add(processor);
 				}
 			}
 		});
+
+		return servicesFound.value;
 	}
 
 	@Override

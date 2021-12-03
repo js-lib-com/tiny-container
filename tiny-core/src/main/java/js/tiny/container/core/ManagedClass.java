@@ -57,33 +57,47 @@ class ManagedClass<T> implements IManagedClass<T>, IInstanceCreatedListener {
 		this.instancePreDestructors = new FlowProcessorsSet<>();
 	}
 
-	/** Create managed methods for implementation class and scan container services. */
-	public void scanServices() {
+	/**
+	 * Create managed methods for implementation class and scan container services. Returns true if found at least one container
+	 * service declared on interface or implementation classes or on any method.
+	 * 
+	 * @return true if at least one service was found.
+	 */
+	public boolean scanServices() {
+		boolean servicesFound = false;
+
 		for (Method method : implementationClass.getDeclaredMethods()) {
 			ManagedMethod managedMethod = new ManagedMethod(this, method);
-			managedMethod.scanServices(container.getServices());
+			if (managedMethod.scanServices(container.getServices())) {
+				servicesFound = true;
+			}
 			managedMethods.put(method.getName(), managedMethod);
 		}
 
 		for (IContainerService service : container.getServices()) {
 			if (service instanceof IClassPostLoadedProcessor) {
 				IClassPostLoadedProcessor processor = (IClassPostLoadedProcessor) service;
-				processor.onClassPostLoaded(this);
+				if (processor.onClassPostLoaded(this)) {
+					servicesFound = true;
+				}
 			}
 			if (service instanceof IInstancePostConstructProcessor) {
 				IInstancePostConstructProcessor processor = (IInstancePostConstructProcessor) service;
 				if (processor.bind(this)) {
+					servicesFound = true;
 					instancePostConstructors.add(processor);
 				}
 			}
 			if (service instanceof IInstancePreDestroyProcessor) {
 				IInstancePreDestroyProcessor processor = (IInstancePreDestroyProcessor) service;
 				if (processor.bind(this)) {
+					servicesFound = true;
 					instancePreDestructors.add(processor);
 				}
 			}
 		}
 
+		return servicesFound;
 	}
 
 	@Override

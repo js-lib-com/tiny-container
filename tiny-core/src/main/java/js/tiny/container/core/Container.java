@@ -114,8 +114,10 @@ public class Container implements IContainer, AppContainer, IInstanceCreatedList
 	void createManagedClasses(List<ClassBinding<?>> bindings) {
 		for (ClassBinding<?> binding : bindings) {
 			ManagedClass<?> managedClass = new ManagedClass<>(this, binding);
-			managedClass.scanServices();
-
+			if(!managedClass.scanServices()) {
+				continue;
+			}
+			
 			log.debug("Create managed class |%s|.", managedClass);
 			managedClasses.add(managedClass);
 

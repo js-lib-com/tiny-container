@@ -1,13 +1,10 @@
 package js.tiny.container.rest;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.equalTo;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -25,7 +22,6 @@ import javax.ws.rs.Path;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
@@ -89,7 +85,6 @@ public class RestServletUnitTest {
 		when(servletConfig.getServletContext()).thenReturn(servletContext);
 		when(servletContext.getAttribute(TinyContainer.ATTR_INSTANCE)).thenReturn(container);
 
-		Path classPath = mock(Path.class);
 		doReturn(managedClass).when(managedMethod).getDeclaringClass();
 
 		when(httpRequest.getRequestURI()).thenReturn("/test-app/rest/sub-resource");
@@ -167,7 +162,7 @@ public class RestServletUnitTest {
 	@Test
 	public void GivenNotFoundMethod_WhenInvoke_Then404() throws Exception {
 		// given
-		String error = "\"error message\"";
+//		String error = "\"error message\"";
 
 
 		// when

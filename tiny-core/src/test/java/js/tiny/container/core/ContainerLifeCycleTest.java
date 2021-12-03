@@ -13,6 +13,8 @@ import static org.mockito.Mockito.when;
 import java.util.Arrays;
 import java.util.Collections;
 
+import javax.annotation.PostConstruct;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -31,7 +33,7 @@ public class ContainerLifeCycleTest {
 	@Mock
 	private CDI cdi;
 	@Mock
-	private ClassBinding<Object> binding;
+	private ClassBinding<?> binding;
 	@Mock
 	private Config config;
 
@@ -39,7 +41,7 @@ public class ContainerLifeCycleTest {
 
 	@Before
 	public void beforeTest() {
-		when(binding.getInterfaceClass()).thenReturn(Object.class);
+		doReturn(Object.class).when(binding).getInterfaceClass();
 		doReturn(Object.class).when(binding).getImplementationClass();
 		when(cdi.configure(config)).thenReturn(Arrays.asList(binding));
 
@@ -49,6 +51,8 @@ public class ContainerLifeCycleTest {
 	@Test
 	public void GivenDescriptor_WhenConfig_ThenClassesPoolContainsManagedClass() throws ConfigException {
 		// given
+		doReturn(Service.class).when(binding).getInterfaceClass();
+		doReturn(Service.class).when(binding).getImplementationClass();
 
 		// when
 		container.configure(config);
@@ -60,6 +64,8 @@ public class ContainerLifeCycleTest {
 	@Test
 	public void GivenMissingInterfaceAttribute_WhenConfig_ThenAddIt() throws ConfigException {
 		// given
+		doReturn(Service.class).when(binding).getInterfaceClass();
+		doReturn(Service.class).when(binding).getImplementationClass();
 
 		// when
 		container.configure(config);
@@ -67,8 +73,8 @@ public class ContainerLifeCycleTest {
 		// then
 		IManagedClass<?> managedClass = container.getManagedClasses().get(0);
 		assertThat(managedClass, notNullValue());
-		assertThat(managedClass.getInterfaceClass(), equalTo(Object.class));
-		assertThat(managedClass.getImplementationClass(), equalTo(Object.class));
+		assertThat(managedClass.getInterfaceClass(), equalTo(Service.class));
+		assertThat(managedClass.getImplementationClass(), equalTo(Service.class));
 	}
 
 	@Test
@@ -98,7 +104,7 @@ public class ContainerLifeCycleTest {
 	public void GivenModule_WhenConfig_ThenCDIConfigure() throws ConfigException {
 		// given
 		IModule module = mock(IModule.class);
-		
+
 		// when
 		container.configure(module);
 
@@ -159,5 +165,13 @@ public class ContainerLifeCycleTest {
 		container.onInstanceCreated(instance);
 
 		// then
+	}
+
+	// --------------------------------------------------------------------------------------------
+
+	private static class Service {
+		@PostConstruct
+		private void postConstruct() {
+		}
 	}
 }

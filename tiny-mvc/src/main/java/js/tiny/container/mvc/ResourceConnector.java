@@ -34,11 +34,11 @@ public class ResourceConnector implements IConnector, IClassPostLoadedProcessor 
 	}
 
 	@Override
-	public <T> void onClassPostLoaded(IManagedClass<T> managedClass) {
+	public <T> boolean onClassPostLoaded(IManagedClass<T> managedClass) {
 		log.trace("onClassPostLoaded(IManagedClass<T>)");
 		Controller controller = managedClass.scanAnnotation(Controller.class);
 		if (controller == null) {
-			return;
+			return false;
 		}
 
 		log.debug("Scan MVC controller |%s|.", managedClass);
@@ -48,5 +48,6 @@ public class ResourceConnector implements IConnector, IClassPostLoadedProcessor 
 				log.debug("Register MVC method |%s| to path |%s|.", managedMethod, path);
 			}
 		}
+		return true;
 	}
 }
