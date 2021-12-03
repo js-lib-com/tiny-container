@@ -111,7 +111,7 @@ public class Container implements IContainer, AppContainer, IInstanceCreatedList
 		createManagedClasses(cdi.configure(modules));
 	}
 
-	private void createManagedClasses(List<ClassBinding<?>> bindings) {
+	void createManagedClasses(List<ClassBinding<?>> bindings) {
 		for (ClassBinding<?> binding : bindings) {
 			ManagedClass<?> managedClass = new ManagedClass<>(this, binding);
 			managedClass.scanServices();
@@ -199,8 +199,11 @@ public class Container implements IContainer, AppContainer, IInstanceCreatedList
 		return services;
 	}
 
-	Map<Class<?>, IManagedClass<?>> managedClassesByInterface() {
+	Map<Class<?>, IManagedClass<?>> managedInterfaces() {
 		return managedInterfaces;
 	}
 
+	Map<Class<?>, ManagedClass<?>> managedImplementations() {
+		return managedImplementations;
+	}
 }

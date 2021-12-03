@@ -1,8 +1,10 @@
 package js.tiny.container.core;
 
-
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+
+import javax.inject.Singleton;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -10,11 +12,12 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
+import js.injector.IScope;
 import js.tiny.container.cdi.CDI;
 import js.tiny.container.spi.IContainer;
 
 @RunWith(MockitoJUnitRunner.class)
-public class ContainerInterfaceTest {
+public class ContainerTest {
 	@Mock
 	private CDI cdi;
 
@@ -31,7 +34,7 @@ public class ContainerInterfaceTest {
 
 		// when
 		container.getInstance(Object.class);
-		
+
 		// then
 		verify(cdi, times(1)).getInstance(Object.class);
 	}
@@ -42,7 +45,18 @@ public class ContainerInterfaceTest {
 
 		// when
 		container.getManagedClass(Object.class);
-		
+
+		// then
+	}
+
+	@Test
+	public void Given_WhenBindScope_Then() {
+		// given
+		IScope<?> scope = mock(IScope.class);
+
+		// when
+		container.bindScope(Singleton.class, scope);
+
 		// then
 	}
 }

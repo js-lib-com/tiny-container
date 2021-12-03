@@ -45,9 +45,6 @@ class ConfigModule extends AbstractModule {
 		case SERVICE:
 			bindingBuilder.service();
 			break;
-
-		default:
-			throw new IllegalStateException("No provider for instance type " + binding.instanceType);
 		}
 
 		switch (binding.instanceScope) {
@@ -65,9 +62,6 @@ class ConfigModule extends AbstractModule {
 		case SESSION:
 			bindingBuilder.in(SessionScoped.class);
 			break;
-
-		default:
-			throw new IllegalStateException("No provider for instance scope " + binding.instanceScope);
 		}
 	}
 

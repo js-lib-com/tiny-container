@@ -5,6 +5,7 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -18,10 +19,11 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
+import js.injector.IModule;
 import js.lang.Config;
 import js.lang.ConfigException;
-import js.tiny.container.cdi.ClassBinding;
 import js.tiny.container.cdi.CDI;
+import js.tiny.container.cdi.ClassBinding;
 import js.tiny.container.spi.IManagedClass;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -40,7 +42,7 @@ public class ContainerLifeCycleTest {
 		when(binding.getInterfaceClass()).thenReturn(Object.class);
 		doReturn(Object.class).when(binding).getImplementationClass();
 		when(cdi.configure(config)).thenReturn(Arrays.asList(binding));
-		
+
 		container = new Container(cdi);
 	}
 
@@ -58,8 +60,7 @@ public class ContainerLifeCycleTest {
 	@Test
 	public void GivenMissingInterfaceAttribute_WhenConfig_ThenAddIt() throws ConfigException {
 		// given
-		
-		
+
 		// when
 		container.configure(config);
 
@@ -94,6 +95,18 @@ public class ContainerLifeCycleTest {
 	}
 
 	@Test
+	public void GivenModule_WhenConfig_ThenCDIConfigure() throws ConfigException {
+		// given
+		IModule module = mock(IModule.class);
+		
+		// when
+		container.configure(module);
+
+		// then
+		verify(cdi, times(1)).configure(module);
+	}
+
+	@Test
 	public void Given_WhenStart_Then() {
 		// given
 
@@ -104,11 +117,46 @@ public class ContainerLifeCycleTest {
 	}
 
 	@Test
-	public void Given_WhenClose_Then() {
+	public void GivenManagedClass_WhenClose_Then() {
 		// given
+		container.createManagedClasses(Arrays.asList(binding));
 
 		// when
 		container.close();
+
+		// then
+	}
+
+	@Test
+	public void GivenNoManagedClass_WhenClose_Then() {
+		// given
+		container.createManagedClasses(Arrays.asList(binding));
+
+		// when
+		container.close();
+
+		// then
+	}
+
+	@Test
+	public void GivenManagedClass_WhenOnInstanceCreated_Then() {
+		// given
+		Object instance = new Object();
+		container.managedImplementations().put(Object.class, mock(ManagedClass.class));
+
+		// when
+		container.onInstanceCreated(instance);
+
+		// then
+	}
+
+	@Test
+	public void GivenNoManagedClass_WhenOnInstanceCreated_Then() {
+		// given
+		Object instance = new Object();
+
+		// when
+		container.onInstanceCreated(instance);
 
 		// then
 	}

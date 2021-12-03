@@ -20,7 +20,7 @@ public class InstancePostConstructorTest {
 	@Mock
 	private IManagedClass<Service> managedClass;
 
-	private Service instance;
+	private Object instance;
 
 	private InstancePostConstructor processor;
 
@@ -30,12 +30,88 @@ public class InstancePostConstructorTest {
 		doReturn(Service.class).when(managedClass).getImplementationClass();
 
 		processor = new InstancePostConstructor();
-		processor.bind(managedClass);
+		processor.resetCache();
 	}
 
 	@Test
-	public void GivenProcessor_WhenInstancePostConstruct_Then() {
+	public void GivenSuccessfulBind_WhenInstancePostConstruct_Then() {
 		// given
+		processor.bind(managedClass);
+
+		// when
+		processor.onInstancePostConstruct(instance);
+
+		// then
+	}
+
+	@Test(expected = IllegalStateException.class)
+	public void GivenNoBind_WhenInstancePostConstruct_TheException() {
+		// given
+
+		// when
+		processor.onInstancePostConstruct(instance);
+
+		// then
+	}
+
+	@Test(expected = RuntimeException.class)
+	public void GivenMethodException_WhenInstancePostConstruct_Then() {
+		// given
+		instance = new ExceptionalService();
+		doReturn(ExceptionalService.class).when(managedClass).getImplementationClass();
+		processor.bind(managedClass);
+
+		// when
+		processor.onInstancePostConstruct(instance);
+
+		// then
+	}
+
+	@Test(expected = RuntimeException.class)
+	public void GivenStaticMethod_WhenInstancePostConstruct_Then() {
+		// given
+		instance = new StaticService();
+		doReturn(StaticService.class).when(managedClass).getImplementationClass();
+		processor.bind(managedClass);
+
+		// when
+		processor.onInstancePostConstruct(instance);
+
+		// then
+	}
+
+	@Test(expected = RuntimeException.class)
+	public void GivenParameterMethod_WhenInstancePostConstruct_Then() {
+		// given
+		instance = new ParameterService();
+		doReturn(ParameterService.class).when(managedClass).getImplementationClass();
+		processor.bind(managedClass);
+
+		// when
+		processor.onInstancePostConstruct(instance);
+
+		// then
+	}
+
+	@Test(expected = RuntimeException.class)
+	public void GivennonVoidMethod_WhenInstancePostConstruct_Then() {
+		// given
+		instance = new NonVoidService();
+		doReturn(NonVoidService.class).when(managedClass).getImplementationClass();
+		processor.bind(managedClass);
+
+		// when
+		processor.onInstancePostConstruct(instance);
+
+		// then
+	}
+
+	@Test(expected = RuntimeException.class)
+	public void GivenThrowsMethod_WhenInstancePostConstruct_Then() {
+		// given
+		instance = new ThrowsService();
+		doReturn(ThrowsService.class).when(managedClass).getImplementationClass();
+		processor.bind(managedClass);
 
 		// when
 		processor.onInstancePostConstruct(instance);
@@ -54,9 +130,43 @@ public class InstancePostConstructorTest {
 		assertThat(priority, equalTo(Priority.CONSTRUCTOR));
 	}
 
+	// --------------------------------------------------------------------------------------------
+
 	private static class Service {
 		@PostConstruct
 		private void postConstruct() {
+		}
+	}
+
+	private static class ExceptionalService {
+		@PostConstruct
+		private void postConstruct() {
+			throw new RuntimeException();
+		}
+	}
+
+	private static class StaticService {
+		@PostConstruct
+		private static void postConstruct() {
+		}
+	}
+
+	private static class ParameterService {
+		@PostConstruct
+		private void postConstruct(String name) {
+		}
+	}
+
+	private static class NonVoidService {
+		@PostConstruct
+		private String postConstruct() {
+			return "name";
+		}
+	}
+
+	private static class ThrowsService {
+		@PostConstruct
+		private void postConstruct() throws Exception {
 		}
 	}
 }
