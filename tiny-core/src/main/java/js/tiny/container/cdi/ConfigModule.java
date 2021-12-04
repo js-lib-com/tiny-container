@@ -1,13 +1,14 @@
 package js.tiny.container.cdi;
 
-import java.net.URI;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.HashMap;
+import java.util.Map;
 
-import javax.inject.Singleton;
-
+import js.converter.Converter;
+import js.converter.ConverterRegistry;
 import js.injector.AbstractModule;
 import js.injector.IBindingBuilder;
-import js.injector.SessionScoped;
-import js.injector.ThreadScoped;
 import js.lang.Config;
 
 /**
@@ -18,10 +19,33 @@ import js.lang.Config;
  * @author Iulian Rotaru
  */
 class ConfigModule extends AbstractModule {
+
+	private static final Map<String, Method> ATTRIBUTE_METHODS = new HashMap<>();
+	static {
+		ATTRIBUTE_METHODS.put("in", method("in", Class.class));
+		ATTRIBUTE_METHODS.put("named", method("named", String.class));
+		ATTRIBUTE_METHODS.put("on", method("on", String.class));
+		ATTRIBUTE_METHODS.put("service", method("service"));
+		ATTRIBUTE_METHODS.put("to", method("to", Class.class));
+		ATTRIBUTE_METHODS.put("with", method("with", Class.class));
+	}
+
+	private static Method method(String name, Class<?>... parameterTypes) {
+		try {
+			return IBindingBuilder.class.getMethod(name, parameterTypes);
+		} catch (NoSuchMethodException | SecurityException e) {
+			throw new IllegalStateException(e.getMessage());
+		}
+	}
+
+	private final Converter converter;
 	private final Config config;
+	private final String defaultPackage;
 
 	public ConfigModule(Config config) {
+		this.converter = ConverterRegistry.getConverter();
 		this.config = config;
+		this.defaultPackage = config.getAttribute("package", "") + ".";
 	}
 
 	@Override
@@ -29,64 +53,45 @@ class ConfigModule extends AbstractModule {
 		config.getChildren().forEach(this::configure);
 	}
 
-	private <T> void configure(Config classConfig) {
-		ConfigBinding<T> binding = new ConfigBinding<>(classConfig);
-		IBindingBuilder<T> bindingBuilder = bind(binding.interfaceClass);
-
-		switch (binding.instanceType) {
-		case LOCAL:
-			bindingBuilder.to(binding.implementationClass);
-			break;
-
-		case REMOTE:
-			bindingBuilder.on(binding.implementationURL);
-			break;
-
-		case SERVICE:
-			bindingBuilder.service();
-			break;
-		}
-
-		switch (binding.instanceScope) {
-		case LOCAL:
-			break;
-
-		case SINGLETON:
-			bindingBuilder.in(Singleton.class);
-			break;
-
-		case THREAD:
-			bindingBuilder.in(ThreadScoped.class);
-			break;
-
-		case SESSION:
-			bindingBuilder.in(SessionScoped.class);
-			break;
-		}
-	}
-
-	static class ConfigBinding<T> {
-		final Class<T> interfaceClass;
-		final Class<? extends T> implementationClass;
-		final InstanceType instanceType;
-		final InstanceScope instanceScope;
-		final URI implementationURL;
-
+	<T> void configure(Config bindingConfig) {
 		@SuppressWarnings("unchecked")
-		public ConfigBinding(Config config) {
-			this.implementationClass = config.getAttribute("class", Class.class);
-			this.interfaceClass = config.getAttribute("interface", Class.class, this.implementationClass);
-			this.instanceType = config.getAttribute("type", InstanceType.class, InstanceType.LOCAL);
-			this.instanceScope = config.getAttribute("scope", InstanceScope.class, InstanceScope.LOCAL);
-			this.implementationURL = config.getAttribute("url", URI.class);
+		IBindingBuilder<T> bindingBuilder = bind(converter.asObject(classValue(bindingConfig.getAttribute("bind")), Class.class));
+		bindingConfig.attributes((name, value) -> bindAttribute(bindingBuilder, name, value));
+	}
+
+	private String classValue(String value) {
+		return value == null? null: value.indexOf('.') == -1 ? defaultPackage + value : value;
+	}
+
+	void bindAttribute(IBindingBuilder<?> bindingBuilder, String name, String value) {
+		if (name.equals("bind")) {
+			return;
 		}
-	}
 
-	enum InstanceType {
-		LOCAL, REMOTE, SERVICE
-	}
+		Method method = ATTRIBUTE_METHODS.get(name);
+		if (method == null) {
+			throw new IllegalStateException("Invalid attribute name " + name);
+		}
 
-	enum InstanceScope {
-		LOCAL, SINGLETON, THREAD, SESSION
+		try {
+			switch (method.getParameterCount()) {
+			case 0:
+				method.invoke(bindingBuilder);
+				break;
+
+			case 1:
+				Class<?> parameterType = method.getParameterTypes()[0];
+				if (parameterType.equals(Class.class)) {
+					value = classValue(value);
+				}
+				method.invoke(bindingBuilder, converter.asObject(value, parameterType));
+				break;
+
+			default:
+				throw new IllegalStateException("You brought two too many!");
+			}
+		} catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
+			throw new IllegalStateException(e.getMessage());
+		}
 	}
 }

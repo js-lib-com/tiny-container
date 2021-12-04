@@ -18,9 +18,9 @@ import js.injector.ProvisionException;
 import js.lang.Config;
 import js.log.Log;
 import js.log.LogFactory;
+import js.tiny.container.cdi.BindingParametersBuilder;
 import js.tiny.container.cdi.CDI;
-import js.tiny.container.cdi.ClassBinding;
-import js.tiny.container.cdi.ContainerBindingBuilder;
+import js.tiny.container.cdi.IClassBinding;
 import js.tiny.container.cdi.IInstanceCreatedListener;
 import js.tiny.container.cdi.IManagedLoader;
 import js.tiny.container.spi.IContainer;
@@ -88,7 +88,7 @@ public class Container implements IContainer, AppContainer, IInstanceCreatedList
 
 	@Override
 	public <T> IBindingBuilder<T> bind(Class<T> interfaceClass) {
-		return new ContainerBindingBuilder<>(cdi, interfaceClass);
+		return new BindingParametersBuilder<>(cdi, interfaceClass);
 	}
 
 	@Override
@@ -111,8 +111,8 @@ public class Container implements IContainer, AppContainer, IInstanceCreatedList
 		createManagedClasses(cdi.configure(modules));
 	}
 
-	void createManagedClasses(List<ClassBinding<?>> bindings) {
-		for (ClassBinding<?> binding : bindings) {
+	void createManagedClasses(List<IClassBinding<?>> bindings) {
+		for (IClassBinding<?> binding : bindings) {
 			ManagedClass<?> managedClass = new ManagedClass<>(this, binding);
 			if(!managedClass.scanServices()) {
 				continue;

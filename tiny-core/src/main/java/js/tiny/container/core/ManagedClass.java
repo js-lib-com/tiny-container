@@ -10,7 +10,7 @@ import java.util.Map;
 import js.lang.InstanceInvocationHandler;
 import js.log.Log;
 import js.log.LogFactory;
-import js.tiny.container.cdi.ClassBinding;
+import js.tiny.container.cdi.IClassBinding;
 import js.tiny.container.cdi.IInstanceCreatedListener;
 import js.tiny.container.spi.IClassPostLoadedProcessor;
 import js.tiny.container.spi.IContainer;
@@ -48,7 +48,7 @@ class ManagedClass<T> implements IManagedClass<T>, IInstanceCreatedListener {
 
 	private final FlowProcessorsSet<IInstancePreDestroyProcessor> instancePreDestructors;
 
-	public ManagedClass(Container container, ClassBinding<T> binding) {
+	public ManagedClass(Container container, IClassBinding<T> binding) {
 		this.container = container;
 		this.interfaceClass = binding.getInterfaceClass();
 		this.implementationClass = binding.getImplementationClass();

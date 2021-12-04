@@ -1,19 +1,18 @@
 package js.tiny.container.cdi;
 
+
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 import java.net.URI;
-import java.util.Arrays;
-import java.util.Collections;
 
 import javax.inject.Provider;
 import javax.inject.Singleton;
@@ -24,49 +23,38 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
-import js.injector.IInjector;
 import js.injector.IScope;
 import js.injector.Key;
 import js.injector.ProvisionException;
 import js.injector.SessionScoped;
-import js.lang.Config;
-import js.tiny.container.cdi.ConfigModule.InstanceScope;
-import js.tiny.container.cdi.ConfigModule.InstanceType;
+import js.injector.ThreadScoped;
 import js.tiny.container.fixture.IService;
 import js.tiny.container.fixture.Service;
 import js.tiny.container.fixture.ThreadData;
-import js.util.Classes;
 
 @RunWith(MockitoJUnitRunner.class)
 public class CDIUnitTest {
 	@Mock
-	private Config containerConfig;
-	@Mock
-	private Config classConfig;
-	@Mock
 	private IInstanceCreatedListener instanceListener;
+	@Mock
+	private BindingParameters<?> bindingParameters;
 
 	private CDI cdi;
 
 	@Before
 	public void beforeTest() {
-		IInjector injector = Classes.loadService(IInjector.class);
-		injector.clearCache();
-
-		when(containerConfig.getChildren()).thenReturn(Arrays.asList(classConfig));
-		when(classConfig.getAttribute("interface", Class.class, Object.class)).thenReturn(Object.class);
-		when(classConfig.getAttribute("class", Class.class)).thenReturn(Object.class);
-		when(classConfig.getAttribute("type", InstanceType.class, InstanceType.LOCAL)).thenReturn(InstanceType.LOCAL);
-		when(classConfig.getAttribute("scope", InstanceScope.class, InstanceScope.LOCAL)).thenReturn(InstanceScope.LOCAL);
+		doReturn(Object.class).when(bindingParameters).getInterfaceClass();
+		doReturn(Object.class).when(bindingParameters).getImplementationClass();
 
 		cdi = CDI.create();
 		cdi.setInstanceCreatedListener(instanceListener);
+		cdi.bind(bindingParameters);
 	}
 
 	@Test
 	public void GivenTypeLOCAL_WhenGetInstance_ThenCreateNew() {
 		// given
-		cdi.configure(containerConfig);
+		cdi.configure();
 
 		// when
 		Object instance = cdi.getInstance(Object.class);
@@ -79,13 +67,11 @@ public class CDIUnitTest {
 	@Test
 	public void GivenTypePROXY_WhenGetInstance_ThenCreateNew() {
 		// given
-		when(classConfig.getAttribute("interface", Class.class, Service.class)).thenReturn(IService.class);
-		when(classConfig.getAttribute("class", Class.class)).thenReturn(Service.class);
-		when(classConfig.getAttribute("type", InstanceType.class, InstanceType.LOCAL)).thenReturn(InstanceType.LOCAL);
-		when(classConfig.getAttribute("scope", InstanceScope.class, InstanceScope.LOCAL)).thenReturn(InstanceScope.LOCAL);
+		doReturn(IService.class).when(bindingParameters).getInterfaceClass();
+		doReturn(Service.class).when(bindingParameters).getImplementationClass();
 
 		cdi.setManagedLoader(mock(IManagedLoader.class));
-		cdi.configure(containerConfig);
+		cdi.configure();
 
 		// when
 		IService instance = cdi.getInstance(IService.class);
@@ -98,9 +84,8 @@ public class CDIUnitTest {
 	@Test
 	public void GivenTypeREMOTE_WhenGetInstance_ThenNotNull() {
 		// given
-		when(classConfig.getAttribute("type", InstanceType.class, InstanceType.LOCAL)).thenReturn(InstanceType.REMOTE);
-		when(classConfig.getAttribute("url", URI.class)).thenReturn(URI.create("http://localhost/"));
-		cdi.configure(containerConfig);
+		doReturn(URI.create("http://localhost/")).when(bindingParameters).getImplementationURL();
+		cdi.configure();
 
 		// when
 		Object instance = cdi.getInstance(Object.class);
@@ -112,9 +97,8 @@ public class CDIUnitTest {
 	@Test
 	public void GivenTypeREMOTE_WhenGetInstance_ThenNoInstanceCreated() {
 		// given
-		when(classConfig.getAttribute("type", InstanceType.class, InstanceType.LOCAL)).thenReturn(InstanceType.REMOTE);
-		when(classConfig.getAttribute("url", URI.class)).thenReturn(URI.create("http://localhost/"));
-		cdi.configure(containerConfig);
+		doReturn(URI.create("http://localhost/")).when(bindingParameters).getImplementationURL();
+		cdi.configure();
 
 		// when
 		cdi.getInstance(Object.class);
@@ -126,10 +110,10 @@ public class CDIUnitTest {
 	@Test
 	public void GivenTypeSERVICE_WhenGetInstance_ThenNotNull() {
 		// given
-		when(classConfig.getAttribute("interface", Class.class, Service.class)).thenReturn(IService.class);
-		when(classConfig.getAttribute("class", Class.class)).thenReturn(Service.class);
-		when(classConfig.getAttribute("type", InstanceType.class, InstanceType.LOCAL)).thenReturn(InstanceType.SERVICE);
-		cdi.configure(containerConfig);
+		doReturn(IService.class).when(bindingParameters).getInterfaceClass();
+		doReturn(Service.class).when(bindingParameters).getImplementationClass();
+		doReturn(true).when(bindingParameters).isService();
+		cdi.configure();
 
 		// when
 		IService instance = cdi.getInstance(IService.class);
@@ -142,10 +126,10 @@ public class CDIUnitTest {
 	@Test
 	public void GivenTypeSERVICE_WhenGetInstance_ThenNoInstanceCreated() {
 		// given
-		when(classConfig.getAttribute("interface", Class.class, Service.class)).thenReturn(IService.class);
-		when(classConfig.getAttribute("class", Class.class)).thenReturn(Service.class);
-		when(classConfig.getAttribute("type", InstanceType.class, InstanceType.LOCAL)).thenReturn(InstanceType.SERVICE);
-		cdi.configure(containerConfig);
+		doReturn(IService.class).when(bindingParameters).getInterfaceClass();
+		doReturn(Service.class).when(bindingParameters).getImplementationClass();
+		doReturn(true).when(bindingParameters).isService();
+		cdi.configure();
 
 		// when
 		cdi.getInstance(IService.class);
@@ -155,9 +139,9 @@ public class CDIUnitTest {
 	}
 
 	@Test
-	public void GivenScopeLOCAL_WhenGetInstanceTwice_ThenNotEqual() {
+	public void GivenNoScope_WhenGetInstanceTwice_ThenNotEqual() {
 		// given
-		cdi.configure(containerConfig);
+		cdi.configure();
 
 		// when
 		Object instance1 = cdi.getInstance(Object.class);
@@ -170,10 +154,10 @@ public class CDIUnitTest {
 	}
 
 	@Test
-	public void GivenScopeAPPLICATION_WhenGetInstanceTwice_ThenEqual() {
+	public void GivenScopeSingleton_WhenGetInstanceTwice_ThenEqual() {
 		// given
-		when(classConfig.getAttribute("scope", InstanceScope.class, InstanceScope.LOCAL)).thenReturn(InstanceScope.SINGLETON);
-		cdi.configure(containerConfig);
+		doReturn(Singleton.class).when(bindingParameters).getScope();
+		cdi.configure();
 
 		// when
 		Object instance1 = cdi.getInstance(Object.class);
@@ -186,10 +170,10 @@ public class CDIUnitTest {
 	}
 
 	@Test
-	public void GivenScopeAPPLICATION_WhenGetInstanceFromDifferentThreads_ThenEqual() throws InterruptedException {
+	public void GivenScopeSingleton_WhenGetInstanceFromDifferentThreads_ThenEqual() throws InterruptedException {
 		// given
-		when(classConfig.getAttribute("scope", InstanceScope.class, InstanceScope.LOCAL)).thenReturn(InstanceScope.SINGLETON);
-		cdi.configure(containerConfig);
+		doReturn(Singleton.class).when(bindingParameters).getScope();
+		cdi.configure();
 
 		// when
 		Object instance = cdi.getInstance(Object.class);
@@ -208,10 +192,10 @@ public class CDIUnitTest {
 	}
 
 	@Test
-	public void GivenScopeTHREAD_WhenGetInstanceTwice_ThenEqual() {
+	public void GivenScopeThread_WhenGetInstanceTwice_ThenEqual() {
 		// given
-		when(classConfig.getAttribute("scope", InstanceScope.class, InstanceScope.LOCAL)).thenReturn(InstanceScope.THREAD);
-		cdi.configure(containerConfig);
+		doReturn(ThreadScoped.class).when(bindingParameters).getScope();
+		cdi.configure();
 
 		// when
 		Object instance1 = cdi.getInstance(Object.class);
@@ -224,10 +208,10 @@ public class CDIUnitTest {
 	}
 
 	@Test
-	public void GivenScopeTHREAD_WhenGetInstanceFromDifferentThreads_ThenNotEqual() throws InterruptedException {
+	public void GivenScopeThread_WhenGetInstanceFromDifferentThreads_ThenNotEqual() throws InterruptedException {
 		// given
-		when(classConfig.getAttribute("scope", InstanceScope.class, InstanceScope.LOCAL)).thenReturn(InstanceScope.THREAD);
-		cdi.configure(containerConfig);
+		doReturn(ThreadScoped.class).when(bindingParameters).getScope();
+		cdi.configure();
 
 		// when
 		Object instance = cdi.getInstance(Object.class);
@@ -246,10 +230,10 @@ public class CDIUnitTest {
 	}
 
 	@Test(expected = IllegalStateException.class)
-	public void GivenScopeSESSION_WhenGetInstance_ThenException() {
+	public void GivenScopeSession_WhenGetInstance_ThenException() {
 		// given
-		when(classConfig.getAttribute("scope", InstanceScope.class, InstanceScope.LOCAL)).thenReturn(InstanceScope.SESSION);
-		cdi.configure(containerConfig);
+		doReturn(SessionScoped.class).when(bindingParameters).getScope();
+		cdi.configure();
 
 		// when
 		cdi.getInstance(Object.class);
@@ -258,10 +242,9 @@ public class CDIUnitTest {
 	}
 
 	@Test
-	public void GivenScopeLOCAL_WhenGetInstanceTwice_ThenListenerTwice() {
+	public void GivenNoScope_WhenGetInstanceTwice_ThenListenerTwice() {
 		// given
-		when(classConfig.getAttribute("scope", InstanceScope.class, InstanceScope.LOCAL)).thenReturn(InstanceScope.LOCAL);
-		cdi.configure(containerConfig);
+		cdi.configure();
 
 		// when
 		Object instance1 = cdi.getInstance(Object.class);
@@ -274,10 +257,10 @@ public class CDIUnitTest {
 	}
 
 	@Test
-	public void GivenScopeAPPLICATION_WhenGetInstanceTwice_ThenListenerOnce() {
+	public void GivenScopeSingleton_WhenGetInstanceTwice_ThenListenerOnce() {
 		// given
-		when(classConfig.getAttribute("scope", InstanceScope.class, InstanceScope.LOCAL)).thenReturn(InstanceScope.SINGLETON);
-		cdi.configure(containerConfig);
+		doReturn(Singleton.class).when(bindingParameters).getScope();
+		cdi.configure();
 
 		// when
 		cdi.getInstance(Object.class);
@@ -290,7 +273,7 @@ public class CDIUnitTest {
 	@Test(expected = IllegalStateException.class)
 	public void GivenConfigured_WhenBindInstance_ThenException() {
 		// given
-		cdi.configure(containerConfig);
+		cdi.configure();
 
 		// when
 		cdi.bindInstance(Object.class, new Object());
@@ -301,7 +284,7 @@ public class CDIUnitTest {
 	@Test(expected = IllegalStateException.class)
 	public void GivenConfigured_WhenBindScope_ThenException() {
 		// given
-		cdi.configure(containerConfig);
+		cdi.configure();
 
 		// when
 		cdi.bindScope(Singleton.class, mock(IScope.class));
@@ -320,10 +303,10 @@ public class CDIUnitTest {
 	}
 
 	@Test
-	public void GivenScopeAPPLICATION_WhenGetScopeInstance_ThenNull() {
+	public void GivenScopeSigleton_WhenGetScopeInstance_ThenNull() {
 		// given
-		when(classConfig.getAttribute("scope", InstanceScope.class, InstanceScope.LOCAL)).thenReturn(InstanceScope.SINGLETON);
-		cdi.configure(containerConfig);
+		doReturn(Singleton.class).when(bindingParameters).getScope();
+		cdi.configure();
 
 		// when
 		Object instance = cdi.getScopeInstance(Object.class);
@@ -333,10 +316,10 @@ public class CDIUnitTest {
 	}
 
 	@Test
-	public void GivenScopeAPPLICATIONAndCache_WhenGetScopeInstanceSecondTime_ThenNotNull() {
+	public void GivenScopeSingletonAndCache_WhenGetScopeInstanceSecondTime_ThenNotNull() {
 		// given
-		when(classConfig.getAttribute("scope", InstanceScope.class, InstanceScope.LOCAL)).thenReturn(InstanceScope.SINGLETON);
-		cdi.configure(containerConfig);
+		doReturn(Singleton.class).when(bindingParameters).getScope();
+		cdi.configure();
 		// get instance to fill scope provider cache
 		cdi.getInstance(Object.class);
 
@@ -348,10 +331,10 @@ public class CDIUnitTest {
 	}
 
 	@Test
-	public void GivenScopeAPPLICATIONAndNoCache_WhenGetScopeInstanceSecondTime_ThenNull() {
+	public void GivenScopeSingletonAndNoCache_WhenGetScopeInstanceSecondTime_ThenNull() {
 		// given
-		when(classConfig.getAttribute("scope", InstanceScope.class, InstanceScope.LOCAL)).thenReturn(InstanceScope.SINGLETON);
-		cdi.configure(containerConfig);
+		doReturn(Singleton.class).when(bindingParameters).getScope();
+		cdi.configure();
 
 		// when
 		Object instance = cdi.getScopeInstance(Object.class);
@@ -364,10 +347,9 @@ public class CDIUnitTest {
 	public void GivenBindInstance_WhenGetInstance_ThenRetrieveIt() {
 		// given
 		Object instance = new Object();
+		doReturn(instance).when(bindingParameters).getInstance();
 		cdi.bindInstance(Object.class, instance);
-
-		when(containerConfig.getChildren()).thenReturn(Collections.emptyList());
-		cdi.configure(containerConfig);
+		cdi.configure();
 
 		// when
 		Object instance1 = cdi.getInstance(Object.class);
@@ -379,7 +361,7 @@ public class CDIUnitTest {
 	}
 
 	@Test
-	public void GivenBindScope_WhenGetInstance_Then() {
+	public void GivenBindSessionScope_WhenGetInstance_Then() {
 		// given
 		cdi.bindScope(SessionScoped.class, new IScope<Object>() {
 			@Override
@@ -388,8 +370,8 @@ public class CDIUnitTest {
 			}
 		});
 
-		when(classConfig.getAttribute("scope", InstanceScope.class, InstanceScope.LOCAL)).thenReturn(InstanceScope.SESSION);
-		cdi.configure(containerConfig);
+		doReturn(SessionScoped.class).when(bindingParameters).getScope();
+		cdi.configure();
 
 		// when
 		Object instance = cdi.getInstance(Object.class);

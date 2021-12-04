@@ -1,5 +1,6 @@
 package js.tiny.container.core;
 
+
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
@@ -7,7 +8,7 @@ import static org.hamcrest.Matchers.nullValue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 import java.lang.annotation.Annotation;
 import java.util.Arrays;
@@ -24,7 +25,7 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
-import js.tiny.container.cdi.ClassBinding;
+import js.tiny.container.cdi.IClassBinding;
 import js.tiny.container.spi.IClassPostLoadedProcessor;
 import js.tiny.container.spi.IFlowProcessor;
 import js.tiny.container.spi.IInstancePostConstructProcessor;
@@ -41,13 +42,15 @@ public class ManagedClassTest {
 	private IInstancePostConstructProcessor postConstructorProcessor;
 	@Mock
 	private IInstancePreDestroyProcessor preDestroyProcessor;
-
-	private ClassBinding<Object> binding;
+	@Mock
+	private IClassBinding<Object> binding;
+	
 	private ManagedClass<Object> managedClass;
 
 	@Before
 	public void beforeTest() {
-		binding = new ClassBinding<>(Object.class, Object.class);
+		doReturn(Object.class).when(binding).getInterfaceClass();
+		doReturn(Object.class).when(binding).getImplementationClass();
 		managedClass = new ManagedClass<>(container, binding);
 
 		when(postConstructorProcessor.getPriority()).thenReturn(IInstancePostConstructProcessor.Priority.CONSTRUCTOR);
@@ -183,7 +186,11 @@ public class ManagedClassTest {
 	@Test
 	public void GivenInterfaceAnnotation_WhenGetAnnotation_ThenNotNull() {
 		// given
-		ClassBinding<IService1> binding = new ClassBinding<>(IService1.class, Service1.class);
+		@SuppressWarnings("unchecked")
+		IClassBinding<IService1> binding = mock(IClassBinding.class);
+		doReturn(IService1.class).when(binding).getInterfaceClass();
+		doReturn(Service1.class).when(binding).getImplementationClass();
+		
 		ManagedClass<IService1> managedClass = new ManagedClass<>(container, binding);
 
 		// when
@@ -196,7 +203,11 @@ public class ManagedClassTest {
 	@Test
 	public void GivenImplementationAnnotation_WhenGetAnnotation_ThenNotNull() {
 		// given
-		ClassBinding<IService2> binding = new ClassBinding<>(IService2.class, Service2.class);
+		@SuppressWarnings("unchecked")
+		IClassBinding<IService2> binding = mock(IClassBinding.class);
+		doReturn(IService2.class).when(binding).getInterfaceClass();
+		doReturn(Service2.class).when(binding).getImplementationClass();
+		
 		ManagedClass<IService2> managedClass = new ManagedClass<>(container, binding);
 
 		// when
@@ -220,8 +231,12 @@ public class ManagedClassTest {
 	@Test
 	public void GivenExistingMethod_WhenGetManagedMethod_ThenNotNull() {
 		// given
-		ClassBinding<IService1> binding = new ClassBinding<>(IService1.class, Service1.class);
-		ManagedClass<IService1> managedClass = new ManagedClass<>(container, binding);
+		@SuppressWarnings("unchecked")
+		IClassBinding<IService1> binding = mock(IClassBinding.class);
+		doReturn(IService1.class).when(binding).getInterfaceClass();
+		doReturn(Service1.class).when(binding).getImplementationClass();
+		
+		ManagedClass<IService1> managedClass = new ManagedClass<IService1>(container, binding);
 		managedClass.scanServices();
 
 		// when

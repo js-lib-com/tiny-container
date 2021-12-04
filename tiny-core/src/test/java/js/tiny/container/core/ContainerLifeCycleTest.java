@@ -25,7 +25,7 @@ import js.injector.IModule;
 import js.lang.Config;
 import js.lang.ConfigException;
 import js.tiny.container.cdi.CDI;
-import js.tiny.container.cdi.ClassBinding;
+import js.tiny.container.cdi.IClassBinding;
 import js.tiny.container.spi.IManagedClass;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -33,7 +33,7 @@ public class ContainerLifeCycleTest {
 	@Mock
 	private CDI cdi;
 	@Mock
-	private ClassBinding<?> binding;
+	private IClassBinding<?> binding;
 	@Mock
 	private Config config;
 

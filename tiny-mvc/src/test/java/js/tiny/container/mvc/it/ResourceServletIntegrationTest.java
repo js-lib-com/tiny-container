@@ -43,11 +43,11 @@ import js.tiny.container.servlet.TinyContainer;
 @RunWith(MockitoJUnitRunner.class)
 public class ResourceServletIntegrationTest {
 	private static final String DESCRIPTOR = "" + //
-			"<managed-classes>" + //
-			"	<controller class='js.tiny.container.mvc.it.App' scope='SINGLETON' />" + //
-			"	<controller class='js.tiny.container.mvc.it.DefaultController' scope='SINGLETON' />" + //
-			"	<controller interface='js.tiny.container.mvc.it.IController' class='js.tiny.container.mvc.it.ControllerImpl' scope='SINGLETON' />" + //
-			"</managed-classes>";
+			"<module package='js.tiny.container.mvc.it'>" + //
+			"	<binding bind='App' in='javax.inject.Singleton' />" + //
+			"	<binding bind='DefaultController' in='javax.inject.Singleton' />" + //
+			"	<binding bind='IController' to='ControllerImpl' in='javax.inject.Singleton' />" + //
+			"</module>";
 
 	@BeforeClass
 	public static void beforeClass() {

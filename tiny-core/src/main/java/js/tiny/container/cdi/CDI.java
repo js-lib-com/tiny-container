@@ -43,7 +43,7 @@ public class CDI implements IProvisionListener {
 	/** Explicit bindings, and instance and scope bindings collected from container. */
 	private final StaticModule staticModule;
 
-	private final ContainerModule containerModule;
+	private final BindingParametersModule parametersModule;
 
 	/**
 	 * Injector implementation used by this CDI instance. Injector is immutable; once configured is forbidden to alter its
@@ -65,7 +65,7 @@ public class CDI implements IProvisionListener {
 		log.trace("CDI(boolean)");
 		this.proxyProcessing = proxyProcessing;
 		this.staticModule = new StaticModule();
-		this.containerModule = new ContainerModule();
+		this.parametersModule = new BindingParametersModule();
 		this.injector = IInjector.create();
 	}
 
@@ -84,11 +84,11 @@ public class CDI implements IProvisionListener {
 		this.instanceCreatedListener = instanceCreatedListener;
 	}
 
-	public <T> void bind(ContainerBindingParameters<T> binding) {
+	public <T> void bind(BindingParameters<T> binding) {
 		if (configured.get()) {
 			throw new IllegalStateException("Attempt to add binding after injector configuration: " + binding);
 		}
-		containerModule.addBinding(binding);
+		parametersModule.addBindingParameters(binding);
 	}
 
 	public <T> void bindInstance(Class<T> interfaceClass, T instance) {
@@ -110,17 +110,17 @@ public class CDI implements IProvisionListener {
 	 * 
 	 * @param classDescriptors container managed classes.
 	 */
-	public List<ClassBinding<?>> configure(Config config) {
+	public List<IClassBinding<?>> configure(Config config) {
 		log.trace("configure(Config)");
 		return configure(new ConfigModule(config));
 	}
 
-	public List<ClassBinding<?>> configure(Object... arguments) {
+	public List<IClassBinding<?>> configure(Object... arguments) {
 		log.trace("configure(Object...)");
 
 		ManagedModule managedModule = new ManagedModule(injector, managedLoader, proxyProcessing);
 		managedModule.addModule(staticModule);
-		managedModule.addModule(containerModule);
+		managedModule.addModule(parametersModule);
 		for (Object argument : arguments) {
 			if (!(argument instanceof IModule)) {
 				throw new IllegalArgumentException("Invalid module type " + argument.getClass());

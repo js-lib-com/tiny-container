@@ -6,7 +6,7 @@ package js.tiny.container.cdi;
  * 
  * @author Iulian Rotaru
  */
-public class ClassBinding<T> {
+class ClassBinding<T> implements IClassBinding<T> {
 	private final Class<T> interfaceClass;
 	private final Class<? extends T> implementationClass;
 
@@ -15,10 +15,12 @@ public class ClassBinding<T> {
 		this.implementationClass = implementationClass;
 	}
 
+	@Override
 	public Class<T> getInterfaceClass() {
 		return interfaceClass;
 	}
 
+	@Override
 	public Class<? extends T> getImplementationClass() {
 		return implementationClass;
 	}

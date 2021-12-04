@@ -38,7 +38,7 @@ class ManagedModule implements IModule {
 	private final IInjector injector;
 	private final IManagedLoader managedLoader;
 	private final boolean proxyProcessing;
-	private final List<ClassBinding<?>> classBindings = new ArrayList<>();
+	private final List<IClassBinding<?>> classBindings = new ArrayList<>();
 
 	private final List<IBinding<?>> injectorBindings = new ArrayList<>();
 
@@ -87,7 +87,7 @@ class ManagedModule implements IModule {
 		return false;
 	}
 
-	public List<ClassBinding<?>> getClassBindings() {
+	public List<IClassBinding<?>> getClassBindings() {
 		return classBindings;
 	}
 

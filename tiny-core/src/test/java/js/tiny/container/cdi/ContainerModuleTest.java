@@ -23,18 +23,18 @@ public class ContainerModuleTest {
 	@Mock
 	private IBindingBuilder<?> bindingBuilder;
 
-	private ContainerModule module;
+	private BindingParametersModule module;
 
 	@Before
 	public void beforeTest() {
-		module = new ContainerModule();
+		module = new BindingParametersModule();
 	}
 
 	@Test
 	public void GivenOnlyInterface_WhenConfigure_ThenDefaultBinding() {
 		// given
 		doReturn(bindingBuilder).when(injector).getBindingBuilder(Service.class);
-		module.addBinding(new ContainerBindingParameters<>(Service.class));
+		module.addBindingParameters(new BindingParameters<>(Service.class));
 
 		// when
 		module.configure(injector).bindings();
@@ -50,7 +50,7 @@ public class ContainerModuleTest {
 	public void GivenImplementation_WhenConfigure_ThenBindingTo() {
 		// given
 		doReturn(bindingBuilder).when(injector).getBindingBuilder(IService.class);
-		module.addBinding(new ContainerBindingParameters<>(IService.class).setImplementationClass(Service.class));
+		module.addBindingParameters(new BindingParameters<>(IService.class).setImplementationClass(Service.class));
 
 		// when
 		module.configure(injector).bindings();
@@ -66,7 +66,7 @@ public class ContainerModuleTest {
 	public void GivenInstance_WhenConfigure_ThenBindingInstance() {
 		// given
 		doReturn(bindingBuilder).when(injector).getBindingBuilder(IService.class);
-		module.addBinding(new ContainerBindingParameters<>(IService.class).setInstance(new Service()));
+		module.addBindingParameters(new BindingParameters<>(IService.class).setInstance(new Service()));
 
 		// when
 		module.configure(injector).bindings();
@@ -82,7 +82,7 @@ public class ContainerModuleTest {
 	public void GivenService_WhenConfigure_ThenBindingService() {
 		// given
 		doReturn(bindingBuilder).when(injector).getBindingBuilder(IService.class);
-		module.addBinding(new ContainerBindingParameters<>(IService.class).setService(true));
+		module.addBindingParameters(new BindingParameters<>(IService.class).setService(true));
 
 		// when
 		module.configure(injector).bindings();
@@ -98,7 +98,7 @@ public class ContainerModuleTest {
 	public void GivenScope_WhenConfigure_ThenBindingService() {
 		// given
 		doReturn(bindingBuilder).when(injector).getBindingBuilder(IService.class);
-		module.addBinding(new ContainerBindingParameters<>(IService.class).setScope(Singleton.class));
+		module.addBindingParameters(new BindingParameters<>(IService.class).setScope(Singleton.class));
 
 		// when
 		module.configure(injector).bindings();

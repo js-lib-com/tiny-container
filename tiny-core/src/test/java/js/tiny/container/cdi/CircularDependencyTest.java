@@ -29,7 +29,7 @@ public class CircularDependencyTest {
 	@Test
 	public void GivenFieldCircularDependency_WhenGetInstance_ThenException() {
 		// given
-		cdi.bind(new ContainerBindingParameters<>(FieldService.class));
+		cdi.bind(new BindingParameters<>(FieldService.class));
 		cdi.configure(config);
 
 		// when
@@ -48,7 +48,7 @@ public class CircularDependencyTest {
 	@Test
 	public void GivenConstructorCircularDependency_WhenGetInstance_ThenException() {
 		// given
-		cdi.bind(new ContainerBindingParameters<>(ConstructorService.class));
+		cdi.bind(new BindingParameters<>(ConstructorService.class));
 		cdi.configure(config);
 
 		// when
@@ -67,7 +67,7 @@ public class CircularDependencyTest {
 	@Test
 	public void GivenMethodCircularDependency_WhenGetInstance_ThenException() {
 		// given
-		cdi.bind(new ContainerBindingParameters<>(MethodService.class));
+		cdi.bind(new BindingParameters<>(MethodService.class));
 		cdi.configure(config);
 
 		// when
@@ -86,9 +86,9 @@ public class CircularDependencyTest {
 	@Test
 	public void GivenGrandfatherCircularDependency_WhenGetInstance_ThenException() {
 		// given
-		cdi.bind(new ContainerBindingParameters<>(Grandfather.class));
-		cdi.bind(new ContainerBindingParameters<>(Father.class));
-		cdi.bind(new ContainerBindingParameters<>(Son.class));
+		cdi.bind(new BindingParameters<>(Grandfather.class));
+		cdi.bind(new BindingParameters<>(Father.class));
+		cdi.bind(new BindingParameters<>(Son.class));
 		cdi.configure(config);
 
 		// when

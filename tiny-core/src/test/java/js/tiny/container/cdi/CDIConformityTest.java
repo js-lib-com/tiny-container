@@ -29,8 +29,8 @@ public class CDIConformityTest {
 	@Test
 	public void GivenTaskService_WhenGetInstance_ThenTaskInjected() {
 		// given
-		cdi.bind(new ContainerBindingParameters<>(Task.class));
-		cdi.bind(new ContainerBindingParameters<>(TaskService.class));
+		cdi.bind(new BindingParameters<>(Task.class));
+		cdi.bind(new BindingParameters<>(TaskService.class));
 		cdi.configure(config);
 
 		// when
@@ -43,8 +43,8 @@ public class CDIConformityTest {
 	@Test
 	public void GivenTwoTasksService_WhenGetInstance_ThenBothTasksInjected() {
 		// given
-		cdi.bind(new ContainerBindingParameters<>(Task.class));
-		cdi.bind(new ContainerBindingParameters<>(TwoTasksService.class));
+		cdi.bind(new BindingParameters<>(Task.class));
+		cdi.bind(new BindingParameters<>(TwoTasksService.class));
 		cdi.configure(config);
 
 		// when
@@ -69,7 +69,7 @@ public class CDIConformityTest {
 	@Test(expected = ProvisionException.class)
 	public void GivenMissingService_WhenGetInstance_ThenException() {
 		// given
-		cdi.bind(new ContainerBindingParameters<>(IService.class).setService(true));
+		cdi.bind(new BindingParameters<>(IService.class).setService(true));
 		cdi.configure(config);
 
 		// when
@@ -81,7 +81,7 @@ public class CDIConformityTest {
 	@Test(expected = ProvisionException.class)
 	public void GivenConstructorFail_WhenGetInstance_ThenException() {
 		// given
-		cdi.bind(new ContainerBindingParameters<>(ExceptionalTask.class));
+		cdi.bind(new BindingParameters<>(ExceptionalTask.class));
 		cdi.configure(config);
 
 		// when

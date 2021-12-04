@@ -11,35 +11,36 @@ import js.injector.ITypedProvider;
 
 /**
  * Container internal bindings builder. Created injector bindings are for container internal use only. This chained builder
- * collects binding parameters into {@link ContainerBindingParameters} and send them to
- * {@link CDI#bind(ContainerBindingParameters)} when {@link #build()} is invoked.
+ * collects binding parameters into {@link BindingParameters} and send them to
+ * {@link CDI#bind(BindingParameters)} when {@link #build()} is invoked.
  * 
  * @author Iulian Rotaru
  */
-public class ContainerBindingBuilder<T> implements IBindingBuilder<T> {
+public class BindingParametersBuilder<T> implements IBindingBuilder<T> {
 	private final CDI cdi;
-	private final ContainerBindingParameters<T> binding;
+	private final BindingParameters<T> parameters;
 
-	public ContainerBindingBuilder(CDI cdi, Class<T> interfaceClass) {
+	public BindingParametersBuilder(CDI cdi, Class<T> interfaceClass) {
 		this.cdi = cdi;
-		this.binding = new ContainerBindingParameters<>(interfaceClass);
+		this.parameters = new BindingParameters<>(interfaceClass);
 	}
 
 	@Override
 	public IBindingBuilder<T> to(Class<? extends T> implementationClass) {
-		binding.setImplementationClass(implementationClass);
+		parameters.setImplementationClass(implementationClass);
 		return this;
 	}
 
 	@Override
 	public IBindingBuilder<T> instance(T instance) {
-		binding.setInstance(instance);
+		parameters.setInstance(instance);
 		return this;
 	}
 
 	@Override
 	public IBindingBuilder<T> on(URI implementationURL) {
-		throw new UnsupportedOperationException();
+		parameters.setImplementationURL(implementationURL);
+		return this;
 	}
 
 	@Override
@@ -69,18 +70,19 @@ public class ContainerBindingBuilder<T> implements IBindingBuilder<T> {
 
 	@Override
 	public IBindingBuilder<T> service() {
-		binding.setService(true);
+		parameters.setService(true);
 		return this;
 	}
 
 	@Override
 	public IBindingBuilder<T> on(String implementationURL) {
-		throw new UnsupportedOperationException();
+		parameters.setImplementationURL(URI.create(implementationURL));
+		return this;
 	}
 
 	@Override
 	public IBindingBuilder<T> in(Class<? extends Annotation> scopeType) {
-		binding.setScope(scopeType);
+		parameters.setScope(scopeType);
 		return this;
 	}
 
@@ -95,7 +97,7 @@ public class ContainerBindingBuilder<T> implements IBindingBuilder<T> {
 	}
 
 	public IBindingBuilder<T> build() {
-		cdi.bind(binding);
+		cdi.bind(parameters);
 		return this;
 	}
 }
