@@ -10,11 +10,18 @@ import js.injector.ScopedProvider;
 import js.lang.BugError;
 
 public class SessionScopeProvider<T> extends ScopedProvider<T> {
-
 	private final Key<T> key;
 
-	protected SessionScopeProvider(Key<T> key, Provider<T> provider) {
-		super(provider);
+	/**
+	 * Construct this session provider instance. Because is not allowed to nest the scoped providers, throws illegal argument if
+	 * given provisioning provider argument is a scoped provider instance.
+	 * 
+	 * @param key instance key for which this session provider is created.
+	 * @param provisioningProvider wrapped provisioning provider.
+	 * @throws IllegalArgumentException if provisioning provider argument is a scoped provider instance.
+	 */
+	public SessionScopeProvider(Key<T> key, Provider<T> provisioningProvider) {
+		super(provisioningProvider);
 		this.key = key;
 	}
 
@@ -36,7 +43,7 @@ public class SessionScopeProvider<T> extends ScopedProvider<T> {
 		if (instance == null) {
 			synchronized (this) {
 				if (instance == null) {
-					instance = provider.get();
+					instance = getProvisioningProvider().get();
 					getSession().setAttribute(key.toScope(), instance);
 				}
 			}
@@ -46,7 +53,7 @@ public class SessionScopeProvider<T> extends ScopedProvider<T> {
 
 	@Override
 	public String toString() {
-		return provider.toString() + ":SESSION";
+		return getProvisioningProvider().toString() + ":SESSION";
 	}
 
 	/**
@@ -61,7 +68,7 @@ public class SessionScopeProvider<T> extends ScopedProvider<T> {
 		RequestContext requestContext = js.tiny.container.spi.Factory.getInstance(RequestContext.class);
 		HttpServletRequest httpRequest = requestContext.getRequest();
 		if (httpRequest == null) {
-			throw new BugError("Invalid web context due to null HTTP request. Cannot create managed instance for |%s| with scope SESSION.", provider.getClass().getCanonicalName());
+			throw new BugError("Invalid web context due to null HTTP request. Cannot create managed instance for |%s| with scope SESSION.", getProvisioningProvider().getClass().getCanonicalName());
 		}
 
 		// create HTTP session if missing; accordingly API httpSession is never null if 'create' flag is true
@@ -76,5 +83,4 @@ public class SessionScopeProvider<T> extends ScopedProvider<T> {
 			return new SessionScopeProvider<>(key, provider);
 		}
 	}
-
 }
