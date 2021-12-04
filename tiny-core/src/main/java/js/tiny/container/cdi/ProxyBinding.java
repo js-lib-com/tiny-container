@@ -24,7 +24,7 @@ class ProxyBinding<T> implements IBinding<T> {
 		Provider<T> provider = provisioningBinding.provider();
 		if (provider instanceof ScopedProvider) {
 			ScopedProvider<T> scopedProvider = (ScopedProvider<T>) provider;
-			scopedProvider.setProvider(new ProxyProvider<>(interfaceClass, managedLoader, scopedProvider.getProvisioningProvider()));
+			scopedProvider.setProvisioningProvider(new ProxyProvider<>(interfaceClass, managedLoader, scopedProvider.getProvisioningProvider()));
 			provider = scopedProvider;
 		} else {
 			provider = new ProxyProvider<>(interfaceClass, managedLoader, provider);

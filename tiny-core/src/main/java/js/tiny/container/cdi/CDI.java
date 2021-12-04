@@ -12,7 +12,6 @@ import js.injector.IModule;
 import js.injector.IProvisionInvocation;
 import js.injector.IProvisionListener;
 import js.injector.IScope;
-import js.injector.Key;
 import js.injector.ProvisionException;
 import js.lang.Config;
 import js.log.Log;
@@ -147,15 +146,11 @@ public class CDI implements IProvisionListener {
 	 * @param interfaceClass interface class used to identify the instance,
 	 * @param instanceListener event listener for instance post construction.
 	 * @return instance, newly created or reused from scope.
-	 * @throws ProvisionException if there is no bindings for requested interface.
+	 * @throws ProvisionException if there is no injector bindings for requested interface class.
 	 * @param <T> instance generic type.
 	 */
 	public <T> T getInstance(Class<T> interfaceClass) {
-		Params.notNull(interfaceClass, "Interface class");
-		if (!configured.get()) {
-			throw new IllegalStateException("Attempt to retrieve instance before injector configuration: " + interfaceClass);
-		}
-		return injector.getInstance(Key.get(interfaceClass));
+		return injector.getInstance(interfaceClass);
 	}
 
 	@Override

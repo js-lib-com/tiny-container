@@ -27,6 +27,7 @@ import org.mockito.junit.MockitoJUnitRunner;
 import js.injector.IInjector;
 import js.injector.IScope;
 import js.injector.Key;
+import js.injector.ProvisionException;
 import js.injector.SessionScoped;
 import js.lang.Config;
 import js.tiny.container.cdi.ConfigModule.InstanceScope;
@@ -308,8 +309,8 @@ public class CDIUnitTest {
 		// then
 	}
 
-	@Test(expected = IllegalStateException.class)
-	public void GivenNotConfigured_WhenGetInstance_ThenException() {
+	@Test(expected = ProvisionException.class)
+	public void GivenNotConfiguredBinding_WhenGetInstance_ThenException() {
 		// given
 
 		// when
