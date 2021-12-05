@@ -1,6 +1,8 @@
 package js.tiny.container.service;
 
-import javax.annotation.PostConstruct;
+import java.util.SortedMap;
+import java.util.TreeMap;
+
 import javax.ejb.Startup;
 
 import js.log.Log;
@@ -10,7 +12,8 @@ import js.tiny.container.spi.IContainerStartProcessor;
 import js.tiny.container.spi.IManagedClass;
 
 /**
- * Auto-create managed instances marked with {@link Startup} annotation.
+ * Auto-create managed instances marked with {@link Startup} annotation in the order declared with
+ * {@link javax.annotation.Priority} annotation.
  * 
  * @author Iulian Rotaru
  */
@@ -23,26 +26,27 @@ public class InstanceStartupProcessor implements IContainerStartProcessor {
 	}
 
 	/**
-	 * Ensure all managed classes marked with 'auto-creation' are instantiated. Invoked at a final stage of container
-	 * initialization, this method checks every managed class that has {@link IManagedClass#isAutoInstanceCreation()} flag set
-	 * and ensure is instantiated.
-	 * <p>
-	 * Takes care to instantiate, configure if the case, and execute post-construct in the order from application descriptor.
-	 * This is critical for assuring that {@link App} is created first; {@link App} class descriptor is declared first into
-	 * application descriptor.
-	 * <p>
-	 * Note that this method does not explicitly execute {@link PostConstruct} hooks; this hooks are actually executed by
-	 * instance processor from life cycle module.
+	 * Ensure all managed classes marked with {@link Startup} annotation are instantiated at container start. Takes care to
+	 * execute all instance creation services like resources injection and post-construct hook.
+	 * 
+	 * If startup classes has also {@link javax.annotation.Priority} annotation use it to control startup order. Zero is the top
+	 * priority and is guaranteed to be executed first. If more classes with the same priority order between them is not
+	 * guaranteed. If priority is not declared classes are started last, in no particular order.
 	 */
 	@Override
 	public void onContainerStart(IContainer container) {
+		SortedMap<Integer, IManagedClass<?>> managedClasses = new TreeMap<>();
 		for (IManagedClass<?> managedClass : container.getManagedClasses()) {
 			if (managedClass.scanAnnotation(Startup.class) != null) {
-				// call getInstance to ensure managed instance with managed lifecycle is started
-				// getInstance() will create instance only if not already exist; returned value is ignored
-				log.debug("Create managed instance with managed lifecycle |%s|.", managedClass);
-				managedClass.getInstance();
+				javax.annotation.Priority priorityAnnotation = managedClass.scanAnnotation(javax.annotation.Priority.class);
+				int priority = priorityAnnotation != null ? priorityAnnotation.value() : Integer.MAX_VALUE;
+				managedClasses.put(priority, managedClass);
 			}
 		}
+
+		managedClasses.values().forEach(managedClass -> {
+			log.debug("Startup managed instance |%s|.", managedClass);
+			managedClass.getInstance();
+		});
 	}
 }
