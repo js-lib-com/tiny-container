@@ -127,6 +127,10 @@ class ManagedClass<T> implements IManagedClass<T>, IInstanceCreatedListener {
 		instancePostConstructors.forEach(processor -> processor.onInstancePostConstruct(instance));
 	}
 
+	public void onInstanceDestroyed(Object instance) {
+		instancePreDestructors.forEach(processor -> processor.onInstancePreDestroy(instance));
+	}
+	
 	@Override
 	public IContainer getContainer() {
 		return container;

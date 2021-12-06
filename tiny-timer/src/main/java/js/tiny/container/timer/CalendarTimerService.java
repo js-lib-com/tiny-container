@@ -62,6 +62,8 @@ public class CalendarTimerService implements IInstancePostConstructProcessor {
 	// TODO: use onInstancePreDestroy to purge instance related timer(s)
 	@Override
 	public <T> void onInstancePostConstruct(final T instance) {
+		log.trace("onInstancePostConstruct(final T)");
+		
 		Class<?> implementationClass = instance.getClass();
 		Set<IManagedMethod> timerMethods = classTimers.get(implementationClass);
 		assert timerMethods != null;

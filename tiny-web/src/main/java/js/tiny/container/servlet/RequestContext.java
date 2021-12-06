@@ -1,7 +1,9 @@
 package js.tiny.container.servlet;
 
 import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.Locale;
+import java.util.Map;
 
 import javax.inject.Singleton;
 import javax.servlet.RequestDispatcher;
@@ -16,13 +18,13 @@ import js.lang.BugError;
 import js.log.Log;
 import js.log.LogFactory;
 
-/**	
+/**
  * Request context stored on current HTTP servlet request thread. This class allows access to container public services and to
  * relatively low level servlet abstractions like {@link HttpServletRequest}. Since exposes tiny container and servlet APIs this
  * class is primarily for framework internal needs. Anyway, there is no formal restriction on using it from applications.
  * <p>
- * Request context instance has {@link ThreadScoped} scope but is valid to be used only within HTTP request boundaries.
- * Request context instance is {@link #attach(HttpServletRequest, HttpServletResponse)}ed on new HTTP request thread and
+ * Request context instance has {@link ThreadScoped} scope but is valid to be used only within HTTP request boundaries. Request
+ * context instance is {@link #attach(HttpServletRequest, HttpServletResponse)}ed on new HTTP request thread and
  * {@link #detach()}ed on HTTP request end.
  * <p>
  * RequestContext is a managed class and can be retrieved from application context or can be injected on fields or constructors.
@@ -83,6 +85,8 @@ public class RequestContext {
 
 	/** Parent container. */
 	private final ITinyContainer container;
+
+	private final Map<String, Object> attributes = new HashMap<>();
 
 	/**
 	 * Original, not pre-processed by {@link RequestPreprocessor} request URI including query string, if any. This value is
@@ -216,6 +220,9 @@ public class RequestContext {
 	 * considered a bug.
 	 */
 	public void detach() {
+		attributes.values().forEach(instance -> container.onInstanceDestroyed(instance));
+		attributes.clear();
+
 		attached = false;
 		locale = null;
 		securityDomain = null;
@@ -416,6 +423,14 @@ public class RequestContext {
 	public <T> T getInitParameter(Class<T> type, String parameterName) {
 		String value = getRequest().getServletContext().getInitParameter(parameterName);
 		return converter.asObject(value, type);
+	}
+
+	public void setAttribute(String name, Object value) {
+		attributes.put(name, value);
+	}
+
+	public Object getAttribute(String name) {
+		return attributes.get(name);
 	}
 
 	/** Dump this request context state to error logger. If this instance is not attached this method is NOP. */

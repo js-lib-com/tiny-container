@@ -6,7 +6,6 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.ListIterator;
 import java.util.Map;
 import java.util.ServiceLoader;
 import java.util.Set;
@@ -24,6 +23,7 @@ import js.tiny.container.cdi.IClassBinding;
 import js.tiny.container.cdi.IInstanceCreatedListener;
 import js.tiny.container.cdi.IManagedLoader;
 import js.tiny.container.spi.IContainer;
+import js.tiny.container.spi.IContainerCloseProcessor;
 import js.tiny.container.spi.IContainerService;
 import js.tiny.container.spi.IContainerStartProcessor;
 import js.tiny.container.spi.IManagedClass;
@@ -54,6 +54,7 @@ public class Container implements IContainer, AppContainer, IInstanceCreatedList
 	private final Map<Class<?>, ManagedClass<?>> managedImplementations = new HashMap<>();
 
 	private final FlowProcessorsSet<IContainerStartProcessor> containerStartProcessors = new FlowProcessorsSet<>();
+	private final FlowProcessorsSet<IContainerCloseProcessor> containerCloseProcessors = new FlowProcessorsSet<>();
 
 	public Container() {
 		this(false);
@@ -82,6 +83,9 @@ public class Container implements IContainer, AppContainer, IInstanceCreatedList
 
 			if (service instanceof IContainerStartProcessor) {
 				containerStartProcessors.add((IContainerStartProcessor) service);
+			}
+			if (service instanceof IContainerCloseProcessor) {
+				containerCloseProcessors.add((IContainerCloseProcessor) service);
 			}
 		}
 	}
@@ -114,10 +118,10 @@ public class Container implements IContainer, AppContainer, IInstanceCreatedList
 	void createManagedClasses(List<IClassBinding<?>> bindings) {
 		for (IClassBinding<?> binding : bindings) {
 			ManagedClass<?> managedClass = new ManagedClass<>(this, binding);
-			if(!managedClass.scanServices()) {
+			if (!managedClass.scanServices()) {
 				continue;
 			}
-			
+
 			log.debug("Create managed class |%s|.", managedClass);
 			managedClasses.add(managedClass);
 
@@ -126,25 +130,17 @@ public class Container implements IContainer, AppContainer, IInstanceCreatedList
 		}
 	}
 
-	/** Execute container services registered to {@link #containerStartProcessors}. */
+	/** Execute container start processors, registered to {@link #containerStartProcessors}. */
 	public void start() {
 		log.trace("start()");
-		containerStartProcessors.forEach(processor -> {
-			processor.onContainerStart(this);
-		});
+		containerStartProcessors.forEach(processor -> processor.onContainerStart(this));
 	}
 
-	/** Close managed classes in reverse creation order then destroy all services. */
+	/** Execute container close processors, registered to {@link #containerCloseProcessors}, then destroy all services. */
 	@Override
 	public void close() {
 		log.trace("close()");
-
-		// although not specified in apidoc, list iterator size should be provided
-		ListIterator<IManagedClass<?>> iterator = managedClasses.listIterator(managedClasses.size());
-		while (iterator.hasPrevious()) {
-			iterator.previous().close();
-		}
-
+		containerCloseProcessors.forEach(processor -> processor.onContainerClose(this));
 		services.forEach(service -> service.destroy());
 	}
 
@@ -162,6 +158,19 @@ public class Container implements IContainer, AppContainer, IInstanceCreatedList
 		// not all instances created by injector have managed classes
 		if (managedClass != null) {
 			managedClass.onInstanceCreated(instance);
+		}
+	}
+
+	/**
+	 * Receives notification that an instance was cleared from a scope cache.
+	 * 
+	 * @param instance
+	 */
+	public void onInstanceDestroyed(Object instance) {
+		ManagedClass<?> managedClass = managedImplementations.get(instance.getClass());
+		// not all instances created by injector have managed classes
+		if (managedClass != null) {
+			managedClass.onInstanceDestroyed(instance);
 		}
 	}
 

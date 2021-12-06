@@ -33,11 +33,11 @@ class BindingParametersModule extends AbstractModule {
 			if (parameters.isService()) {
 				builder.service();
 			}
-			if (parameters.getScope() != null) {
-				builder.in(parameters.getScope());
-			}
 			if (parameters.getImplementationURL() != null) {
 				builder.on(parameters.getImplementationURL());
+			}
+			if (parameters.getScope() != null) {
+				builder.in(parameters.getScope());
 			}
 		});
 	}

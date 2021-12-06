@@ -10,10 +10,12 @@ import javax.inject.Singleton;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
+import javax.servlet.http.HttpSession;
 import javax.servlet.http.HttpSessionEvent;
 import javax.servlet.http.HttpSessionListener;
 
 import js.converter.ConverterRegistry;
+import js.injector.RequestScoped;
 import js.injector.SessionScoped;
 import js.injector.ThreadScoped;
 import js.lang.BugError;
@@ -173,6 +175,7 @@ public class TinyContainer extends Container implements ServletContextListener, 
 		bind(RequestContext.class).in(ThreadScoped.class).build();
 		bind(EventStreamManager.class).to(EventStreamManagerImpl.class).in(Singleton.class).build();
 
+		bindScope(RequestScoped.class, new RequestScopeProvider.Factory<>());
 		bindScope(SessionScoped.class, new SessionScopeProvider.Factory<>());
 
 		this.security = security;
@@ -284,6 +287,7 @@ public class TinyContainer extends Container implements ServletContextListener, 
 	 * 
 	 * @param sessionEvent session event provided by servlet container.
 	 */
+	@Override
 	public void sessionCreated(HttpSessionEvent sessionEvent) {
 		log.trace("Create HTTP session |%s|.", sessionEvent.getSession().getId());
 	}
@@ -293,8 +297,17 @@ public class TinyContainer extends Container implements ServletContextListener, 
 	 * 
 	 * @param sessionEvent session event provided by servlet container.
 	 */
+	@Override
 	public void sessionDestroyed(HttpSessionEvent sessionEvent) {
-		log.trace("Destroy HTTP session |%s|.", sessionEvent.getSession().getId());
+		HttpSession httpSession = sessionEvent.getSession();
+		log.trace("Destroy HTTP session |%s|.", httpSession.getId());
+
+		Enumeration<String> attributes = httpSession.getAttributeNames();
+		while (attributes.hasMoreElements()) {
+			// TODO: check that attribute name has the pattern for scope provider instance
+			Object instance = httpSession.getAttribute(attributes.nextElement());
+			onInstanceDestroyed(instance);
+		}
 	}
 
 	// --------------------------------------------------------------------------------------------

@@ -2,6 +2,7 @@ package js.tiny.container.service;
 
 import java.util.SortedMap;
 import java.util.TreeMap;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.ejb.Startup;
 
@@ -17,12 +18,18 @@ import js.tiny.container.spi.IManagedClass;
  * 
  * @author Iulian Rotaru
  */
-public class InstanceStartupProcessor implements IContainerStartProcessor {
-	private static final Log log = LogFactory.getLog(InstanceStartupProcessor.class);
+public class ManagedInstanceStartupProcessor implements IContainerStartProcessor {
+	private static final Log log = LogFactory.getLog(ManagedInstanceStartupProcessor.class);
+
+	/**
+	 * Low priority value used when no priority annotation is declared. It is initialized at a reasonable large integer value
+	 * and incremented on every use.
+	 */
+	private static final AtomicInteger LOW_PRIORITY = new AtomicInteger(Integer.MAX_VALUE >> 1);
 
 	@Override
 	public Priority getPriority() {
-		return Priority.START;
+		return Priority.SINGLETON_START;
 	}
 
 	/**
@@ -35,11 +42,13 @@ public class InstanceStartupProcessor implements IContainerStartProcessor {
 	 */
 	@Override
 	public void onContainerStart(IContainer container) {
+		log.trace("onContainerStart(IContainer)");
+
 		SortedMap<Integer, IManagedClass<?>> managedClasses = new TreeMap<>();
 		for (IManagedClass<?> managedClass : container.getManagedClasses()) {
 			if (managedClass.scanAnnotation(Startup.class) != null) {
 				javax.annotation.Priority priorityAnnotation = managedClass.scanAnnotation(javax.annotation.Priority.class);
-				int priority = priorityAnnotation != null ? priorityAnnotation.value() : Integer.MAX_VALUE;
+				int priority = priorityAnnotation != null ? priorityAnnotation.value() : LOW_PRIORITY.getAndIncrement();
 				managedClasses.put(priority, managedClass);
 			}
 		}

@@ -22,13 +22,13 @@ public class InstanceStartupProcessorTest {
 	@Mock
 	private IManagedClass<?> managedClass;
 
-	private InstanceStartupProcessor processor;
+	private ManagedInstanceStartupProcessor processor;
 
 	@Before
 	public void beforeTest() {
 		when(container.getManagedClasses()).thenReturn(Arrays.asList(managedClass));
 		
-		processor = new InstanceStartupProcessor();
+		processor = new ManagedInstanceStartupProcessor();
 	}
 
 	@Test

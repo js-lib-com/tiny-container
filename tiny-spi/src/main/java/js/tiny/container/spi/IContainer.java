@@ -63,4 +63,6 @@ public interface IContainer {
 	 */
 	List<IManagedClass<?>> getManagedClasses();
 
+	void onInstanceDestroyed(Object instance);
+	
 }

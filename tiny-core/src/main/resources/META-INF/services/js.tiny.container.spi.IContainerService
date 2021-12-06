@@ -1,3 +1,4 @@
-js.tiny.container.service.InstanceStartupProcessor
+js.tiny.container.service.ManagedInstanceStartupProcessor
+js.tiny.container.service.ManagedClassCloseProcessor
 js.tiny.container.service.InstancePostConstructor
 js.tiny.container.service.InstancePreDestructor
