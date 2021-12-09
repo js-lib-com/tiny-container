@@ -13,5 +13,16 @@
 			<artifactId>tiny-web</artifactId>
 			<version>${revision}</version>
 		</dependency>
+		<dependency>
+			<groupId>com.js-lib</groupId>
+			<artifactId>js-injector</artifactId>
+			<version>1.0.0</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>com.js-lib</groupId>
+			<artifactId>js-json</artifactId>
+			<version>2.1.0</version>
+		</dependency>
 	</dependencies>
 </project>

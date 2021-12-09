@@ -1,8 +1,9 @@
 package js.tiny.container.rest;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.ArrayList;
+import java.util.List;
 
+import javax.ws.rs.HttpMethod;
 import javax.ws.rs.Path;
 
 import js.tiny.container.servlet.RequestContext;
@@ -26,16 +27,16 @@ public class MethodsCache {
 		return instance;
 	}
 
-	private final Map<String, IManagedMethod> cache = new HashMap<>();
+	private final PathTree<IManagedMethod> cache = new PathTree<>();
 
-	public String add(IManagedMethod managedMethod) {
-		String key = key(managedMethod);
+	public List<String> add(IManagedMethod managedMethod) {
+		List<String> key = key(managedMethod);
 		cache.put(key, managedMethod);
 		return key;
 	}
 
-	public IManagedMethod get(String requestPath) {
-		return cache.get(key(requestPath));
+	public PathTree.Item<IManagedMethod> get(String method, String requestPath) {
+		return cache.get(paths(method, requestPath));
 	}
 
 	/**
@@ -56,28 +57,31 @@ public class MethodsCache {
 	 * @param managedMethod REST method.
 	 * @return REST method key.
 	 */
-	static String key(IManagedMethod managedMethod) {
-		StringBuilder key = new StringBuilder();
-		String classPath = path(managedMethod.getDeclaringClass());
-		if (classPath != null) {
-			key.append('/');
-			key.append(classPath);
+	static List<String> key(IManagedMethod managedMethod) {
+		// scan all method annotations for first with meta-annotation @HttpMethod and gets its value
+		String httpMethod = managedMethod.scanAnnotations(annotation -> {
+			HttpMethod httpMethodAnnotation = annotation.annotationType().getAnnotation(HttpMethod.class);
+			return httpMethodAnnotation != null ? httpMethodAnnotation.value() : null;
+		});
+		if (httpMethod == null) {
+			httpMethod = "GET";
 		}
-		key.append('/');
-		String methodPath = path(managedMethod);
+
+		// build path from class and / or method @Path annotation or from dashed method name
+		StringBuilder path = new StringBuilder();
+		String classPath = path(managedMethod.getDeclaringClass().scanAnnotation(Path.class));
+		if (classPath != null && !classPath.equals("/")) {
+			path.append('/');
+			path.append(classPath);
+		}
+		path.append('/');
+		String methodPath = path(managedMethod.scanAnnotation(Path.class));
 		if (methodPath == null) {
 			methodPath = Strings.memberToDashCase(managedMethod.getName());
 		}
-		key.append(methodPath);
-		return key.toString();
-	}
+		path.append(methodPath);
 
-	private static String path(IManagedClass<?> managedClass) {
-		return path(managedClass.scanAnnotation(Path.class));
-	}
-
-	private static String path(IManagedMethod managedMethod) {
-		return path(managedMethod.scanAnnotation(Path.class));
+		return paths(httpMethod, path.toString());
 	}
 
 	private static String path(Path path) {
@@ -106,7 +110,7 @@ public class MethodsCache {
 	 * @param requestPath request path identify REST resource to retrieve.
 	 * @return REST method key.
 	 */
-	static String key(String requestPath) {
+	static List<String> key(String httpMethod, String requestPath) {
 		int queryParametersIndex = requestPath.lastIndexOf('?');
 		if (queryParametersIndex == -1) {
 			queryParametersIndex = requestPath.length();
@@ -115,6 +119,13 @@ public class MethodsCache {
 		if (extensionIndex == -1) {
 			extensionIndex = queryParametersIndex;
 		}
-		return requestPath.substring(0, extensionIndex);
+		return paths(httpMethod, requestPath.substring(0, extensionIndex));
+	}
+
+	private static List<String> paths(String httpMethod, String path) {
+		List<String> paths = new ArrayList<>();
+		paths.add(httpMethod);
+		paths.addAll(Strings.split(path, '/'));
+		return paths;
 	}
 }

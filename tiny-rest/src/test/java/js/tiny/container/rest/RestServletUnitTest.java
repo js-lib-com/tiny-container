@@ -87,6 +87,7 @@ public class RestServletUnitTest {
 
 		doReturn(managedClass).when(managedMethod).getDeclaringClass();
 
+		when(httpRequest.getMethod()).thenReturn("POST");
 		when(httpRequest.getRequestURI()).thenReturn("/test-app/rest/sub-resource");
 		when(httpRequest.getContextPath()).thenReturn("/test-app");
 		when(httpRequest.getPathInfo()).thenReturn("/resource/rest/sub-resource");
@@ -94,7 +95,7 @@ public class RestServletUnitTest {
 
 		when(httpResponse.getOutputStream()).thenReturn(responseStream);
 
-		when(cache.get("/resource/rest/sub-resource")).thenReturn(managedMethod);
+		when(cache.get("POST", "/resource/rest/sub-resource")).thenReturn(new PathTree.Item<>(managedMethod));
 		when(encoders.getArgumentsReader(eq(httpRequest), any())).thenReturn(argumentsReader);
 		when(encoders.getValueWriter(any())).thenReturn(valueWriter);
 		when(argumentsReader.read(eq(httpRequest), any())).thenReturn(new Object[] {});

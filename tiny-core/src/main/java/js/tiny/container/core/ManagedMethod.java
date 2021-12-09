@@ -7,6 +7,7 @@ import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.function.Function;
 
 import js.tiny.container.spi.IContainerService;
 import js.tiny.container.spi.IInvocation;
@@ -167,18 +168,55 @@ class ManagedMethod implements IManagedMethod, IMethodInvocationProcessor {
 	}
 
 	@Override
-	public <T extends Annotation> T scanAnnotation(Class<T> annotationClass) {
+	public <T extends Annotation> T scanAnnotation(Class<T> annotationClass, Flags... flags) {
 		T annotation = method.getAnnotation(annotationClass);
-		if (annotation == null) {
-			final String name = method.getName();
-			final Class<?>[] parameterTypes = method.getParameterTypes();
-			final Class<?> interfaceClass = declaringClass.getInterfaceClass();
+		if (annotation == null && hasInterface()) {
 			try {
-				annotation = interfaceClass.getMethod(name, parameterTypes).getAnnotation(annotationClass);
+				annotation = interfaceMethod().getAnnotation(annotationClass);
 			} catch (NoSuchMethodException unused) {
 			}
 		}
+
+		// if desired annotation has target ElementType.TYPE give a try on method declaring class
+		if (annotation == null && flags.length == 1 && flags[0] == Flags.INCLUDE_TYPES) {
+			annotation = declaringClass.scanAnnotation(annotationClass);
+		}
 		return annotation;
+	}
+
+	@Override
+	public <T> T scanAnnotations(Function<Annotation, T> function) {
+		for (Annotation annotation : method.getAnnotations()) {
+			T t = function.apply(annotation);
+			if (t != null) {
+				return t;
+			}
+		}
+
+		if (hasInterface()) {
+			try {
+				for (Annotation annotation : interfaceMethod().getAnnotations()) {
+					T t = function.apply(annotation);
+					if (t != null) {
+						return t;
+					}
+				}
+			} catch (NoSuchMethodException unused) {
+			}
+		}
+
+		return null;
+	}
+
+	private boolean hasInterface() {
+		return !declaringClass.getInterfaceClass().equals(declaringClass.getImplementationClass());
+	}
+
+	private Method interfaceMethod() throws NoSuchMethodException {
+		final String name = method.getName();
+		final Class<?>[] parameterTypes = method.getParameterTypes();
+		final Class<?> interfaceClass = declaringClass.getInterfaceClass();
+		return interfaceClass.getMethod(name, parameterTypes);
 	}
 
 	@Override

@@ -1,8 +1,11 @@
 package js.tiny.container.rest;
 
-import static org.junit.Assert.assertEquals;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.contains;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.when;
+
+import java.util.List;
 
 import javax.ejb.Remote;
 import javax.ws.rs.Path;
@@ -46,25 +49,37 @@ public class MethodsCacheTest {
 		// given
 		when(methodPath.value()).thenReturn("sub-resource");
 
-
 		// when
-		String key = MethodsCache.key(managedMethod);
+		List<String> key = MethodsCache.key(managedMethod);
 
 		// then
-		assertEquals("/resource/sub-resource", key);
+		assertThat(key, contains("GET", "resource", "sub-resource"));
 	}
 
 	@Test
-	public void GivenRootContext_WhenCreateStorageKey_ThenNoAppContext() throws Exception {
+	public void GivenMissingClassPath_WhenCreateStorageKey_ThenNoAppContext() throws Exception {
 		// given
 		when(managedClass.scanAnnotation(Path.class)).thenReturn(null);
 		when(methodPath.value()).thenReturn("sub-resource");
 
 		// when
-		String key = MethodsCache.key(managedMethod);
+		List<String> key = MethodsCache.key(managedMethod);
 
 		// then
-		assertEquals("/sub-resource", key);
+		assertThat(key, contains("GET", "sub-resource"));
+	}
+
+	@Test
+	public void GivenRootContext_WhenCreateStorageKey_ThenNoAppContext() throws Exception {
+		// given
+		when(classPath.value()).thenReturn("/");
+		when(methodPath.value()).thenReturn("sub-resource");
+
+		// when
+		List<String> key = MethodsCache.key(managedMethod);
+
+		// then
+		assertThat(key, contains("GET", "sub-resource"));
 	}
 
 	@Test
@@ -74,10 +89,10 @@ public class MethodsCacheTest {
 		when(managedMethod.getName()).thenReturn("toString");
 
 		// when
-		String key = MethodsCache.key(managedMethod);
+		List<String> key = MethodsCache.key(managedMethod);
 
 		// then
-		assertEquals("/resource/to-string", key);
+		assertThat(key, contains("GET", "resource", "to-string"));
 	}
 
 	@Test
@@ -87,10 +102,10 @@ public class MethodsCacheTest {
 		when(managedMethod.getName()).thenReturn("toString");
 
 		// when
-		String key = MethodsCache.key(managedMethod);
+		List<String> key = MethodsCache.key(managedMethod);
 
 		// then
-		assertEquals("/resource/to-string", key);
+		assertThat(key, contains("GET", "resource", "to-string"));
 	}
 
 	@Test
@@ -100,22 +115,22 @@ public class MethodsCacheTest {
 		when(managedMethod.getName()).thenReturn("toString");
 
 		// when
-		String key = MethodsCache.key(managedMethod);
+		List<String> key = MethodsCache.key(managedMethod);
 
 		// then
-		assertEquals("/resource/to-string", key);
+		assertThat(key, contains("GET", "resource", "to-string"));
 	}
 
 	@Test
 	public void GivenValidRequestPath_WhenCreateRetrieveKey_ThenValidKey() throws Exception {
-		assertEquals("/resource/sub-resource", MethodsCache.key("/resource/sub-resource?query"));
-		assertEquals("/resource/sub-resource", MethodsCache.key("/resource/sub-resource?"));
-		assertEquals("/resource/sub-resource", MethodsCache.key("/resource/sub-resource"));
+		assertThat(MethodsCache.key("GET", "/resource/sub-resource?query"), contains("GET", "resource", "sub-resource"));
+		assertThat(MethodsCache.key("GET", "/resource/sub-resource?"), contains("GET", "resource", "sub-resource"));
+		assertThat(MethodsCache.key("GET", "/resource/sub-resource"), contains("GET", "resource", "sub-resource"));
 
-		assertEquals("/resource/sub-resource", MethodsCache.key("/resource/sub-resource.ext?query"));
+		assertThat(MethodsCache.key("GET", "/resource/sub-resource.ext?query"), contains("GET", "resource", "sub-resource"));
 
-		assertEquals("/sub-resource", MethodsCache.key("/sub-resource?query"));
-		assertEquals("/sub-resource", MethodsCache.key("/sub-resource?"));
-		assertEquals("/sub-resource", MethodsCache.key("/sub-resource"));
+		assertThat(MethodsCache.key("GET", "/sub-resource?query"), contains("GET", "sub-resource"));
+		assertThat(MethodsCache.key("GET", "/sub-resource?"), contains("GET", "sub-resource"));
+		assertThat(MethodsCache.key("GET", "/sub-resource"), contains("GET", "sub-resource"));
 	}
 }

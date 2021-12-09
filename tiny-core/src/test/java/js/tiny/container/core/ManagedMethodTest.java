@@ -72,7 +72,7 @@ public class ManagedMethodTest {
 
 		// then
 		assertThat(annotation, notNullValue());
-		verify(managedClass, times(1)).getInterfaceClass();
+		verify(managedClass, times(2)).getInterfaceClass();
 	}
 
 	@Test

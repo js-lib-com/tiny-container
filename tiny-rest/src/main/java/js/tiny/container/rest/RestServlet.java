@@ -138,14 +138,23 @@ public class RestServlet extends AppServlet {
 		IManagedMethod managedMethod = null;
 
 		try {
-			managedMethod = cache.get(httpRequest.getPathInfo());
+			PathTree.Item<IManagedMethod> item = cache.get(httpRequest.getMethod(), httpRequest.getPathInfo());
+			managedMethod = item.getValue();
 			if (managedMethod == null) {
 				throw new NoSuchMethodException();
 			}
 
 			Type[] formalParameters = managedMethod.getParameterTypes();
-			argumentsReader = argumentsReaderFactory.getArgumentsReader(httpRequest, formalParameters);
-			Object[] arguments = argumentsReader.read(httpRequest, formalParameters);
+			Object[] arguments;
+			if (item.hasVariables()) {
+				arguments = new Object[formalParameters.length];
+				for (int i = 0; i < arguments.length; ++i) {
+					arguments[i] = item.getVariableValue(i, formalParameters[i]);
+				}
+			} else {
+				argumentsReader = argumentsReaderFactory.getArgumentsReader(httpRequest, formalParameters);
+				arguments = argumentsReader.read(httpRequest, formalParameters);
+			}
 
 			Object instance = managedMethod.getDeclaringClass().getInstance();
 			value = managedMethod.invoke(instance, arguments);
@@ -195,7 +204,7 @@ public class RestServlet extends AppServlet {
 		// JSON but with limited capacity; if capacity is not exceeded set response content length; if capacity is exceeded
 		// switch to chunked transfer
 
-		Produces producesMeta = managedMethod.scanAnnotation(Produces.class);
+		Produces producesMeta = managedMethod.scanAnnotation(Produces.class, IManagedMethod.Flags.INCLUDE_TYPES);
 		String produces = producesMeta != null ? producesMeta.value().length > 0 ? producesMeta.value()[0] : null : null;
 
 		ContentType contentType = ContentType.valueOf(produces);

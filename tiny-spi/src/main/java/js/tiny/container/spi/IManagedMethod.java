@@ -2,6 +2,7 @@ package js.tiny.container.spi;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Type;
+import java.util.function.Function;
 
 /**
  * Managed method deals, beside the actual application method invocation, with container services execution. It is the central
@@ -83,6 +84,12 @@ public interface IManagedMethod {
 	 * @return method annotation instance or null if not found.
 	 * @param <T> generic annotation type.
 	 */
-	<A extends Annotation> A scanAnnotation(Class<A> annotationClass);
+	<A extends Annotation> A scanAnnotation(Class<A> annotationClass, Flags... flags);
+
+	<T> T scanAnnotations(Function<Annotation, T> predicate);
+
+	enum Flags {
+		INCLUDE_TYPES
+	}
 
 }

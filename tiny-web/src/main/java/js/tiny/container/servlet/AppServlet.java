@@ -169,7 +169,7 @@ public abstract class AppServlet extends HttpServlet {
 		// takes care to properly initialize request context for every HTTP request
 		RequestContext context = container.getInstance(RequestContext.class);
 		context.attach(httpRequest, httpResponse);
-		log.trace("Processing request |%s|.", requestURI);
+		log.trace("Processing request |%s:%s|.", httpRequest.getMethod(), requestURI);
 
 		// if this request was forwarded from preview servlet ensure container is authenticated
 		// current context should declare context parameter js.tiny.container.preview.context
