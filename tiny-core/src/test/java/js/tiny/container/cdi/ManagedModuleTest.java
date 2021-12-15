@@ -42,8 +42,10 @@ public class ManagedModuleTest {
 	public void beforeTest() {
 		when(module.bindings()).thenReturn(Arrays.asList(binding));
 		doReturn(key).when(binding).key();
+		doReturn(Object.class).when(key).type();
+		doReturn(Object.class).when(typedProvider).type();
 		
-		managedModule = new ManagedModule(injector, managedLoader, false);
+		managedModule = new ManagedModule(injector, managedLoader);
 	}
 
 	@Test

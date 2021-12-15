@@ -43,7 +43,7 @@ public class ProxyProcessingTest {
 		bindings = new ArrayList<>();
 		when(module.bindings()).thenReturn(bindings);
 
-		cdi = CDI.create(true);
+		cdi = CDI.create();
 		cdi.setManagedLoader(loader);
 	}
 

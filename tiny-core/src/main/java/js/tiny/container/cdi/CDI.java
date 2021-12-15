@@ -31,14 +31,7 @@ public class CDI implements IProvisionListener {
 		return new CDI();
 	}
 
-	public static CDI create(boolean proxyProcessing) {
-		log.trace("create(boolean)");
-		return new CDI(proxyProcessing);
-	}
-
 	// --------------------------------------------------------------------------------------------
-
-	private final boolean proxyProcessing;
 
 	/** Explicit bindings, and instance and scope bindings collected from container. */
 	private final StaticModule staticModule;
@@ -58,12 +51,7 @@ public class CDI implements IProvisionListener {
 	private IInstanceCreatedListener instanceCreatedListener;
 
 	private CDI() {
-		this(false);
-	}
-
-	private CDI(boolean proxyProcessing) {
-		log.trace("CDI(boolean)");
-		this.proxyProcessing = proxyProcessing;
+		log.trace("CDI()");
 		this.staticModule = new StaticModule();
 		this.parametersModule = new BindingParametersModule();
 		this.injector = IInjector.create();
@@ -118,7 +106,7 @@ public class CDI implements IProvisionListener {
 	public List<IClassBinding<?>> configure(Object... arguments) {
 		log.trace("configure(Object...)");
 
-		ManagedModule managedModule = new ManagedModule(injector, managedLoader, proxyProcessing);
+		ManagedModule managedModule = new ManagedModule(injector, managedLoader);
 		managedModule.addModule(staticModule);
 		managedModule.addModule(parametersModule);
 		for (Object argument : arguments) {

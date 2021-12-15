@@ -37,15 +37,13 @@ class ManagedModule implements IModule {
 
 	private final IInjector injector;
 	private final IManagedLoader managedLoader;
-	private final boolean proxyProcessing;
 	private final List<IClassBinding<?>> classBindings = new ArrayList<>();
 
 	private final List<IBinding<?>> injectorBindings = new ArrayList<>();
 
-	public ManagedModule(IInjector injector, IManagedLoader managedLoader, boolean proxyProcessing) {
+	public ManagedModule(IInjector injector, IManagedLoader managedLoader) {
 		this.injector = injector;
 		this.managedLoader = managedLoader;
-		this.proxyProcessing = proxyProcessing;
 	}
 
 	public void addModule(IModule module) {
@@ -68,7 +66,7 @@ class ManagedModule implements IModule {
 		Class<? extends T> implementationClass = ((ITypedProvider<T>) provider).type();
 		classBindings.add(new ClassBinding<>(interfaceClass, implementationClass));
 
-		if (proxyProcessing && isProxyAnnotationPresent(interfaceClass, implementationClass)) {
+		if (isProxyAnnotationPresent(interfaceClass, implementationClass)) {
 			injectorBindings.add(ProxyBinding.create(managedLoader, binding));
 		} else {
 			injectorBindings.add(binding);
