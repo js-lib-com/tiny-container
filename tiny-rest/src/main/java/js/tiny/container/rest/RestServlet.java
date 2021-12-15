@@ -138,7 +138,11 @@ public class RestServlet extends AppServlet {
 		IManagedMethod managedMethod = null;
 
 		try {
-			PathTree.Item<IManagedMethod> item = cache.get(httpRequest.getMethod(), httpRequest.getPathInfo());
+			String pathInfo = httpRequest.getPathInfo();
+			if(pathInfo == null) {
+				pathInfo = httpRequest.getRequestURI().substring(httpRequest.getContextPath().length());
+			}
+			PathTree.Item<IManagedMethod> item = cache.get(httpRequest.getMethod(), pathInfo);
 			managedMethod = item.getValue();
 			if (managedMethod == null) {
 				throw new NoSuchMethodException();
