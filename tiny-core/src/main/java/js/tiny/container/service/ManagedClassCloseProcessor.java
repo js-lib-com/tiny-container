@@ -28,7 +28,7 @@ public class ManagedClassCloseProcessor implements IContainerCloseProcessor {
 	@Override
 	public void onContainerClose(IContainer container) {
 		log.trace("onContainerClose(IContainer)");
-		
+
 		SortedMap<Integer, IManagedClass<?>> managedClasses = new TreeMap<>(Collections.reverseOrder());
 
 		for (IManagedClass<?> managedClass : container.getManagedClasses()) {
@@ -37,6 +37,6 @@ public class ManagedClassCloseProcessor implements IContainerCloseProcessor {
 			managedClasses.put(priority, managedClass);
 		}
 
-		managedClasses.values().forEach(managedClass -> managedClass.close());
+		managedClasses.values().forEach(IManagedClass::close);
 	}
 }

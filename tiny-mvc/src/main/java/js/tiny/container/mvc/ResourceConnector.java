@@ -35,7 +35,6 @@ public class ResourceConnector implements IConnector, IClassPostLoadedProcessor 
 
 	@Override
 	public <T> boolean onClassPostLoaded(IManagedClass<T> managedClass) {
-		log.trace("onClassPostLoaded(IManagedClass<T>)");
 		Controller controller = managedClass.scanAnnotation(Controller.class);
 		if (controller == null) {
 			return false;

@@ -23,7 +23,6 @@ public class RestConnector implements IConnector, IClassPostLoadedProcessor {
 
 	@Inject
 	public RestConnector() {
-		log.trace("RestConnector()");
 		this.cache = MethodsCache.instance();
 	}
 
@@ -44,7 +43,6 @@ public class RestConnector implements IConnector, IClassPostLoadedProcessor {
 
 	@Override
 	public <T> boolean onClassPostLoaded(IManagedClass<T> managedClass) {
-		log.trace("onClassPostLoaded(IManagedClass<T>)");
 		Remote remote = managedClass.scanAnnotation(Remote.class);
 		if (remote == null) {
 			return false;

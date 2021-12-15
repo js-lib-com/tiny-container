@@ -20,10 +20,6 @@ public class InstancePreDestructor extends BaseInstanceLifecycle implements IIns
 	/** Cache for @PreDestroy methods filled on the fly. */
 	private static final Map<Class<?>, Method> PRE_DESTROY_METHODS = new HashMap<>();
 
-	public InstancePreDestructor() {
-		log.trace("InstancePreDestroyProcessor()");
-	}
-
 	@Override
 	public Priority getPriority() {
 		return Priority.DESTRUCTOR;

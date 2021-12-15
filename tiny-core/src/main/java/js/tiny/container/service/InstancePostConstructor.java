@@ -28,10 +28,6 @@ public class InstancePostConstructor extends BaseInstanceLifecycle implements II
 	/** Cache for @PostConstruct methods filled on the fly. */
 	private static final Map<Class<?>, Method> POST_CONSTRUCT_METHODS = new HashMap<>();
 
-	public InstancePostConstructor() {
-		log.trace("InstancePostConstructProcessor()");
-	}
-
 	@Override
 	public Priority getPriority() {
 		return Priority.CONSTRUCTOR;

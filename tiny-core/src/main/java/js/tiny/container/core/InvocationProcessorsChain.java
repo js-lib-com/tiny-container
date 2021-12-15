@@ -5,23 +5,21 @@ import java.util.Iterator;
 import java.util.List;
 
 import js.lang.BugError;
-import js.log.Log;
-import js.log.LogFactory;
 import js.tiny.container.spi.IInvocation;
 import js.tiny.container.spi.IInvocationProcessorsChain;
 import js.tiny.container.spi.IManagedMethod;
 import js.tiny.container.spi.IMethodInvocationProcessor;
 
 class InvocationProcessorsChain implements IInvocationProcessorsChain {
-	private static final Log log = LogFactory.getLog(InvocationProcessorsChain.class);
-
-	/** List of method invocation processors in the proper order for execution. */
+	/**
+	 * List of method invocation processors in the proper order for execution. Managed method is a method invocation processor
+	 * too and is the last item on this list.
+	 */
 	private final List<IMethodInvocationProcessor> processors;
 
 	private final Iterator<IMethodInvocationProcessor> iterator;
 
 	public InvocationProcessorsChain(FlowProcessorsSet<IMethodInvocationProcessor> processors, IMethodInvocationProcessor managedMethod) {
-		log.trace("MethodInvocationProcessorsChain()");
 		this.processors = new ArrayList<>();
 		processors.forEach(processor -> this.processors.add(processor));
 		// managed method is a method invocation processor too
