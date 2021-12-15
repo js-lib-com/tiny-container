@@ -13,10 +13,6 @@ import js.tiny.container.spi.IMethodInvocationProcessor;
 public class AsyncService implements IMethodInvocationProcessor {
 	private static final Log log = LogFactory.getLog(AsyncService.class);
 
-	public AsyncService() {
-		log.trace("AsyncService()");
-	}
-
 	@Override
 	public Priority getPriority() {
 		return Priority.ASYNCHRONOUS;
@@ -38,13 +34,23 @@ public class AsyncService implements IMethodInvocationProcessor {
 	 * 
 	 */
 	@Override
-	public Object onMethodInvocation(IInvocationProcessorsChain chain, IInvocation invocation) throws Exception {
+	public Object onMethodInvocation(final IInvocationProcessorsChain chain, final IInvocation invocation) throws Exception {
 		log.debug("Execute asynchronous |%s|.", invocation.method());
 		AsyncTask<Void> asyncTask = new AsyncTask<Void>() {
 			@Override
 			protected Void execute() throws Throwable {
-				chain.invokeNextProcessor(invocation);
+				long start = System.nanoTime();
+				try {
+					chain.invokeNextProcessor(invocation);
+				} finally {
+					log.trace("Asynchronous method |%s| processed in %.2f msec.", invocation.method(), (System.nanoTime() - start) / 1000000.0);
+				}
 				return null;
+			}
+
+			@Override
+			protected void onThrowable(Throwable throwable) {
+				log.dump(String.format("Fail on asynchronous method |%s|:", invocation.method()), throwable);
 			}
 		};
 		asyncTask.start();
