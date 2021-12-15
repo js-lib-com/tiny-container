@@ -415,6 +415,19 @@ public class RequestContext {
 	}
 
 	/**
+	 * Remove current session, if one exists. If there is no session on current HTTP request this method does nothing.
+	 * 
+	 * @throws BugError if attempt to use this method on instance not attached to a HTTP servlet request.
+	 */
+	public void removeSession() {
+		assertAttached();
+		HttpSession session = httpRequest.getSession(false);
+		if (session != null) {
+			session.invalidate();
+		}
+	}
+
+	/**
 	 * Return value of the named context-wide initialization parameter, or <code>null</code> if the parameter does not exist.
 	 *
 	 * @param parameterName parameter name.
