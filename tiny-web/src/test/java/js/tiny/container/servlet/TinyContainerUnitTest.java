@@ -94,7 +94,7 @@ public class TinyContainerUnitTest {
 	// SERVLET CONTAINER LISTENERS
 
 	@Test
-	public void GivenServletContextEvent_WhenContextInitialized_ThenConfigureAndStart() {
+	public void GivenServletContextEvent_WhenContextInitialized_ThenConfigureAndStart() throws ConfigException {
 		// given
 		TinyContainer containerSpy = spy(container);
 
@@ -108,7 +108,7 @@ public class TinyContainerUnitTest {
 	}
 
 	@Test(expected = RuntimeException.class)
-	public void GivenConfigureException_WhenContextInitialized_ThenException() {
+	public void GivenConfigureException_WhenContextInitialized_ThenException() throws ConfigException {
 		// given
 		TinyContainer containerSpy = spy(container);
 		doThrow(RuntimeException.class).when(containerSpy).configure(any(Config.class));

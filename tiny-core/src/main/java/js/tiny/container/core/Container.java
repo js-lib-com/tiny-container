@@ -15,6 +15,7 @@ import js.injector.IBindingBuilder;
 import js.injector.IScope;
 import js.injector.ProvisionException;
 import js.lang.Config;
+import js.lang.ConfigException;
 import js.log.Log;
 import js.log.LogFactory;
 import js.tiny.container.cdi.BindingParametersBuilder;
@@ -57,11 +58,7 @@ public class Container implements IContainer, AppContainer, IInstanceCreatedList
 	private final FlowProcessorsSet<IContainerCloseProcessor> containerCloseProcessors = new FlowProcessorsSet<>();
 
 	public Container() {
-		this(false);
-	}
-
-	public Container(boolean proxyProcessing) {
-		this(CDI.create(proxyProcessing));
+		this(CDI.create());
 	}
 
 	/**
@@ -105,10 +102,15 @@ public class Container implements IContainer, AppContainer, IInstanceCreatedList
 	 * class execute {@link #classPostLoadedProcessors}. After managed classes initialization configure CDI.
 	 * 
 	 * @param config container configuration object.
+	 * @throws ConfigException if module configuration is not valid.
 	 */
-	public void configure(Config config) {
+	public void configure(Config config) throws ConfigException {
 		log.trace("configure(Config)");
-		createManagedClasses(cdi.configure(config));
+		try {
+			createManagedClasses(cdi.configure(config));
+		} catch (Exception e) {
+			throw new ConfigException(e.getMessage());
+		}
 	}
 
 	public void configure(Object... modules) {

@@ -10,6 +10,8 @@ import js.converter.ConverterRegistry;
 import js.injector.AbstractModule;
 import js.injector.IBindingBuilder;
 import js.lang.Config;
+import js.lang.NoSuchBeingException;
+import js.util.Classes;
 
 /**
  * Injector module initialized from managed classes descriptor. This specialized module traverses descriptor elements, creating
@@ -54,13 +56,24 @@ class ConfigModule extends AbstractModule {
 	}
 
 	<T> void configure(Config bindingConfig) {
-		@SuppressWarnings("unchecked")
-		IBindingBuilder<T> bindingBuilder = bind(converter.asObject(classValue(bindingConfig.getAttribute("bind")), Class.class));
+		String bindClassName = classValue(bindingConfig.getAttribute("bind"));
+		if (bindClassName == null) {
+			throw new IllegalStateException("Missing <bind> attribute from binding definition.");
+		}
+
+		Class<T> bindClass = null;
+		try {
+			bindClass = Classes.forName(bindClassName);
+		} catch (NoSuchBeingException e) {
+			throw new IllegalStateException("Attempt to bind missing class " + bindClassName);
+		}
+
+		IBindingBuilder<T> bindingBuilder = bind(bindClass);
 		bindingConfig.attributes((name, value) -> bindAttribute(bindingBuilder, name, value));
 	}
 
 	private String classValue(String value) {
-		return value == null? null: value.indexOf('.') == -1 ? defaultPackage + value : value;
+		return value == null ? null : value.indexOf('.') == -1 ? defaultPackage + value : value;
 	}
 
 	void bindAttribute(IBindingBuilder<?> bindingBuilder, String name, String value) {

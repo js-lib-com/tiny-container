@@ -182,7 +182,7 @@ public class TinyContainer extends Container implements ServletContextListener, 
 	}
 
 	@Override
-	public void configure(Config config) {
+	public void configure(Config config) throws ConfigException {
 		super.configure(config);
 
 		// by convention configuration object name is the web application name
