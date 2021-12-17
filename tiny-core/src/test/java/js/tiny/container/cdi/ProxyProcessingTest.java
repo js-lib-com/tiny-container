@@ -5,6 +5,7 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.mockito.Mockito.when;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Proxy;
 import java.util.ArrayList;
 import java.util.List;
@@ -263,6 +264,11 @@ public class ProxyProcessingTest {
 					@Override
 					public T get() {
 						return instance;
+					}
+
+					@Override
+					public Class<? extends Annotation> getScope() {
+						return Singleton.class;
 					}
 
 					@Override

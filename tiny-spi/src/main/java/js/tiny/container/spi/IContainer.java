@@ -4,7 +4,7 @@ import java.lang.annotation.Annotation;
 import java.util.List;
 
 import js.injector.IBindingBuilder;
-import js.injector.IScope;
+import js.injector.IScopeFactory;
 
 /**
  * Container services for framework internals and plugins. This interface is a service provider interface and is not intended
@@ -12,12 +12,12 @@ import js.injector.IScope;
  * 
  * @author Iulian Rotaru
  */
-public interface IContainer {
+public interface IContainer extends IInstanceLifecycleListener {
 
 	<T> IBindingBuilder<T> bind(Class<T> interfaceClass);
-	
-	void bindScope(Class<? extends Annotation> annotation, IScope<?> scope);
-	
+
+	void bindScope(Class<? extends Annotation> annotation, IScopeFactory<?> scopeFactory);
+
 	/**
 	 * Retrieve a not null managed instance, be it newly created or reused from a scope cache. Throws an implementation specific
 	 * runtime exception if there is no binding for requested interface.
@@ -63,6 +63,4 @@ public interface IContainer {
 	 */
 	List<IManagedClass<?>> getManagedClasses();
 
-	void onInstanceDestroyed(Object instance);
-	
 }

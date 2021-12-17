@@ -12,8 +12,9 @@ import js.tiny.container.spi.IManagedMethod;
 import js.util.Strings;
 
 public class MethodsCache {
+	// TODO: replace singleton pattern with javax.inject.Singleton
 	private static final Object mutex = new Object();
-	private static MethodsCache instance;
+	private static volatile MethodsCache instance;
 
 	public static MethodsCache instance() {
 		if (instance == null) {

@@ -9,6 +9,8 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import javax.inject.Singleton;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -141,14 +143,14 @@ public class ContainerInstanceRetrievalTest {
 	@Test
 	public void GivenExistingScopeBindings_WhenGetScopeInstance_ThenNotNull() {
 		// given
-		when(cdi.getScopeInstance(Object.class)).thenReturn(Object.class);
+		when(cdi.getScopeInstance(Singleton.class, Object.class)).thenReturn(Object.class);
 		
 		// when
-		Object instance = container.getScopeInstance(Object.class);
+		Object instance = container.getScopeInstance(Singleton.class, Object.class);
 
 		// then
 		assertThat(instance, notNullValue());
-		verify(cdi, times(1)).getScopeInstance(any());
+		verify(cdi, times(1)).getScopeInstance(eq(Singleton.class), any());
 	}
 
 	@Test
@@ -156,10 +158,10 @@ public class ContainerInstanceRetrievalTest {
 		// given
 
 		// when
-		Object instance = container.getScopeInstance(Object.class);
+		Object instance = container.getScopeInstance(Singleton.class, Object.class);
 
 		// then
 		assertThat(instance, nullValue());
-		verify(cdi, times(1)).getScopeInstance(any());
+		verify(cdi, times(1)).getScopeInstance(any(), any());
 	}
 }

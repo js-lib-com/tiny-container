@@ -25,6 +25,8 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
 
+import js.injector.IBinding;
+import js.injector.IInjector;
 import js.injector.Key;
 import js.lang.BugError;
 import js.tiny.container.spi.Factory;
@@ -33,6 +35,8 @@ import js.tiny.container.spi.IContainer;
 @RunWith(MockitoJUnitRunner.class)
 public class SessionScopeProviderTest {
 	@Mock
+	private IInjector injector;
+	@Mock
 	private IContainer container;
 	@Mock
 	private RequestContext requestContext;
@@ -40,7 +44,9 @@ public class SessionScopeProviderTest {
 	private HttpServletRequest httpRequest;
 	@Mock
 	private HttpSession httpSession;
-	
+
+	@Mock
+	private IBinding<Object> provisioningBinding;
 	@Mock
 	private Key<Object> instanceKey;
 	@Mock
@@ -52,7 +58,7 @@ public class SessionScopeProviderTest {
 	public void beforeTest() {
 		Factory.bind(container);
 
-		when(container.getInstance(RequestContext.class)).thenReturn(requestContext);
+		when(injector.getInstance(RequestContext.class)).thenReturn(requestContext);
 		when(requestContext.getRequest()).thenReturn(httpRequest);
 		when(httpRequest.getSession(true)).thenReturn(httpSession);
 
@@ -65,8 +71,11 @@ public class SessionScopeProviderTest {
 
 		when(instanceKey.toScope()).thenReturn("scoped-key");
 		when(provisioningProvider.get()).thenAnswer(invocation -> new Object());
-		
-		scopeProvider = new SessionScopeProvider<>(instanceKey, provisioningProvider);
+
+		when(provisioningBinding.key()).thenReturn(instanceKey);
+		when(provisioningBinding.provider()).thenReturn(provisioningProvider);
+
+		scopeProvider = new SessionScopeProvider<>(injector, provisioningBinding);
 	}
 
 	@Test
@@ -109,8 +118,11 @@ public class SessionScopeProviderTest {
 		when(key1.toScope()).thenReturn("scoped-key1");
 		when(key2.toScope()).thenReturn("scoped-key2");
 
-		SessionScopeProvider<Object> scopeProvider1 = new SessionScopeProvider<>(key1, provisioningProvider);
-		SessionScopeProvider<Object> scopeProvider2 = new SessionScopeProvider<>(key2, provisioningProvider);
+		when(provisioningBinding.key()).thenReturn(key1);
+		SessionScopeProvider<Object> scopeProvider1 = new SessionScopeProvider<>(injector, provisioningBinding);
+
+		when(provisioningBinding.key()).thenReturn(key2);
+		SessionScopeProvider<Object> scopeProvider2 = new SessionScopeProvider<>(injector, provisioningBinding);
 
 		// when
 		Object instance1 = scopeProvider1.get();
@@ -136,8 +148,11 @@ public class SessionScopeProviderTest {
 		when(key1.toScope()).thenReturn("scoped-key1");
 		when(key2.toScope()).thenReturn("scoped-key2");
 
-		SessionScopeProvider<Object> scopeProvider1 = new SessionScopeProvider<>(key1, provisioningProvider);
-		SessionScopeProvider<Object> scopeProvider2 = new SessionScopeProvider<>(key2, provisioningProvider);
+		when(provisioningBinding.key()).thenReturn(key1);
+		SessionScopeProvider<Object> scopeProvider1 = new SessionScopeProvider<>(injector, provisioningBinding);
+
+		when(provisioningBinding.key()).thenReturn(key2);
+		SessionScopeProvider<Object> scopeProvider2 = new SessionScopeProvider<>(injector, provisioningBinding);
 
 		// when
 		Object instance1 = scopeProvider1.get();

@@ -7,14 +7,16 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.inject.Singleton;
+
 import js.lang.InstanceInvocationHandler;
 import js.log.Log;
 import js.log.LogFactory;
 import js.tiny.container.cdi.IClassBinding;
-import js.tiny.container.cdi.IInstanceCreatedListener;
 import js.tiny.container.spi.IClassPostLoadedProcessor;
 import js.tiny.container.spi.IContainer;
 import js.tiny.container.spi.IContainerService;
+import js.tiny.container.spi.IInstanceLifecycleListener;
 import js.tiny.container.spi.IInstancePostConstructProcessor;
 import js.tiny.container.spi.IInstancePreDestroyProcessor;
 import js.tiny.container.spi.IManagedClass;
@@ -26,11 +28,13 @@ import js.util.Classes;
  * 
  * @author Iulian Rotaru
  */
-class ManagedClass<T> implements IManagedClass<T>, IInstanceCreatedListener {
+class ManagedClass<T> implements IManagedClass<T>, IInstanceLifecycleListener {
 	private static final Log log = LogFactory.getLog(ManagedClass.class);
 
 	/** Back reference to parent container. */
 	private final Container container;
+
+	private final boolean singleton;
 
 	/** Wrapped business interface exposed by {@link #getInterfaceClass()}. */
 	private final Class<T> interfaceClass;
@@ -50,6 +54,7 @@ class ManagedClass<T> implements IManagedClass<T>, IInstanceCreatedListener {
 
 	public ManagedClass(Container container, IClassBinding<T> binding) {
 		this.container = container;
+		this.singleton = true; // Singleton.class.equals(binding.getScope());
 		this.interfaceClass = binding.getInterfaceClass();
 		this.implementationClass = binding.getImplementationClass();
 
@@ -102,8 +107,17 @@ class ManagedClass<T> implements IManagedClass<T>, IInstanceCreatedListener {
 
 	@Override
 	public void close() {
-		Object instance = container.getScopeInstance(interfaceClass);
+		// current implementation, just execute instance pre-destroy processors on singletons
+		// for non-singleton instances this method silently does nothing
+		if (!singleton) {
+			return;
+		}
+
+		Object instance = container.getScopeInstance(Singleton.class, interfaceClass);
 		if (instance == null) {
+			// paranoia check; at this point we deal with singleton instance that cannot be null
+			// but as Aesop stated: 'Two sureties are better than one.'
+			// if you not believe me take a look at http://fables.kids-cademy.com/play.htm?fable=the-wolf-the-kid-and-the-goat
 			return;
 		}
 
@@ -124,13 +138,36 @@ class ManagedClass<T> implements IManagedClass<T>, IInstanceCreatedListener {
 
 	@Override
 	public void onInstanceCreated(Object instance) {
-		instancePostConstructors.forEach(processor -> processor.onInstancePostConstruct(instance));
+		// in case instance is a Java Proxy
+		// takes care to execute post-construct processors on wrapped instance in order to avoid adding container services
+		if (instance instanceof Proxy) {
+			if (!(Proxy.getInvocationHandler(instance) instanceof InstanceInvocationHandler)) {
+				return;
+			}
+			instance = Classes.unproxy(instance);
+		}
+
+		for (IInstancePostConstructProcessor processor : instancePostConstructors) {
+			processor.onInstancePostConstruct(instance);
+		}
 	}
 
-	public void onInstanceDestroyed(Object instance) {
-		instancePreDestructors.forEach(processor -> processor.onInstancePreDestroy(instance));
+	@Override
+	public void onInstanceOutOfScope(Class<? extends Annotation> scope, Object instance) {
+		// in case instance is a Java Proxy
+		// takes care to execute pre-destroy processors on wrapped instance in order to avoid adding container services
+		if (instance instanceof Proxy) {
+			if (!(Proxy.getInvocationHandler(instance) instanceof InstanceInvocationHandler)) {
+				return;
+			}
+			instance = Classes.unproxy(instance);
+		}
+
+		for (IInstancePreDestroyProcessor processor : instancePreDestructors) {
+			processor.onInstancePreDestroy(instance);
+		}
 	}
-	
+
 	@Override
 	public IContainer getContainer() {
 		return container;

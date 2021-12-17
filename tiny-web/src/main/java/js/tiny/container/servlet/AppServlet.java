@@ -166,9 +166,9 @@ public abstract class AppServlet extends HttpServlet {
 		Factory.bind(container);
 
 		// request context has THREAD scope and this request thread may be reused by servlet container
-		// takes care to properly initialize request context for every HTTP request
-		RequestContext context = container.getInstance(RequestContext.class);
-		context.attach(httpRequest, httpResponse);
+		RequestContext requestContext = container.getInstance(RequestContext.class);
+		// takes care to properly initialize (attach) request context on every HTTP request
+		requestContext.attach(httpRequest, httpResponse);
 		log.trace("Processing request |%s:%s|.", httpRequest.getMethod(), requestURI);
 
 		// if this request was forwarded from preview servlet ensure container is authenticated
@@ -179,17 +179,17 @@ public abstract class AppServlet extends HttpServlet {
 		}
 
 		try {
-			handleRequest(context);
+			handleRequest(requestContext);
 		} catch (IOException | ServletException | Error | RuntimeException t) {
 			// last line of defense; dump request context and throwable then dispatch exception to servlet container
 			// servlet container will generate response page using internal templates or <error-page>, if configured
-			dumpError(context, t);
+			dumpError(requestContext, t);
 			throw t;
 		} finally {
-			log.trace("%s %s processed in %d msec.", httpRequest.getMethod(), context.getRequestURL(), System.currentTimeMillis() - start);
+			log.trace("%s %s processed in %d msec.", httpRequest.getMethod(), requestContext.getRequestURL(), System.currentTimeMillis() - start);
 			// cleanup remote address from logger context and detach request context instance from this request
 			logContext.clear();
-			context.detach();
+			requestContext.detach();
 		}
 	}
 
@@ -241,8 +241,8 @@ public abstract class AppServlet extends HttpServlet {
 	 * well integrated with application. Below is a snippet from this framework script library.
 	 * <p>
 	 * For not authorized XHR requests this method sends {@link HttpServletResponse#SC_OK} and custom response header
-	 * {@link HttpHeader#X_HEADER_LOCATION} set to application login page, see {@link IContainer#getLoginPage()}. Client
-	 * script can handle this response and redirect to given login page.
+	 * {@link HttpHeader#X_HEADER_LOCATION} set to application login page, see {@link IContainer#getLoginPage()}. Client script
+	 * can handle this response and redirect to given login page.
 	 * 
 	 * <pre>
 	 * var redirect = this._request.getResponseHeader(&quot;X-JSLIB-Location&quot;);
@@ -394,18 +394,18 @@ public abstract class AppServlet extends HttpServlet {
 			return "preview-user";
 		}
 	}
-	
+
 	// --------------------------------------------------------------------------------------------
 	// unit tests access
-	
+
 	String servletName() {
 		return servletName;
 	}
-	
+
 	ITinyContainer container() {
 		return container;
 	}
-	
+
 	String previewContextPath() {
 		return previewContextPath;
 	}

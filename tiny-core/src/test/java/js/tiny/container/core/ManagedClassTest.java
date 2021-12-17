@@ -1,14 +1,15 @@
 package js.tiny.container.core;
 
-
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.when;
 
 import java.lang.annotation.Annotation;
 import java.util.Arrays;
@@ -44,7 +45,7 @@ public class ManagedClassTest {
 	private IInstancePreDestroyProcessor preDestroyProcessor;
 	@Mock
 	private IClassBinding<Object> binding;
-	
+
 	private ManagedClass<Object> managedClass;
 
 	@Before
@@ -163,7 +164,7 @@ public class ManagedClassTest {
 		// given
 		when(container.getServices()).thenReturn(Arrays.asList(preDestroyProcessor));
 		managedClass.scanServices();
-		when(container.getScopeInstance(Object.class)).thenReturn(new Object());
+		when(container.getScopeInstance(Singleton.class, Object.class)).thenReturn(new Object());
 
 		// when
 		managedClass.close();
@@ -190,7 +191,7 @@ public class ManagedClassTest {
 		IClassBinding<IService1> binding = mock(IClassBinding.class);
 		doReturn(IService1.class).when(binding).getInterfaceClass();
 		doReturn(Service1.class).when(binding).getImplementationClass();
-		
+
 		ManagedClass<IService1> managedClass = new ManagedClass<>(container, binding);
 
 		// when
@@ -207,7 +208,7 @@ public class ManagedClassTest {
 		IClassBinding<IService2> binding = mock(IClassBinding.class);
 		doReturn(IService2.class).when(binding).getInterfaceClass();
 		doReturn(Service2.class).when(binding).getImplementationClass();
-		
+
 		ManagedClass<IService2> managedClass = new ManagedClass<>(container, binding);
 
 		// when
@@ -235,7 +236,7 @@ public class ManagedClassTest {
 		IClassBinding<IService1> binding = mock(IClassBinding.class);
 		doReturn(IService1.class).when(binding).getInterfaceClass();
 		doReturn(Service1.class).when(binding).getImplementationClass();
-		
+
 		ManagedClass<IService1> managedClass = new ManagedClass<IService1>(container, binding);
 		managedClass.scanServices();
 

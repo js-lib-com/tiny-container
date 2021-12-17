@@ -3,16 +3,22 @@ package js.tiny.container.core;
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.ServiceLoader;
 import java.util.Set;
+import java.util.SortedMap;
+import java.util.TreeMap;
+import java.util.concurrent.atomic.AtomicInteger;
 
-import js.app.container.AppContainer;
+import javax.inject.Singleton;
+
+import js.embedded.container.EmbeddedContainer;
 import js.injector.IBindingBuilder;
-import js.injector.IScope;
+import js.injector.IScopeFactory;
 import js.injector.ProvisionException;
 import js.lang.Config;
 import js.lang.ConfigException;
@@ -21,7 +27,6 @@ import js.log.LogFactory;
 import js.tiny.container.cdi.BindingParametersBuilder;
 import js.tiny.container.cdi.CDI;
 import js.tiny.container.cdi.IClassBinding;
-import js.tiny.container.cdi.IInstanceCreatedListener;
 import js.tiny.container.cdi.IManagedLoader;
 import js.tiny.container.spi.IContainer;
 import js.tiny.container.spi.IContainerCloseProcessor;
@@ -35,7 +40,7 @@ import js.util.Params;
  * 
  * @author Iulian Rotaru
  */
-public class Container implements IContainer, AppContainer, IInstanceCreatedListener, IManagedLoader {
+public class Container implements IContainer, EmbeddedContainer, IManagedLoader {
 	private static final Log log = LogFactory.getLog(Container.class);
 
 	private final CDI cdi;
@@ -71,7 +76,7 @@ public class Container implements IContainer, AppContainer, IInstanceCreatedList
 		this.cdi.setInstanceCreatedListener(this);
 
 		bind(IContainer.class).instance(this).build();
-		bind(AppContainer.class).instance(this).build();
+		bind(EmbeddedContainer.class).instance(this).build();
 
 		for (IContainerService service : ServiceLoader.load(IContainerService.class)) {
 			log.debug("Load container service |%s|.", service.getClass());
@@ -93,8 +98,8 @@ public class Container implements IContainer, AppContainer, IInstanceCreatedList
 	}
 
 	@Override
-	public void bindScope(Class<? extends Annotation> annotation, IScope<?> scope) {
-		cdi.bindScope(annotation, scope);
+	public void bindScope(Class<? extends Annotation> annotation, IScopeFactory<?> scopeFactory) {
+		cdi.bindScope(annotation, scopeFactory);
 	}
 
 	/**
@@ -138,12 +143,30 @@ public class Container implements IContainer, AppContainer, IInstanceCreatedList
 		containerStartProcessors.forEach(processor -> processor.onContainerStart(this));
 	}
 
+	private static final AtomicInteger LOW_VALUE = new AtomicInteger(Integer.MAX_VALUE >> 1);
+
 	/** Execute container close processors, registered to {@link #containerCloseProcessors}, then destroy all services. */
 	@Override
 	public void close() {
 		log.trace("close()");
-		containerCloseProcessors.forEach(processor -> processor.onContainerClose(this));
-		services.forEach(service -> service.destroy());
+
+		// containerCloseProcessors.forEach(processor -> processor.onContainerClose(this));
+
+		SortedMap<Integer, IManagedClass<?>> managedClasses = new TreeMap<>(Collections.reverseOrder());
+		for (IManagedClass<?> managedClass : this.managedClasses) {
+			javax.annotation.Priority priorityAnnotation = managedClass.scanAnnotation(javax.annotation.Priority.class);
+			int priority = priorityAnnotation != null ? priorityAnnotation.value() : LOW_VALUE.getAndIncrement();
+			managedClasses.put(priority, managedClass);
+		}
+
+		for (IManagedClass<?> managedClass : managedClasses.values()) {
+			Object instance = cdi.getScopeInstance(Singleton.class, managedClass.getInterfaceClass());
+			if (instance != null) {
+				onInstanceOutOfScope(Singleton.class, instance);
+			}
+		}
+
+		services.forEach(IContainerService::destroy);
 	}
 
 	// --------------------------------------------------------------------------------------------
@@ -168,22 +191,18 @@ public class Container implements IContainer, AppContainer, IInstanceCreatedList
 	 * 
 	 * @param instance
 	 */
-	public void onInstanceDestroyed(Object instance) {
+	@Override
+	public void onInstanceOutOfScope(Class<? extends Annotation> scope, Object instance) {
 		ManagedClass<?> managedClass = managedImplementations.get(instance.getClass());
 		// not all instances created by injector have managed classes
 		if (managedClass != null) {
-			managedClass.onInstanceDestroyed(instance);
+			managedClass.onInstanceOutOfScope(scope, instance);
 		}
 	}
 
 	@Override
 	public <T> T getOptionalInstance(Class<T> interfaceClass) {
 		Params.notNull(interfaceClass, "Interface class");
-
-		// here is a piece of code that uses exception for normal logic flow but I do not see alternative
-		// ServiceInstanceFactory should throw exception that propagates to AppFactory and application code
-		// on the other hand this getOptionalInstance() should return null for missing service provider
-
 		try {
 			return getInstance(interfaceClass);
 		} catch (ProvisionException e) {
@@ -191,8 +210,8 @@ public class Container implements IContainer, AppContainer, IInstanceCreatedList
 		}
 	}
 
-	public <T> T getScopeInstance(Class<T> interfaceClass) {
-		return cdi.getScopeInstance(interfaceClass);
+	public <T> T getScopeInstance(Class<? extends Annotation> scope, Class<T> interfaceClass) {
+		return cdi.getScopeInstance(scope, interfaceClass);
 	}
 
 	@Override

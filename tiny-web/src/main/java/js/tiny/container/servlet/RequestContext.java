@@ -13,6 +13,7 @@ import javax.servlet.http.HttpSession;
 
 import js.converter.Converter;
 import js.converter.ConverterRegistry;
+import js.injector.RequestScoped;
 import js.injector.ThreadScoped;
 import js.lang.BugError;
 import js.log.Log;
@@ -220,7 +221,7 @@ public class RequestContext {
 	 * considered a bug.
 	 */
 	public void detach() {
-		attributes.values().forEach(instance -> container.onInstanceDestroyed(instance));
+		attributes.values().forEach(instance -> container.onInstanceOutOfScope(RequestScoped.class, instance));
 		attributes.clear();
 
 		attached = false;

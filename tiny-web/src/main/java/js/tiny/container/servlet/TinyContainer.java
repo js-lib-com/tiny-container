@@ -289,7 +289,8 @@ public class TinyContainer extends Container implements ServletContextListener, 
 	 */
 	@Override
 	public void sessionCreated(HttpSessionEvent sessionEvent) {
-		log.trace("Create HTTP session |%s|.", sessionEvent.getSession().getId());
+		HttpSession httpSession = sessionEvent.getSession();
+		log.trace("Create HTTP session |%s|.", httpSession.getId());
 	}
 
 	/**
@@ -306,7 +307,7 @@ public class TinyContainer extends Container implements ServletContextListener, 
 		while (attributes.hasMoreElements()) {
 			// TODO: check that attribute name has the pattern for scope provider instance
 			Object instance = httpSession.getAttribute(attributes.nextElement());
-			onInstanceDestroyed(instance);
+			onInstanceOutOfScope(SessionScoped.class, instance);
 		}
 	}
 

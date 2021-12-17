@@ -12,7 +12,7 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
-import js.injector.IScope;
+import js.injector.IScopeFactory;
 import js.tiny.container.cdi.CDI;
 import js.tiny.container.spi.IContainer;
 
@@ -52,7 +52,7 @@ public class ContainerTest {
 	@Test
 	public void Given_WhenBindScope_Then() {
 		// given
-		IScope<?> scope = mock(IScope.class);
+		IScopeFactory<?> scope = mock(IScopeFactory.class);
 
 		// when
 		container.bindScope(Singleton.class, scope);

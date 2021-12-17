@@ -15,7 +15,7 @@
 		</dependency>
 		<dependency>
 			<groupId>com.js-lib</groupId>
-			<artifactId>js-java-ee-api</artifactId>
+			<artifactId>js-jee-api</artifactId>
 			<version>1.0</version>
 		</dependency>
 		<dependency>

@@ -1,28 +1,40 @@
 package js.tiny.container.servlet;
 
+import java.lang.annotation.Annotation;
+
 import javax.inject.Provider;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
-import js.injector.IScope;
+import js.injector.IBinding;
+import js.injector.IInjector;
+import js.injector.IScopeFactory;
 import js.injector.Key;
 import js.injector.ScopedProvider;
+import js.injector.SessionScoped;
 import js.lang.BugError;
 
 public class SessionScopeProvider<T> extends ScopedProvider<T> {
+	private final IInjector injector;
 	private final Key<T> key;
 
 	/**
-	 * Construct this session provider instance. Because is not allowed to nest the scoped providers, throws illegal argument if
-	 * given provisioning provider argument is a scoped provider instance.
+	 * Construct this HTTP session scoped provider. Because is not allowed to nest the scoped providers, this factory method
+	 * throws illegal argument if given provisioning binding define a provider that is already a scoped provider.
 	 * 
-	 * @param key instance key for which this session provider is created.
-	 * @param provisioningProvider wrapped provisioning provider.
-	 * @throws IllegalArgumentException if provisioning provider argument is a scoped provider instance.
+	 * @param injector parent injector,
+	 * @param provisioningProvider provisioning binding, used for actual instances creation.
+	 * @throws IllegalArgumentException if provider defined by provisioning binding argument is already a scoped provider.
 	 */
-	public SessionScopeProvider(Key<T> key, Provider<T> provisioningProvider) {
-		super(provisioningProvider);
-		this.key = key;
+	public SessionScopeProvider(IInjector injector, IBinding<T> provisioningBinding) {
+		super(provisioningBinding.provider());
+		this.injector = injector;
+		this.key = provisioningBinding.key();
+	}
+
+	@Override
+	public Class<? extends Annotation> getScope() {
+		return SessionScoped.class;
 	}
 
 	@SuppressWarnings("unchecked")
@@ -64,23 +76,23 @@ public class SessionScopeProvider<T> extends ScopedProvider<T> {
 	 * @throws BugError if attempt to use this method outside a HTTP request.
 	 */
 	HttpSession getSession() {
-		// TODO: replace global factory
-		RequestContext requestContext = js.tiny.container.spi.Factory.getInstance(RequestContext.class);
+		RequestContext requestContext = injector.getInstance(RequestContext.class);
 		HttpServletRequest httpRequest = requestContext.getRequest();
 		if (httpRequest == null) {
 			throw new BugError("Invalid web context due to null HTTP request. Cannot create managed instance for |%s| with scope SESSION.", getProvisioningProvider().getClass().getCanonicalName());
 		}
 
-		// create HTTP session if missing; accordingly API httpSession is never null if 'create' flag is true
+		// create HTTP session if missing
+		// accordingly API, retrieved httpSession is never null if 'create' flag is true
 		return httpRequest.getSession(true);
 	}
 
 	// --------------------------------------------------------------------------------------------
 
-	public static class Factory<T> implements IScope<T> {
+	public static class Factory<T> implements IScopeFactory<T> {
 		@Override
-		public Provider<T> scope(Key<T> key, Provider<T> provider) {
-			return new SessionScopeProvider<>(key, provider);
+		public Provider<T> getScopedProvider(IInjector injector, IBinding<T> provisioningBinding) {
+			return new SessionScopeProvider<>(injector, provisioningBinding);
 		}
 	}
 }

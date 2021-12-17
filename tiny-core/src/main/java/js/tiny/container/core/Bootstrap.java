@@ -1,8 +1,8 @@
 package js.tiny.container.core;
 
-import js.app.container.AppContainer;
-import js.app.container.AppContainerException;
-import js.app.container.AppContainerProvider;
+import js.embedded.container.EmbeddedContainer;
+import js.embedded.container.EmbeddedContainerException;
+import js.embedded.container.EmbeddedContainerProvider;
 import js.lang.Config;
 import js.lang.ConfigBuilder;
 import js.lang.ConfigException;
@@ -10,7 +10,7 @@ import js.log.Log;
 import js.log.LogFactory;
 import js.tiny.container.spi.Factory;
 
-public class Bootstrap implements AppContainerProvider {
+public class Bootstrap implements EmbeddedContainerProvider {
 	private static final Log log = LogFactory.getLog(Bootstrap.class);
 
 	public Bootstrap() {
@@ -18,7 +18,7 @@ public class Bootstrap implements AppContainerProvider {
 	}
 
 	@Override
-	public AppContainer createAppContainer(Object... arguments) {
+	public EmbeddedContainer createAppContainer(Object... arguments) {
 		log.trace("createAppContainer(Object...)");
 		try {
 			Container container = new Container();
@@ -26,7 +26,7 @@ public class Bootstrap implements AppContainerProvider {
 			return container;
 		} catch (Exception e) {
 			log.dump("Fail to create application container:", e);
-			throw new AppContainerException();
+			throw new EmbeddedContainerException();
 		}
 	}
 

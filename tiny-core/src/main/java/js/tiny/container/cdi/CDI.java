@@ -6,16 +6,20 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import javax.inject.Provider;
+
 import js.injector.AbstractModule;
 import js.injector.IInjector;
 import js.injector.IModule;
 import js.injector.IProvisionInvocation;
 import js.injector.IProvisionListener;
-import js.injector.IScope;
+import js.injector.IScopeFactory;
 import js.injector.ProvisionException;
+import js.injector.ScopedProvider;
 import js.lang.Config;
 import js.log.Log;
 import js.log.LogFactory;
+import js.tiny.container.spi.IInstanceLifecycleListener;
 import js.util.Params;
 
 /**
@@ -48,7 +52,7 @@ public class CDI implements IProvisionListener {
 	private final AtomicBoolean configured = new AtomicBoolean(false);
 
 	private IManagedLoader managedLoader;
-	private IInstanceCreatedListener instanceCreatedListener;
+	private IInstanceLifecycleListener instanceCreatedListener;
 
 	private CDI() {
 		log.trace("CDI()");
@@ -64,7 +68,7 @@ public class CDI implements IProvisionListener {
 		this.managedLoader = managedLoader;
 	}
 
-	public void setInstanceCreatedListener(IInstanceCreatedListener instanceCreatedListener) {
+	public void setInstanceCreatedListener(IInstanceLifecycleListener instanceCreatedListener) {
 		if (configured.get()) {
 			throw new IllegalStateException("Attempt to set instance created listener after injector configuration.");
 		}
@@ -86,11 +90,11 @@ public class CDI implements IProvisionListener {
 		staticModule.instances.put(interfaceClass, instance);
 	}
 
-	public void bindScope(Class<? extends Annotation> annotation, IScope<?> scope) {
+	public void bindScope(Class<? extends Annotation> annotation, IScopeFactory<?> scopeFactory) {
 		if (configured.get()) {
 			throw new IllegalStateException("Attempt to bind scope after injector configuration: " + annotation);
 		}
-		staticModule.scopes.put(annotation, scope);
+		staticModule.scopeFactories.put(annotation, scopeFactory);
 	}
 
 	/**
@@ -153,11 +157,23 @@ public class CDI implements IProvisionListener {
 	 * @param interfaceClass interface class used to identify the instance.
 	 * @return instance from scope cache, possible null.
 	 * @param <T> instance generic type.
-	 * @throws IllegalStateException if there is no provide for given interface class or is not a scope provider.
 	 */
-	public <T> T getScopeInstance(Class<T> interfaceClass) {
+	public <T> T getScopeInstance(Class<? extends Annotation> scope, Class<T> interfaceClass) {
 		Params.notNull(interfaceClass, "Interface class");
-		return injector.getScopeInstance(interfaceClass);
+		Provider<T> provider = injector.getProvider(interfaceClass);
+		if (provider == null) {
+			log.debug("No provider for |%s|.", interfaceClass);
+			return null;
+		}
+		if (!(provider instanceof ScopedProvider)) {
+			log.debug("Not a scoped provider |%s|.", provider);
+			return null;
+		}
+		ScopedProvider<T> scopedProvider = (ScopedProvider<T>) provider;
+		if(!scopedProvider.getScope().equals(scope)) {
+			return null;
+		}
+		return scopedProvider.getScopeInstance();
 	}
 
 	// --------------------------------------------------------------------------------------------
@@ -170,7 +186,7 @@ public class CDI implements IProvisionListener {
 	 */
 	private class StaticModule extends AbstractModule {
 		final Map<Class<?>, Object> instances = new HashMap<>();
-		final Map<Class<? extends Annotation>, IScope<?>> scopes = new HashMap<>();
+		final Map<Class<? extends Annotation>, IScopeFactory<?>> scopeFactories = new HashMap<>();
 
 		@SuppressWarnings("unchecked")
 		@Override
@@ -180,9 +196,9 @@ public class CDI implements IProvisionListener {
 				bindInstance((Class<Object>) interfaceClass, instance);
 			});
 
-			scopes.forEach((annotation, scope) -> {
+			scopeFactories.forEach((annotation, scope) -> {
 				log.debug("CDI register scope |%s|.", annotation);
-				injector.bindScope(annotation, scope);
+				injector.bindScopeFactory(annotation, scope);
 			});
 		}
 	}

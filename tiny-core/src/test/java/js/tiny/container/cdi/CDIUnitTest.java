@@ -23,19 +23,21 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
-import js.injector.IScope;
-import js.injector.Key;
+import js.injector.IBinding;
+import js.injector.IInjector;
+import js.injector.IScopeFactory;
 import js.injector.ProvisionException;
 import js.injector.SessionScoped;
 import js.injector.ThreadScoped;
 import js.tiny.container.fixture.IService;
 import js.tiny.container.fixture.Service;
 import js.tiny.container.fixture.ThreadData;
+import js.tiny.container.spi.IInstanceLifecycleListener;
 
 @RunWith(MockitoJUnitRunner.class)
 public class CDIUnitTest {
 	@Mock
-	private IInstanceCreatedListener instanceListener;
+	private IInstanceLifecycleListener instanceListener;
 	@Mock
 	private BindingParameters<?> bindingParameters;
 
@@ -287,7 +289,7 @@ public class CDIUnitTest {
 		cdi.configure();
 
 		// when
-		cdi.bindScope(Singleton.class, mock(IScope.class));
+		cdi.bindScope(Singleton.class, mock(IScopeFactory.class));
 
 		// then
 	}
@@ -309,7 +311,7 @@ public class CDIUnitTest {
 		cdi.configure();
 
 		// when
-		Object instance = cdi.getScopeInstance(Object.class);
+		Object instance = cdi.getScopeInstance(Singleton.class, Object.class);
 
 		// then
 		assertThat(instance, nullValue());
@@ -324,7 +326,7 @@ public class CDIUnitTest {
 		cdi.getInstance(Object.class);
 
 		// when
-		Object instance = cdi.getScopeInstance(Object.class);
+		Object instance = cdi.getScopeInstance(Singleton.class, Object.class);
 
 		// then
 		assertThat(instance, notNullValue());
@@ -337,7 +339,7 @@ public class CDIUnitTest {
 		cdi.configure();
 
 		// when
-		Object instance = cdi.getScopeInstance(Object.class);
+		Object instance = cdi.getScopeInstance(Singleton.class, Object.class);
 
 		// then
 		assertThat(instance, nullValue());
@@ -363,10 +365,10 @@ public class CDIUnitTest {
 	@Test
 	public void GivenBindSessionScope_WhenGetInstance_Then() {
 		// given
-		cdi.bindScope(SessionScoped.class, new IScope<Object>() {
+		cdi.bindScope(SessionScoped.class, new IScopeFactory<Object>() {
 			@Override
-			public Provider<Object> scope(Key<Object> key, Provider<Object> provisioningProvider) {
-				return provisioningProvider;
+			public Provider<Object> getScopedProvider(IInjector injector, IBinding<Object> provisioningBinding) {
+				return provisioningBinding.provider();
 			}
 		});
 

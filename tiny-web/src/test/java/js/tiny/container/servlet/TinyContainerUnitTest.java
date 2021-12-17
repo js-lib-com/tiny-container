@@ -32,7 +32,7 @@ import org.mockito.junit.MockitoJUnitRunner;
 import js.lang.Config;
 import js.lang.ConfigException;
 import js.tiny.container.cdi.CDI;
-import js.tiny.container.cdi.IInstanceCreatedListener;
+import js.tiny.container.spi.IInstanceLifecycleListener;
 import js.util.Files;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -54,7 +54,7 @@ public class TinyContainerUnitTest {
 	@Mock
 	private CDI cdi;
 	@Mock
-	private IInstanceCreatedListener instanceListener;
+	private IInstanceLifecycleListener instanceListener;
 
 	@Mock
 	private TinySecurity securityProvider;

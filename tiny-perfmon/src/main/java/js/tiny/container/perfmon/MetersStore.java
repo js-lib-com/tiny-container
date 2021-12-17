@@ -8,8 +8,9 @@ import java.util.TreeSet;
 import js.tiny.container.spi.IManagedMethod;
 
 public class MetersStore {
+	// TODO: replace singleton pattern with javax.inject.Singleton
 	private static final Object mutex = new Object();
-	private static MetersStore instance;
+	private static volatile MetersStore instance;
 
 	public static MetersStore instance() {
 		if (instance == null) {
