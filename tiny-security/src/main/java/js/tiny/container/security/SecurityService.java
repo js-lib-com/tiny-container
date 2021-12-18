@@ -1,8 +1,7 @@
 package js.tiny.container.security;
 
-import javax.annotation.security.DenyAll;
-import javax.annotation.security.PermitAll;
-import javax.annotation.security.RolesAllowed;
+import java.lang.annotation.Annotation;
+
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
@@ -17,6 +16,7 @@ import js.tiny.container.spi.IInvocation;
 import js.tiny.container.spi.IInvocationProcessorsChain;
 import js.tiny.container.spi.IManagedMethod;
 import js.tiny.container.spi.IMethodInvocationProcessor;
+import js.util.Classes;
 
 public class SecurityService implements IMethodInvocationProcessor {
 	private static final Log log = LogFactory.getLog(SecurityService.class);
@@ -40,21 +40,36 @@ public class SecurityService implements IMethodInvocationProcessor {
 
 	@Override
 	public boolean bind(IManagedMethod managedMethod) {
-		// if method or is declaring class is 'PermitAll' there is no need to bind security processor
-		if (managedMethod.scanAnnotation(PermitAll.class) != null) {
+		// if method is 'PermitAll' there is no need to bind security processor
+		if (managedMethod.scanAnnotation(jakarta.annotation.security.PermitAll.class) != null) {
 			return false;
 		}
-		if (managedMethod.scanAnnotation(DenyAll.class) != null) {
-			return true;
-		}
-		if (managedMethod.scanAnnotation(RolesAllowed.class) != null) {
-			return true;
-		}
-		if (managedMethod.getDeclaringClass().scanAnnotation(PermitAll.class) != null) {
+		if (managedMethod.scanAnnotation(javax.annotation.security.PermitAll.class) != null) {
 			return false;
 		}
-		
-		// if public access is not granted return true to bind security processor  
+
+		if (managedMethod.scanAnnotation(jakarta.annotation.security.DenyAll.class) != null) {
+			return true;
+		}
+		if (managedMethod.scanAnnotation(javax.annotation.security.DenyAll.class) != null) {
+			return true;
+		}
+		if (managedMethod.scanAnnotation(jakarta.annotation.security.RolesAllowed.class) != null) {
+			return true;
+		}
+		if (managedMethod.scanAnnotation(javax.annotation.security.RolesAllowed.class) != null) {
+			return true;
+		}
+
+		// if declaring class is 'PermitAll' there is no need to bind security processor
+		if (managedMethod.getDeclaringClass().scanAnnotation(jakarta.annotation.security.PermitAll.class) != null) {
+			return false;
+		}
+		if (managedMethod.getDeclaringClass().scanAnnotation(javax.annotation.security.PermitAll.class) != null) {
+			return false;
+		}
+
+		// if public access is not granted return true to bind security processor
 		return true;
 	}
 
@@ -86,17 +101,32 @@ public class SecurityService implements IMethodInvocationProcessor {
 	// --------------------------------------------------------------------------------------------
 
 	private static boolean isDenyAll(IManagedMethod managedMethod) {
-		return managedMethod.scanAnnotation(DenyAll.class) != null || managedMethod.getDeclaringClass().scanAnnotation(DenyAll.class) != null;
+		if (managedMethod.scanAnnotation(jakarta.annotation.security.DenyAll.class, IManagedMethod.Flags.INCLUDE_TYPES) != null) {
+			return true;
+		}
+		if (managedMethod.scanAnnotation(javax.annotation.security.DenyAll.class, IManagedMethod.Flags.INCLUDE_TYPES) != null) {
+			return true;
+		}
+		return false;
 	}
 
 	private static final String[] EMPTY_ROLES = new String[0];
 
 	private static String[] getRoles(IManagedMethod managedMethod) {
-		RolesAllowed rolesAllowed = managedMethod.scanAnnotation(RolesAllowed.class);
+		Annotation rolesAllowed = managedMethod.scanAnnotation(jakarta.annotation.security.RolesAllowed.class, IManagedMethod.Flags.INCLUDE_TYPES);
 		if (rolesAllowed == null) {
-			rolesAllowed = managedMethod.getDeclaringClass().scanAnnotation(RolesAllowed.class);
+			rolesAllowed = managedMethod.scanAnnotation(javax.annotation.security.RolesAllowed.class, IManagedMethod.Flags.INCLUDE_TYPES);
 		}
-		return rolesAllowed != null ? rolesAllowed.value() : EMPTY_ROLES;
+		if (rolesAllowed == null) {
+			return EMPTY_ROLES;
+		}
+
+		try {
+			return Classes.invoke(rolesAllowed, "value");
+		} catch (Exception e) {
+			log.error(e);
+			return EMPTY_ROLES;
+		}
 	}
 
 	private static boolean isAuthorized(HttpServletRequest httpRequest, String[] roles) {

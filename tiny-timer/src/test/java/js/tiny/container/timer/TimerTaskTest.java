@@ -6,8 +6,6 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import javax.ejb.Schedule;
-
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -25,22 +23,18 @@ public class TimerTaskTest {
 	private Object instance;
 	@Mock
 	private IManagedMethod managedMethod;
-	@Mock
-	private Schedule schedule;
 
 	private TimerTask task;
 
 	@Before
 	public void beforeTest() {
-		when(managedMethod.scanAnnotation(Schedule.class)).thenReturn(schedule);
-
 		task = new TimerTask(service, instance, managedMethod);
 	}
 
 	@Test
 	public void GivenPositiveDelay_WhenTaskRun_ThenInvokeServiceSchedule() {
 		// given
-		when(service.computeDelay(schedule)).thenReturn(100L);
+		when(service.computeDelay(managedMethod)).thenReturn(100L);
 
 		// when
 		task.run();
@@ -52,7 +46,7 @@ public class TimerTaskTest {
 	@Test
 	public void GivenZeroDelay_WhenTaskRun_ThenDoNotInvokeServiceSchedule() {
 		// given
-		when(service.computeDelay(schedule)).thenReturn(0L);
+		when(service.computeDelay(managedMethod)).thenReturn(0L);
 
 		// when
 		task.run();

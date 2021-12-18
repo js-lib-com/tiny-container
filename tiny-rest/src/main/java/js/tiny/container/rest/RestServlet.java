@@ -7,8 +7,6 @@ import javax.inject.Inject;
 import javax.servlet.ServletConfig;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
 
 import js.log.Log;
 import js.log.LogFactory;
@@ -208,7 +206,7 @@ public class RestServlet extends AppServlet {
 		// JSON but with limited capacity; if capacity is not exceeded set response content length; if capacity is exceeded
 		// switch to chunked transfer
 
-		Produces producesMeta = managedMethod.scanAnnotation(Produces.class, IManagedMethod.Flags.INCLUDE_TYPES);
+		IProduces producesMeta = IProduces.scan(managedMethod);
 		String produces = producesMeta != null ? producesMeta.value().length > 0 ? producesMeta.value()[0] : null : null;
 
 		ContentType contentType = ContentType.valueOf(produces);

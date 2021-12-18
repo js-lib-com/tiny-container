@@ -9,8 +9,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
-import javax.ejb.Schedule;
-
 import js.log.Log;
 import js.log.LogFactory;
 import js.tiny.container.spi.IInstancePostConstructProcessor;
@@ -22,11 +20,12 @@ public class CalendarTimerService implements IInstancePostConstructProcessor {
 	private static final Log log = LogFactory.getLog(CalendarTimerService.class);
 
 	private static final long TIMER_TERMINATE_TIMEOUT = 4000;
-	
+
 	private static final int SCHEDULERS_THREAD_POLL = 2;
 	private final ScheduledExecutorService scheduler;
 
 	private final Map<Class<?>, Set<IManagedMethod>> classTimers = new HashMap<>();
+	private final Map<IManagedMethod, ISchedule> methodSchedules = new HashMap<>();
 
 	public CalendarTimerService() {
 		log.trace("CalendarTimerService()");
@@ -47,14 +46,17 @@ public class CalendarTimerService implements IInstancePostConstructProcessor {
 	public <T> boolean bind(IManagedClass<T> managedClass) {
 		final Set<IManagedMethod> timers = new HashSet<>();
 		managedClass.getManagedMethods().forEach(managedMethod -> {
-			Schedule schedule = managedMethod.scanAnnotation(Schedule.class);
+			ISchedule schedule = ISchedule.scan(managedMethod);
 			if (schedule != null) {
 				timers.add(managedMethod);
+				methodSchedules.put(managedMethod, schedule);
 			}
 		});
+
 		if (timers.isEmpty()) {
 			return false;
 		}
+
 		classTimers.put(managedClass.getImplementationClass(), timers);
 		return true;
 	}
@@ -63,14 +65,14 @@ public class CalendarTimerService implements IInstancePostConstructProcessor {
 	@Override
 	public <T> void onInstancePostConstruct(final T instance) {
 		log.trace("onInstancePostConstruct(final T)");
-		
+
 		Class<?> implementationClass = instance.getClass();
 		Set<IManagedMethod> timerMethods = classTimers.get(implementationClass);
 		assert timerMethods != null;
 
 		// computed remaining time can be zero in which case managed method is executed instantly
 		timerMethods.forEach(managedMethod -> {
-			schedule(new TimerTask(this, instance, managedMethod), computeDelay(managedMethod.scanAnnotation(Schedule.class)));
+			schedule(new TimerTask(this, instance, managedMethod), computeDelay(managedMethod));
 		});
 	}
 
@@ -98,12 +100,13 @@ public class CalendarTimerService implements IInstancePostConstructProcessor {
 
 	/**
 	 * Return remaining time, in milliseconds, to the next scheduler timeout or 0 if given schedule is passed. This method
-	 * creates evaluation date to <code>now</code> and delegates {@link #getNextTimeout(CalendarEx, Schedule)}.
+	 * creates evaluation date to <code>now</code> and delegates {@link #getNextTimeout(CalendarEx, ISchedule)}.
 	 * 
 	 * @param schedule method configured schedule.
 	 * @return delay to the next scheduler timeout, in milliseconds, or zero if no schedule passed.
 	 */
-	public long computeDelay(Schedule schedule) {
+	public long computeDelay(IManagedMethod managedMethod) {
+		ISchedule schedule = methodSchedules.get(managedMethod);
 		final Date now = new Date();
 		Date next = getNextTimeout(now, schedule);
 		if (next == null) {
@@ -118,13 +121,13 @@ public class CalendarTimerService implements IInstancePostConstructProcessor {
 
 	/**
 	 * Return next scheduler timeout or null if given schedule instance is passed. This method is designed to be invoked by
-	 * {@link #getTimeRemaining(Schedule)} and does alter given <code>now</code> parameter.
+	 * {@link #getTimeRemaining(ISchedule)} and does alter given <code>now</code> parameter.
 	 * 
 	 * @param evaluationMoment next timeout evaluation moment,
 	 * @param schedule method configured schedule.
 	 * @return next scheduler event or null if configured schedule is passed.
 	 */
-	Date getNextTimeout(Date now, Schedule schedule) {
+	Date getNextTimeout(Date now, ISchedule schedule) {
 		CalendarEx evaluationMoment = new CalendarEx(now);
 		// next scheduler timeout should be at least one second after the evaluation moment
 		evaluationMoment.increment(CalendarUnit.SECOND);

@@ -2,7 +2,6 @@ package js.tiny.container.rest;
 
 import java.util.List;
 
-import javax.ejb.Remote;
 import javax.inject.Inject;
 
 import js.json.Json;
@@ -43,8 +42,7 @@ public class RestConnector implements IConnector, IClassPostLoadedProcessor {
 
 	@Override
 	public <T> boolean onClassPostLoaded(IManagedClass<T> managedClass) {
-		Remote remote = managedClass.scanAnnotation(Remote.class);
-		if (remote == null) {
+		if (IRemote.scan(managedClass) == null) {
 			return false;
 		}
 

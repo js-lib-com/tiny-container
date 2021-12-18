@@ -49,7 +49,6 @@ final class TransactionalResource implements ITransactionalResource {
 	 */
 	public TransactionalResource(IContainer container) {
 		log.trace("TransactionalResource(IContainer)");
-		// uses AppFactory instead of Classes.loadService to acquire transaction manager since need scope management
 		this.transactionManager = container.getOptionalInstance(TransactionManager.class);
 		if (this.transactionManager == null) {
 			throw new BugError("Transaction manager service not found. Ensure there is |%s| service provider on run-time.", TransactionManager.class);

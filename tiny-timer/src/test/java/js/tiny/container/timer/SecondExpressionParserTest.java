@@ -21,7 +21,7 @@ import org.mockito.junit.MockitoJUnitRunner;
 @RunWith(MockitoJUnitRunner.class)
 public class SecondExpressionParserTest {
 	@Mock
-	private Schedule schedule;
+	private ISchedule schedule;
 
 	private CalendarEx now;
 	private NumericExpressionParser parser;

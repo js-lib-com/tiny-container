@@ -1,7 +1,5 @@
 package js.tiny.container.async;
 
-import javax.ejb.Asynchronous;
-
 import js.lang.AsyncTask;
 import js.log.Log;
 import js.log.LogFactory;
@@ -20,10 +18,7 @@ public class AsyncService implements IMethodInvocationProcessor {
 
 	@Override
 	public boolean bind(IManagedMethod managedMethod) {
-		if (managedMethod.scanAnnotation(Asynchronous.class) != null) {
-			return true;
-		}
-		return managedMethod.getDeclaringClass().scanAnnotation(Asynchronous.class) != null;
+		return IAsynchronous.scan(managedMethod) != null;
 	}
 
 	/**

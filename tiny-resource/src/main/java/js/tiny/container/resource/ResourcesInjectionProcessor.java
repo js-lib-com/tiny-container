@@ -9,11 +9,11 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import javax.annotation.Resource;
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
+import jakarta.annotation.Resource;
 import js.lang.BugError;
 import js.log.Log;
 import js.log.LogFactory;
@@ -133,15 +133,15 @@ public class ResourcesInjectionProcessor implements IInstancePostConstructProces
 	 * @return JNDI object or simple environment entry or null if not found.
 	 */
 	private Object getJndiValue(Field field) {
-		Resource resourceAnnotation = field.getAnnotation(Resource.class);
-		assert resourceAnnotation != null;
+		IResource resource = IResource.scan(field);
+		assert resource != null;
 
-		String lookupName = resourceAnnotation.lookup();
+		String lookupName = resource.lookup();
 		if (!lookupName.isEmpty()) {
 			return jndiLookup(globalEnvironment, GLOBAL_ENV, lookupName);
 		}
 
-		String name = resourceAnnotation.name();
+		String name = resource.name();
 		if (name.isEmpty()) {
 			name = Strings.concat(field.getDeclaringClass().getName(), '/', field.getName());
 		}
@@ -190,7 +190,7 @@ public class ResourcesInjectionProcessor implements IInstancePostConstructProces
 		}
 		Set<Field> dependencies = new HashSet<>();
 		for (Field field : type.getDeclaredFields()) {
-			if (!field.isAnnotationPresent(Resource.class)) {
+			if (IResource.scan(field) == null) {
 				continue;
 			}
 			if (Modifier.isFinal(field.getModifiers())) {
