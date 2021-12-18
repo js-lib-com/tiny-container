@@ -29,7 +29,6 @@ import js.tiny.container.cdi.CDI;
 import js.tiny.container.cdi.IClassBinding;
 import js.tiny.container.cdi.IManagedLoader;
 import js.tiny.container.spi.IContainer;
-import js.tiny.container.spi.IContainerCloseProcessor;
 import js.tiny.container.spi.IContainerService;
 import js.tiny.container.spi.IContainerStartProcessor;
 import js.tiny.container.spi.IManagedClass;
@@ -60,7 +59,6 @@ public class Container implements IContainer, EmbeddedContainer, IManagedLoader 
 	private final Map<Class<?>, ManagedClass<?>> managedImplementations = new HashMap<>();
 
 	private final FlowProcessorsSet<IContainerStartProcessor> containerStartProcessors = new FlowProcessorsSet<>();
-	private final FlowProcessorsSet<IContainerCloseProcessor> containerCloseProcessors = new FlowProcessorsSet<>();
 
 	public Container() {
 		this(CDI.create());
@@ -85,9 +83,6 @@ public class Container implements IContainer, EmbeddedContainer, IManagedLoader 
 
 			if (service instanceof IContainerStartProcessor) {
 				containerStartProcessors.add((IContainerStartProcessor) service);
-			}
-			if (service instanceof IContainerCloseProcessor) {
-				containerCloseProcessors.add((IContainerCloseProcessor) service);
 			}
 		}
 	}
@@ -149,8 +144,6 @@ public class Container implements IContainer, EmbeddedContainer, IManagedLoader 
 	@Override
 	public void close() {
 		log.trace("close()");
-
-		// containerCloseProcessors.forEach(processor -> processor.onContainerClose(this));
 
 		SortedMap<Integer, IManagedClass<?>> managedClasses = new TreeMap<>(Collections.reverseOrder());
 		for (IManagedClass<?> managedClass : this.managedClasses) {

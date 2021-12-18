@@ -5,6 +5,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.security.Principal;
 import java.util.Enumeration;
+import java.util.Map;
 
 import javax.inject.Singleton;
 import javax.servlet.ServletContext;
@@ -303,11 +304,11 @@ public class TinyContainer extends Container implements ServletContextListener, 
 		HttpSession httpSession = sessionEvent.getSession();
 		log.trace("Destroy HTTP session |%s|.", httpSession.getId());
 
-		Enumeration<String> attributes = httpSession.getAttributeNames();
-		while (attributes.hasMoreElements()) {
-			// TODO: check that attribute name has the pattern for scope provider instance
-			Object instance = httpSession.getAttribute(attributes.nextElement());
-			onInstanceOutOfScope(SessionScoped.class, instance);
+		// signal instance of out scope for all instances found on the cache of session scope provider, if any
+		@SuppressWarnings("unchecked")
+		Map<String, Object> cache = (Map<String, Object>) httpSession.getAttribute(SessionScopeProvider.ATTR_CACHE);
+		if (cache != null) {
+			cache.values().forEach(instance -> onInstanceOutOfScope(SessionScoped.class, instance));
 		}
 	}
 

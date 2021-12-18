@@ -80,7 +80,6 @@ public class TinyContainerUnitTest {
 		when(servletContext.getRealPath("")).thenReturn("src/test/resources");
 
 		when(httpSessionEvent.getSession()).thenReturn(httpSession);
-		when(httpSession.getAttributeNames()).thenReturn(Collections.emptyEnumeration());
 
 		container = new TinyContainer(cdi, securityProvider);
 	}

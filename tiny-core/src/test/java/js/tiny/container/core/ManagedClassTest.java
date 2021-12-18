@@ -4,7 +4,6 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
@@ -157,20 +156,6 @@ public class ManagedClassTest {
 
 		// then
 		verify(postConstructorProcessor, times(1)).onInstancePostConstruct(instance);
-	}
-
-	@Test
-	public void GivenExistingProcessor_WhenClose_Thenexecute() {
-		// given
-		when(container.getServices()).thenReturn(Arrays.asList(preDestroyProcessor));
-		managedClass.scanServices();
-		when(container.getScopeInstance(Singleton.class, Object.class)).thenReturn(new Object());
-
-		// when
-		managedClass.close();
-
-		// then
-		verify(preDestroyProcessor, times(1)).onInstancePreDestroy(any());
 	}
 
 	@Test

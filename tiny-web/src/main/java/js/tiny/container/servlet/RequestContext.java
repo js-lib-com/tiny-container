@@ -1,9 +1,7 @@
 package js.tiny.container.servlet;
 
 import java.util.Enumeration;
-import java.util.HashMap;
 import java.util.Locale;
-import java.util.Map;
 
 import javax.inject.Singleton;
 import javax.servlet.RequestDispatcher;
@@ -13,7 +11,6 @@ import javax.servlet.http.HttpSession;
 
 import js.converter.Converter;
 import js.converter.ConverterRegistry;
-import js.injector.RequestScoped;
 import js.injector.ThreadScoped;
 import js.lang.BugError;
 import js.log.Log;
@@ -86,8 +83,6 @@ public class RequestContext {
 
 	/** Parent container. */
 	private final ITinyContainer container;
-
-	private final Map<String, Object> attributes = new HashMap<>();
 
 	/**
 	 * Original, not pre-processed by {@link RequestPreprocessor} request URI including query string, if any. This value is
@@ -221,9 +216,6 @@ public class RequestContext {
 	 * considered a bug.
 	 */
 	public void detach() {
-		attributes.values().forEach(instance -> container.onInstanceOutOfScope(RequestScoped.class, instance));
-		attributes.clear();
-
 		attached = false;
 		locale = null;
 		securityDomain = null;
@@ -437,14 +429,6 @@ public class RequestContext {
 	public <T> T getInitParameter(Class<T> type, String parameterName) {
 		String value = getRequest().getServletContext().getInitParameter(parameterName);
 		return converter.asObject(value, type);
-	}
-
-	public void setAttribute(String name, Object value) {
-		attributes.put(name, value);
-	}
-
-	public Object getAttribute(String name) {
-		return attributes.get(name);
 	}
 
 	/** Dump this request context state to error logger. If this instance is not attached this method is NOP. */

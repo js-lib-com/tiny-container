@@ -99,7 +99,4 @@ public interface IManagedClass<T> {
 	 */
 	<A extends Annotation> A scanAnnotation(Class<A> annotationClass);
 
-	/** Release used resources and execute instance pre-destroy processors, if any instance found on injector scope caches. */
-	void close();
-
 }

@@ -43,7 +43,6 @@ public class TinyContainerServletListenersTest {
 		when(servletContext.getRealPath(anyString())).thenReturn(".");
 		when(servletContext.getInitParameterNames()).thenReturn(Collections.emptyEnumeration());
 		when(sessionEvent.getSession()).thenReturn(httpSession);
-		when(httpSession.getAttributeNames()).thenReturn(Collections.emptyEnumeration());
 		
 		container = new TinyContainer();
 	}

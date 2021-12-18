@@ -3,6 +3,7 @@ package js.tiny.container.servlet;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.security.Principal;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.servlet.RequestDispatcher;
@@ -14,6 +15,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import js.injector.RequestScoped;
 import js.json.Json;
 import js.lang.InvocationException;
 import js.log.Log;
@@ -190,6 +192,13 @@ public abstract class AppServlet extends HttpServlet {
 			// cleanup remote address from logger context and detach request context instance from this request
 			logContext.clear();
 			requestContext.detach();
+
+			// signal instance of out scope for all instances found on the cache of request scope provider, if any
+			@SuppressWarnings("unchecked")
+			Map<String, Object> cache = (Map<String, Object>) httpRequest.getAttribute(RequestScopeProvider.ATTR_CACHE);
+			if (cache != null) {
+				cache.values().forEach(instance -> container.onInstanceOutOfScope(RequestScoped.class, instance));
+			}
 		}
 	}
 

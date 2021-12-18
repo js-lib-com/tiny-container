@@ -1,6 +1,8 @@
 package js.tiny.container.servlet;
 
 import java.lang.annotation.Annotation;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.inject.Provider;
 import javax.servlet.http.HttpServletRequest;
@@ -13,6 +15,8 @@ import js.injector.RequestScoped;
 import js.injector.ScopedProvider;
 
 public class RequestScopeProvider<T> extends ScopedProvider<T> {
+	public static final String ATTR_CACHE = "injector-cache";
+
 	private final IInjector injector;
 	private final Key<T> key;
 
@@ -38,7 +42,7 @@ public class RequestScopeProvider<T> extends ScopedProvider<T> {
 	@SuppressWarnings("unchecked")
 	@Override
 	public T getScopeInstance() {
-		return (T) getHttpRequest().getAttribute(key.toScope());
+		return (T) cache().get(key.toScope());
 	}
 
 	@Override
@@ -48,7 +52,7 @@ public class RequestScopeProvider<T> extends ScopedProvider<T> {
 			synchronized (this) {
 				if (instance == null) {
 					instance = getProvisioningProvider().get();
-					getHttpRequest().setAttribute(key.toScope(), instance);
+					cache().put(key.toScope(), instance);
 				}
 			}
 		}
@@ -60,8 +64,16 @@ public class RequestScopeProvider<T> extends ScopedProvider<T> {
 		return getProvisioningProvider().toString() + ":REQUEST";
 	}
 
-	private HttpServletRequest getHttpRequest() {
-		return injector.getInstance(RequestContext.class).getRequest();
+	private synchronized Map<String, Object> cache() {
+		HttpServletRequest httpRequest = injector.getInstance(RequestContext.class).getRequest();
+
+		@SuppressWarnings("unchecked")
+		Map<String, Object> cache = (Map<String, Object>) httpRequest.getAttribute(ATTR_CACHE);
+		if (cache == null) {
+			cache = new HashMap<>();
+			httpRequest.setAttribute(ATTR_CACHE, cache);
+		}
+		return cache;
 	}
 
 	// --------------------------------------------------------------------------------------------

@@ -7,8 +7,6 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.inject.Singleton;
-
 import js.lang.InstanceInvocationHandler;
 import js.log.Log;
 import js.log.LogFactory;
@@ -34,8 +32,6 @@ class ManagedClass<T> implements IManagedClass<T>, IInstanceLifecycleListener {
 	/** Back reference to parent container. */
 	private final Container container;
 
-	private final boolean singleton;
-
 	/** Wrapped business interface exposed by {@link #getInterfaceClass()}. */
 	private final Class<T> interfaceClass;
 
@@ -54,7 +50,6 @@ class ManagedClass<T> implements IManagedClass<T>, IInstanceLifecycleListener {
 
 	public ManagedClass(Container container, IClassBinding<T> binding) {
 		this.container = container;
-		this.singleton = true; // Singleton.class.equals(binding.getScope());
 		this.interfaceClass = binding.getInterfaceClass();
 		this.implementationClass = binding.getImplementationClass();
 
@@ -103,37 +98,6 @@ class ManagedClass<T> implements IManagedClass<T>, IInstanceLifecycleListener {
 		}
 
 		return servicesFound;
-	}
-
-	@Override
-	public void close() {
-		// current implementation, just execute instance pre-destroy processors on singletons
-		// for non-singleton instances this method silently does nothing
-		if (!singleton) {
-			return;
-		}
-
-		Object instance = container.getScopeInstance(Singleton.class, interfaceClass);
-		if (instance == null) {
-			// paranoia check; at this point we deal with singleton instance that cannot be null
-			// but as Aesop stated: 'Two sureties are better than one.'
-			// if you not believe me take a look at http://fables.kids-cademy.com/play.htm?fable=the-wolf-the-kid-and-the-goat
-			return;
-		}
-
-		// in case instance is a Java Proxy takes care to execute pre-destroy processors on wrapped instance in order to avoid
-		// adding container services to this finalization hook
-		if (instance instanceof Proxy) {
-			if (!(Proxy.getInvocationHandler(instance) instanceof InstanceInvocationHandler)) {
-				return;
-			}
-			instance = Classes.unproxy(instance);
-		}
-
-		log.debug("Pre-destroy managed instance |%s|.", this);
-		for (IInstancePreDestroyProcessor processor : instancePreDestructors) {
-			processor.onInstancePreDestroy(instance);
-		}
 	}
 
 	@Override

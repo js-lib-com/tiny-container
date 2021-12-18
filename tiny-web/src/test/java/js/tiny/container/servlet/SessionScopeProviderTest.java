@@ -86,7 +86,7 @@ public class SessionScopeProviderTest {
 		scopeProvider.get();
 
 		// then
-		verify(httpSession, times(1)).getAttribute(anyString());
+		verify(httpSession, times(2)).getAttribute(anyString());
 		verify(httpSession, times(1)).setAttribute(anyString(), any());
 	}
 
@@ -94,13 +94,15 @@ public class SessionScopeProviderTest {
 	public void GivenCache_WhenGetInstance_ThenNotSetSessionAttribute() {
 		// given
 		Object instance = new Object();
-		when(httpSession.getAttribute(anyString())).thenReturn(instance).thenReturn(instance);
+		Map<String, Object> cache = new HashMap<>();
+		cache.put("key", instance);
+		when(httpSession.getAttribute(anyString())).thenReturn(cache).thenReturn(cache);
 
 		// when
 		scopeProvider.get();
 
 		// then
-		verify(httpSession, times(1)).getAttribute(anyString());
+		verify(httpSession, times(2)).getAttribute(anyString());
 		verify(httpSession, times(0)).setAttribute(anyString(), any());
 	}
 
@@ -130,8 +132,8 @@ public class SessionScopeProviderTest {
 
 		// then
 		assertThat(instance1, not(equalTo(instance2)));
-		verify(httpSession, times(2)).getAttribute(anyString());
-		verify(httpSession, times(2)).setAttribute(anyString(), any());
+		verify(httpSession, times(4)).getAttribute(anyString());
+		verify(httpSession, times(1)).setAttribute(anyString(), any());
 	}
 
 	/**
@@ -166,24 +168,24 @@ public class SessionScopeProviderTest {
 	}
 
 	@Test
-	public void GivenHttpRequest_WhenGetSession_ThenNotNull() throws Exception {
+	public void GivenHttpRequest_WhenCache_ThenNotNull() throws Exception {
 		// given
 
 		// when
-		HttpSession session = scopeProvider.getSession();
+		Map<String, Object> cache = scopeProvider.cache();
 
 		// then
-		assertThat(session, notNullValue());
+		assertThat(cache, notNullValue());
 		verify(httpRequest, times(1)).getSession(true);
 	}
 
 	@Test(expected = BugError.class)
-	public void GivenNullHttpRequest_WhenGetSession_ThenException() throws Exception {
+	public void GivenNullHttpRequest_WhenCache_ThenException() throws Exception {
 		// given
 		when(requestContext.getRequest()).thenReturn(null);
 
 		// when
-		scopeProvider.getSession();
+		scopeProvider.cache();
 
 		// then
 	}

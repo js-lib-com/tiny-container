@@ -1,6 +1,8 @@
 package js.tiny.container.servlet;
 
 import java.lang.annotation.Annotation;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.inject.Provider;
 import javax.servlet.http.HttpServletRequest;
@@ -15,6 +17,8 @@ import js.injector.SessionScoped;
 import js.lang.BugError;
 
 public class SessionScopeProvider<T> extends ScopedProvider<T> {
+	public static final String ATTR_CACHE = "injector-cache";
+
 	private final IInjector injector;
 	private final Key<T> key;
 
@@ -40,8 +44,7 @@ public class SessionScopeProvider<T> extends ScopedProvider<T> {
 	@SuppressWarnings("unchecked")
 	@Override
 	public T getScopeInstance() {
-		HttpSession httpSession = getSession();
-		return (T) httpSession.getAttribute(key.toScope());
+		return (T) cache().get(key.toScope());
 	}
 
 	@Override
@@ -56,7 +59,7 @@ public class SessionScopeProvider<T> extends ScopedProvider<T> {
 			synchronized (this) {
 				if (instance == null) {
 					instance = getProvisioningProvider().get();
-					getSession().setAttribute(key.toScope(), instance);
+					cache().put(key.toScope(), instance);
 				}
 			}
 		}
@@ -75,7 +78,7 @@ public class SessionScopeProvider<T> extends ScopedProvider<T> {
 	 * @return current request HTTP session.
 	 * @throws BugError if attempt to use this method outside a HTTP request.
 	 */
-	HttpSession getSession() {
+	synchronized Map<String, Object> cache() {
 		RequestContext requestContext = injector.getInstance(RequestContext.class);
 		HttpServletRequest httpRequest = requestContext.getRequest();
 		if (httpRequest == null) {
@@ -84,7 +87,15 @@ public class SessionScopeProvider<T> extends ScopedProvider<T> {
 
 		// create HTTP session if missing
 		// accordingly API, retrieved httpSession is never null if 'create' flag is true
-		return httpRequest.getSession(true);
+		HttpSession httpSession = httpRequest.getSession(true);
+
+		@SuppressWarnings("unchecked")
+		Map<String, Object> cache = (Map<String, Object>) httpSession.getAttribute(ATTR_CACHE);
+		if (cache == null) {
+			cache = new HashMap<>();
+			httpSession.setAttribute(ATTR_CACHE, cache);
+		}
+		return cache;
 	}
 
 	// --------------------------------------------------------------------------------------------
