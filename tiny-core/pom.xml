@@ -17,7 +17,7 @@
 		</dependency>
 		<dependency>
 			<groupId>com.js-lib</groupId>
-			<artifactId>embedded-container-api</artifactId>
+			<artifactId>js-embedded-container-api</artifactId>
 			<version>1.0</version>
 		</dependency>
 		<dependency>
