@@ -28,9 +28,7 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
-import js.injector.IInjector;
 import js.tiny.container.spi.IContainer;
-import js.util.Classes;
 
 @RunWith(MockitoJUnitRunner.class)
 public class RequestPreprocessorUnitTest {
@@ -73,9 +71,6 @@ public class RequestPreprocessorUnitTest {
 		when(httpRequest.getContextPath()).thenReturn("/app");
 
 		when(container.getInstance(RequestContext.class)).thenReturn(requestContext);
-
-		IInjector injector = Classes.loadService(IInjector.class);
-		injector.clearCache();
 
 		preprocessor = new RequestPreprocessor();
 	}
