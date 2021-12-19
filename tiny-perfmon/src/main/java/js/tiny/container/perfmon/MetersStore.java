@@ -8,21 +8,6 @@ import java.util.TreeSet;
 import js.tiny.container.spi.IManagedMethod;
 
 public class MetersStore {
-	// TODO: replace singleton pattern with javax.inject.Singleton
-	private static final Object mutex = new Object();
-	private static volatile MetersStore instance;
-
-	public static MetersStore instance() {
-		if (instance == null) {
-			synchronized (mutex) {
-				if (instance == null) {
-					instance = new MetersStore();
-				}
-			}
-		}
-		return instance;
-	}
-
 	private final Map<IManagedMethod, IInvocationMeter> meters = new HashMap<>();
 
 	public void createMeter(IManagedMethod managedMethod) {

@@ -9,15 +9,17 @@ import js.tiny.container.spi.IManagedMethod;
 import js.tiny.container.spi.IMethodInvocationProcessor;
 
 public class PerformanceMonitorService implements IMethodInvocationProcessor {
-	private final MetersStore metersStore;
-
-	public PerformanceMonitorService() {
-		this.metersStore = MetersStore.instance();
-	}
+	private MetersStore meters;
 
 	@Override
 	public void configure(IContainer container) {
+		container.bind(MetersStore.class).in(Singleton.class).build();
 		container.bind(Observer.class).in(Singleton.class).build();
+	}
+
+	@Override
+	public void create(IContainer container) {
+		meters = container.getInstance(MetersStore.class);
 	}
 
 	@Override
@@ -27,13 +29,13 @@ public class PerformanceMonitorService implements IMethodInvocationProcessor {
 
 	@Override
 	public boolean bind(IManagedMethod managedMethod) {
-		metersStore.createMeter(managedMethod);
+		meters.createMeter(managedMethod);
 		return true;
 	}
 
 	@Override
 	public Object onMethodInvocation(IInvocationProcessorsChain chain, IInvocation invocation) throws Exception {
-		Meter meter = metersStore.getMeter(invocation.method());
+		Meter meter = meters.getMeter(invocation.method());
 		meter.incrementInvocationsCount();
 		meter.startProcessing();
 

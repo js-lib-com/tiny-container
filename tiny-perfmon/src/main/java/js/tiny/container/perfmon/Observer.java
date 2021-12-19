@@ -3,6 +3,7 @@ package js.tiny.container.perfmon;
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import javax.ejb.Startup;
+import javax.inject.Inject;
 
 import js.log.Log;
 import js.log.LogFactory;
@@ -52,7 +53,7 @@ public class Observer implements Runnable {
 	/** Timeout for observer thread stop. */
 	private static final int THREAD_STOP_TIMEOUT = 4000;
 
-	private final MetersStore metersStore;
+	private final MetersStore meters;
 	
 	/** Observer worker thread. */
 	private Thread thread;
@@ -68,9 +69,10 @@ public class Observer implements Runnable {
 	 * 
 	 * @param app parent application.
 	 */
-	public Observer() {
-		log.trace("Observer()");
-		this.metersStore = MetersStore.instance();
+	@Inject
+	public Observer(MetersStore metersStore) {
+		log.trace("Observer(MetersStore)");
+		this.meters = metersStore;
 	}
 
 	@PostConstruct
@@ -115,7 +117,7 @@ public class Observer implements Runnable {
 			}
 
 			meterLog.info("Invocation meters dump:");
-			for (IInvocationMeter meter : metersStore.getInvocationMeters()) {
+			for (IInvocationMeter meter : meters.getInvocationMeters()) {
 				if (meter.getInvocationsCount() != 0) {
 					meterLog.info(meter.toExternalForm());
 				}
