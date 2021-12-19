@@ -31,7 +31,6 @@ import org.mockito.junit.MockitoJUnitRunner;
 
 import js.lang.ConfigBuilder;
 import js.tiny.container.rest.RestServlet;
-import js.tiny.container.service.InstancePreDestructor;
 import js.tiny.container.servlet.TinyContainer;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -64,8 +63,6 @@ public class RestServletIntegrationTest {
 
 	@Before
 	public void beforeTest() throws Exception {
-		InstancePreDestructor.resetCache();
-
 		container = new TinyContainer();
 		container.configure(new ConfigBuilder(DESCRIPTOR).build());
 

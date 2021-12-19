@@ -44,7 +44,6 @@ public class InstancePostConstructorTest {
 		when(managedMethod.getExceptionTypes()).thenReturn(new Type[0]);
 		when(managedMethod.getReturnType()).thenReturn(Void.class);
 		
-		InstancePostConstructor.resetCache();
 		processor = new InstancePostConstructor();
 	}
 

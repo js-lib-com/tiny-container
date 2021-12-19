@@ -42,7 +42,6 @@ public class InstancePreDestructorTest {
 		when(managedMethod.getExceptionTypes()).thenReturn(new Type[0]);
 		when(managedMethod.getReturnType()).thenReturn(Void.class);
 
-		InstancePreDestructor.resetCache();
 		processor = new InstancePreDestructor();
 	}
 

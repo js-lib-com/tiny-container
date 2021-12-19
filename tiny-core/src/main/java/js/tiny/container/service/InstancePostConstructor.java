@@ -24,8 +24,7 @@ import js.util.Types;
 public class InstancePostConstructor implements IInstancePostConstructProcessor {
 	private static final Log log = LogFactory.getLog(InstancePostConstructor.class);
 
-	// TODO: replace static with injected cache class with singleton scope
-	private static final Map<Class<?>, IManagedMethod> methodsCache = new HashMap<>();
+	private final Map<Class<?>, IManagedMethod> methodsCache = new HashMap<>();
 
 	@Override
 	public Priority getPriority() {
@@ -93,11 +92,5 @@ public class InstancePostConstructor implements IInstancePostConstructProcessor 
 			}
 			throw new RuntimeException(format("Managed instance |%s| post-construct fail: %s", implementationClass.getCanonicalName(), t.getMessage()));
 		}
-	}
-
-	// --------------------------------------------------------------------------------------------
-
-	public static void resetCache() {
-		methodsCache.clear();
 	}
 }

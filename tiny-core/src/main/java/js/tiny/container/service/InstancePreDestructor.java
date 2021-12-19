@@ -16,8 +16,7 @@ import js.util.Types;
 public class InstancePreDestructor implements IInstancePreDestroyProcessor {
 	private static final Log log = LogFactory.getLog(InstancePreDestructor.class);
 
-	// TODO: replace static with injected cache class with singleton scope
-	private static final Map<Class<?>, IManagedMethod> methodsCache = new HashMap<>();
+	private final Map<Class<?>, IManagedMethod> methodsCache = new HashMap<>();
 
 	@Override
 	public Priority getPriority() {
@@ -75,11 +74,5 @@ public class InstancePreDestructor implements IInstancePreDestroyProcessor {
 		} catch (Throwable t) {
 			log.dump(format("Managed instance |%s| pre-destroy fail:", instance.getClass()), t);
 		}
-	}
-
-	// --------------------------------------------------------------------------------------------
-
-	public static void resetCache() {
-		methodsCache.clear();
 	}
 }

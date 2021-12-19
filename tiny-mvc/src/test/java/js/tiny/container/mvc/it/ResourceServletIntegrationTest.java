@@ -73,8 +73,6 @@ public class ResourceServletIntegrationTest {
 
 	@Before
 	public void beforeTest() throws Exception {
-		InstancePreDestructor.resetCache();
-		
 		container = new TinyContainer();
 		container.configure(new ConfigBuilder(DESCRIPTOR).build());
 		// request context has thread scope and is critical to detach it
