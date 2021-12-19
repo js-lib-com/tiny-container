@@ -11,8 +11,20 @@ package js.tiny.container.spi;
  */
 public interface IContainerService {
 
+	// TODO: improve container services lifecycle description
+
 	/**
-	 * Create and initialize container service.
+	 * Configure container service. Since this hook is executed before injector start, given container cane be used only to
+	 * declare injector bindings but not to retrieve instances.
+	 * 
+	 * @param container parent container.
+	 */
+	default void configure(IContainer container) {
+	}
+
+	/**
+	 * Create and initialize internal state and acquire resources. At this stage injector is created and given container can be
+	 * used to retrieve instances declared on service configuration.
 	 * 
 	 * @param container parent container.
 	 */

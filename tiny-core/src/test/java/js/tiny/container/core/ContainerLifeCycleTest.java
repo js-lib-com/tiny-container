@@ -26,6 +26,7 @@ import js.lang.Config;
 import js.lang.ConfigException;
 import js.tiny.container.cdi.CDI;
 import js.tiny.container.cdi.IClassBinding;
+import js.tiny.container.service.InstancePostConstructor;
 import js.tiny.container.spi.IManagedClass;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -45,6 +46,7 @@ public class ContainerLifeCycleTest {
 		doReturn(Object.class).when(binding).getImplementationClass();
 		when(cdi.configure(config)).thenReturn(Arrays.asList(binding));
 
+		InstancePostConstructor.resetCache();
 		container = new Container(cdi);
 	}
 
@@ -125,7 +127,7 @@ public class ContainerLifeCycleTest {
 	@Test
 	public void GivenManagedClass_WhenClose_Then() {
 		// given
-		container.createManagedClasses(Arrays.asList(binding));
+		container.create(Arrays.asList(binding));
 
 		// when
 		container.close();
@@ -136,7 +138,7 @@ public class ContainerLifeCycleTest {
 	@Test
 	public void GivenNoManagedClass_WhenClose_Then() {
 		// given
-		container.createManagedClasses(Arrays.asList(binding));
+		container.create(Arrays.asList(binding));
 
 		// when
 		container.close();

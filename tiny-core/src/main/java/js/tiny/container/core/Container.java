@@ -78,12 +78,7 @@ public class Container implements IContainer, EmbeddedContainer, IManagedLoader 
 
 		for (IContainerService service : ServiceLoader.load(IContainerService.class)) {
 			log.debug("Load container service |%s|.", service.getClass());
-			service.create(this);
 			services.add(service);
-
-			if (service instanceof IContainerStartProcessor) {
-				containerStartProcessors.add((IContainerStartProcessor) service);
-			}
 		}
 	}
 
@@ -106,18 +101,30 @@ public class Container implements IContainer, EmbeddedContainer, IManagedLoader 
 	 */
 	public void configure(Config config) throws ConfigException {
 		log.trace("configure(Config)");
+		services.forEach(service -> service.configure(this));
 		try {
-			createManagedClasses(cdi.configure(config));
+			create(cdi.configure(config));
 		} catch (Exception e) {
 			throw new ConfigException(e.getMessage());
 		}
 	}
 
 	public void configure(Object... modules) {
-		createManagedClasses(cdi.configure(modules));
+		log.trace("configure(Object...)");
+		services.forEach(service -> service.configure(this));
+		create(cdi.configure(modules));
 	}
 
-	void createManagedClasses(List<IClassBinding<?>> bindings) {
+	void create(List<IClassBinding<?>> bindings) {
+		log.trace("create(List<IClassBinding<?>>)");
+
+		services.forEach(service -> {
+			service.create(this);
+			if (service instanceof IContainerStartProcessor) {
+				containerStartProcessors.add((IContainerStartProcessor) service);
+			}
+		});
+
 		for (IClassBinding<?> binding : bindings) {
 			ManagedClass<?> managedClass = new ManagedClass<>(this, binding);
 			if (!managedClass.scanServices()) {
