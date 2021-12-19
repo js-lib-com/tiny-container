@@ -71,7 +71,7 @@ public class TransactionServiceTest {
 		when(methodInvocation.method()).thenReturn(managedMethod);
 
 		service = new TransactionService();
-		service.create(container);
+		service.configure(container);
 	}
 
 	@Test

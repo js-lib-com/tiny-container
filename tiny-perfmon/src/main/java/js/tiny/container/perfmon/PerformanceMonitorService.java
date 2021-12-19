@@ -16,7 +16,7 @@ public class PerformanceMonitorService implements IMethodInvocationProcessor {
 	}
 
 	@Override
-	public void create(IContainer container) {
+	public void configure(IContainer container) {
 		container.bind(Observer.class).in(Singleton.class).build();
 	}
 

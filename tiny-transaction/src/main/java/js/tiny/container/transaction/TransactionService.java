@@ -25,7 +25,7 @@ public class TransactionService implements IMethodInvocationProcessor {
 	private IContainer container;
 
 	@Override
-	public void create(IContainer container) {
+	public void configure(IContainer container) {
 		this.container = container;
 		container.bind(TransactionManager.class).service().in(Singleton.class).build();
 		container.bind(TransactionContext.class).to(TransactionalResource.class).in(Singleton.class).build();
