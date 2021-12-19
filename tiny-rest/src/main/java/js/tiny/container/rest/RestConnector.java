@@ -3,6 +3,7 @@ package js.tiny.container.rest;
 import java.util.List;
 
 import javax.inject.Inject;
+import javax.inject.Singleton;
 
 import js.json.Json;
 import js.log.Log;
@@ -18,11 +19,10 @@ import js.util.Types;
 public class RestConnector implements IConnector, IClassPostLoadedProcessor {
 	private static final Log log = LogFactory.getLog(RestConnector.class);
 
-	private final MethodsCache cache;
+	private MethodsCache cache;
 
 	@Inject
 	public RestConnector() {
-		this.cache = MethodsCache.instance();
 	}
 
 	/** Test constructor. */
@@ -31,8 +31,14 @@ public class RestConnector implements IConnector, IClassPostLoadedProcessor {
 	}
 
 	@Override
-	public void create(IContainer container) {
+	public void configure(IContainer container) {
 		container.bind(Json.class).service().build();
+		container.bind(MethodsCache.class).in(Singleton.class).build();
+	}
+
+	@Override
+	public void create(IContainer container) {
+		cache = container.getInstance(MethodsCache.class);
 	}
 
 	@Override

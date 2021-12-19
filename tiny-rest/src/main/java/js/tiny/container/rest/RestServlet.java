@@ -5,6 +5,7 @@ import java.lang.reflect.Type;
 
 import javax.inject.Inject;
 import javax.servlet.ServletConfig;
+import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -92,8 +93,6 @@ public class RestServlet extends AppServlet {
 
 	private static final Log log = LogFactory.getLog(RestServlet.class);
 
-	private final MethodsCache cache;
-
 	/**
 	 * Factory for invocation arguments readers. Create instances to read invocation arguments from HTTP request, accordingly
 	 * request content type.
@@ -103,20 +102,26 @@ public class RestServlet extends AppServlet {
 	/** Factory for return value writers. Create instances to serialize method return value to HTTP response. */
 	private final ValueWriterFactory valueWriterFactory;
 
+	private MethodsCache cache;
+
 	@Inject
 	public RestServlet() {
 		log.trace("RestServlet()");
-		this.cache = MethodsCache.instance();
 		// both factories are implemented by the same server encoders instance
 		this.argumentsReaderFactory = ServerEncoders.getInstance();
 		this.valueWriterFactory = ServerEncoders.getInstance();
 	}
 
-	public RestServlet(MethodsCache cache, ServerEncoders encoders) {
-		log.trace("RestServlet(MethodsCache, ServerEncoders)");
-		this.cache = cache;
+	public RestServlet(ServerEncoders encoders) {
+		log.trace("RestServlet(ServerEncoders)");
 		this.argumentsReaderFactory = encoders;
 		this.valueWriterFactory = encoders;
+	}
+
+	@Override
+	public void init(ServletConfig config) throws ServletException {
+		super.init(config);
+		cache = container.getInstance(MethodsCache.class);
 	}
 
 	/**
@@ -137,7 +142,7 @@ public class RestServlet extends AppServlet {
 
 		try {
 			String pathInfo = httpRequest.getPathInfo();
-			if(pathInfo == null) {
+			if (pathInfo == null) {
 				pathInfo = httpRequest.getRequestURI().substring(httpRequest.getContextPath().length());
 			}
 			PathTree.Item<IManagedMethod> item = cache.get(httpRequest.getMethod(), pathInfo);

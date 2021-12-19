@@ -79,6 +79,7 @@ public class RestServletUnitTest {
 
 	@Before
 	public void beforeTest() throws Exception {
+		when(container.getInstance(MethodsCache.class)).thenReturn(cache);
 		when(container.getInstance(Json.class)).thenReturn(json);
 		when(json.stringify(any())).thenReturn("{}");
 
@@ -101,7 +102,7 @@ public class RestServletUnitTest {
 		when(argumentsReader.read(eq(httpRequest), any())).thenReturn(new Object[] {});
 
 		context = new RequestContext(container);
-		servlet = new RestServlet(cache, encoders);
+		servlet = new RestServlet(encoders);
 
 		servlet.init(servletConfig);
 		context.attach(httpRequest, httpResponse);
