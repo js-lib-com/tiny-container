@@ -20,7 +20,7 @@
 		</dependency>
 		<dependency>
 			<groupId>com.js-lib</groupId>
-			<artifactId>injector-api</artifactId>
+			<artifactId>js-injector-api</artifactId>
 			<version>1.0</version>
 		</dependency>
 	</dependencies>

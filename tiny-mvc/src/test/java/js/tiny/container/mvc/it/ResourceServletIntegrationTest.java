@@ -36,6 +36,7 @@ import org.mockito.junit.MockitoJUnitRunner;
 import js.lang.ConfigBuilder;
 import js.tiny.container.mvc.MethodsCache;
 import js.tiny.container.mvc.ResourceServlet;
+import js.tiny.container.service.InstancePreDestructor;
 import js.tiny.container.servlet.RequestContext;
 import js.tiny.container.servlet.TinyContainer;
 
@@ -72,6 +73,8 @@ public class ResourceServletIntegrationTest {
 
 	@Before
 	public void beforeTest() throws Exception {
+		InstancePreDestructor.resetCache();
+		
 		container = new TinyContainer();
 		container.configure(new ConfigBuilder(DESCRIPTOR).build());
 		// request context has thread scope and is critical to detach it

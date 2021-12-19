@@ -115,6 +115,11 @@ class ManagedMethod implements IManagedMethod, IMethodInvocationProcessor {
 	}
 
 	@Override
+	public Type[] getExceptionTypes() {
+		return method.getGenericExceptionTypes();
+	}
+
+	@Override
 	public Type getReturnType() {
 		return method.getGenericReturnType();
 	}
@@ -122,6 +127,11 @@ class ManagedMethod implements IManagedMethod, IMethodInvocationProcessor {
 	@Override
 	public boolean isPublic() {
 		return Modifier.isPublic(method.getModifiers());
+	}
+
+	@Override
+	public boolean isStatic() {
+		return Modifier.isStatic(method.getModifiers());
 	}
 
 	/**

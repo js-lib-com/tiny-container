@@ -46,9 +46,9 @@ public class ManagedInstanceStartupProcessor implements IContainerStartProcessor
 
 		SortedMap<Integer, IManagedClass<?>> managedClasses = new TreeMap<>();
 		for (IManagedClass<?> managedClass : container.getManagedClasses()) {
-			if (managedClass.scanAnnotation(Startup.class) != null) {
-				javax.annotation.Priority priorityAnnotation = managedClass.scanAnnotation(javax.annotation.Priority.class);
-				int priority = priorityAnnotation != null ? priorityAnnotation.value() : LOW_PRIORITY.getAndIncrement();
+			if (IStartup.scan(managedClass) != null) {
+				IPriority priorityMeta = IPriority.scan(managedClass);
+				int priority = priorityMeta != null ? priorityMeta.value() : LOW_PRIORITY.getAndIncrement();
 				managedClasses.put(priority, managedClass);
 			}
 		}

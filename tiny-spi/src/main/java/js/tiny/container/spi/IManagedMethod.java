@@ -48,12 +48,21 @@ public interface IManagedMethod {
 	boolean isPublic();
 
 	/**
+	 * Test if this method is static.
+	 * 
+	 * @return true if this method is static.
+	 */
+	boolean isStatic();
+
+	/**
 	 * Gets managed method parameter types. If a formal parameter type is a parameterized type, the {@link Type} object returned
 	 * for it must accurately reflect the actual type parameters used in the source code.
 	 * 
 	 * @return this managed method parameter types.
 	 */
 	Type[] getParameterTypes();
+
+	Type[] getExceptionTypes();
 
 	/**
 	 * Gets this managed method return type. If return type is a parameterized type, the returned {@link Type} object must

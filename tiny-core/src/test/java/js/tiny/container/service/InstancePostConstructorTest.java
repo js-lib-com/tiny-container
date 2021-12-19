@@ -1,8 +1,13 @@
 package js.tiny.container.service;
 
+
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.when;
+
+import java.lang.reflect.Type;
+import java.util.Arrays;
 
 import javax.annotation.PostConstruct;
 
@@ -14,11 +19,17 @@ import org.mockito.junit.MockitoJUnitRunner;
 
 import js.tiny.container.spi.IInstancePostConstructProcessor.Priority;
 import js.tiny.container.spi.IManagedClass;
+import js.tiny.container.spi.IManagedMethod;
 
 @RunWith(MockitoJUnitRunner.class)
 public class InstancePostConstructorTest {
 	@Mock
 	private IManagedClass<Service> managedClass;
+	@Mock
+	private IManagedMethod managedMethod;
+	@Mock
+	private jakarta.annotation.PostConstruct jakartaPostConstruct;
+	
 
 	private Object instance;
 
@@ -28,14 +39,19 @@ public class InstancePostConstructorTest {
 	public void beforeTest() {
 		instance = new Service();
 		doReturn(Service.class).when(managedClass).getImplementationClass();
-
+		when(managedClass.getManagedMethods()).thenReturn(Arrays.asList(managedMethod));
+		when(managedMethod.getParameterTypes()).thenReturn(new Type[0]);
+		when(managedMethod.getExceptionTypes()).thenReturn(new Type[0]);
+		when(managedMethod.getReturnType()).thenReturn(Void.class);
+		
+		InstancePostConstructor.resetCache();
 		processor = new InstancePostConstructor();
-		processor.resetCache();
 	}
 
 	@Test
 	public void GivenSuccessfulBind_WhenInstancePostConstruct_Then() {
 		// given
+		when(managedMethod.scanAnnotation(jakarta.annotation.PostConstruct.class)).thenReturn(jakartaPostConstruct);
 		processor.bind(managedClass);
 
 		// when
@@ -58,7 +74,6 @@ public class InstancePostConstructorTest {
 	public void GivenMethodException_WhenInstancePostConstruct_Then() {
 		// given
 		instance = new ExceptionalService();
-		doReturn(ExceptionalService.class).when(managedClass).getImplementationClass();
 		processor.bind(managedClass);
 
 		// when
@@ -71,7 +86,6 @@ public class InstancePostConstructorTest {
 	public void GivenStaticMethod_WhenInstancePostConstruct_Then() {
 		// given
 		instance = new StaticService();
-		doReturn(StaticService.class).when(managedClass).getImplementationClass();
 		processor.bind(managedClass);
 
 		// when
@@ -84,7 +98,6 @@ public class InstancePostConstructorTest {
 	public void GivenParameterMethod_WhenInstancePostConstruct_Then() {
 		// given
 		instance = new ParameterService();
-		doReturn(ParameterService.class).when(managedClass).getImplementationClass();
 		processor.bind(managedClass);
 
 		// when
@@ -97,7 +110,6 @@ public class InstancePostConstructorTest {
 	public void GivennonVoidMethod_WhenInstancePostConstruct_Then() {
 		// given
 		instance = new NonVoidService();
-		doReturn(NonVoidService.class).when(managedClass).getImplementationClass();
 		processor.bind(managedClass);
 
 		// when
@@ -110,7 +122,6 @@ public class InstancePostConstructorTest {
 	public void GivenThrowsMethod_WhenInstancePostConstruct_Then() {
 		// given
 		instance = new ThrowsService();
-		doReturn(ThrowsService.class).when(managedClass).getImplementationClass();
 		processor.bind(managedClass);
 
 		// when

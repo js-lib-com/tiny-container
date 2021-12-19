@@ -3,18 +3,17 @@ package js.tiny.container.service;
 import static java.lang.String.format;
 
 import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
-
-import javax.annotation.PostConstruct;
 
 import js.lang.ManagedPostConstruct;
 import js.log.Log;
 import js.log.LogFactory;
 import js.tiny.container.spi.IInstancePostConstructProcessor;
 import js.tiny.container.spi.IManagedClass;
+import js.tiny.container.spi.IManagedMethod;
 import js.util.Params;
+import js.util.Types;
 
 /**
  * Execute {@link ManagedPostConstruct#postConstruct()} on managed instance. Instance post-construction is executed after
@@ -22,11 +21,11 @@ import js.util.Params;
  * 
  * @author Iulian Rotaru
  */
-public class InstancePostConstructor extends BaseInstanceLifecycle implements IInstancePostConstructProcessor {
+public class InstancePostConstructor implements IInstancePostConstructProcessor {
 	private static final Log log = LogFactory.getLog(InstancePostConstructor.class);
 
-	/** Cache for @PostConstruct methods filled on the fly. */
-	private static final Map<Class<?>, Method> POST_CONSTRUCT_METHODS = new HashMap<>();
+	// TODO: replace static with injected cache class with singleton scope
+	private static final Map<Class<?>, IManagedMethod> methodsCache = new HashMap<>();
 
 	@Override
 	public Priority getPriority() {
@@ -35,7 +34,37 @@ public class InstancePostConstructor extends BaseInstanceLifecycle implements II
 
 	@Override
 	public <T> boolean bind(IManagedClass<T> managedClass) {
-		return scanAnnotatedMethod(POST_CONSTRUCT_METHODS, managedClass.getImplementationClass(), PostConstruct.class);
+		class Found {
+			boolean value;
+		}
+
+		final Found found = new Found();
+		managedClass.getManagedMethods().forEach(managedMethod -> {
+			if (IPostConstruct.scan(managedMethod) != null) {
+				sanityCheck(managedMethod);
+				if (methodsCache.put(managedClass.getImplementationClass(), managedMethod) != null) {
+					throw new IllegalStateException("Only one post-constructor allowed. See managed class " + managedClass);
+				}
+				found.value = true;
+			}
+		});
+
+		return found.value;
+	}
+
+	private static void sanityCheck(IManagedMethod managedMethod) {
+		if (managedMethod.isStatic()) {
+			throw new IllegalStateException("Post-constructor should not be static. See " + managedMethod);
+		}
+		if (managedMethod.getParameterTypes().length > 0) {
+			throw new IllegalStateException("Post-constructor should have no parameter. See " + managedMethod);
+		}
+		if (!Types.isVoid(managedMethod.getReturnType())) {
+			throw new IllegalStateException("Post-constructor should not return any value. See " + managedMethod);
+		}
+		if (managedMethod.getExceptionTypes().length != 0) {
+			throw new IllegalStateException("Post-constructor should not throw any checked exception. See " + managedMethod);
+		}
 	}
 
 	/**
@@ -51,13 +80,13 @@ public class InstancePostConstructor extends BaseInstanceLifecycle implements II
 		final Class<?> implementationClass = instance.getClass();
 		log.debug("Post-construct managed instance |%s|", implementationClass);
 
-		Method method = POST_CONSTRUCT_METHODS.get(implementationClass);
-		if (method == null) {
+		IManagedMethod managedMethod = methodsCache.get(implementationClass);
+		if (managedMethod == null) {
 			throw new IllegalStateException(format("Missing post-construct method on implementation class |%s|.", implementationClass));
 		}
 
 		try {
-			method.invoke(instance);
+			managedMethod.invoke(instance);
 		} catch (Throwable t) {
 			if (t instanceof InvocationTargetException) {
 				t = ((InvocationTargetException) t).getTargetException();
@@ -68,7 +97,7 @@ public class InstancePostConstructor extends BaseInstanceLifecycle implements II
 
 	// --------------------------------------------------------------------------------------------
 
-	void resetCache() {
-		POST_CONSTRUCT_METHODS.clear();
+	public static void resetCache() {
+		methodsCache.clear();
 	}
 }
