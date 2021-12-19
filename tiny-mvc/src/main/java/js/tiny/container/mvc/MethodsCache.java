@@ -12,21 +12,6 @@ import js.tiny.container.spi.IManagedMethod;
 import js.util.Strings;
 
 public class MethodsCache {
-	// TODO: replace singleton pattern with javax.inject.Singleton
-	private static final Object mutex = new Object();
-	private static volatile MethodsCache instance;
-
-	public static MethodsCache instance() {
-		if (instance == null) {
-			synchronized (mutex) {
-				if (instance == null) {
-					instance = new MethodsCache();
-				}
-			}
-		}
-		return instance;
-	}
-
 	private final Map<String, IManagedMethod> cache = new HashMap<>();
 
 	public String add(IManagedMethod method) {

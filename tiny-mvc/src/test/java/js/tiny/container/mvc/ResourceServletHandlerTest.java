@@ -71,13 +71,15 @@ public class ResourceServletHandlerTest {
 	@Mock
 	private Resource resource;
 	@Mock
-	private MethodsCache methodCache;
+	private MethodsCache cache;
 
 	private RequestContext requestContext;
 	private ResourceServlet servlet;
 
 	@Before
 	public void beforeTest() throws Exception {
+		when(container.getInstance(MethodsCache.class)).thenReturn(cache);
+		
 		when(servletConfig.getServletName()).thenReturn("resource-servlet");
 		when(servletConfig.getServletContext()).thenReturn(servletContext);
 		when(servletContext.getServletContextName()).thenReturn("test-app");
@@ -98,9 +100,9 @@ public class ResourceServletHandlerTest {
 		requestContext = new RequestContext(container);
 		requestContext.attach(httpRequest, httpResponse);
 
-		when(methodCache.get("/controller/index")).thenReturn(managedMethod);
+		when(cache.get("/controller/index")).thenReturn(managedMethod);
 
-		servlet = new ResourceServlet(methodCache, argumentsFactory);
+		servlet = new ResourceServlet(argumentsFactory);
 		servlet.init(servletConfig);
 	}
 
@@ -191,7 +193,7 @@ public class ResourceServletHandlerTest {
 	@Test
 	public void GivenMissingMethod_WhenInvoke_Then404() throws Exception {
 		// given
-		when(methodCache.get("/controller/index")).thenReturn(null);
+		when(cache.get("/controller/index")).thenReturn(null);
 
 		// when
 		servlet.handleRequest(requestContext);

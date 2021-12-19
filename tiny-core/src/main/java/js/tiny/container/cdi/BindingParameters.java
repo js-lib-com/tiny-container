@@ -16,9 +16,9 @@ class BindingParameters<T> {
 	private Class<? extends Annotation> scope;
 	private boolean service;
 	private URI implementationURL;
-	
+
 	// for now do not use type qualifier
-	
+
 	public BindingParameters(Class<T> interfaceClass) {
 		this.interfaceClass = interfaceClass;
 	}
@@ -69,5 +69,10 @@ class BindingParameters<T> {
 
 	public URI getImplementationURL() {
 		return implementationURL;
+	}
+
+	@Override
+	public String toString() {
+		return interfaceClass.getCanonicalName();
 	}
 }

@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.lang.reflect.Type;
 
 import javax.inject.Inject;
+import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -77,18 +78,17 @@ public class ResourceServlet extends AppServlet {
 
 	private static final Log log = LogFactory.getLog(ResourceServlet.class);
 
-	private final MethodsCache cache;
-
 	/**
 	 * Factory for invocation arguments readers. Create instances to read resource methods arguments from HTTP request,
 	 * accordingly request content type.
 	 */
 	private final ArgumentsReaderFactory argumentsReaderFactory;
 
+	private MethodsCache cache;
+
 	@Inject
 	public ResourceServlet() {
 		log.trace("ResourcesServlet()");
-		this.cache = MethodsCache.instance();
 		this.argumentsReaderFactory = ServerEncoders.getInstance();
 	}
 
@@ -98,10 +98,15 @@ public class ResourceServlet extends AppServlet {
 	 * @param cache mock methods cache,
 	 * @param argumentsReaderFactory mock arguments reader factory.
 	 */
-	public ResourceServlet(MethodsCache cache, ArgumentsReaderFactory argumentsReaderFactory) {
+	public ResourceServlet(ArgumentsReaderFactory argumentsReaderFactory) {
 		log.trace("ResourceServlet(ArgumentsReaderFactory)");
-		this.cache = cache;
 		this.argumentsReaderFactory = argumentsReaderFactory;
+	}
+
+	@Override
+	public void init(ServletConfig config) throws ServletException {
+		super.init(config);
+		cache = container.getInstance(MethodsCache.class);
 	}
 
 	/**
