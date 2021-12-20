@@ -50,11 +50,6 @@ public class ResourceServletIntegrationTest {
 			"	<binding bind='IController' to='ControllerImpl' in='javax.inject.Singleton' />" + //
 			"</module>";
 
-	@BeforeClass
-	public static void beforeClass() {
-		System.setProperty("catalina.base", "fixture/tomcat");
-	}
-
 	@Mock
 	private ServletContext servletContext;
 	@Mock

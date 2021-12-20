@@ -2,7 +2,6 @@ package js.tiny.container.servlet;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.spy;
@@ -23,7 +22,6 @@ import javax.servlet.http.HttpSessionEvent;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
@@ -33,7 +31,6 @@ import js.lang.Config;
 import js.lang.ConfigException;
 import js.tiny.container.cdi.CDI;
 import js.tiny.container.spi.IInstanceLifecycleListener;
-import js.util.Files;
 
 @RunWith(MockitoJUnitRunner.class)
 public class TinyContainerUnitTest {
@@ -60,11 +57,6 @@ public class TinyContainerUnitTest {
 	private TinySecurity securityProvider;
 
 	private TinyContainer container;
-
-	@BeforeClass
-	public static void beforeClass() {
-		System.setProperty("catalina.base", "fixture/server/tomcat");
-	}
 
 	@AfterClass
 	public static void afterClass() {
@@ -180,22 +172,10 @@ public class TinyContainerUnitTest {
 	}
 
 	// --------------------------------------------------------------------------------------------
-	// APPLICATION CONTEXT INTERFACE
 
 	@Test
-	public void getContextName() throws ConfigException {
+	public void getAppName() throws ConfigException {
 		assertEquals("test-app", container.getAppName());
-	}
-
-	@Test
-	public void Given_WhenGetAppFile_Then() throws ConfigException {
-		// given
-
-		// when
-		File file = container.getAppFile("file");
-
-		// then
-		assertTrue(Files.path2unix(file.getPath()).endsWith("file"));
 	}
 
 	@Test

@@ -23,7 +23,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
@@ -39,11 +38,6 @@ public class RestServletIntegrationTest {
 			"<module package='js.tiny.container.rest.it'>" + //
 			"	<binding bind='Service' in='javax.inject.Singleton' />" + //
 			"</module>";
-
-	@BeforeClass
-	public static void beforeClass() {
-		System.setProperty("catalina.base", "fixture/tomcat");
-	}
 
 	@Mock
 	private ServletContext servletContext;

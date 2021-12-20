@@ -11,7 +11,6 @@ import javax.servlet.http.HttpSession;
 import javax.servlet.http.HttpSessionEvent;
 
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
@@ -19,12 +18,6 @@ import org.mockito.junit.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
 public class TinyContainerServletListenersTest {
-
-	@BeforeClass
-	public static void beforeClass() {
-		System.setProperty("catalina.base", "fixture/server/tomcat");
-	}
-
 	@Mock
 	private ServletContextEvent contextEvent;
 	@Mock

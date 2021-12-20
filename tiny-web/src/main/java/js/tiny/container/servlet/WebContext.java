@@ -1,7 +1,5 @@
 package js.tiny.container.servlet;
 
-import java.io.File;
-
 import js.converter.ConverterException;
 
 public interface WebContext {
@@ -13,14 +11,6 @@ public interface WebContext {
 	 * @return application name.
 	 */
 	String getAppName();
-
-	/**
-	 * Get absolute file for a path relative to application private storage.
-	 * 
-	 * @param path path relative to application private storage.
-	 * @return application private file.
-	 */
-	File getAppFile(String path);
 
 	/**
 	 * Get context property converted to requested type. A context property is defined by means external to application, on

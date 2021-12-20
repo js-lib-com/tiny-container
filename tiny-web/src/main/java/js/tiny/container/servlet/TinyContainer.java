@@ -26,11 +26,13 @@ import js.lang.ConfigException;
 import js.log.Log;
 import js.log.LogContext;
 import js.log.LogFactory;
+import js.log.LogProvider;
 import js.tiny.container.cdi.CDI;
 import js.tiny.container.core.Bootstrap;
 import js.tiny.container.core.Container;
 import js.tiny.container.net.EventStreamManager;
 import js.tiny.container.net.EventStreamManagerImpl;
+import js.util.Classes;
 
 /**
  * Container specialization for web applications. This class extends {@link Container} adding implementation for
@@ -97,13 +99,8 @@ import js.tiny.container.net.EventStreamManagerImpl;
  * </ul>
  * 
  * @author Iulian Rotaru
- * @version final
  */
 public class TinyContainer extends Container implements ServletContextListener, HttpSessionListener, ITinyContainer, WebContext {
-	/** Server global state and applications logger initialization. */
-	private static final Server server = new Server();
-
-	/** Class logger. */
 	private static final Log log = LogFactory.getLog(TinyContainer.class);
 
 	/** Container instance is stored on servlet context with this attribute name. */
@@ -127,13 +124,6 @@ public class TinyContainer extends Container implements ServletContextListener, 
 	 * <code>js.tiny.container.dev.context</code>.
 	 */
 	private String developmentContext;
-
-	/**
-	 * Application private storage. Privateness is merely a good practice rather than enforced by some system level rights
-	 * protection. So called <code>private</code> directory is on working directory and has context name. Files returned by
-	 * {@link #getAppFile(String)} are always relative to this <code>private</code> directory.
-	 */
-	private File privateDir;
 
 	/**
 	 * Location for application login page, null if not configured. This field value is loaded from application descriptor.
@@ -182,19 +172,6 @@ public class TinyContainer extends Container implements ServletContextListener, 
 		this.security = security;
 	}
 
-	@Override
-	public void configure(Config config) throws ConfigException {
-		super.configure(config);
-
-		// by convention configuration object name is the web application name
-		// appName = config.getName();
-
-		privateDir = server.getAppDir(appName);
-		if (!privateDir.exists()) {
-			privateDir.mkdir();
-		}
-	}
-
 	// --------------------------------------------------------------------------------------------
 	// SERVLET CONTAINER LISTENERS
 
@@ -221,9 +198,11 @@ public class TinyContainer extends Container implements ServletContextListener, 
 	public void contextInitialized(ServletContextEvent contextEvent) {
 		final ServletContext servletContext = contextEvent.getServletContext();
 
-		/** Logger diagnostic context stores contextual information regarding current request. */
+		appName = servletContext.getContextPath().isEmpty() ? TinyContainer.ROOT_CONTEXT : servletContext.getContextPath().substring(1);
+		
+		// logger diagnostic context stores contextual information regarding current request
 		LogContext logContext = LogFactory.getLogContext();
-		logContext.put(LOG_CONTEXT_APP, servletContext.getContextPath().isEmpty() ? TinyContainer.ROOT_CONTEXT : servletContext.getContextPath().substring(1));
+		logContext.put(LOG_CONTEXT_APP, appName);
 
 		final long start = System.currentTimeMillis();
 		log.debug("Starting application |%s| container...", servletContext.getContextPath());
@@ -321,11 +300,6 @@ public class TinyContainer extends Container implements ServletContextListener, 
 	}
 
 	@Override
-	public File getAppFile(String path) {
-		return new File(privateDir, path);
-	}
-
-	@Override
 	public <T> T getProperty(String name, Class<T> type) {
 		return ConverterRegistry.getConverter().asObject(System.getProperty(name), type);
 	}
@@ -381,11 +355,30 @@ public class TinyContainer extends Container implements ServletContextListener, 
 		return security.isAuthorized(context, roles);
 	}
 
-	// --------------------------------------------------------------------------------------------
-	// CONTAINER SPI
-
 	@Override
 	public String getLoginPage() {
 		return loginPage;
+	}
+
+	// --------------------------------------------------------------------------------------------
+	
+	static {
+		LogProvider logProvider = Classes.loadService(LogProvider.class);
+		ShutdownHook shutdownHook = new ShutdownHook(logProvider);
+		shutdownHook.setDaemon(false);
+		Runtime.getRuntime().addShutdownHook(shutdownHook);
+	}
+
+	private static class ShutdownHook extends Thread {
+		private final LogProvider logProvider;
+
+		public ShutdownHook(LogProvider logProvider) {
+			this.logProvider = logProvider;
+		}
+
+		@Override
+		public void run() {
+			logProvider.forceImmediateFlush();
+		}
 	}
 }

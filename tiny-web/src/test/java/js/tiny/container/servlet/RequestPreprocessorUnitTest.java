@@ -22,7 +22,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
@@ -32,11 +31,6 @@ import js.tiny.container.spi.IContainer;
 
 @RunWith(MockitoJUnitRunner.class)
 public class RequestPreprocessorUnitTest {
-	@BeforeClass
-	public static void beforeClass() {
-		System.setProperty("catalina.base", "fixture/server/tomcat");
-	}
-
 	@Mock
 	private ServletContext servletContext;
 	@Mock

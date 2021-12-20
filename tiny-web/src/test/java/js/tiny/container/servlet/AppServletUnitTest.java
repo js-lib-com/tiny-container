@@ -54,11 +54,6 @@ public class AppServletUnitTest {
 			"	</login>" + //
 			"</test>";
 
-	@BeforeClass
-	public static void beforeClass() {
-		System.setProperty("catalina.base", "fixture/server/tomcat");
-	}
-
 	@Mock
 	private ITinyContainer container;
 	@Mock

@@ -65,7 +65,7 @@ public class StreamsTest {
 
 	@Test
 	public void streamFactory_FilesInputStream() throws Exception {
-		InputStream inputStream = new FileInputStream("fixture/files-stream/archive-file.zip");
+		InputStream inputStream = new FileInputStream("src/test/resources/archive-file.zip");
 		assertTrue(getInstance(inputStream, FilesInputStream.class) instanceof FilesInputStream);
 	}
 
