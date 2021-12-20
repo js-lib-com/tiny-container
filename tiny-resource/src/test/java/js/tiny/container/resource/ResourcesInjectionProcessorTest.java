@@ -2,15 +2,11 @@ package js.tiny.container.resource;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.hasItem;
-import static org.hamcrest.Matchers.not;
-import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 
 import java.lang.reflect.Field;
-import java.util.Collection;
+import java.util.Arrays;
 
 import javax.annotation.Resource;
 import javax.naming.Context;
@@ -34,57 +30,23 @@ public class ResourcesInjectionProcessorTest {
 	private Context globalEnvironment;
 	@Mock
 	private Context componentEnvironment;
+	@Mock
+	private FieldsCache fieldsCache;
 
 	private ResourcesInjectionProcessor processor;
 	private BusinessClass instance;
 
 	@Before
 	public void beforeTest() throws NamingException {
-		processor = new ResourcesInjectionProcessor(globalEnvironment, componentEnvironment);
-		processor.resetCache();
+		processor = new ResourcesInjectionProcessor(globalEnvironment, componentEnvironment, fieldsCache);
 		instance = new BusinessClass();
-	}
-
-	@Test
-	public void GivenDefaults_WhenScanFields_ThenFieldsInitialized() throws NoSuchFieldException, SecurityException {
-		// given
-
-		// when
-		Collection<Field> managedFields = ResourcesInjectionProcessor.scanFields(BusinessClass.class);
-
-		// then
-		assertThat(managedFields, notNullValue());
-		assertThat(managedFields, hasItem(BusinessClass.field("resourceName")));
-		assertThat(managedFields, hasItem(BusinessClass.field("resourceLookup")));
-		assertThat(managedFields, not(hasItem(BusinessClass.field("unused"))));
-	}
-
-	@Test(expected = BugError.class)
-	public void GivenStaticResource_WhenScanServiceMeta_ThenException() {
-		// given
-
-		// when
-		ResourcesInjectionProcessor.scanFields(StaticResource.class);
-
-		// then
-	}
-
-	@Test(expected = BugError.class)
-	public void GivenFinalResource_WhenScanServiceMeta_ThenException() {
-		// given
-
-		// when
-		ResourcesInjectionProcessor.scanFields(FinalResource.class);
-
-		// then
 	}
 
 	@Test
 	public void GivenGlocalResource_WhenLookup_ThenFound() throws NamingException {
 		// given
-		when(componentEnvironment.lookup(anyString())).thenThrow(NamingException.class);
 		when(globalEnvironment.lookup("resource.lookup")).thenReturn("resource");
-		ResourcesInjectionProcessor.scanFields(BusinessClass.class);
+		when(fieldsCache.get(BusinessClass.class)).thenReturn(Arrays.asList(BusinessClass.field("resourceLookup")));
 
 		// when
 		processor.onInstancePostConstruct(instance);
@@ -98,7 +60,6 @@ public class ResourcesInjectionProcessorTest {
 	@Test
 	public void GivenNullInstance_WhenLookup_ThenNothing() throws NamingException {
 		// given
-		ResourcesInjectionProcessor.scanFields(BusinessClass.class);
 
 		// when
 		processor.onInstancePostConstruct(null);
@@ -109,9 +70,8 @@ public class ResourcesInjectionProcessorTest {
 	@Test(expected = BugError.class)
 	public void GivenGlocalResourceAndTypeMissmatch_WhenLookup_ThenException() throws NamingException {
 		// given
-		when(componentEnvironment.lookup(anyString())).thenThrow(NamingException.class);
 		when(globalEnvironment.lookup("resource.lookup")).thenReturn(new Object());
-		ResourcesInjectionProcessor.scanFields(BusinessClass.class);
+		when(fieldsCache.get(BusinessClass.class)).thenReturn(Arrays.asList(BusinessClass.field("resourceLookup")));
 
 		// when
 		processor.onInstancePostConstruct(instance);
@@ -122,10 +82,8 @@ public class ResourcesInjectionProcessorTest {
 	@Test
 	public void GivenComponentResource_WhenLookup_ThenFound() throws NamingException {
 		// given
-		when(globalEnvironment.lookup(anyString())).thenThrow(NamingException.class);
-		when(componentEnvironment.lookup(BusinessClass.resourceEmptyName())).thenThrow(NamingException.class);
 		when(componentEnvironment.lookup("resource.name")).thenReturn("resource");
-		ResourcesInjectionProcessor.scanFields(BusinessClass.class);
+		when(fieldsCache.get(BusinessClass.class)).thenReturn(Arrays.asList(BusinessClass.field("resourceName")));
 
 		// when
 		processor.onInstancePostConstruct(instance);
@@ -140,7 +98,7 @@ public class ResourcesInjectionProcessorTest {
 	public void GivenComponentResourceAndTypeMissmatch_WhenLookup_ThenException() throws NamingException {
 		// given
 		when(componentEnvironment.lookup("resource.name")).thenReturn(new Object());
-		ResourcesInjectionProcessor.scanFields(BusinessClass.class);
+		when(fieldsCache.get(BusinessClass.class)).thenReturn(Arrays.asList(BusinessClass.field("resourceName")));
 
 		// when
 		processor.onInstancePostConstruct(instance);
@@ -151,10 +109,8 @@ public class ResourcesInjectionProcessorTest {
 	@Test
 	public void GivenEmptyResource_WhenLookup_ThenFound() throws NamingException {
 		// given
-		when(globalEnvironment.lookup(anyString())).thenThrow(NamingException.class);
-		when(componentEnvironment.lookup("resource.name")).thenThrow(NamingException.class);
 		when(componentEnvironment.lookup(BusinessClass.resourceEmptyName())).thenReturn("resource");
-		ResourcesInjectionProcessor.scanFields(BusinessClass.class);
+		when(fieldsCache.get(BusinessClass.class)).thenReturn(Arrays.asList(BusinessClass.field("resourceEmpty")));
 
 		// when
 		processor.onInstancePostConstruct(instance);
@@ -168,8 +124,13 @@ public class ResourcesInjectionProcessorTest {
 	// --------------------------------------------------------------------------------------------
 
 	private static class BusinessClass {
-		static Field field(String name) throws NoSuchFieldException, SecurityException {
-			return BusinessClass.class.getDeclaredField(name);
+		static Field field(String name) {
+			try {
+				return BusinessClass.class.getDeclaredField(name);
+			} catch (NoSuchFieldException | SecurityException e) {
+				// silently ignore not possible error conditions
+				return null;
+			}
 		}
 
 		static String resourceEmptyName() {
@@ -184,18 +145,5 @@ public class ResourcesInjectionProcessorTest {
 
 		@Resource()
 		String resourceEmpty;
-
-		@SuppressWarnings("unused")
-		String unused;
-	}
-
-	private static class StaticResource {
-		@Resource(name = "static.resource")
-		static String staticResource;
-	}
-
-	private static class FinalResource {
-		@Resource(name = "final.resource")
-		final String finalResource = null;
 	}
 }

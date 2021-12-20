@@ -1,20 +1,13 @@
 package js.tiny.container.resource;
 
 import java.lang.reflect.Field;
-import java.lang.reflect.Modifier;
 import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
 
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
 import jakarta.annotation.Resource;
-import js.lang.BugError;
 import js.log.Log;
 import js.log.LogFactory;
 import js.tiny.container.spi.IInstancePostConstructProcessor;
@@ -44,14 +37,14 @@ public class ResourcesInjectionProcessor implements IInstancePostConstructProces
 	private static final String GLOBAL_ENV = "java:global/env";
 	private static final String COMP_ENV = "java:comp/env";
 
-	private static final Map<Class<?>, Set<Field>> RESOURCE_FIELDS = new HashMap<>();
-
 	private final Context globalEnvironment;
 	private final Context componentEnvironment;
+	private final FieldsCache fieldsCache;
 
 	public ResourcesInjectionProcessor() {
 		this.globalEnvironment = environment(GLOBAL_ENV);
 		this.componentEnvironment = environment(COMP_ENV);
+		this.fieldsCache = new FieldsCache();
 	}
 
 	private static Context environment(String name) {
@@ -65,9 +58,11 @@ public class ResourcesInjectionProcessor implements IInstancePostConstructProces
 		return context;
 	}
 
-	ResourcesInjectionProcessor(Context globalEnvironment, Context componentEnvironment) {
+	/** Test constructor. */
+	ResourcesInjectionProcessor(Context globalEnvironment, Context componentEnvironment, FieldsCache fieldsCache) {
 		this.globalEnvironment = globalEnvironment;
 		this.componentEnvironment = componentEnvironment;
+		this.fieldsCache = fieldsCache;
 	}
 
 	@Override
@@ -88,33 +83,15 @@ public class ResourcesInjectionProcessor implements IInstancePostConstructProces
 			return;
 		}
 
-		Class<?> implementationClass = instance.getClass();
-		Set<Field> fields = RESOURCE_FIELDS.get(implementationClass);
-		if (fields == null) {
-			synchronized (this) {
-				if (fields == null) {
-					fields = scanFields(implementationClass);
-					RESOURCE_FIELDS.put(implementationClass, fields);
-				}
-			}
-		}
-
-		for (Field field : fields) {
-			if (field.isSynthetic()) {
-				// it seems there can be injected fields, created via byte code manipulation, when run with test coverage active
-				// not clear why and how but was consistently observed on mock object from unit test run with coverage
-				continue;
-			}
-
+		fieldsCache.get(instance.getClass()).forEach(field -> {
 			Object value = getJndiValue(field);
 			if (value == null) {
 				log.debug("Null dependency for field |%s|. Leave it unchanged.", field);
-				continue;
+				return;
 			}
-
 			Classes.setFieldValue(instance, field, value);
 			log.debug("Inject field |%s| value |%s|.", field, value);
-		}
+		});
 	}
 
 	/**
@@ -173,46 +150,10 @@ public class ResourcesInjectionProcessor implements IInstancePostConstructProces
 		return value;
 	}
 
-	/**
-	 * Scan class resources dependencies declared by {@link Resource} annotation. This method scans all fields, no matter
-	 * private, protected or public. Anyway it is considered a bug if resource annotation is found on final or static field.
-	 * 
-	 * Returns a collection of reflective fields with accessibility set but in not particular order. If given type argument is
-	 * null returns empty collection.
-	 * 
-	 * @param type class to scan dependencies for, null tolerated.
-	 * @return dependencies collection, in no particular order.
-	 * @throws BugError if annotation is used on final or static field.
-	 */
-	static Set<Field> scanFields(Class<?> type) {
-		if (type == null) {
-			return Collections.emptySet();
-		}
-		Set<Field> dependencies = new HashSet<>();
-		for (Field field : type.getDeclaredFields()) {
-			if (IResource.scan(field) == null) {
-				continue;
-			}
-			if (Modifier.isFinal(field.getModifiers())) {
-				throw new BugError("Attempt to inject final field |%s|.", field.getName());
-			}
-			if (Modifier.isStatic(field.getModifiers())) {
-				throw new BugError("Attempt to inject static field |%s|.", field.getName());
-			}
-			field.setAccessible(true);
-			dependencies.add(field);
-		}
-		return dependencies;
-	}
-
 	// --------------------------------------------------------------------------------------------
 	// tests access
 
-	Collection<Field> getManagedFields(Class<?> type) {
-		return RESOURCE_FIELDS.get(type);
-	}
-
-	void resetCache() {
-		RESOURCE_FIELDS.clear();
+	Collection<Field> getManagedFields(Class<?> implementationClass) {
+		return fieldsCache.get(implementationClass);
 	}
 }
