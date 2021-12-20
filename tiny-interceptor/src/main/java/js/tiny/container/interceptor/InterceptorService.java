@@ -16,7 +16,7 @@ import js.util.Classes;
 public class InterceptorService implements IMethodInvocationProcessor {
 	private static final Log log = LogFactory.getLog(InterceptorService.class);
 
-	private static final Map<IManagedMethod, Interceptor> cache = new HashMap<>();
+	private final Map<IManagedMethod, Interceptor> cache = new HashMap<>();
 
 	private IContainer container;
 
