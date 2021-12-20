@@ -1,7 +1,6 @@
 package js.tiny.container.servlet;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.spy;
@@ -10,7 +9,6 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.io.File;
-import java.util.Arrays;
 import java.util.Collections;
 
 import javax.servlet.ServletContext;
@@ -171,50 +169,8 @@ public class TinyContainerUnitTest {
 		verify(httpSession, times(1)).getId();
 	}
 
-	// --------------------------------------------------------------------------------------------
-
 	@Test
 	public void getAppName() throws ConfigException {
 		assertEquals("test-app", container.getAppName());
-	}
-
-	@Test
-	public void GivenInitParameter_WhenGetProperty_ThenValue() throws ConfigException {
-		// given
-		when(servletContext.getInitParameterNames()).thenReturn(Collections.enumeration(Arrays.asList("server.base.dir")));
-		when(servletContext.getInitParameter("server.base.dir")).thenReturn("/server/base/dir");
-		container.contextInitialized(servletContextEvent);
-
-		// when
-		String value = container.getProperty("server.base.dir", String.class);
-
-		// then
-		assertEquals("/server/base/dir", value);
-	}
-
-	@Test
-	public void GivenInitParameter_WhenGetTypedProperty_ThenValue() throws ConfigException {
-		// given
-		when(servletContext.getInitParameterNames()).thenReturn(Collections.enumeration(Arrays.asList("server.base.dir")));
-		when(servletContext.getInitParameter("server.base.dir")).thenReturn("/server/base/dir");
-		container.contextInitialized(servletContextEvent);
-
-		// when
-		File file = container.getProperty("server.base.dir", File.class);
-
-		// then
-		assertEquals(new File("/server/base/dir"), file);
-	}
-
-	@Test
-	public void getProperty_NotDefined() throws ConfigException {
-		container.contextInitialized(servletContextEvent);
-		assertNull(container.getProperty("not.defined", String.class));
-	}
-
-	@Test
-	public void getTypeProperty_NotDefined() throws ConfigException {
-		container.contextInitialized(servletContextEvent);
-		assertNull(container.getProperty("not.defined", File.class));
 	}
 }

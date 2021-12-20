@@ -15,7 +15,6 @@ import javax.servlet.http.HttpSession;
 import javax.servlet.http.HttpSessionEvent;
 import javax.servlet.http.HttpSessionListener;
 
-import js.converter.ConverterRegistry;
 import js.injector.RequestScoped;
 import js.injector.SessionScoped;
 import js.injector.ThreadScoped;
@@ -100,7 +99,7 @@ import js.util.Classes;
  * 
  * @author Iulian Rotaru
  */
-public class TinyContainer extends Container implements ServletContextListener, HttpSessionListener, ITinyContainer, WebContext {
+public class TinyContainer extends Container implements ServletContextListener, HttpSessionListener, ITinyContainer {
 	private static final Log log = LogFactory.getLog(TinyContainer.class);
 
 	/** Container instance is stored on servlet context with this attribute name. */
@@ -160,7 +159,6 @@ public class TinyContainer extends Container implements ServletContextListener, 
 		log.trace("TinyContainer(CDI, TinySecurity)");
 
 		bind(ITinyContainer.class).instance(this).build();
-		bind(WebContext.class).instance(this).build();
 		bind(SecurityContext.class).instance(this).build();
 
 		bind(RequestContext.class).in(ThreadScoped.class).build();
@@ -291,31 +289,10 @@ public class TinyContainer extends Container implements ServletContextListener, 
 		}
 	}
 
-	// --------------------------------------------------------------------------------------------
-	// WEB CONTEXT INTERFACE
-
 	@Override
 	public String getAppName() {
 		return appName;
 	}
-
-	@Override
-	public <T> T getProperty(String name, Class<T> type) {
-		return ConverterRegistry.getConverter().asObject(System.getProperty(name), type);
-	}
-
-	@Override
-	public RequestContext getRequestContext() {
-		return getInstance(RequestContext.class);
-	}
-
-	@Override
-	public SecurityContext getSecurityContext() {
-		return this;
-	}
-
-	// --------------------------------------------------------------------------------------------
-	// SECURITY CONTEXT INTERFACE
 
 	@Override
 	public boolean login(String username, String password) {
