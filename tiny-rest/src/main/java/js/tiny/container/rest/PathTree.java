@@ -28,7 +28,17 @@ public class PathTree<T> {
 		String pathComponent = path.get(pathIndex);
 
 		Node child = node.getChild(pathComponent);
-		if (child == null) {
+		boolean found = child != null;
+		if(found) {
+			if (pathComponent.charAt(0) == '{' &&  !(child instanceof Variable)) {
+				found = false;
+			}			
+			else if (pathComponent.charAt(0) != '{' &&  child instanceof Variable) {
+				found = false;
+			}			
+		}
+			
+		if (!found) {
 			if (pathComponent.charAt(0) == '{') {
 				child = new Variable();
 				node.putVariable((Variable) child);

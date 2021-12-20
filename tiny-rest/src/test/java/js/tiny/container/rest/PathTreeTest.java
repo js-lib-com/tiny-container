@@ -155,6 +155,33 @@ public class PathTreeTest {
 	}
 
 	@Test
+	public void GivenMultiplePathsWithSameRoot_WhenGet_ThenValuesAndVariables() {
+		// given
+		// path declaration order matters
+		tree.put(paths("book", "author"), "item1");
+		tree.put(paths("book", "{store}", "{isbn}"), "item2");
+		tree.put(paths("book", "info"), "item3");
+
+		// when
+		Item<Object> item1 = tree.get(paths("book", "author"));
+		Item<Object> item2 = tree.get(paths("book", "libris", "978-973-46-3185-8"));
+		Item<Object> item3 = tree.get(paths("book", "info"));
+
+		// then
+		assertThat(item1, notNullValue());
+		assertThat(item1.getValue(), equalTo("item1"));
+		assertThat(item1.getVariables(), is(empty()));
+
+		assertThat(item2, notNullValue());
+		assertThat(item2.getValue(), equalTo("item2"));
+		assertThat(item2.getVariables(), contains("libris", "978-973-46-3185-8"));
+
+		assertThat(item3, notNullValue());
+		assertThat(item3.getValue(), equalTo("item3"));
+		assertThat(item3.getVariables(), is(empty()));
+	}
+
+	@Test
 	public void Given_When_Then() {
 		// given
 
