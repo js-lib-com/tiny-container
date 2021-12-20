@@ -1,29 +1,22 @@
 package js.tiny.container.contextparam;
 
+import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 
 import js.converter.Converter;
-import js.log.Log;
-import js.log.LogFactory;
 import js.tiny.container.spi.IClassPostLoadedProcessor;
 import js.tiny.container.spi.IManagedClass;
 
 /**
- * Inject context parameters into class static, non final fields. Field type could be anything for which there is a
+ * Injects context parameters into class static, non final fields. Type of the field could be anything as long there is a
  * {@link Converter} registered.
  * 
- * This processor is executed immediately after class loading but before class made available to container. Class fields
- * designed to be initialized should be annotated with the non standard annotation {@link ContextParam}.
+ * This processor is executed immediately after class loading but before class to become available to container. Class fields
+ * designed to be initialized should be annotated with the non standard {@link ContextParam} annotation.
  * 
  * @author Iulian Rotaru
  */
 public class ClassContextParam extends BaseContextParam implements IClassPostLoadedProcessor {
-	private static Log log = LogFactory.getLog(ClassContextParam.class);
-
-	public ClassContextParam() {
-		log.trace("ClassContextParam()");
-	}
-
 	@Override
 	public Priority getPriority() {
 		return Priority.INJECT;
@@ -31,8 +24,12 @@ public class ClassContextParam extends BaseContextParam implements IClassPostLoa
 
 	@Override
 	public <T> boolean onClassPostLoaded(IManagedClass<T> managedClass) {
-		processFields(managedClass.getImplementationClass(), field -> Modifier.isStatic(field.getModifiers()));
-		// this processor acts on class static field and does not use instance or method services 
+		for (Field field : managedClass.getImplementationClass().getDeclaredFields()) {
+			if (field.getAnnotation(ContextParam.class) != null && Modifier.isStatic(field.getModifiers())) {
+				setField(field, null);
+			}
+		}
+		// this processor acts on class static field and does not use instance or method services
 		return false;
 	}
 }

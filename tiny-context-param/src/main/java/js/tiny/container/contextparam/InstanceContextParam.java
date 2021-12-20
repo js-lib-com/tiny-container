@@ -1,10 +1,13 @@
 package js.tiny.container.contextparam;
 
+import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
 import js.converter.Converter;
-import js.log.Log;
-import js.log.LogFactory;
 import js.tiny.container.spi.IInstancePostConstructProcessor;
 
 /**
@@ -17,11 +20,7 @@ import js.tiny.container.spi.IInstancePostConstructProcessor;
  * @author Iulian Rotaru
  */
 public class InstanceContextParam extends BaseContextParam implements IInstancePostConstructProcessor {
-	private static Log log = LogFactory.getLog(InstanceContextParam.class);
-
-	public InstanceContextParam() {
-		log.trace("InstanceContextParam()");
-	}
+	private final Map<Class<?>, Set<Field>> fieldsCache = new HashMap<>();
 
 	@Override
 	public Priority getPriority() {
@@ -30,6 +29,26 @@ public class InstanceContextParam extends BaseContextParam implements IInstanceP
 
 	@Override
 	public <T> void onInstancePostConstruct(T instance) {
-		processFields(instance, field -> !Modifier.isStatic(field.getModifiers()));
+		final Class<?> implementationClass = instance.getClass();
+
+		Set<Field> fields = fieldsCache.get(implementationClass);
+		if (fields == null) {
+			synchronized (this) {
+				if (fields == null) {
+					fields = new HashSet<>();
+					fieldsCache.put(implementationClass, fields);
+
+					for (Field field : implementationClass.getDeclaredFields()) {
+						if (field.getAnnotation(ContextParam.class) != null && !Modifier.isStatic(field.getModifiers())) {
+							fields.add(field);
+						}
+					}
+				}
+			}
+		}
+
+		for (Field field : fields) {
+			setField(field, instance);
+		}
 	}
 }
