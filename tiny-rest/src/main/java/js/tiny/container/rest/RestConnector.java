@@ -42,6 +42,11 @@ public class RestConnector implements IConnector, IClassPostLoadedProcessor {
 	}
 
 	@Override
+	public <T> boolean bind(IManagedClass<T> managedClass) {
+		return IRemote.scan(managedClass) != null;
+	}
+
+	@Override
 	public Priority getPriority() {
 		return Priority.SCAN;
 	}

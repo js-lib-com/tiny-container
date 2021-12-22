@@ -40,6 +40,11 @@ public class ResourceConnector implements IConnector, IClassPostLoadedProcessor 
 	}
 
 	@Override
+	public <T> boolean bind(IManagedClass<T> managedClass) {
+		return managedClass.scanAnnotation(Controller.class) != null;
+	}
+
+	@Override
 	public Priority getPriority() {
 		return Priority.SCAN;
 	}

@@ -12,6 +12,7 @@ import js.log.Log;
 import js.log.LogFactory;
 import js.tiny.container.cdi.IClassBinding;
 import js.tiny.container.spi.IClassPostLoadedProcessor;
+import js.tiny.container.spi.IConnector;
 import js.tiny.container.spi.IContainer;
 import js.tiny.container.spi.IContainerService;
 import js.tiny.container.spi.IInstanceLifecycleListener;
@@ -75,6 +76,12 @@ class ManagedClass<T> implements IManagedClass<T>, IInstanceLifecycleListener {
 		}
 
 		for (IContainerService service : container.getServices()) {
+			if (service instanceof IConnector) {
+				IConnector connector = (IConnector) service;
+				if (connector.bind(this)) {
+					servicesFound = true;
+				}
+			}
 			if (service instanceof IClassPostLoadedProcessor) {
 				IClassPostLoadedProcessor processor = (IClassPostLoadedProcessor) service;
 				if (processor.onClassPostLoaded(this)) {
