@@ -2,6 +2,7 @@ package js.tiny.container.core;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.lang.reflect.Proxy;
 import java.util.Collection;
 import java.util.HashMap;
@@ -39,6 +40,7 @@ class ManagedClass<T> implements IManagedClass<T>, IInstanceLifecycleListener {
 	/** Wrapped business class exposed by {@link #getImplementationClass()}. */
 	private final Class<? extends T> implementationClass;
 
+	/** Managed methods defined by implementation class. Static methods are not included. */
 	private final Map<String, IManagedMethod> managedMethods = new HashMap<>();
 
 	/**
@@ -68,6 +70,9 @@ class ManagedClass<T> implements IManagedClass<T>, IInstanceLifecycleListener {
 		boolean servicesFound = false;
 
 		for (Method method : implementationClass.getDeclaredMethods()) {
+			if(Modifier.isStatic(method.getModifiers())) {
+				continue;
+			}
 			ManagedMethod managedMethod = new ManagedMethod(this, method);
 			if (managedMethod.scanServices(container.getServices())) {
 				servicesFound = true;

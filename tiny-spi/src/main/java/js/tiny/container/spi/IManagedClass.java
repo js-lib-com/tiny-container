@@ -57,7 +57,8 @@ public interface IManagedClass<T> {
 	Class<? extends T> getImplementationClass();
 
 	/**
-	 * Gets managed methods owned by this managed class.
+	 * Gets managed methods owned by this managed class. Managed methods are those defined by implementation class and are not
+	 * static.
 	 * 
 	 * @return managed methods collection, in no particular order.
 	 */
