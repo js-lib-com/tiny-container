@@ -16,13 +16,13 @@ import js.injector.ITypedProvider;
 import js.injector.ScopedProvider;
 
 /**
- * Managed module collects all container and application modules and pre-process them. Resulting injector bindings are used to
- * configure injector service. Beside injector bindings this module creates a list of managed classes bindings used by container
- * to actually create internal managed classes.
+ * Managed module collects all modules, from container and application, and pre-process them before handing to injector.
+ * Resulting injector bindings are used to configure injector service. Beside injector bindings this module creates a list of
+ * managed classes bindings used by container to actually create internal managed classes.
  * 
  * This module takes care to replace provider with {@link ProxyProvider} is given bound type has a {@link #PROXY_ANNOTATIONS}
- * annotation, but only is proxy processing is enabled. Current implementation considers {@link ManagedBean}, {@link Stateful}
- * and {@link Stateless} annotations for proxy processing.
+ * annotation. Current implementation considers {@link ManagedBean}, {@link Stateful} and {@link Stateless} annotations for
+ * proxy processing.
  * 
  * @author Iulian Rotaru
  */

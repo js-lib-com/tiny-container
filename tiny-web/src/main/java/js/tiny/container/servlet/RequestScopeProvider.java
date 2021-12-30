@@ -4,6 +4,7 @@ import java.lang.annotation.Annotation;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.enterprise.context.RequestScoped;
 import javax.inject.Provider;
 import javax.servlet.http.HttpServletRequest;
 
@@ -11,7 +12,6 @@ import js.injector.IBinding;
 import js.injector.IInjector;
 import js.injector.IScopeFactory;
 import js.injector.Key;
-import js.injector.RequestScoped;
 import js.injector.ScopedProvider;
 
 public class RequestScopeProvider<T> extends ScopedProvider<T> {

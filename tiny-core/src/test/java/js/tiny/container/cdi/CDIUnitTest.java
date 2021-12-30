@@ -14,6 +14,7 @@ import static org.mockito.Mockito.verify;
 
 import java.net.URI;
 
+import javax.enterprise.context.SessionScoped;
 import javax.inject.Provider;
 import javax.inject.Singleton;
 
@@ -27,7 +28,6 @@ import js.injector.IBinding;
 import js.injector.IInjector;
 import js.injector.IScopeFactory;
 import js.injector.ProvisionException;
-import js.injector.SessionScoped;
 import js.injector.ThreadScoped;
 import js.tiny.container.fixture.IService;
 import js.tiny.container.fixture.Service;
