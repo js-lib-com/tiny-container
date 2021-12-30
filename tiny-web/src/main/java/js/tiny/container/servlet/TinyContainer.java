@@ -5,8 +5,11 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.security.Principal;
 import java.util.Enumeration;
+import java.util.List;
 import java.util.Map;
 
+import javax.enterprise.context.RequestScoped;
+import javax.enterprise.context.SessionScoped;
 import javax.inject.Singleton;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletContextEvent;
@@ -15,8 +18,6 @@ import javax.servlet.http.HttpSession;
 import javax.servlet.http.HttpSessionEvent;
 import javax.servlet.http.HttpSessionListener;
 
-import js.injector.RequestScoped;
-import js.injector.SessionScoped;
 import js.injector.ThreadScoped;
 import js.lang.BugError;
 import js.lang.Config;
@@ -27,10 +28,12 @@ import js.log.LogContext;
 import js.log.LogFactory;
 import js.log.LogProvider;
 import js.tiny.container.cdi.CDI;
+import js.tiny.container.cdi.IClassBinding;
 import js.tiny.container.core.Bootstrap;
 import js.tiny.container.core.Container;
 import js.tiny.container.net.EventStreamManager;
 import js.tiny.container.net.EventStreamManagerImpl;
+import js.tiny.container.spi.ISecurityContext;
 import js.util.Classes;
 
 /**
@@ -147,27 +150,35 @@ public class TinyContainer extends Container implements ServletContextListener, 
 	 */
 	private String loginPage;
 
-	private TinySecurity security;
+	/**
+	 * Security context is defined in security module and this instance can be null if security module is not provided on
+	 * runtime.
+	 */
+	private ISecurityContext security;
 
 	public TinyContainer() {
-		this(CDI.create(), new TinySecurity());
+		this(CDI.create());
 	}
 
 	/** Test constructor. */
-	public TinyContainer(CDI cdi, TinySecurity security) {
+	public TinyContainer(CDI cdi) {
 		super(cdi);
-		log.trace("TinyContainer(CDI, TinySecurity)");
+		log.trace("TinyContainer(CDI)");
 
 		bind(ITinyContainer.class).instance(this).build();
-		bind(SecurityContext.class).instance(this).build();
 
 		bind(RequestContext.class).in(ThreadScoped.class).build();
 		bind(EventStreamManager.class).to(EventStreamManagerImpl.class).in(Singleton.class).build();
 
 		bindScope(RequestScoped.class, new RequestScopeProvider.Factory<>());
 		bindScope(SessionScoped.class, new SessionScopeProvider.Factory<>());
+	}
 
-		this.security = security;
+	@Override
+	protected void create(List<IClassBinding<?>> bindings) {
+		super.create(bindings);
+		// security can be null if security module is not deployed on runtime
+		security = getOptionalInstance(ISecurityContext.class);
 	}
 
 	// --------------------------------------------------------------------------------------------
@@ -197,7 +208,7 @@ public class TinyContainer extends Container implements ServletContextListener, 
 		final ServletContext servletContext = contextEvent.getServletContext();
 
 		appName = servletContext.getContextPath().isEmpty() ? TinyContainer.ROOT_CONTEXT : servletContext.getContextPath().substring(1);
-		
+
 		// logger diagnostic context stores contextual information regarding current request
 		LogContext logContext = LogFactory.getLogContext();
 		logContext.put(LOG_CONTEXT_APP, appName);
@@ -296,31 +307,49 @@ public class TinyContainer extends Container implements ServletContextListener, 
 
 	@Override
 	public boolean login(String username, String password) {
-		return security.login(getInstance(RequestContext.class), username, password);
+		if (security == null) {
+			throw new IllegalStateException("Missing security provider.");
+		}
+		return security.login(username, password);
 	}
 
 	@Override
 	public void login(Principal user) {
-		security.login(getInstance(RequestContext.class), user);
+		if (security == null) {
+			throw new IllegalStateException("Missing security provider.");
+		}
+		security.login(user);
 	}
 
 	@Override
 	public void logout() {
-		security.logout(getInstance(RequestContext.class));
+		if (security == null) {
+			throw new IllegalStateException("Missing security provider.");
+		}
+		security.logout();
 	}
 
 	@Override
 	public Principal getUserPrincipal() {
-		return security.getUserPrincipal(getInstance(RequestContext.class));
+		if (security == null) {
+			throw new IllegalStateException("Missing security provider.");
+		}
+		return security.getUserPrincipal();
 	}
 
 	@Override
 	public boolean isAuthenticated() {
-		return getUserPrincipal() != null;
+		if (security == null) {
+			throw new IllegalStateException("Missing security provider.");
+		}
+		return security.isAuthenticated();
 	}
 
 	@Override
 	public boolean isAuthorized(String... roles) {
+		if (security == null) {
+			throw new IllegalStateException("Missing security provider.");
+		}
 		if (roles == null) {
 			throw new BugError("Null roles.");
 		}
@@ -329,7 +358,7 @@ public class TinyContainer extends Container implements ServletContextListener, 
 		if (developmentContext != null && developmentContext.equals(context.getForwardContextPath())) {
 			return true;
 		}
-		return security.isAuthorized(context, roles);
+		return security.isAuthorized(roles);
 	}
 
 	@Override
@@ -338,7 +367,7 @@ public class TinyContainer extends Container implements ServletContextListener, 
 	}
 
 	// --------------------------------------------------------------------------------------------
-	
+
 	static {
 		LogProvider logProvider = Classes.loadService(LogProvider.class);
 		ShutdownHook shutdownHook = new ShutdownHook(logProvider);

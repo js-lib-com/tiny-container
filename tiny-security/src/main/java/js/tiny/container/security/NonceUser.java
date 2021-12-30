@@ -1,6 +1,8 @@
-package js.tiny.container.servlet;
+package js.tiny.container.security;
 
 import java.security.Principal;
+
+import js.tiny.container.spi.ISecurityContext;
 
 /**
  * A nonce user has access only one time and for a short period of time. Container takes care to quickly invalidate the session.
@@ -8,7 +10,7 @@ import java.security.Principal;
  * <p>
  * An example use case would be granting guest access to private resources based on a coupon or credit points of some sort.
  * Guest user is requested to enter coupon code; application checks coupon validity then creates a <code>nonce</code> principal
- * and authenticate it via {@link SecurityContext#login(Principal)}. Security context takes care to auto-logout
+ * and authenticate it via {@link ISecurityContext#login(Principal)}. Security context takes care to auto-logout
  * <code>nonce</code> principal after a short inactivity interval, declared at <code>nonce</code> creation.
  * 
  * @author Iulian Rotaru

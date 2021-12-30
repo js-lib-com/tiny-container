@@ -1,4 +1,4 @@
-package js.tiny.container.servlet;
+package js.tiny.container.security;
 
 import java.io.IOException;
 import java.security.Principal;
@@ -12,15 +12,28 @@ import js.lang.BugError;
 import js.lang.RolesPrincipal;
 import js.log.Log;
 import js.log.LogFactory;
+import js.tiny.container.servlet.RequestContext;
+import js.tiny.container.servlet.TinyContainer;
+import js.tiny.container.spi.IContainer;
+import js.tiny.container.spi.ISecurityContext;
 import js.util.Params;
 
-public class TinySecurity {
+class TinySecurity implements ISecurityContext {
 	private static final Log log = LogFactory.getLog(TinySecurity.class);
 
-	public boolean login(RequestContext context, String username, String password) {
-		log.trace("login(RequestContext, String, String)");
+	private final IContainer container;
+
+	public TinySecurity(IContainer container) {
+		this.container = container;
+	}
+
+	@Override
+	public boolean login(String username, String password) {
+		log.trace("login(String, String)");
 		Params.notNullOrEmpty(username, "User name");
 		Params.notNullOrEmpty(password, "Password");
+
+		RequestContext context = container.getInstance(RequestContext.class);
 
 		// container login occurs in two steps:
 		// 1. verify credentials - throw exception if credentials are rejected: request.login
@@ -43,10 +56,12 @@ public class TinySecurity {
 		return true;
 	}
 
-	public void login(RequestContext context, Principal principal) {
-		log.trace("login(RequestContext, Principal)");
+	@Override
+	public void login(Principal principal) {
+		log.trace("login(Principal)");
 		Params.notNull(principal, "User principal");
 
+		RequestContext context = container.getInstance(RequestContext.class);
 		HttpSession session = request(context).getSession(true);
 		if (principal instanceof NonceUser) {
 			final NonceUser nonce = (NonceUser) principal;
@@ -65,11 +80,14 @@ public class TinySecurity {
 		log.info("Login principal |%s|.", principal);
 	}
 
-	public void logout(RequestContext context) {
-		log.trace("logout(RequestContext)");
+	@Override
+	public void logout() {
+		log.trace("logout()");
+
+		RequestContext context = container.getInstance(RequestContext.class);
 		final HttpServletRequest request = request(context);
 
-		Principal principal = getUserPrincipal(context);
+		Principal principal = getUserPrincipal();
 		// user name is only for logging
 		String username = principal != null ? principal.getName() : "guest";
 
@@ -98,7 +116,10 @@ public class TinySecurity {
 		log.info("Logout user |%s|.", username);
 	}
 
-	public Principal getUserPrincipal(RequestContext context) {
+	@Override
+	public Principal getUserPrincipal() {
+
+		RequestContext context = container.getInstance(RequestContext.class);
 		final HttpServletRequest request = context.getRequest();
 		if (request == null) {
 			log.debug("Attempt to retrieve user principal outside HTTP request.");
@@ -128,7 +149,9 @@ public class TinySecurity {
 		}
 	}
 
-	public boolean isAuthorized(RequestContext context, String... roles) {
+	@Override
+	public boolean isAuthorized(String... roles) {
+		final RequestContext context = container.getInstance(RequestContext.class);
 		final HttpServletRequest request = context.getRequest();
 		if (request == null) {
 			log.debug("Attempt to retrieve user principal outside HTTP request.");
@@ -175,6 +198,11 @@ public class TinySecurity {
 		}
 
 		return false;
+	}
+
+	@Override
+	public boolean isAuthenticated() {
+		return getUserPrincipal() != null;
 	}
 
 	// --------------------------------------------------------------------------------------------

@@ -1,8 +1,9 @@
 package js.tiny.container.servlet;
 
 import js.tiny.container.spi.IContainer;
+import js.tiny.container.spi.ISecurityContext;
 
-public interface ITinyContainer extends IContainer, SecurityContext {
+public interface ITinyContainer extends IContainer, ISecurityContext {
 
 	/**
 	 * Get application name. Returned application name is rather for application identification than for displaying on user

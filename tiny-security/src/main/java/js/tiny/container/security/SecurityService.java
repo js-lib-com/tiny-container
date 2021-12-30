@@ -16,6 +16,7 @@ import js.tiny.container.spi.IInvocation;
 import js.tiny.container.spi.IInvocationProcessorsChain;
 import js.tiny.container.spi.IManagedMethod;
 import js.tiny.container.spi.IMethodInvocationProcessor;
+import js.tiny.container.spi.ISecurityContext;
 import js.util.Classes;
 
 public class SecurityService implements IMethodInvocationProcessor {
@@ -25,6 +26,11 @@ public class SecurityService implements IMethodInvocationProcessor {
 
 	public SecurityService() {
 		log.trace("SecurityService()");
+	}
+
+	@Override
+	public void configure(IContainer container) {
+		container.bind(ISecurityContext.class).to(TinySecurity.class).build();
 	}
 
 	@Override

@@ -29,6 +29,7 @@ import js.lang.Config;
 import js.lang.ConfigException;
 import js.tiny.container.cdi.CDI;
 import js.tiny.container.spi.IInstanceLifecycleListener;
+import js.tiny.container.spi.ISecurityContext;
 
 @RunWith(MockitoJUnitRunner.class)
 public class TinyContainerUnitTest {
@@ -52,7 +53,7 @@ public class TinyContainerUnitTest {
 	private IInstanceLifecycleListener instanceListener;
 
 	@Mock
-	private TinySecurity securityProvider;
+	private ISecurityContext securityProvider;
 
 	private TinyContainer container;
 
@@ -71,7 +72,7 @@ public class TinyContainerUnitTest {
 
 		when(httpSessionEvent.getSession()).thenReturn(httpSession);
 
-		container = new TinyContainer(cdi, securityProvider);
+		container = new TinyContainer(cdi);
 	}
 
 	@After

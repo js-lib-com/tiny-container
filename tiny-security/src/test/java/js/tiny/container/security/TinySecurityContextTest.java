@@ -1,4 +1,4 @@
-package js.tiny.container.servlet;
+package js.tiny.container.security;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
@@ -29,9 +29,15 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
 import js.lang.BugError;
+import js.tiny.container.servlet.RequestContext;
+import js.tiny.container.servlet.TinyContainer;
+import js.tiny.container.spi.IContainer;
 
 @RunWith(MockitoJUnitRunner.class)
 public class TinySecurityContextTest {
+	@Mock
+	private IContainer container;
+
 	@Mock
 	private HttpServletRequest httpRequest;
 	@Mock
@@ -46,11 +52,12 @@ public class TinySecurityContextTest {
 
 	@Before
 	public void beforeTest() {
+		when(container.getInstance(RequestContext.class)).thenReturn(requestContext);
 		when(requestContext.getRequest()).thenReturn(httpRequest);
 		when(requestContext.getResponse()).thenReturn(httpResponse);
 		when(httpRequest.getSession(true)).thenReturn(httpSession);
 
-		security = new TinySecurity();
+		security = new TinySecurity(container);
 	}
 
 	/** Login using servlet container provided authentication should write credentials to HTTP response cookies. */
@@ -59,7 +66,7 @@ public class TinySecurityContextTest {
 		// given
 
 		// when
-		security.login(requestContext, "user", "passwd");
+		security.login("user", "passwd");
 
 		// then
 		verify(httpRequest, times(1)).login(anyString(), anyString());
@@ -73,7 +80,7 @@ public class TinySecurityContextTest {
 		doThrow(ServletException.class).when(httpRequest).login(anyString(), anyString());
 
 		// when
-		security.login(requestContext, "user", "passwd");
+		security.login("user", "passwd");
 
 		// then
 		verify(httpRequest, times(1)).login(anyString(), anyString());
@@ -86,7 +93,7 @@ public class TinySecurityContextTest {
 		// given
 
 		// when
-		security.login(requestContext, "user", "passwd");
+		security.login("user", "passwd");
 
 		// then
 		verify(httpSession, times(0)).setAttribute(eq(TinyContainer.ATTR_PRINCIPAL), any());
@@ -99,7 +106,7 @@ public class TinySecurityContextTest {
 		Principal principal = mock(Principal.class);
 
 		// when
-		security.login(requestContext, principal);
+		security.login(principal);
 
 		// then
 		verify(httpSession, times(1)).setAttribute(TinyContainer.ATTR_PRINCIPAL, principal);
@@ -113,7 +120,7 @@ public class TinySecurityContextTest {
 		Principal principal = mock(Principal.class);
 
 		// when
-		security.login(requestContext, principal);
+		security.login(principal);
 
 		// then
 	}
@@ -125,7 +132,7 @@ public class TinySecurityContextTest {
 		NonceUser nonce = mock(NonceUser.class);
 
 		// when
-		security.login(requestContext, nonce);
+		security.login(nonce);
 
 		// then
 		verify(httpSession, times(1)).setAttribute(TinyContainer.ATTR_PRINCIPAL, nonce);
@@ -138,7 +145,7 @@ public class TinySecurityContextTest {
 		when(httpRequest.getUserPrincipal()).thenReturn(mock(Principal.class));
 
 		// when
-		security.logout(requestContext);
+		security.logout();
 
 		// then
 		verify(httpRequest, times(1)).getUserPrincipal();
@@ -150,9 +157,9 @@ public class TinySecurityContextTest {
 		// given
 		when(httpRequest.getUserPrincipal()).thenReturn(mock(Principal.class));
 		when(httpRequest.getSession(false)).thenReturn(httpSession);
-		
+
 		// when
-		security.logout(requestContext);
+		security.logout();
 
 		// then
 		verify(httpRequest, times(1)).getUserPrincipal();
@@ -167,13 +174,12 @@ public class TinySecurityContextTest {
 		when(httpRequest.getUserPrincipal()).thenReturn(mock(Principal.class));
 
 		// when
-		security.logout(requestContext);
+		security.logout();
 
 		// then
 		verify(httpSession, times(0)).removeAttribute(anyString());
 		verify(httpSession, times(0)).invalidate();
 	}
-
 
 	@Test
 	public void GivenServletException_WhenLogout_ThenSessionStillChange() throws ServletException {
@@ -181,9 +187,9 @@ public class TinySecurityContextTest {
 		when(httpRequest.getUserPrincipal()).thenReturn(mock(Principal.class));
 		doThrow(ServletException.class).when(httpRequest).logout();
 		when(httpRequest.getSession(false)).thenReturn(httpSession);
-		
+
 		// when
-		security.logout(requestContext);
+		security.logout();
 
 		// then
 		verify(httpRequest, times(1)).getUserPrincipal();
@@ -198,7 +204,7 @@ public class TinySecurityContextTest {
 		when(requestContext.getRequest()).thenReturn(null);
 
 		// when
-		security.logout(requestContext);
+		security.logout();
 
 		// then
 	}
@@ -209,7 +215,7 @@ public class TinySecurityContextTest {
 		when(httpRequest.getUserPrincipal()).thenReturn(mock(Principal.class));
 
 		// when
-		Principal principal = security.getUserPrincipal(requestContext);
+		Principal principal = security.getUserPrincipal();
 
 		// then
 		assertThat(principal, notNullValue());
@@ -224,7 +230,7 @@ public class TinySecurityContextTest {
 		when(httpSession.getAttribute(TinyContainer.ATTR_PRINCIPAL)).thenReturn(mock(Principal.class));
 
 		// when
-		Principal principal = security.getUserPrincipal(requestContext);
+		Principal principal = security.getUserPrincipal();
 
 		// then
 		assertThat(principal, notNullValue());
@@ -237,7 +243,7 @@ public class TinySecurityContextTest {
 		// given
 
 		// when
-		Principal principal = security.getUserPrincipal(requestContext);
+		Principal principal = security.getUserPrincipal();
 
 		// then
 		assertThat(principal, nullValue());
@@ -252,7 +258,7 @@ public class TinySecurityContextTest {
 		when(httpRequest.isUserInRole("admin")).thenReturn(true);
 
 		// when
-		boolean authorized = security.isAuthorized(requestContext, "admin");
+		boolean authorized = security.isAuthorized("admin");
 
 		// then
 		assertThat(authorized, equalTo(true));
@@ -265,7 +271,7 @@ public class TinySecurityContextTest {
 		// given
 
 		// when
-		boolean authorized = security.isAuthorized(requestContext, "admin");
+		boolean authorized = security.isAuthorized("admin");
 
 		// then
 		assertThat(authorized, equalTo(false));
