@@ -7,7 +7,7 @@ import java.util.List;
 import javax.inject.Inject;
 
 import js.lang.Event;
-import js.tiny.container.servlet.SecurityContext;
+import js.tiny.container.spi.ISecurityContext;
 
 /**
  * Event stream manager facilitates server event push to connected clients. There are two events pushing scenarios: on security
@@ -34,7 +34,7 @@ import js.tiny.container.servlet.SecurityContext;
  * <p>
  * For authenticated contexts uses {@link #push(Principal, Event)} to send event to a specific user or use
  * {@link #push(List, Event)} if in need to send the same event to multiple users. One can get authenticated user principal from
- * {@link SecurityContext}, see sample code.
+ * {@link ISecurityContext}, see sample code.
  * 
  * <pre>
  * public class Service {

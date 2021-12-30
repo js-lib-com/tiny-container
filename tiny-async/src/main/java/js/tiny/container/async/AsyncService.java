@@ -8,6 +8,11 @@ import js.tiny.container.spi.IInvocationProcessorsChain;
 import js.tiny.container.spi.IManagedMethod;
 import js.tiny.container.spi.IMethodInvocationProcessor;
 
+/**
+ * Container service for method asynchronous execution.
+ * 
+ * @author Iulian Rotaru
+ */
 public class AsyncService implements IMethodInvocationProcessor {
 	private static final Log log = LogFactory.getLog(AsyncService.class);
 

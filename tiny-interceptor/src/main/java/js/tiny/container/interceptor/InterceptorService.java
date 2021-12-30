@@ -13,6 +13,11 @@ import js.tiny.container.spi.IManagedMethod;
 import js.tiny.container.spi.IMethodInvocationProcessor;
 import js.util.Classes;
 
+/**
+ * Container service for managed method invocation intercepting. 
+ * 
+ * @author Iulian Rotaru
+ */
 public class InterceptorService implements IMethodInvocationProcessor {
 	private static final Log log = LogFactory.getLog(InterceptorService.class);
 

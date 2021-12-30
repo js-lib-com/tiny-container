@@ -115,7 +115,7 @@ public class Container implements IContainer, EmbeddedContainer, IManagedLoader 
 		create(cdi.configure(modules));
 	}
 
-	void create(List<IClassBinding<?>> bindings) {
+	protected void create(List<IClassBinding<?>> bindings) {
 		log.trace("create(List<IClassBinding<?>>)");
 
 		services.forEach(service -> {

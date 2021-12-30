@@ -3,6 +3,7 @@ package js.tiny.container.mvc;
 import java.util.HashMap;
 import java.util.Map;
 
+import js.tiny.container.http.Resource;
 import js.tiny.container.mvc.annotation.Controller;
 import js.tiny.container.mvc.annotation.RequestPath;
 import js.tiny.container.servlet.RequestContext;
@@ -11,6 +12,11 @@ import js.tiny.container.spi.IManagedClass;
 import js.tiny.container.spi.IManagedMethod;
 import js.util.Strings;
 
+/**
+ * Cache for resource methods. A resource method is one returning a {@link Resource} instance.
+ * 
+ * @author Iulian Rotaru
+ */
 public class MethodsCache {
 	private final Map<String, IManagedMethod> cache = new HashMap<>();
 
@@ -23,7 +29,7 @@ public class MethodsCache {
 	public IManagedMethod get(String requestPath) {
 		return cache.get(key(requestPath));
 	}
-	
+
 	static String key(IManagedMethod managedMethod) {
 		StringBuilder key = new StringBuilder();
 		String classPath = path(managedMethod.getDeclaringClass());

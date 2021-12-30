@@ -14,6 +14,11 @@ import js.tiny.container.spi.IManagedClass;
 import js.tiny.container.spi.IManagedMethod;
 import js.util.Types;
 
+/**
+ * Container connector for MVC module.
+ * 
+ * @author Iulian Rotaru
+ */
 public class ResourceConnector implements IConnector, IClassPostLoadedProcessor {
 	private static final Log log = LogFactory.getLog(ResourceConnector.class);
 

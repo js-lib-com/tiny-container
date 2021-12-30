@@ -10,6 +10,11 @@ import js.tiny.container.servlet.RequestContext;
 import js.tiny.container.spi.IContainer;
 import js.tiny.container.spi.IContainerService;
 
+/**
+ * Common logic for both static and instance context parameter injection.
+ * 
+ * @author Iulian Rotaru
+ */
 abstract class BaseContextParam implements IContainerService {
 	private static final Log log = LogFactory.getLog(BaseContextParam.class);
 
