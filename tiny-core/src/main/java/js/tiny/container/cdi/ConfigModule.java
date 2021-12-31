@@ -1,16 +1,21 @@
 package js.tiny.container.cdi;
 
+import static java.lang.String.format;
+
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
 
+import jakarta.enterprise.context.RequestScoped;
+import jakarta.enterprise.context.SessionScoped;
+import jakarta.inject.Singleton;
 import js.converter.Converter;
 import js.converter.ConverterRegistry;
 import js.injector.AbstractModule;
 import js.injector.IBindingBuilder;
+import js.injector.ThreadScoped;
 import js.lang.Config;
-import js.lang.NoSuchBeingException;
 import js.util.Classes;
 
 /**
@@ -40,6 +45,14 @@ class ConfigModule extends AbstractModule {
 		}
 	}
 
+	private static final Map<String, Class<?>> SCOPE_CLASSES = new HashMap<>();
+	static {
+		SCOPE_CLASSES.put("Singleton", Singleton.class);
+		SCOPE_CLASSES.put("ThreadScoped", ThreadScoped.class);
+		SCOPE_CLASSES.put("SessionScoped", SessionScoped.class);
+		SCOPE_CLASSES.put("RequestScoped", RequestScoped.class);
+	}
+
 	private final Converter converter;
 	private final Config config;
 	private final String defaultPackage;
@@ -47,7 +60,9 @@ class ConfigModule extends AbstractModule {
 	public ConfigModule(Config config) {
 		this.converter = ConverterRegistry.getConverter();
 		this.config = config;
-		this.defaultPackage = config.getAttribute("package", "") + ".";
+
+		String defaultPackage = config.getAttribute("package");
+		this.defaultPackage = defaultPackage != null ? defaultPackage + "." : null;
 	}
 
 	@Override
@@ -56,24 +71,14 @@ class ConfigModule extends AbstractModule {
 	}
 
 	<T> void configure(Config bindingConfig) {
-		String bindClassName = classValue(bindingConfig.getAttribute("bind"));
-		if (bindClassName == null) {
+		String bindValue = bindingConfig.getAttribute("bind");
+		if (bindValue == null) {
 			throw new IllegalStateException("Missing <bind> attribute from binding definition.");
 		}
 
-		Class<T> bindClass = null;
-		try {
-			bindClass = Classes.forName(bindClassName);
-		} catch (NoSuchBeingException e) {
-			throw new IllegalStateException("Attempt to bind missing class " + bindClassName);
-		}
-
+		Class<T> bindClass = Classes.forName(classValue("bind", bindValue));
 		IBindingBuilder<T> bindingBuilder = bind(bindClass);
 		bindingConfig.attributes((name, value) -> bindAttribute(bindingBuilder, name, value));
-	}
-
-	private String classValue(String value) {
-		return value == null ? null : value.indexOf('.') == -1 ? defaultPackage + value : value;
 	}
 
 	void bindAttribute(IBindingBuilder<?> bindingBuilder, String name, String value) {
@@ -95,7 +100,7 @@ class ConfigModule extends AbstractModule {
 			case 1:
 				Class<?> parameterType = method.getParameterTypes()[0];
 				if (parameterType.equals(Class.class)) {
-					value = classValue(value);
+					value = "in".equals(name) ? scopeValue(value) : classValue(name, value);
 				}
 				method.invoke(bindingBuilder, converter.asObject(value, parameterType));
 				break;
@@ -106,5 +111,37 @@ class ConfigModule extends AbstractModule {
 		} catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
 			throw new IllegalStateException(e.getMessage());
 		}
+	}
+
+	private String scopeValue(String scopeValue) {
+		boolean simpleName = scopeValue.indexOf('.') == -1;
+		if (simpleName) {
+			Class<?> scopeClass = SCOPE_CLASSES.get(scopeValue);
+			if (scopeClass == null) {
+				throw new IllegalStateException(format("Bad scope value |%s| for attribute <in> on binding definition.", scopeValue));
+			}
+			return scopeClass.getCanonicalName();
+		}
+		return scopeValue;
+	}
+
+	private String classValue(String attributeName, String classValue) {
+		Class<?> clazz = null;
+		try {
+			clazz = Class.forName(classValue);
+		} catch (ClassNotFoundException e) {
+			try {
+				clazz = Class.forName(defaultPackage + classValue);
+			} catch (ClassNotFoundException e1) {
+			}
+		}
+
+		if (clazz == null) {
+			if (defaultPackage == null) {
+				throw new IllegalStateException(format("Bad binding definition. Class value |%s| for attribute <%s> seems using shorthand notation but there is no default package defined.", classValue, attributeName));
+			}
+			throw new IllegalStateException(format("Bad binding definition. Bad class value |%s| for attribute <%s> or/and bad default package |%s|.", classValue, attributeName, defaultPackage));
+		}
+		return clazz.getCanonicalName();
 	}
 }
