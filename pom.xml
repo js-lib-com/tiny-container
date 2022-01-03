@@ -91,16 +91,8 @@
 				<version>1.2.2</version>
 				<executions>
 					<execution>
-						<id>flatten</id>
-						<phase>process-resources</phase>
 						<goals>
 							<goal>flatten</goal>
-						</goals>
-					</execution>
-					<execution>
-						<id>flatten.clean</id>
-						<phase>clean</phase>
-						<goals>
 							<goal>clean</goal>
 						</goals>
 					</execution>
@@ -112,7 +104,6 @@
 				<version>3.2.1</version>
 				<executions>
 					<execution>
-						<id>attach-sources</id>
 						<goals>
 							<goal>jar</goal>
 						</goals>
@@ -125,7 +116,6 @@
 				<version>3.3.1</version>
 				<executions>
 					<execution>
-						<id>attach-javadocs</id>
 						<goals>
 							<goal>jar</goal>
 						</goals>
@@ -152,8 +142,6 @@
 						<version>3.0.1</version>
 						<executions>
 							<execution>
-								<id>sign-artifacts</id>
-								<phase>verify</phase>
 								<goals>
 									<goal>sign</goal>
 								</goals>
