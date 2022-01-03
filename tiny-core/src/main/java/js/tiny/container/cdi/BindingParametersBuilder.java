@@ -3,8 +3,7 @@ package js.tiny.container.cdi;
 import java.lang.annotation.Annotation;
 import java.net.URI;
 
-import javax.inject.Provider;
-
+import jakarta.inject.Provider;
 import js.injector.IBinding;
 import js.injector.IBindingBuilder;
 import js.injector.ITypedProvider;

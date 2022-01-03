@@ -14,7 +14,6 @@ import static org.mockito.Mockito.when;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.inject.Provider;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
@@ -25,6 +24,7 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
 
+import jakarta.inject.Provider;
 import js.injector.IBinding;
 import js.injector.IInjector;
 import js.injector.Key;

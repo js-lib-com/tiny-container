@@ -4,10 +4,10 @@ import java.lang.annotation.Annotation;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.enterprise.context.RequestScoped;
-import javax.inject.Provider;
 import javax.servlet.http.HttpServletRequest;
 
+import jakarta.enterprise.context.RequestScoped;
+import jakarta.inject.Provider;
 import js.injector.IBinding;
 import js.injector.IInjector;
 import js.injector.IScopeFactory;

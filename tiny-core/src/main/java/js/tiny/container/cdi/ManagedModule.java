@@ -4,11 +4,10 @@ import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.annotation.ManagedBean;
-import javax.ejb.Stateful;
-import javax.ejb.Stateless;
-import javax.inject.Provider;
-
+import jakarta.annotation.ManagedBean;
+import jakarta.ejb.Stateful;
+import jakarta.ejb.Stateless;
+import jakarta.inject.Provider;
 import js.injector.IBinding;
 import js.injector.IInjector;
 import js.injector.IModule;
@@ -30,9 +29,13 @@ class ManagedModule implements IModule {
 
 	private static final List<Class<? extends Annotation>> PROXY_ANNOTATIONS = new ArrayList<>();
 	static {
-		PROXY_ANNOTATIONS.add(ManagedBean.class);
-		PROXY_ANNOTATIONS.add(Stateful.class);
-		PROXY_ANNOTATIONS.add(Stateless.class);
+		PROXY_ANNOTATIONS.add(jakarta.annotation.ManagedBean.class);
+		PROXY_ANNOTATIONS.add(jakarta.ejb.Stateful.class);
+		PROXY_ANNOTATIONS.add(jakarta.ejb.Stateless.class);
+
+		PROXY_ANNOTATIONS.add(javax.annotation.ManagedBean.class);
+		PROXY_ANNOTATIONS.add(javax.ejb.Stateful.class);
+		PROXY_ANNOTATIONS.add(javax.ejb.Stateless.class);
 	}
 
 	private final IInjector injector;

@@ -1,7 +1,6 @@
 package js.tiny.container.cdi;
 
-import javax.inject.Provider;
-
+import jakarta.inject.Provider;
 import js.injector.IBinding;
 import js.injector.Key;
 import js.injector.ScopedProvider;

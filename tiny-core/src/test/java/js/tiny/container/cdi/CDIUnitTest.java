@@ -14,16 +14,15 @@ import static org.mockito.Mockito.verify;
 
 import java.net.URI;
 
-import javax.enterprise.context.SessionScoped;
-import javax.inject.Provider;
-import javax.inject.Singleton;
-
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
+import jakarta.enterprise.context.SessionScoped;
+import jakarta.inject.Provider;
+import jakarta.inject.Singleton;
 import js.injector.IBinding;
 import js.injector.IInjector;
 import js.injector.IScopeFactory;

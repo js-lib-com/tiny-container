@@ -10,18 +10,17 @@ import java.lang.reflect.Proxy;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.annotation.ManagedBean;
-import javax.ejb.Stateful;
-import javax.ejb.Stateless;
-import javax.inject.Provider;
-import javax.inject.Singleton;
-
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
+import jakarta.annotation.ManagedBean;
+import jakarta.ejb.Stateful;
+import jakarta.ejb.Stateless;
+import jakarta.inject.Provider;
+import jakarta.inject.Singleton;
 import js.injector.IBinding;
 import js.injector.IModule;
 import js.injector.ITypedProvider;

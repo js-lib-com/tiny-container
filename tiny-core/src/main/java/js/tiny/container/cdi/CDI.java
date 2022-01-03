@@ -6,8 +6,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import javax.inject.Provider;
-
+import jakarta.inject.Provider;
 import js.injector.AbstractModule;
 import js.injector.IInjector;
 import js.injector.IModule;
@@ -20,6 +19,7 @@ import js.lang.Config;
 import js.log.Log;
 import js.log.LogFactory;
 import js.tiny.container.spi.IInstanceLifecycleListener;
+import js.util.Classes;
 import js.util.Params;
 
 /**
@@ -169,9 +169,18 @@ public class CDI implements IProvisionListener {
 			log.debug("Not a scoped provider |%s|.", provider);
 			return null;
 		}
+
 		ScopedProvider<T> scopedProvider = (ScopedProvider<T>) provider;
-		if(!scopedProvider.getScope().equals(scope)) {
-			return null;
+		if (!scopedProvider.getScope().equals(scope)) {
+			// scoped provider uses Jakarta packages but business code may still use deprecated Javax package
+			// if this is the case rewrite the package
+			String scopeClassName = scope.getCanonicalName();
+			if (scopeClassName.startsWith("javax.")) {
+				scope = Classes.forName("jakarta." + scopeClassName.substring("javax.".length()));
+			}
+			if (!scopedProvider.getScope().equals(scope)) {
+				return null;
+			}
 		}
 		return scopedProvider.getScopeInstance();
 	}

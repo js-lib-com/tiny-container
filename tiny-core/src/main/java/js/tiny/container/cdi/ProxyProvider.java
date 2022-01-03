@@ -5,8 +5,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 
-import javax.inject.Provider;
-
+import jakarta.inject.Provider;
 import js.injector.ITypedProvider;
 import js.lang.BugError;
 import js.lang.InstanceInvocationHandler;

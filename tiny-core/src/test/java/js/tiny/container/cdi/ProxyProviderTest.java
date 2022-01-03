@@ -1,6 +1,5 @@
 package js.tiny.container.cdi;
 
-
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.notNullValue;
@@ -10,14 +9,13 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import javax.inject.Provider;
-
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
+import jakarta.inject.Provider;
 import js.lang.BugError;
 import js.tiny.container.spi.IManagedClass;
 import js.tiny.container.spi.IManagedMethod;
@@ -39,10 +37,10 @@ public class ProxyProviderTest {
 	@Before
 	public void beforeTest() throws Exception {
 		when(managedFactory.getManagedClass(IPerson.class)).thenReturn(managedClass);
-		
+
 		when(managedClass.getManagedMethod("name")).thenReturn(managedMethod);
 		when(provider.get()).thenReturn(new Person());
-		
+
 		proxy = new ProxyProvider<IPerson>(IPerson.class, managedFactory, provider);
 	}
 

@@ -5,14 +5,13 @@ import static org.mockito.Mockito.when;
 
 import java.util.Arrays;
 
-import javax.inject.Provider;
-
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
+import jakarta.inject.Provider;
 import js.injector.IBinding;
 import js.injector.IInjector;
 import js.injector.IModule;
