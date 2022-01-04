@@ -16,6 +16,7 @@ import js.injector.AbstractModule;
 import js.injector.IBindingBuilder;
 import js.injector.ThreadScoped;
 import js.lang.Config;
+import js.lang.NoSuchBeingException;
 import js.util.Classes;
 
 /**
@@ -128,11 +129,11 @@ class ConfigModule extends AbstractModule {
 	private String classValue(String attributeName, String classValue) {
 		Class<?> clazz = null;
 		try {
-			clazz = Class.forName(classValue);
-		} catch (ClassNotFoundException e) {
+			clazz = Classes.forName(classValue);
+		} catch (NoSuchBeingException expected) {
 			try {
-				clazz = Class.forName(defaultPackage + classValue);
-			} catch (ClassNotFoundException e1) {
+				clazz = Classes.forName(defaultPackage + classValue);
+			} catch (NoSuchBeingException ignored) {
 			}
 		}
 
