@@ -24,11 +24,11 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
 
+import jakarta.enterprise.context.ContextNotActiveException;
 import jakarta.inject.Provider;
 import js.injector.IBinding;
 import js.injector.IInjector;
 import js.injector.Key;
-import js.lang.BugError;
 import js.tiny.container.spi.Factory;
 import js.tiny.container.spi.IContainer;
 
@@ -179,7 +179,7 @@ public class SessionScopeProviderTest {
 		verify(httpRequest, times(1)).getSession(true);
 	}
 
-	@Test(expected = BugError.class)
+	@Test(expected = ContextNotActiveException.class)
 	public void GivenNullHttpRequest_WhenCache_ThenException() throws Exception {
 		// given
 		when(requestContext.getRequest()).thenReturn(null);

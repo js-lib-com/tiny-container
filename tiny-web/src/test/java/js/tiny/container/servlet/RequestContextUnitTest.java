@@ -1,7 +1,6 @@
 package js.tiny.container.servlet;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.mockito.Mockito.when;
@@ -19,7 +18,6 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
-import js.lang.BugError;
 import js.util.Classes;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -44,7 +42,6 @@ public class RequestContextUnitTest {
 	public void constructor() {
 		RequestContext context = new RequestContext(container);
 		assertEquals(container, context.getContainer());
-		assertFalse(context.isAttached());
 	}
 
 	@Test
@@ -172,109 +169,11 @@ public class RequestContextUnitTest {
 	}
 
 	@Test
-	public void detach() {
-		RequestContext context = new RequestContext(container);
-		Classes.setFieldValue(context, "attached", true);
-		Classes.setFieldValue(context, "locale", Locale.ENGLISH);
-		Classes.setFieldValue(context, "securityDomain", "admin");
-		Classes.setFieldValue(context, "cookies", new Cookies(httpRequest, httpResponse));
-		Classes.setFieldValue(context, "requestPath", "/index.htm");
-
-		context.detach();
-		assertFalse((boolean) Classes.getFieldValue(context, "attached"));
-		assertNull(Classes.getFieldValue(context, "locale"));
-		assertNull(Classes.getFieldValue(context, "securityDomain"));
-		assertNull(Classes.getFieldValue(context, "cookies"));
-		assertNull(Classes.getFieldValue(context, "requestPath"));
-	}
-
-	@Test
 	public void dump() {
 		when(httpRequest.getHeaderNames()).thenReturn(Collections.emptyEnumeration());
 
 		RequestContext context = new RequestContext(container);
 		context.attach(httpRequest, httpResponse);
-		context.dump();
-	}
-
-	// --------------------------------------------------------------------------------------------
-	// NOT ATTACHED
-
-	@Test(expected = BugError.class)
-	public void locale_Detached() {
-		RequestContext context = new RequestContext(container);
-		context.getLocale();
-	}
-
-	@Test(expected = BugError.class)
-	public void securityDomain_Detached() {
-		RequestContext context = new RequestContext(container);
-		context.getSecurityDomain();
-	}
-
-	@Test(expected = BugError.class)
-	public void requestPath_Detached() {
-		RequestContext context = new RequestContext(container);
-		context.getRequestPath();
-	}
-
-	@Test(expected = BugError.class)
-	public void requestURI_Detached() {
-		RequestContext context = new RequestContext(container);
-		context.getRequestURI();
-	}
-
-	@Test(expected = BugError.class)
-	public void cookies_Detached() {
-		RequestContext context = new RequestContext(container);
-		assertNotNull(context.getCookies());
-	}
-
-	@Test(expected = BugError.class)
-	public void localAddr_Detached() {
-		RequestContext context = new RequestContext(container);
-		context.getLocalName();
-	}
-
-	@Test(expected = BugError.class)
-	public void localPort_Detached() {
-		RequestContext context = new RequestContext(container);
-		context.getLocalPort();
-	}
-
-	@Test(expected = BugError.class)
-	public void remoteAddr_Detached() {
-		RequestContext context = new RequestContext(container);
-		context.getRemoteHost();
-	}
-
-	@Test(expected = BugError.class)
-	public void remotePort_Detached() {
-		RequestContext context = new RequestContext(container);
-		context.getRemotePort();
-	}
-
-	@Test(expected = BugError.class)
-	public void request_Detached() {
-		RequestContext context = new RequestContext(container);
-		context.getRequest();
-	}
-
-	@Test(expected = BugError.class)
-	public void response_Detached() {
-		RequestContext context = new RequestContext(container);
-		context.getResponse();
-	}
-
-	@Test(expected = BugError.class)
-	public void session_Detached() {
-		RequestContext context = new RequestContext(container);
-		context.getSession();
-	}
-
-	@Test
-	public void dump_Detached() {
-		RequestContext context = new RequestContext(container);
 		context.dump();
 	}
 }

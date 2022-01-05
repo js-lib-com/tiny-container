@@ -129,7 +129,7 @@ class ManagedClass<T> implements IManagedClass<T>, IInstanceLifecycleListener {
 	}
 
 	@Override
-	public void onInstanceOutOfScope(Class<? extends Annotation> scope, Object instance) {
+	public void onInstanceOutOfScope(Object instance) {
 		// in case instance is a Java Proxy
 		// takes care to execute pre-destroy processors on wrapped instance in order to avoid adding container services
 		if (instance instanceof Proxy) {

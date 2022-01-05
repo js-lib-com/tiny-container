@@ -1,5 +1,6 @@
 package js.tiny.container.servlet;
 
+import static java.lang.String.format;
 import java.lang.annotation.Annotation;
 import java.util.HashMap;
 import java.util.Map;
@@ -7,6 +8,7 @@ import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
+import jakarta.enterprise.context.ContextNotActiveException;
 import jakarta.enterprise.context.SessionScoped;
 import jakarta.inject.Provider;
 import js.injector.IBinding;
@@ -79,15 +81,15 @@ public class SessionScopeProvider<T> extends ScopedProvider<T> {
 	 * @throws BugError if attempt to use this method outside a HTTP request.
 	 */
 	synchronized Map<String, Object> cache() {
-		RequestContext requestContext = injector.getInstance(RequestContext.class);
-		HttpServletRequest httpRequest = requestContext.getRequest();
+		final RequestContext requestContext = injector.getInstance(RequestContext.class);
+		final HttpServletRequest httpRequest = requestContext.getRequest();
 		if (httpRequest == null) {
-			throw new BugError("Invalid web context due to null HTTP request. Cannot create managed instance for |%s| with scope SESSION.", getProvisioningProvider().getClass().getCanonicalName());
+			throw new ContextNotActiveException(format("Invalid web context due to null HTTP request. Cannot create managed instance for |%s| with scope SESSION.", getProvisioningProvider().getClass().getCanonicalName()));
 		}
 
 		// create HTTP session if missing
 		// accordingly API, retrieved httpSession is never null if 'create' flag is true
-		HttpSession httpSession = httpRequest.getSession(true);
+		final HttpSession httpSession = httpRequest.getSession(true);
 
 		@SuppressWarnings("unchecked")
 		Map<String, Object> cache = (Map<String, Object>) httpSession.getAttribute(ATTR_CACHE);

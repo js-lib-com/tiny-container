@@ -1,11 +1,14 @@
 package js.tiny.container.servlet;
 
+import static java.lang.String.format;
+
 import java.lang.annotation.Annotation;
 import java.util.HashMap;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 
+import jakarta.enterprise.context.ContextNotActiveException;
 import jakarta.enterprise.context.RequestScoped;
 import jakarta.inject.Provider;
 import js.injector.IBinding;
@@ -13,6 +16,7 @@ import js.injector.IInjector;
 import js.injector.IScopeFactory;
 import js.injector.Key;
 import js.injector.ScopedProvider;
+import js.tiny.container.spi.IContainer;
 
 public class RequestScopeProvider<T> extends ScopedProvider<T> {
 	public static final String ATTR_CACHE = "injector-cache";
@@ -64,8 +68,31 @@ public class RequestScopeProvider<T> extends ScopedProvider<T> {
 		return getProvisioningProvider().toString() + ":REQUEST";
 	}
 
+	// --------------------------------------------------------------------------------------------
+
+	private static final ThreadLocal<HttpServletRequest> httpRequest = new ThreadLocal<>();
+
+	public static void createHttpRequestContext(HttpServletRequest httpRequest) {
+		RequestScopeProvider.httpRequest.set(httpRequest);
+	}
+
+	public static void destroyHttpRequestContext(IContainer container) {
+		final HttpServletRequest httpRequest = RequestScopeProvider.httpRequest.get();
+		assert httpRequest != null;
+
+		@SuppressWarnings("unchecked")
+		Map<String, Object> cache = (Map<String, Object>) httpRequest.getAttribute(RequestScopeProvider.ATTR_CACHE);
+		if (cache != null) {
+			cache.values().forEach(instance -> container.onInstanceOutOfScope(instance));
+		}
+		RequestScopeProvider.httpRequest.remove();
+	}
+
 	private synchronized Map<String, Object> cache() {
-		HttpServletRequest httpRequest = injector.getInstance(RequestContext.class).getRequest();
+		final HttpServletRequest httpRequest = RequestScopeProvider.httpRequest.get();
+		if (httpRequest == null) {
+			throw new ContextNotActiveException(format("Attempt to create request scoped instance |%s| outside HTTP request context.", key));
+		}
 
 		@SuppressWarnings("unchecked")
 		Map<String, Object> cache = (Map<String, Object>) httpRequest.getAttribute(ATTR_CACHE);

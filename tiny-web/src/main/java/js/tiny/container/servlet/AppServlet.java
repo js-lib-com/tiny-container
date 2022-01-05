@@ -3,10 +3,8 @@ package js.tiny.container.servlet;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.security.Principal;
-import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import javax.enterprise.context.RequestScoped;
 import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletContext;
@@ -158,14 +156,16 @@ public abstract class AppServlet extends HttpServlet {
 		logContext.put(LOG_CONTEXT_APP, httpRequest.getContextPath().isEmpty() ? TinyContainer.ROOT_CONTEXT : httpRequest.getContextPath().substring(1));
 		logContext.put(LOG_CONTEXT_IP, httpRequest.getRemoteHost());
 		logContext.put(LOG_CONTEXT_ID, Integer.toString(requestID.getAndIncrement(), Character.MAX_RADIX));
+
+		Factory.bind(container);
+		RequestScopeProvider.createHttpRequestContext(httpRequest);
+		
 		if (isEmptyUriRequest(httpRequest)) {
 			log.debug("Empty URI request for |%s|. Please check for <img> with empty 'src' or <link>, <script> with empty 'href' in HTML source or script resulting in such condition.", httpRequest.getRequestURI());
 			return;
 		}
-		String requestURI = httpRequest.getRequestURI();
-
-		long start = System.currentTimeMillis();
-		Factory.bind(container);
+		final long start = System.currentTimeMillis();
+		final String requestURI = httpRequest.getRequestURI();
 
 		// request context has THREAD scope and this request thread may be reused by servlet container
 		RequestContext requestContext = container.getInstance(RequestContext.class);
@@ -191,14 +191,8 @@ public abstract class AppServlet extends HttpServlet {
 			log.trace("%s %s processed in %d msec.", httpRequest.getMethod(), requestContext.getRequestURL(), System.currentTimeMillis() - start);
 			// cleanup remote address from logger context and detach request context instance from this request
 			logContext.clear();
-			requestContext.detach();
-
-			// signal instance of out scope for all instances found on the cache of request scope provider, if any
-			@SuppressWarnings("unchecked")
-			Map<String, Object> cache = (Map<String, Object>) httpRequest.getAttribute(RequestScopeProvider.ATTR_CACHE);
-			if (cache != null) {
-				cache.values().forEach(instance -> container.onInstanceOutOfScope(RequestScoped.class, instance));
-			}
+			
+			RequestScopeProvider.destroyHttpRequestContext(container);
 		}
 	}
 

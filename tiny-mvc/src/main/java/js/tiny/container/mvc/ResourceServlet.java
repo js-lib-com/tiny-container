@@ -187,7 +187,8 @@ public class ResourceServlet extends AppServlet {
 			if (e.getCause() instanceof NoSuchResourceException) {
 				httpResponse.sendError(HttpServletResponse.SC_NOT_FOUND, httpRequest.getRequestURI());
 			} else {
-				httpResponse.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getCause().getMessage());
+				String message = e.getCause() != null ? e.getCause().getMessage() : e.getMessage();
+				httpResponse.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, message);
 			}
 			return;
 		} finally {

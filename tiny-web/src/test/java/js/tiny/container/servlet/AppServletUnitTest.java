@@ -157,7 +157,6 @@ public class AppServletUnitTest {
 
 		// then
 		verify(requestContext, times(1)).attach(httpRequest, httpResponse);
-		verify(requestContext, times(1)).detach();
 		verify(requestContext, times(0)).dump();
 	}
 
@@ -177,7 +176,6 @@ public class AppServletUnitTest {
 
 		// then
 		verify(requestContext, times(1)).attach(httpRequest, httpResponse);
-		verify(requestContext, times(1)).detach();
 		verify(requestContext, times(0)).dump();
 	}
 
@@ -200,7 +198,6 @@ public class AppServletUnitTest {
 
 		// then
 		verify(requestContext, times(1)).attach(httpRequest, httpResponse);
-		verify(requestContext, times(1)).detach();
 		verify(requestContext, times(1)).dump();
 	}
 
@@ -223,7 +220,6 @@ public class AppServletUnitTest {
 
 		// then
 		verify(requestContext, times(1)).attach(httpRequest, httpResponse);
-		verify(requestContext, times(1)).detach();
 		verify(requestContext, times(1)).dump();
 	}
 

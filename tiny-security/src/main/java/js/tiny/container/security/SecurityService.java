@@ -86,7 +86,7 @@ public class SecurityService implements IMethodInvocationProcessor {
 		final RequestContext requestContext = container.getOptionalInstance(RequestContext.class);
 		// grant unchecked access for methods executed outside HTTP request
 		// e.g. post construct executed from main thread at container startup
-		if (requestContext == null || !requestContext.isAttached()) {
+		if (requestContext == null) {
 			log.debug("Attempt use security service outside HTTP request. Grant unchecked access to |%s|!", managedMethod);
 			return chain.invokeNextProcessor(invocation);
 		}

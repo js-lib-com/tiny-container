@@ -3,15 +3,15 @@ package js.tiny.container.servlet;
 import java.util.Enumeration;
 import java.util.Locale;
 
-import javax.inject.Singleton;
 import javax.servlet.RequestDispatcher;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
+import jakarta.enterprise.context.RequestScoped;
+import jakarta.inject.Inject;
 import js.converter.Converter;
 import js.converter.ConverterRegistry;
-import js.injector.ThreadScoped;
 import js.lang.BugError;
 import js.log.Log;
 import js.log.LogFactory;
@@ -21,54 +21,6 @@ import js.log.LogFactory;
  * relatively low level servlet abstractions like {@link HttpServletRequest}. Since exposes tiny container and servlet APIs this
  * class is primarily for framework internal needs. Anyway, there is no formal restriction on using it from applications.
  * <p>
- * Request context instance has {@link ThreadScoped} scope but is valid to be used only within HTTP request boundaries. Request
- * context instance is {@link #attach(HttpServletRequest, HttpServletResponse)}ed on new HTTP request thread and
- * {@link #detach()}ed on HTTP request end.
- * <p>
- * RequestContext is a managed class and can be retrieved from application context or can be injected on fields or constructors.
- * In sample below request context instance is retrieved from application context. Request context is attached to HTTP request
- * thread that runs <code>addSuggestion</code> method .
- * 
- * <pre>
- * class Controller {
- * 	&#064;Inject
- * 	private AppContext appContext;
- *  
- * 	void addSuggestion(Suggestion suggestion) {
- * 		RequestContext requestContext = appContext.getInstance(RequestContext.class);
- * 		log.debug(&quot;Request from |%s|.&quot;, requestContext.getRemoteAddr());
- * 	}
- * 	... 
- * }
- * </pre>
- * <p>
- * Request context can also be injected into field. Now, controller is a managed class with {@link Singleton} scope whereas
- * request context scope is {@link ThreadScoped}. Since request context life span is smaller than controller, request context
- * may become invalid while controller still handles requests. Container dependency injection takes care and replace injected
- * request context instance with a Java proxy.
- * 
- * <pre>
- * class Controller {
- * 	&#064;Inject
- * 	private RequestContext context;
- * 	... 
- * }
- * </pre>
- * <p>
- * The same goes for constructor injection: request context instance is wrapped by a Java proxy that routes method invocations
- * to the instance attached to current HTTP request.
- * 
- * <pre>
- * class Controller {
- * 	private final RequestContext context;
- * 
- * 	Controller(RequestContext context) {
- * 		this.context = context;
- * 	}
- * 	...
- * }
- * </pre>
- * <p>
  * <b>RequestContext is usable only inside HTTP request</b>. Trying to used this class from user defined threads, perhaps with
  * life span exceeding request thread, is both meaningless and dangerous; for this reason is forbidden. In fact bug error is
  * thrown if attempt to use any method of this class from outside request thread. One can use {@link #isAttached()} to test if
@@ -76,12 +28,12 @@ import js.log.LogFactory;
  * 
  * @author Iulian Rotaru
  */
+@RequestScoped
 public class RequestContext {
 	private static final Log log = LogFactory.getLog(RequestContext.class);
 
 	private final Converter converter;
 
-	/** Parent container. */
 	private final ITinyContainer container;
 
 	/**
@@ -119,16 +71,11 @@ public class RequestContext {
 	private Cookies cookies;
 
 	/**
-	 * Flag true while request context instance is attached to HTTP servlet request. It is set to true by
-	 * {@link #attach(HttpServletRequest, HttpServletResponse)} and reset to false by {@link #detach()}.
-	 */
-	private volatile boolean attached;
-
-	/**
 	 * Create request context instance for given parent container.
 	 * 
 	 * @param container parent container.
 	 */
+	@Inject
 	public RequestContext(ITinyContainer container) {
 		this.converter = ConverterRegistry.getConverter();
 		this.container = container;
@@ -202,39 +149,12 @@ public class RequestContext {
 			locale = httpRequest.getLocale();
 		}
 		if (requestPath == null) {
-			// request URI and context path cannot ever be null
+			// request URI and context path cannot be null
 			requestPath = httpRequest.getRequestURI().substring(httpRequest.getContextPath().length());
 		}
 
 		this.httpRequest = httpRequest;
 		this.httpResponse = httpResponse;
-		this.attached = true;
-	}
-
-	/**
-	 * Detach request context instance from HTTP servlet request. Invoking getters on this instance after detaching is
-	 * considered a bug.
-	 */
-	public void detach() {
-		attached = false;
-		locale = null;
-		securityDomain = null;
-		cookies = null;
-		requestPath = null;
-		requestURL = null;
-		httpRequest = null;
-		httpResponse = null;
-		cookies = null;
-	}
-
-	/**
-	 * Get instance attached state.
-	 * 
-	 * @return instance attached state.
-	 * @see #attached
-	 */
-	public boolean isAttached() {
-		return attached;
 	}
 
 	/**
@@ -246,7 +166,6 @@ public class RequestContext {
 	 * @see #locale
 	 */
 	public Locale getLocale() {
-		assertAttached();
 		return locale;
 	}
 
@@ -259,7 +178,6 @@ public class RequestContext {
 	 * @see #securityDomain
 	 */
 	public String getSecurityDomain() {
-		assertAttached();
 		return securityDomain;
 	}
 
@@ -271,7 +189,6 @@ public class RequestContext {
 	 * @see #requestPath
 	 */
 	public String getRequestPath() {
-		assertAttached();
 		return requestPath;
 	}
 
@@ -283,7 +200,6 @@ public class RequestContext {
 	 * @throws BugError if attempt to use this getter on instance not attached to a HTTP servlet request.
 	 */
 	public String getRequestURI() {
-		assertAttached();
 		return httpRequest.getRequestURI();
 	}
 
@@ -305,7 +221,6 @@ public class RequestContext {
 	 * @throws BugError if attempt to use this getter on instance not attached to a HTTP servlet request.
 	 */
 	public Cookies getCookies() {
-		assertAttached();
 		if (cookies == null) {
 			cookies = new Cookies(httpRequest, httpResponse);
 		}
@@ -319,7 +234,6 @@ public class RequestContext {
 	 * @throws BugError if attempt to use this getter on instance not attached to a HTTP servlet request.
 	 */
 	public String getLocalName() {
-		assertAttached();
 		return httpRequest.getLocalName();
 	}
 
@@ -330,7 +244,6 @@ public class RequestContext {
 	 * @throws BugError if attempt to use this getter on instance not attached to a HTTP servlet request.
 	 */
 	public int getLocalPort() {
-		assertAttached();
 		return httpRequest.getLocalPort();
 	}
 
@@ -342,7 +255,6 @@ public class RequestContext {
 	 * @throws BugError if attempt to use this getter on instance not attached to a HTTP servlet request.
 	 */
 	public String getRemoteHost() {
-		assertAttached();
 		return httpRequest.getRemoteHost();
 	}
 
@@ -353,12 +265,10 @@ public class RequestContext {
 	 * @throws BugError if attempt to use this getter on instance not attached to a HTTP servlet request.
 	 */
 	public int getRemotePort() {
-		assertAttached();
 		return httpRequest.getRemotePort();
 	}
 
 	public String getForwardContextPath() {
-		assertAttached();
 		return (String) httpRequest.getAttribute(RequestDispatcher.FORWARD_CONTEXT_PATH);
 	}
 
@@ -369,7 +279,6 @@ public class RequestContext {
 	 * @throws BugError if attempt to use this getter on instance not attached to a HTTP servlet request.
 	 */
 	public HttpServletRequest getRequest() {
-		assertAttached();
 		return httpRequest;
 	}
 
@@ -380,7 +289,6 @@ public class RequestContext {
 	 * @throws BugError if attempt to use this getter on instance not attached to a HTTP servlet request.
 	 */
 	public HttpServletResponse getResponse() {
-		assertAttached();
 		return httpResponse;
 	}
 
@@ -399,7 +307,6 @@ public class RequestContext {
 	 * @throws BugError if attempt to use this getter on instance not attached to a HTTP servlet request.
 	 */
 	public HttpSession getSession(boolean... create) {
-		assertAttached();
 		if (create.length == 0) {
 			return httpRequest.getSession();
 		}
@@ -413,7 +320,6 @@ public class RequestContext {
 	 * @throws BugError if attempt to use this method on instance not attached to a HTTP servlet request.
 	 */
 	public void removeSession() {
-		assertAttached();
 		HttpSession session = httpRequest.getSession(false);
 		if (session != null) {
 			session.invalidate();
@@ -433,9 +339,6 @@ public class RequestContext {
 
 	/** Dump this request context state to error logger. If this instance is not attached this method is NOP. */
 	public void dump() {
-		if (!attached) {
-			return;
-		}
 		StringBuilder message = new StringBuilder();
 		message.append("Request context |");
 		message.append(httpRequest.getRequestURI());
@@ -465,17 +368,5 @@ public class RequestContext {
 			message.append(httpRequest.getHeader(headerName));
 		}
 		log.error(message.toString());
-	}
-
-	/**
-	 * Assert this instance is attached to a HTTP servlet request.
-	 * 
-	 * @throws BugError if this instance is not attached.
-	 * @see #attached
-	 */
-	private void assertAttached() {
-		if (!attached) {
-			throw new BugError("Attempt to use request context outside HTTP request thread.");
-		}
 	}
 }

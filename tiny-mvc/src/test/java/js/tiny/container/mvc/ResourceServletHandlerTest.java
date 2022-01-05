@@ -16,7 +16,6 @@ import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -104,11 +103,6 @@ public class ResourceServletHandlerTest {
 
 		servlet = new ResourceServlet(argumentsFactory);
 		servlet.init(servletConfig);
-	}
-
-	@After
-	public void afterTest() {
-		requestContext.detach();
 	}
 	
 	@Test

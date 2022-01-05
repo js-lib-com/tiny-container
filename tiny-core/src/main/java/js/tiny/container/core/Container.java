@@ -162,7 +162,7 @@ public class Container implements IContainer, EmbeddedContainer, IManagedLoader 
 		for (IManagedClass<?> managedClass : managedClasses.values()) {
 			Object instance = cdi.getScopeInstance(Singleton.class, managedClass.getInterfaceClass());
 			if (instance != null) {
-				onInstanceOutOfScope(Singleton.class, instance);
+				onInstanceOutOfScope(instance);
 			}
 		}
 
@@ -192,11 +192,11 @@ public class Container implements IContainer, EmbeddedContainer, IManagedLoader 
 	 * @param instance
 	 */
 	@Override
-	public void onInstanceOutOfScope(Class<? extends Annotation> scope, Object instance) {
+	public void onInstanceOutOfScope(Object instance) {
 		ManagedClass<?> managedClass = managedImplementations.get(instance.getClass());
 		// not all instances created by injector have managed classes
 		if (managedClass != null) {
-			managedClass.onInstanceOutOfScope(scope, instance);
+			managedClass.onInstanceOutOfScope(instance);
 		}
 	}
 

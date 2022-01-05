@@ -8,9 +8,6 @@ import java.util.Enumeration;
 import java.util.List;
 import java.util.Map;
 
-import javax.enterprise.context.RequestScoped;
-import javax.enterprise.context.SessionScoped;
-import javax.inject.Singleton;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
@@ -18,7 +15,8 @@ import javax.servlet.http.HttpSession;
 import javax.servlet.http.HttpSessionEvent;
 import javax.servlet.http.HttpSessionListener;
 
-import js.injector.ThreadScoped;
+import jakarta.enterprise.context.SessionScoped;
+import jakarta.inject.Singleton;
 import js.lang.BugError;
 import js.lang.Config;
 import js.lang.ConfigBuilder;
@@ -102,7 +100,7 @@ import js.util.Classes;
  * 
  * @author Iulian Rotaru
  */
-public class TinyContainer extends Container implements ServletContextListener, HttpSessionListener, ITinyContainer {
+public class TinyContainer extends Container implements ServletContextListener, HttpSessionListener,  ITinyContainer {
 	private static final Log log = LogFactory.getLog(TinyContainer.class);
 
 	/** Container instance is stored on servlet context with this attribute name. */
@@ -167,11 +165,13 @@ public class TinyContainer extends Container implements ServletContextListener, 
 
 		bind(ITinyContainer.class).instance(this).build();
 
-		bind(RequestContext.class).in(ThreadScoped.class).build();
+		bind(RequestContext.class).build();
 		bind(EventStreamManager.class).to(EventStreamManagerImpl.class).in(Singleton.class).build();
 
-		bindScope(RequestScoped.class, new RequestScopeProvider.Factory<>());
-		bindScope(SessionScoped.class, new SessionScopeProvider.Factory<>());
+		bindScope(jakarta.enterprise.context.RequestScoped.class, new RequestScopeProvider.Factory<>());
+		bindScope(jakarta.enterprise.context.SessionScoped.class, new SessionScopeProvider.Factory<>());
+		bindScope(javax.enterprise.context.RequestScoped.class, new RequestScopeProvider.Factory<>());
+		bindScope(javax.enterprise.context.SessionScoped.class, new SessionScopeProvider.Factory<>());
 	}
 
 	@Override
@@ -296,10 +296,12 @@ public class TinyContainer extends Container implements ServletContextListener, 
 		@SuppressWarnings("unchecked")
 		Map<String, Object> cache = (Map<String, Object>) httpSession.getAttribute(SessionScopeProvider.ATTR_CACHE);
 		if (cache != null) {
-			cache.values().forEach(instance -> onInstanceOutOfScope(SessionScoped.class, instance));
+			cache.values().forEach(instance -> onInstanceOutOfScope(instance));
 		}
 	}
 
+	// --------------------------------------------------------------------------------------------
+	
 	@Override
 	public String getAppName() {
 		return appName;

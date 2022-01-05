@@ -6,6 +6,8 @@ import static org.hamcrest.Matchers.emptyString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -14,6 +16,8 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.servlet.ReadListener;
 import javax.servlet.ServletConfig;
@@ -26,18 +30,16 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
+import org.mockito.invocation.InvocationOnMock;
 import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.stubbing.Answer;
 
 import js.lang.ConfigBuilder;
-import js.tiny.container.mvc.MethodsCache;
 import js.tiny.container.mvc.ResourceServlet;
-import js.tiny.container.service.InstancePreDestructor;
-import js.tiny.container.servlet.RequestContext;
+import js.tiny.container.servlet.RequestScopeProvider;
 import js.tiny.container.servlet.TinyContainer;
 
 @SuppressWarnings({ "unused" })
@@ -45,9 +47,9 @@ import js.tiny.container.servlet.TinyContainer;
 public class ResourceServletIntegrationTest {
 	private static final String DESCRIPTOR = "" + //
 			"<module package='js.tiny.container.mvc.it'>" + //
-			"	<binding bind='App' in='javax.inject.Singleton' />" + //
-			"	<binding bind='DefaultController' in='javax.inject.Singleton' />" + //
-			"	<binding bind='IController' to='ControllerImpl' in='javax.inject.Singleton' />" + //
+			"	<binding bind='App' in='Singleton' />" + //
+			"	<binding bind='DefaultController' in='Singleton' />" + //
+			"	<binding bind='IController' to='ControllerImpl' in='Singleton' />" + //
 			"</module>";
 
 	@Mock
@@ -59,25 +61,35 @@ public class ResourceServletIntegrationTest {
 	@Mock
 	private HttpServletResponse httpResponse;
 
-	private OutputStream outputStream = new OutputStream();
-	private InputStream inputStream = new InputStream();
+	private final Map<String, Object> attributes = new HashMap<>();
+	private final OutputStream outputStream = new OutputStream();
+	private final InputStream inputStream = new InputStream();
 
 	private TinyContainer container;
-
 	private ResourceServlet servlet;
 
 	@Before
 	public void beforeTest() throws Exception {
 		container = new TinyContainer();
 		container.configure(new ConfigBuilder(DESCRIPTOR).build());
-		// request context has thread scope and is critical to detach it
-		// TODO: there are tests that leave not detached request context on thread !!!
-		//container.getInstance(RequestContext.class).detach();
 
 		when(servletConfig.getServletContext()).thenReturn(servletContext);
 		when(servletConfig.getServletName()).thenReturn("ResourceServlet");
 		when(servletContext.getServletContextName()).thenReturn("app");
 		when(servletContext.getAttribute(TinyContainer.ATTR_INSTANCE)).thenReturn(container);
+
+		doAnswer(new Answer<Object>() {
+			public Object answer(InvocationOnMock invocation) throws Throwable {
+				return attributes.get(invocation.getArgument(0));
+			}
+		}).when(httpRequest).getAttribute(RequestScopeProvider.ATTR_CACHE);
+
+		doAnswer(new Answer<Object>() {
+			public Object answer(InvocationOnMock invocation) throws Throwable {
+				attributes.put(invocation.getArgument(0), invocation.getArgument(1));
+				return null;
+			}
+		}).when(httpRequest).setAttribute(eq(RequestScopeProvider.ATTR_CACHE), any());
 
 		when(httpRequest.getMethod()).thenReturn("GET");
 		when(httpRequest.getContextPath()).thenReturn("/test");

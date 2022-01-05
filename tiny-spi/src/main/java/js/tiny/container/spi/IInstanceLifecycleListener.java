@@ -1,7 +1,5 @@
 package js.tiny.container.spi;
 
-import java.lang.annotation.Annotation;
-
 /**
  * Listener for instance lifecycle events. This listener is signaled when a new instance is created by injector and when a
  * scoped instance is out of scope.
@@ -20,6 +18,6 @@ public interface IInstanceLifecycleListener {
 
 	void onInstanceCreated(Object instance);
 
-	void onInstanceOutOfScope(Class<? extends Annotation> scope, Object instance);
+	void onInstanceOutOfScope(Object instance);
 
 }
