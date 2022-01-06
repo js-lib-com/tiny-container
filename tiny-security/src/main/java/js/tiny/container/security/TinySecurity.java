@@ -39,10 +39,15 @@ class TinySecurity implements ISecurityContext {
 		// 1. verify credentials - throw exception if credentials are rejected: request.login
 		// 2. open authenticated session on cookie: request.authenticate
 
-		final HttpServletRequest request = request(context);
+		final HttpServletRequest request = container.getInstance(HttpServletRequest.class);
+		final HttpServletResponse response = context.getResponse();
+		if (response == null) {
+			throw new BugError("Attempt to use not initialized HTTP response.");
+		}
+
 		try {
 			request.login(username, password);
-			if (!request.authenticate(response(context))) {
+			if (!request.authenticate(response)) {
 				log.warn("Session authentication fail for user |%s|.", username);
 			}
 		} catch (ServletException | IOException e) {
@@ -61,8 +66,7 @@ class TinySecurity implements ISecurityContext {
 		log.trace("login(Principal)");
 		Params.notNull(principal, "User principal");
 
-		RequestContext context = container.getInstance(RequestContext.class);
-		HttpSession session = request(context).getSession(true);
+		HttpSession session = container.getInstance(HttpServletRequest.class).getSession(true);
 		if (principal instanceof NonceUser) {
 			final NonceUser nonce = (NonceUser) principal;
 			session.setMaxInactiveInterval(nonce.getMaxInactiveInterval());
@@ -83,9 +87,7 @@ class TinySecurity implements ISecurityContext {
 	@Override
 	public void logout() {
 		log.trace("logout()");
-
-		RequestContext context = container.getInstance(RequestContext.class);
-		final HttpServletRequest request = request(context);
+		final HttpServletRequest request = container.getInstance(HttpServletRequest.class);
 
 		Principal principal = getUserPrincipal();
 		// user name is only for logging
@@ -118,13 +120,7 @@ class TinySecurity implements ISecurityContext {
 
 	@Override
 	public Principal getUserPrincipal() {
-
-		RequestContext context = container.getInstance(RequestContext.class);
-		final HttpServletRequest request = context.getRequest();
-		if (request == null) {
-			log.debug("Attempt to retrieve user principal outside HTTP request.");
-			return null;
-		}
+		final HttpServletRequest request = container.getInstance(HttpServletRequest.class);
 
 		// if authentication is provided by servlet container it should be a principal on HTTP request
 		// otherwise it must be a session and on session it must be the principal object
@@ -151,12 +147,7 @@ class TinySecurity implements ISecurityContext {
 
 	@Override
 	public boolean isAuthorized(String... roles) {
-		final RequestContext context = container.getInstance(RequestContext.class);
-		final HttpServletRequest request = context.getRequest();
-		if (request == null) {
-			log.debug("Attempt to retrieve user principal outside HTTP request.");
-			return false;
-		}
+		final HttpServletRequest request = container.getInstance(HttpServletRequest.class);
 
 		// test container provided authorization only if request is authenticated
 		if (request.getUserPrincipal() != null) {
@@ -203,30 +194,5 @@ class TinySecurity implements ISecurityContext {
 	@Override
 	public boolean isAuthenticated() {
 		return getUserPrincipal() != null;
-	}
-
-	// --------------------------------------------------------------------------------------------
-	// UTILITY METHODS
-
-	/**
-	 * Get HTTP request from current request context.
-	 * 
-	 * @return current HTTP request.
-	 * @throws BugError if attempt to use not initialized HTTP request.
-	 */
-	private static HttpServletRequest request(RequestContext context) {
-		HttpServletRequest request = context.getRequest();
-		if (request == null) {
-			throw new BugError("Attempt to use not initialized HTTP request.");
-		}
-		return request;
-	}
-
-	private static HttpServletResponse response(RequestContext context) {
-		HttpServletResponse response = context.getResponse();
-		if (response == null) {
-			throw new BugError("Attempt to use not initialized HTTP response.");
-		}
-		return response;
 	}
 }
