@@ -37,6 +37,7 @@ import js.tiny.container.net.EventStreamManager;
 import js.tiny.container.net.EventStreamManagerImpl;
 import js.tiny.container.spi.ISecurityContext;
 import js.util.Classes;
+import js.util.Strings;
 
 /**
  * Container specialization for web applications. This class extends {@link Container} adding implementation for
@@ -119,8 +120,8 @@ public class TinyContainer extends Container implements ServletContextListener, 
 	/** Diagnostic context name for context path, aka application. */
 	private static final String LOG_CONTEXT_APP = "app";
 
-	/** The name of web application that own this tiny container. Default value to <code>test-app</code>. */
-	private String appName = "test-app";
+	/** The name of web application that own this tiny container. */
+	private String appName;
 
 	/**
 	 * Development context is running in the same JVM and is allowed to do cross context forward to this context private
@@ -220,14 +221,15 @@ public class TinyContainer extends Container implements ServletContextListener, 
 		logContext.put(LOG_CONTEXT_APP, appName);
 
 		final long start = System.currentTimeMillis();
-		log.debug("Starting application |%s| container...", servletContext.getContextPath());
+		log.debug("Starting container for application |%s| ...", appName);
 
 		Enumeration<String> parameterNames = servletContext.getInitParameterNames();
 		while (parameterNames.hasMoreElements()) {
 			final String name = parameterNames.nextElement();
 			final String value = servletContext.getInitParameter(name);
-			System.setProperty(name, value);
-			log.debug("Load context parameter |%s| value |%s| into system properties.", name, value);
+			final String initParameterName = initParameterName(name);
+			System.setProperty(initParameterName, value);
+			log.debug("Load context parameter |%s| value |%s| into system properties |%s|.", name, value, initParameterName);
 		}
 
 		// WARN: if development context is declared it can access private resources without authentication
@@ -423,6 +425,15 @@ public class TinyContainer extends Container implements ServletContextListener, 
 			return SecurityContext.FORM_AUTH;
 		}
 		return null;
+	}
+
+	@Override
+	public <T> T getInitParameter(String name, Class<T> type) {
+		return super.getInitParameter(initParameterName(name), type);
+	}
+
+	private String initParameterName(String name) {
+		return Strings.concat(appName, '.', name);
 	}
 
 	// --------------------------------------------------------------------------------------------

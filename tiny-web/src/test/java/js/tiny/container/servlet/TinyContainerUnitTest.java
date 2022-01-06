@@ -1,14 +1,12 @@
 package js.tiny.container.servlet;
 
-import static org.junit.Assert.assertEquals;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.notNullValue;
 import static org.mockito.Mockito.when;
 
 import java.io.File;
+import java.util.Arrays;
 import java.util.Collections;
 
 import javax.servlet.ServletContext;
@@ -25,7 +23,6 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
-import js.lang.Config;
 import js.lang.ConfigException;
 import js.tiny.container.cdi.CDI;
 import js.tiny.container.spi.IInstanceLifecycleListener;
@@ -34,15 +31,17 @@ import js.tiny.container.spi.ISecurityContext;
 @RunWith(MockitoJUnitRunner.class)
 public class TinyContainerUnitTest {
 	@Mock
-	private HttpServletResponse httpResponse;
-	@Mock
-	private ServletContextEvent servletContextEvent;
-	@Mock
 	private ServletContext servletContext;
+	@Mock
+	private ServletContextEvent contextEvent;
+
 	@Mock
 	private HttpSession httpSession;
 	@Mock
 	private HttpSessionEvent httpSessionEvent;
+
+	@Mock
+	private HttpServletResponse httpResponse;
 
 	@Mock
 	private RequestContext requestContext;
@@ -65,12 +64,10 @@ public class TinyContainerUnitTest {
 
 	@Before
 	public void beforeTest() throws ConfigException {
-		when(servletContextEvent.getServletContext()).thenReturn(servletContext);
+		when(contextEvent.getServletContext()).thenReturn(servletContext);
 		when(servletContext.getContextPath()).thenReturn("/test");
 		when(servletContext.getInitParameterNames()).thenReturn(Collections.emptyEnumeration());
 		when(servletContext.getRealPath("")).thenReturn("src/test/resources");
-
-		when(httpSessionEvent.getSession()).thenReturn(httpSession);
 
 		container = new TinyContainer(cdi);
 	}
@@ -80,98 +77,30 @@ public class TinyContainerUnitTest {
 		container.close();
 	}
 
-	// --------------------------------------------------------------------------------------------
-	// SERVLET CONTAINER LISTENERS
-
 	@Test
-	public void GivenServletContextEvent_WhenContextInitialized_ThenConfigureAndStart() throws ConfigException {
+	public void GivenContextPath_WhenGetAppName_ThenContextName() throws ConfigException {
 		// given
-		TinyContainer containerSpy = spy(container);
+		container.contextInitialized(contextEvent);
 
 		// when
-		containerSpy.contextInitialized(servletContextEvent);
+		String appName = container.getAppName();
 
 		// then
-		verify(servletContext, times(1)).setAttribute(TinyContainer.ATTR_INSTANCE, containerSpy);
-		verify(containerSpy, times(1)).configure(any(Config.class));
-		verify(containerSpy, times(1)).start();
-	}
-
-	@Test(expected = RuntimeException.class)
-	public void GivenConfigureException_WhenContextInitialized_ThenException() throws ConfigException {
-		// given
-		TinyContainer containerSpy = spy(container);
-		doThrow(RuntimeException.class).when(containerSpy).configure(any(Config.class));
-
-		// when
-		containerSpy.contextInitialized(servletContextEvent);
-
-		// then
-	}
-
-	@Test(expected = RuntimeException.class)
-	public void GivenStartException_WhenContextInitialized_ThenException() {
-		// given
-		TinyContainer containerSpy = spy(container);
-		doThrow(RuntimeException.class).when(containerSpy).start();
-
-		// when
-		containerSpy.contextInitialized(servletContextEvent);
-
-		// then
+		assertThat(appName, notNullValue());
+		assertThat(appName, equalTo("test"));
 	}
 
 	@Test
-	public void GivenServletContextEvent_WhenContextDestroyed_ThenClose() {
+	public void Given_WhenGetInitParameter_Then() throws ConfigException {
 		// given
-		TinyContainer containerSpy = spy(container);
+		when(servletContext.getInitParameterNames()).thenReturn(Collections.enumeration(Arrays.asList("name")));
+		when(servletContext.getInitParameter("name")).thenReturn("Tom Joad");
+		container.contextInitialized(contextEvent);
 
 		// when
-		containerSpy.contextDestroyed(servletContextEvent);
+		String name = container.getInitParameter("name", String.class);
 
 		// then
-		verify(containerSpy, times(1)).close();
-	}
-
-	@Test
-	public void GivenCloseException_WhenContextDestroyed_ThenDumpExceptionToLogger() {
-		// given
-		TinyContainer containerSpy = spy(container);
-		doThrow(RuntimeException.class).when(containerSpy).close();
-
-		// when
-		containerSpy.contextDestroyed(servletContextEvent);
-
-		// then
-		verify(containerSpy, times(1)).close();
-	}
-
-	@Test
-	public void GivenHttpSessionEvent_WhneSessionCreated_ThenLogSessionId() {
-		// given
-
-		// when
-		container.sessionCreated(httpSessionEvent);
-
-		// then
-		verify(httpSessionEvent, times(1)).getSession();
-		verify(httpSession, times(1)).getId();
-	}
-
-	@Test
-	public void GivenHttpSessionEvent_WhneSessionDestroyed_ThenLogSessionId() {
-		// given
-
-		// when
-		container.sessionDestroyed(httpSessionEvent);
-
-		// then
-		verify(httpSessionEvent, times(1)).getSession();
-		verify(httpSession, times(1)).getId();
-	}
-
-	@Test
-	public void getAppName() throws ConfigException {
-		assertEquals("test-app", container.getAppName());
+		assertThat(name, notNullValue());
 	}
 }

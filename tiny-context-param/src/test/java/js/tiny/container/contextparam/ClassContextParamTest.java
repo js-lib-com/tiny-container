@@ -12,7 +12,6 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
-import js.tiny.container.servlet.RequestContext;
 import js.tiny.container.spi.IClassPostLoadedProcessor.Priority;
 import js.tiny.container.spi.IContainer;
 import js.tiny.container.spi.IManagedClass;
@@ -23,15 +22,12 @@ public class ClassContextParamTest {
 	private IContainer container;
 	@Mock
 	private IManagedClass<?> managedClass;
-	@Mock
-	private RequestContext requestContext;
 
 	private ClassContextParam processor;
 
 	@Before
 	public void beforeTest() {
-		when(container.getInstance(RequestContext.class)).thenReturn(requestContext);
-		when(requestContext.getInitParameter(String.class, "field")).thenReturn("value");
+		when(container.getInitParameter("field", String.class)).thenReturn("value");
 
 		processor = new ClassContextParam();
 		processor.create(container);
@@ -75,7 +71,7 @@ public class ClassContextParamTest {
 	public void GivenMissingOptionalField_WhenPostLoadClass_ThenNullField() {
 		// given
 		doReturn(FieldClass.class).when(managedClass).getImplementationClass();
-		when(requestContext.getInitParameter(String.class, "field")).thenReturn(null);
+		when(container.getInitParameter("field", String.class)).thenReturn(null);
 
 		// when
 		processor.onClassPostLoaded(managedClass);
@@ -88,7 +84,7 @@ public class ClassContextParamTest {
 	public void GivenMissingMandatoryField_WhenPostLoadClass_ThenException() {
 		// given
 		doReturn(MandatoryFieldClass.class).when(managedClass).getImplementationClass();
-		when(requestContext.getInitParameter(String.class, "field")).thenReturn(null);
+		when(container.getInitParameter("field", String.class)).thenReturn(null);
 
 		// when
 		processor.onClassPostLoaded(managedClass);
@@ -99,17 +95,17 @@ public class ClassContextParamTest {
 	// --------------------------------------------------------------------------------------------
 
 	private static class FieldClass {
-		@ContextParam("field")
+		@ContextParam(name = "field")
 		static String field;
 	}
 
 	private static class MandatoryFieldClass {
-		@ContextParam(value = "field", mandatory = true)
+		@ContextParam(name = "field", mandatory = true)
 		static String field;
 	}
 
 	private static class FinalFieldClass {
-		@ContextParam("field")
+		@ContextParam(name = "field")
 		static final String field = "final";
 	}
 }

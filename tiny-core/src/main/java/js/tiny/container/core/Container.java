@@ -16,6 +16,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.inject.Singleton;
 
+import js.converter.Converter;
+import js.converter.ConverterRegistry;
 import js.embedded.container.EmbeddedContainer;
 import js.injector.IBindingBuilder;
 import js.injector.IScopeFactory;
@@ -223,6 +225,13 @@ public class Container implements IContainer, EmbeddedContainer, IManagedLoader 
 	@Override
 	public <T> IManagedClass<T> getManagedClass(Class<T> interfaceClass) {
 		return (IManagedClass<T>) managedInterfaces.get(interfaceClass);
+	}
+
+	private static final Converter converter = ConverterRegistry.getConverter();
+
+	@Override
+	public <T> T getInitParameter(String name, Class<T> type) {
+		return converter.asObject(System.getProperty(name), type);
 	}
 
 	// --------------------------------------------------------------------------------------------

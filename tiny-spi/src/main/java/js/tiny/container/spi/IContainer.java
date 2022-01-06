@@ -3,6 +3,7 @@ package js.tiny.container.spi;
 import java.lang.annotation.Annotation;
 import java.util.List;
 
+import js.converter.ConverterException;
 import js.injector.IBindingBuilder;
 import js.injector.IScopeFactory;
 
@@ -62,5 +63,17 @@ public interface IContainer extends IInstanceLifecycleListener {
 	 * @return container managed classes, in no particular order.
 	 */
 	List<IManagedClass<?>> getManagedClasses();
+
+	/**
+	 * Get initialization parameter value, collected from command line or system properties. Returned value is converted to
+	 * requested type. Returns null if named parameter is not defined.
+	 * 
+	 * @param name parameter name,
+	 * @param type type of the initialization parameter.
+	 * @return initialization parameter value or null if not defined.
+	 * @param <T> method generic type.
+	 * @throws ConverterException if there is no converter registered for requested type.
+	 */
+	<T> T getInitParameter(String name, Class<T> type);
 
 }

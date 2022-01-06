@@ -6,7 +6,6 @@ import java.lang.reflect.Modifier;
 import js.lang.BugError;
 import js.log.Log;
 import js.log.LogFactory;
-import js.tiny.container.servlet.RequestContext;
 import js.tiny.container.spi.IContainer;
 import js.tiny.container.spi.IContainerService;
 
@@ -40,11 +39,10 @@ abstract class BaseContextParam implements IContainerService {
 
 		ContextParam contextParam = field.getAnnotation(ContextParam.class);
 		assert contextParam != null;
-		final String contextParameterName = contextParam.value();
+		final String contextParameterName = contextParam.name();
 		log.debug("Initialize field |%s| from context parameter |%s|.", field, contextParameterName);
 
-		final RequestContext requestContext = container.getInstance(RequestContext.class);
-		final Object value = requestContext.getInitParameter(field.getType(), contextParameterName);
+		final Object value = container.getInitParameter(contextParameterName, field.getType());
 		if (value == null) {
 			if (contextParam.mandatory()) {
 				throw new RuntimeException(String.format("Missing context parameter |%s| requested by field |%s|.", contextParameterName, field));

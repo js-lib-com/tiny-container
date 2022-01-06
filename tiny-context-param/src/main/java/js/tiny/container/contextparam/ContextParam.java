@@ -13,8 +13,6 @@ import java.lang.annotation.Target;
  * time value, either default / null value or that explicitly initialized by code. Anyway, if {@link #mandatory()} attribute is
  * configured to true, container should throw {@link RuntimeException} if context parameter is missing.
  * 
- * This annotation is not standard and should be avoided if business code portability is desired.
- * 
  * @author Iulian Rotaru
  * @since 1.3
  */
@@ -22,12 +20,11 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface ContextParam {
 	/**
-	 * Context parameter name. The 'value' name may be misleading since this attribute is in fact the parameter name; anyway,
-	 * use it to simplify declaration when {@link #mandatory()} attribute is missing.
+	 * Context, case sensitive, parameter name.
 	 * 
 	 * @return context parameter name.
 	 */
-	String value();
+	String name();
 
 	/**
 	 * If this attribute is true container should throw exception if parameter value is not defined on runtime environment. By
