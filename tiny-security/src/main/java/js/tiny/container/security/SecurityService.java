@@ -26,15 +26,10 @@ public class SecurityService implements IMethodInvocationProcessor {
 	}
 
 	@Override
-	public void create(IContainer container) {
-		log.trace("create(IContainer)");
-		this.container = container;
-		security = new TinySecurity(container);
-	}
-
-	@Override
 	public void configure(IContainer container) {
 		log.trace("configure(IContainer)");
+		this.container = container;
+		security = new TinySecurity(container);
 		container.bind(ISecurityContext.class).instance(security).build();
 	}
 

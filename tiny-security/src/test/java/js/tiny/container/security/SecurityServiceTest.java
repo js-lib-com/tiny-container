@@ -53,6 +53,9 @@ public class SecurityServiceTest {
 
 	@Before
 	public void beforeTest() {
+		when(container.bind(ISecurityContext.class)).thenReturn(bindingBuilder);
+		when(bindingBuilder.instance(any())).thenReturn(bindingBuilder);
+		
 		when(container.getInstance(HttpServletRequest.class)).thenReturn(httpRequest);
 		when(container.getOptionalInstance(HttpServletRequest.class)).thenReturn(httpRequest);
 		doReturn(managedClass).when(managedMethod).getDeclaringClass();
@@ -60,17 +63,14 @@ public class SecurityServiceTest {
 		when(invocation.method()).thenReturn(managedMethod);
 
 		service = new SecurityService();
-		service.create(container);
+		service.configure(container);
 	}
 
 	@Test
 	public void GivenDefaults_WhenConfigure_ThenBindingBuild() {
 		// given
-		when(container.bind(ISecurityContext.class)).thenReturn(bindingBuilder);
-		when(bindingBuilder.instance(any())).thenReturn(bindingBuilder);
 
 		// when
-		service.configure(container);
 
 		// then
 		verify(container, times(1)).bind(any());
