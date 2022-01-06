@@ -7,6 +7,7 @@ import java.security.Principal;
 import java.util.Enumeration;
 import java.util.List;
 
+import javax.enterprise.context.ContextNotActiveException;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
@@ -19,6 +20,7 @@ import javax.servlet.http.HttpSessionListener;
 
 import jakarta.enterprise.context.SessionScoped;
 import jakarta.inject.Singleton;
+import jakarta.ws.rs.core.SecurityContext;
 import js.lang.BugError;
 import js.lang.Config;
 import js.lang.ConfigBuilder;
@@ -102,7 +104,7 @@ import js.util.Classes;
  * 
  * @author Iulian Rotaru
  */
-public class TinyContainer extends Container implements ServletContextListener, HttpSessionListener, ServletRequestListener, ITinyContainer {
+public class TinyContainer extends Container implements ServletContextListener, HttpSessionListener, ServletRequestListener, ITinyContainer, SecurityContext {
 	private static final Log log = LogFactory.getLog(TinyContainer.class);
 
 	/** Container instance is stored on servlet context with this attribute name. */
@@ -166,6 +168,7 @@ public class TinyContainer extends Container implements ServletContextListener, 
 		log.trace("TinyContainer(CDI)");
 
 		bind(ITinyContainer.class).instance(this).build();
+		bind(SecurityContext.class).instance(this).build();
 
 		bind(HttpServletRequest.class).provider(new HttpRequestProvider()).build();
 		bind(RequestContext.class).build();
@@ -378,6 +381,48 @@ public class TinyContainer extends Container implements ServletContextListener, 
 	@Override
 	public String getLoginPage() {
 		return loginPage;
+	}
+
+	@Override
+	public boolean isUserInRole(String role) {
+		return security != null ? security.isAuthorized(role) : false;
+	}
+
+	@Override
+	public boolean isSecure() {
+		try {
+			return getInstance(HttpServletRequest.class).isSecure();
+		} catch (ContextNotActiveException e) {
+			throw new IllegalStateException(e.getMessage());
+		}
+	}
+
+	@Override
+	public String getAuthenticationScheme() {
+		HttpServletRequest httpRequest = null;
+		try {
+			httpRequest = getInstance(HttpServletRequest.class);
+		} catch (ContextNotActiveException e) {
+			throw new IllegalStateException(e.getMessage());
+		}
+		if (httpRequest == null || httpRequest.getAuthType() == null) {
+			return null;
+		}
+
+		switch (httpRequest.getAuthType()) {
+		case HttpServletRequest.BASIC_AUTH:
+			return SecurityContext.BASIC_AUTH;
+
+		case HttpServletRequest.CLIENT_CERT_AUTH:
+			return SecurityContext.CLIENT_CERT_AUTH;
+
+		case HttpServletRequest.DIGEST_AUTH:
+			return SecurityContext.DIGEST_AUTH;
+
+		case HttpServletRequest.FORM_AUTH:
+			return SecurityContext.FORM_AUTH;
+		}
+		return null;
 	}
 
 	// --------------------------------------------------------------------------------------------
