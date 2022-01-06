@@ -158,7 +158,6 @@ public abstract class AppServlet extends HttpServlet {
 		logContext.put(LOG_CONTEXT_ID, Integer.toString(requestID.getAndIncrement(), Character.MAX_RADIX));
 
 		Factory.bind(container);
-		RequestScopeProvider.createHttpRequestContext(httpRequest);
 		
 		if (isEmptyUriRequest(httpRequest)) {
 			log.debug("Empty URI request for |%s|. Please check for <img> with empty 'src' or <link>, <script> with empty 'href' in HTML source or script resulting in such condition.", httpRequest.getRequestURI());
@@ -191,8 +190,6 @@ public abstract class AppServlet extends HttpServlet {
 			log.trace("%s %s processed in %d msec.", httpRequest.getMethod(), requestContext.getRequestURL(), System.currentTimeMillis() - start);
 			// cleanup remote address from logger context and detach request context instance from this request
 			logContext.clear();
-			
-			RequestScopeProvider.destroyHttpRequestContext(container);
 		}
 	}
 

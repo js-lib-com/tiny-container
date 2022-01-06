@@ -1,6 +1,5 @@
 package js.tiny.container.servlet;
 
-import static java.lang.String.format;
 import java.lang.annotation.Annotation;
 import java.util.HashMap;
 import java.util.Map;
@@ -16,11 +15,14 @@ import js.injector.IInjector;
 import js.injector.IScopeFactory;
 import js.injector.Key;
 import js.injector.ScopedProvider;
-import js.lang.BugError;
+import js.tiny.container.spi.IContainer;
 
+/**
+ * Scope provider specialized in creation of {@link SessionScoped} instances.
+ * 
+ * @author Iulian Rotaru
+ */
 public class SessionScopeProvider<T> extends ScopedProvider<T> {
-	public static final String ATTR_CACHE = "injector-cache";
-
 	private final IInjector injector;
 	private final Key<T> key;
 
@@ -73,23 +75,18 @@ public class SessionScopeProvider<T> extends ScopedProvider<T> {
 		return getProvisioningProvider().toString() + ":SESSION";
 	}
 
+	/** Session scope provider cache is kept on HTTP session attributes, identified by this name. */
+	private static final String ATTR_CACHE = "injector-cache";
+
 	/**
-	 * Get HTTP session from current request, creating it if necessary. This method should be call inside a request context
-	 * otherwise bug error is thrown.
+	 * Get session scope provider cache kept on current HTTP session attributes. Create cache on the fly if missing.
 	 * 
-	 * @return current request HTTP session.
-	 * @throws BugError if attempt to use this method outside a HTTP request.
+	 * @return session provider cache from current HTTP request.
+	 * @throws ContextNotActiveException if attempt to use this method outside HTTP request thread.
 	 */
 	synchronized Map<String, Object> cache() {
-		final RequestContext requestContext = injector.getInstance(RequestContext.class);
-		final HttpServletRequest httpRequest = requestContext.getRequest();
-		if (httpRequest == null) {
-			throw new ContextNotActiveException(format("Invalid web context due to null HTTP request. Cannot create managed instance for |%s| with scope SESSION.", getProvisioningProvider().getClass().getCanonicalName()));
-		}
-
-		// create HTTP session if missing
-		// accordingly API, retrieved httpSession is never null if 'create' flag is true
-		final HttpSession httpSession = httpRequest.getSession(true);
+		HttpServletRequest httpRequest = injector.getInstance(HttpServletRequest.class);
+		HttpSession httpSession = httpRequest.getSession(true);
 
 		@SuppressWarnings("unchecked")
 		Map<String, Object> cache = (Map<String, Object>) httpSession.getAttribute(ATTR_CACHE);
@@ -98,6 +95,23 @@ public class SessionScopeProvider<T> extends ScopedProvider<T> {
 			httpSession.setAttribute(ATTR_CACHE, cache);
 		}
 		return cache;
+	}
+
+	/**
+	 * Destroy context for session scope provider. Invoked by container on HTTP session destroying, see
+	 * {@link TinyContainer#sessionDestroyed(javax.servlet.http.HttpSessionEvent)}.
+	 * 
+	 * Signal instance of out scope for all instances found on the session scope provider cache.
+	 * 
+	 * @param container parent container,
+	 * @param httpSession HTTP session about to be destroyed.
+	 */
+	public static void destroyContext(IContainer container, HttpSession httpSession) {
+		@SuppressWarnings("unchecked")
+		Map<String, Object> cache = (Map<String, Object>) httpSession.getAttribute(SessionScopeProvider.ATTR_CACHE);
+		if (cache != null) {
+			cache.values().forEach(instance -> container.onInstanceOutOfScope(instance));
+		}
 	}
 
 	// --------------------------------------------------------------------------------------------

@@ -18,10 +18,12 @@ import javax.servlet.ServletConfig;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletInputStream;
 import javax.servlet.ServletOutputStream;
+import javax.servlet.ServletRequestEvent;
 import javax.servlet.WriteListener;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -43,6 +45,8 @@ public class RestServletIntegrationTest {
 	private ServletContext servletContext;
 	@Mock
 	private ServletConfig servletConfig;
+	@Mock
+	private ServletRequestEvent requestEvent;
 	@Mock
 	private HttpServletRequest httpRequest;
 	@Mock
@@ -74,6 +78,14 @@ public class RestServletIntegrationTest {
 
 		servlet = new RestServlet();
 		servlet.init(servletConfig);
+
+		when(requestEvent.getServletRequest()).thenReturn(httpRequest);
+		container.requestInitialized(requestEvent);
+	}
+
+	@After
+	public void afterTest() {
+		container.requestDestroyed(requestEvent);
 	}
 
 	@Test

@@ -3,6 +3,8 @@ package js.tiny.container.cdi;
 import java.lang.annotation.Annotation;
 import java.net.URI;
 
+import jakarta.inject.Provider;
+
 /**
  * Binding parameters collected by container internal bindings builder - {@link BindingParametersBuilder}.
  * 
@@ -13,6 +15,7 @@ class BindingParameters<T> {
 
 	private T instance;
 	private Class<? extends T> implementationClass;
+	private Provider<T> provider;
 	private Class<? extends Annotation> scope;
 	private boolean service;
 	private URI implementationURL;
@@ -30,6 +33,11 @@ class BindingParameters<T> {
 
 	public BindingParameters<T> setImplementationClass(Class<? extends T> implementationClass) {
 		this.implementationClass = implementationClass;
+		return this;
+	}
+
+	public BindingParameters<T> setProvider(Provider<T> provider) {
+		this.provider = provider;
 		return this;
 	}
 
@@ -57,6 +65,10 @@ class BindingParameters<T> {
 
 	public Class<? extends T> getImplementationClass() {
 		return implementationClass;
+	}
+
+	public Provider<T> getProvider() {
+		return provider;
 	}
 
 	public Class<? extends Annotation> getScope() {

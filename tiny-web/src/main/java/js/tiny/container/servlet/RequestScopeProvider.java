@@ -1,7 +1,5 @@
 package js.tiny.container.servlet;
 
-import static java.lang.String.format;
-
 import java.lang.annotation.Annotation;
 import java.util.HashMap;
 import java.util.Map;
@@ -18,9 +16,12 @@ import js.injector.Key;
 import js.injector.ScopedProvider;
 import js.tiny.container.spi.IContainer;
 
+/**
+ * Scope provider specialized in creation of {@link RequestScoped} instances.
+ * 
+ * @author Iulian Rotaru
+ */
 public class RequestScopeProvider<T> extends ScopedProvider<T> {
-	public static final String ATTR_CACHE = "injector-cache";
-
 	private final IInjector injector;
 	private final Key<T> key;
 
@@ -68,32 +69,17 @@ public class RequestScopeProvider<T> extends ScopedProvider<T> {
 		return getProvisioningProvider().toString() + ":REQUEST";
 	}
 
-	// --------------------------------------------------------------------------------------------
+	/** Request scope provider cache is kept on HTTP request attributes, identified by this name. */
+	public static final String ATTR_CACHE = "injector-cache";
 
-	private static final ThreadLocal<HttpServletRequest> httpRequest = new ThreadLocal<>();
-
-	public static void createHttpRequestContext(HttpServletRequest httpRequest) {
-		RequestScopeProvider.httpRequest.set(httpRequest);
-	}
-
-	public static void destroyHttpRequestContext(IContainer container) {
-		final HttpServletRequest httpRequest = RequestScopeProvider.httpRequest.get();
-		assert httpRequest != null;
-
-		@SuppressWarnings("unchecked")
-		Map<String, Object> cache = (Map<String, Object>) httpRequest.getAttribute(RequestScopeProvider.ATTR_CACHE);
-		if (cache != null) {
-			cache.values().forEach(instance -> container.onInstanceOutOfScope(instance));
-		}
-		RequestScopeProvider.httpRequest.remove();
-	}
-
-	private synchronized Map<String, Object> cache() {
-		final HttpServletRequest httpRequest = RequestScopeProvider.httpRequest.get();
-		if (httpRequest == null) {
-			throw new ContextNotActiveException(format("Attempt to create request scoped instance |%s| outside HTTP request context.", key));
-		}
-
+	/**
+	 * Get request scope provider cache kept on current HTTP request attributes. Create cache on the fly if missing.
+	 * 
+	 * @return request provider cache from current HTTP request.
+	 * @throws ContextNotActiveException if attempt to use this method outside HTTP request thread.
+	 */
+	synchronized Map<String, Object> cache() {
+		HttpServletRequest httpRequest = injector.getInstance(HttpServletRequest.class);
 		@SuppressWarnings("unchecked")
 		Map<String, Object> cache = (Map<String, Object>) httpRequest.getAttribute(ATTR_CACHE);
 		if (cache == null) {
@@ -101,6 +87,23 @@ public class RequestScopeProvider<T> extends ScopedProvider<T> {
 			httpRequest.setAttribute(ATTR_CACHE, cache);
 		}
 		return cache;
+	}
+
+	/**
+	 * Destroy context for request scope provider. Invoked by container on HTTP request destroying, see
+	 * {@link TinyContainer#requestDestroyed(javax.servlet.ServletRequestEvent)}.
+	 * 
+	 * Signal instance of out scope for all instances found on the request scope provider cache.
+	 * 
+	 * @param container parent container,
+	 * @param httpRequest HTTP request about to be destroyed.
+	 */
+	public static void destroyContext(IContainer container, HttpServletRequest httpRequest) {
+		@SuppressWarnings("unchecked")
+		Map<String, Object> cache = (Map<String, Object>) httpRequest.getAttribute(RequestScopeProvider.ATTR_CACHE);
+		if (cache != null) {
+			cache.values().forEach(instance -> container.onInstanceOutOfScope(instance));
+		}
 	}
 
 	// --------------------------------------------------------------------------------------------

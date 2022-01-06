@@ -1,6 +1,8 @@
 package js.tiny.container.cdi;
 
+
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.startsWith;
 
@@ -12,6 +14,7 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
+import js.injector.ProvisionException;
 import js.lang.Config;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -36,13 +39,13 @@ public class CircularDependencyTest {
 		String exception = null;
 		try {
 			cdi.getInstance(FieldService.class);
-		} catch (IllegalStateException e) {
+		} catch (ProvisionException e) {
 			exception = e.getMessage();
 		}
 
 		// then
 		assertThat(exception, notNullValue());
-		assertThat(exception, startsWith("Circular dependency"));
+		assertThat(exception, containsString("Circular dependency"));
 	}
 
 	@Test
@@ -74,13 +77,13 @@ public class CircularDependencyTest {
 		String exception = null;
 		try {
 			cdi.getInstance(MethodService.class);
-		} catch (IllegalStateException e) {
+		} catch (ProvisionException e) {
 			exception = e.getMessage();
 		}
 
 		// then
 		assertThat(exception, notNullValue());
-		assertThat(exception, startsWith("Circular dependency"));
+		assertThat(exception, containsString("Circular dependency"));
 	}
 
 	@Test
@@ -95,13 +98,13 @@ public class CircularDependencyTest {
 		String exception = null;
 		try {
 			cdi.getInstance(Grandfather.class);
-		} catch (IllegalStateException e) {
+		} catch (ProvisionException e) {
 			exception = e.getMessage();
 		}
 
 		// then
 		assertThat(exception, notNullValue());
-		assertThat(exception, startsWith("Circular dependency"));
+		assertThat(exception, containsString("Circular dependency"));
 	}
 
 	// --------------------------------------------------------------------------------------------

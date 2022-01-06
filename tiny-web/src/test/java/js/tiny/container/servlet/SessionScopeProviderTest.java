@@ -39,8 +39,6 @@ public class SessionScopeProviderTest {
 	@Mock
 	private IContainer container;
 	@Mock
-	private RequestContext requestContext;
-	@Mock
 	private HttpServletRequest httpRequest;
 	@Mock
 	private HttpSession httpSession;
@@ -58,8 +56,7 @@ public class SessionScopeProviderTest {
 	public void beforeTest() {
 		Factory.bind(container);
 
-		when(injector.getInstance(RequestContext.class)).thenReturn(requestContext);
-		when(requestContext.getRequest()).thenReturn(httpRequest);
+		when(injector.getInstance(HttpServletRequest.class)).thenReturn(httpRequest);
 		when(httpRequest.getSession(true)).thenReturn(httpSession);
 
 		Map<String, Object> attributes = new HashMap<>();
@@ -180,9 +177,9 @@ public class SessionScopeProviderTest {
 	}
 
 	@Test(expected = ContextNotActiveException.class)
-	public void GivenNullHttpRequest_WhenCache_ThenException() throws Exception {
+	public void GivenMissingHttpRequest_WhenCache_ThenException() throws Exception {
 		// given
-		when(requestContext.getRequest()).thenReturn(null);
+		when(injector.getInstance(HttpServletRequest.class)).thenThrow(ContextNotActiveException.class);
 
 		// when
 		scopeProvider.cache();

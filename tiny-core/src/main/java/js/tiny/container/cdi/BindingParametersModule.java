@@ -36,6 +36,9 @@ class BindingParametersModule extends AbstractModule {
 			if (parameters.getImplementationURL() != null) {
 				builder.on(parameters.getImplementationURL());
 			}
+			if (parameters.getProvider() != null) {
+				builder.provider(parameters.getProvider());
+			}
 			if (parameters.getScope() != null) {
 				builder.in(parameters.getScope());
 			}

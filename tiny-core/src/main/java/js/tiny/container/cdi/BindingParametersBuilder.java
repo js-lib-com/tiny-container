@@ -10,8 +10,8 @@ import js.injector.ITypedProvider;
 
 /**
  * Container internal bindings builder. Created injector bindings are for container internal use only. This chained builder
- * collects binding parameters into {@link BindingParameters} and send them to
- * {@link CDI#bind(BindingParameters)} when {@link #build()} is invoked.
+ * collects binding parameters into {@link BindingParameters} and send them to {@link CDI#bind(BindingParameters)} when
+ * {@link #build()} is invoked.
  * 
  * @author Iulian Rotaru
  */
@@ -59,7 +59,8 @@ public class BindingParametersBuilder<T> implements IBindingBuilder<T> {
 
 	@Override
 	public IBindingBuilder<T> provider(Provider<T> provider) {
-		throw new UnsupportedOperationException();
+		parameters.setProvider(provider);
+		return this;
 	}
 
 	@Override

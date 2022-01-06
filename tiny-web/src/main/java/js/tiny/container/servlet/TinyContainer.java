@@ -6,11 +6,13 @@ import java.io.FileNotFoundException;
 import java.security.Principal;
 import java.util.Enumeration;
 import java.util.List;
-import java.util.Map;
 
 import javax.servlet.ServletContext;
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
+import javax.servlet.ServletRequestEvent;
+import javax.servlet.ServletRequestListener;
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 import javax.servlet.http.HttpSessionEvent;
 import javax.servlet.http.HttpSessionListener;
@@ -100,7 +102,7 @@ import js.util.Classes;
  * 
  * @author Iulian Rotaru
  */
-public class TinyContainer extends Container implements ServletContextListener, HttpSessionListener,  ITinyContainer {
+public class TinyContainer extends Container implements ServletContextListener, HttpSessionListener, ServletRequestListener, ITinyContainer {
 	private static final Log log = LogFactory.getLog(TinyContainer.class);
 
 	/** Container instance is stored on servlet context with this attribute name. */
@@ -165,6 +167,7 @@ public class TinyContainer extends Container implements ServletContextListener, 
 
 		bind(ITinyContainer.class).instance(this).build();
 
+		bind(HttpServletRequest.class).provider(new HttpRequestProvider()).build();
 		bind(RequestContext.class).build();
 		bind(EventStreamManager.class).to(EventStreamManagerImpl.class).in(Singleton.class).build();
 
@@ -279,7 +282,7 @@ public class TinyContainer extends Container implements ServletContextListener, 
 	@Override
 	public void sessionCreated(HttpSessionEvent sessionEvent) {
 		HttpSession httpSession = sessionEvent.getSession();
-		log.trace("Create HTTP session |%s|.", httpSession.getId());
+		log.debug("Creating HTTP session |%s|.", httpSession.getId());
 	}
 
 	/**
@@ -290,18 +293,27 @@ public class TinyContainer extends Container implements ServletContextListener, 
 	@Override
 	public void sessionDestroyed(HttpSessionEvent sessionEvent) {
 		HttpSession httpSession = sessionEvent.getSession();
-		log.trace("Destroy HTTP session |%s|.", httpSession.getId());
+		log.debug("Destroying HTTP session |%s| .", httpSession.getId());
+		SessionScopeProvider.destroyContext(this, httpSession);
+	}
 
-		// signal instance of out scope for all instances found on the cache of session scope provider, if any
-		@SuppressWarnings("unchecked")
-		Map<String, Object> cache = (Map<String, Object>) httpSession.getAttribute(SessionScopeProvider.ATTR_CACHE);
-		if (cache != null) {
-			cache.values().forEach(instance -> onInstanceOutOfScope(instance));
-		}
+	@Override
+	public void requestInitialized(ServletRequestEvent requestEvent) {
+		HttpServletRequest httpRequest = (HttpServletRequest) requestEvent.getServletRequest();
+		log.trace("Initializing HTTP request |%s|.", httpRequest.getRequestURI());
+		HttpRequestProvider.createContext(httpRequest);
+	}
+
+	@Override
+	public void requestDestroyed(ServletRequestEvent requestEvent) {
+		HttpServletRequest httpRequest = (HttpServletRequest) requestEvent.getServletRequest();
+		log.trace("Destroying HTTP request |%s|.", httpRequest.getRequestURI());
+		HttpRequestProvider.destroyContext(httpRequest);
+		RequestScopeProvider.destroyContext(this, httpRequest);
 	}
 
 	// --------------------------------------------------------------------------------------------
-	
+
 	@Override
 	public String getAppName() {
 		return appName;
