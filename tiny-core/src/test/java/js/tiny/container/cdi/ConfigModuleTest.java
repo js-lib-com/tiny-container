@@ -23,7 +23,6 @@ import jakarta.enterprise.context.SessionScoped;
 import jakarta.inject.Singleton;
 import js.injector.IBindingBuilder;
 import js.injector.IInjector;
-import js.injector.ThreadScoped;
 import js.lang.Config;
 import js.lang.ConfigBuilder;
 import js.lang.ConfigException;
@@ -63,28 +62,6 @@ public class ConfigModuleTest {
 
 		// then
 		verify(bindingBuilder, times(1)).in(Singleton.class);
-	}
-
-	@Test
-	public void GivenThreadScoped_WhenBindInAttribute_ThenInvokedOnce() {
-		// given
-
-		// when
-		module.bindAttribute(bindingBuilder, "in", "js.injector.ThreadScoped");
-
-		// then
-		verify(bindingBuilder, times(1)).in(ThreadScoped.class);
-	}
-
-	@Test
-	public void GivenShorthandThreadScoped_WhenBindInAttribute_ThenInvokedOnce() {
-		// given
-
-		// when
-		module.bindAttribute(bindingBuilder, "in", "ThreadScoped");
-
-		// then
-		verify(bindingBuilder, times(1)).in(ThreadScoped.class);
 	}
 
 	@Test

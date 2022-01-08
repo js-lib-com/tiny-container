@@ -27,7 +27,6 @@ import js.injector.IBinding;
 import js.injector.IInjector;
 import js.injector.IScopeFactory;
 import js.injector.ProvisionException;
-import js.injector.ThreadScoped;
 import js.tiny.container.fixture.IService;
 import js.tiny.container.fixture.Service;
 import js.tiny.container.fixture.ThreadData;
@@ -190,44 +189,6 @@ public class CDIUnitTest {
 		assertThat(instance, notNullValue());
 		assertThat(threadData.instance, notNullValue());
 		assertThat(instance, equalTo(threadData.instance));
-	}
-
-	@Test
-	public void GivenScopeThread_WhenGetInstanceTwice_ThenEqual() {
-		// given
-		doReturn(ThreadScoped.class).when(bindingParameters).getScope();
-		cdi.configure();
-
-		// when
-		Object instance1 = cdi.getInstance(Object.class);
-		Object instance2 = cdi.getInstance(Object.class);
-
-		// then
-		assertThat(instance1, notNullValue());
-		assertThat(instance2, notNullValue());
-		assertThat(instance1, equalTo(instance2));
-	}
-
-	@Test
-	public void GivenScopeThread_WhenGetInstanceFromDifferentThreads_ThenNotEqual() throws InterruptedException {
-		// given
-		doReturn(ThreadScoped.class).when(bindingParameters).getScope();
-		cdi.configure();
-
-		// when
-		Object instance = cdi.getInstance(Object.class);
-
-		final ThreadData<Object> threadData = new ThreadData<>();
-		Thread thread = new Thread(() -> {
-			threadData.instance = cdi.getInstance(Object.class);
-		});
-		thread.start();
-		thread.join();
-
-		// then
-		assertThat(instance, notNullValue());
-		assertThat(threadData.instance, notNullValue());
-		assertThat(instance, not(equalTo(threadData.instance)));
 	}
 
 	@Test(expected = IllegalStateException.class)

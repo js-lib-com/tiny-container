@@ -7,6 +7,7 @@ import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
 
+import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.context.RequestScoped;
 import jakarta.enterprise.context.SessionScoped;
 import jakarta.inject.Singleton;
@@ -14,7 +15,6 @@ import js.converter.Converter;
 import js.converter.ConverterRegistry;
 import js.injector.AbstractModule;
 import js.injector.IBindingBuilder;
-import js.injector.ThreadScoped;
 import js.lang.Config;
 import js.lang.NoSuchBeingException;
 import js.util.Classes;
@@ -46,12 +46,12 @@ class ConfigModule extends AbstractModule {
 		}
 	}
 
-	private static final Map<String, Class<?>> SCOPE_CLASSES = new HashMap<>();
+	private static final Map<String, Class<?>> SCOPE_CLASS_ALIASES = new HashMap<>();
 	static {
-		SCOPE_CLASSES.put("Singleton", Singleton.class);
-		SCOPE_CLASSES.put("ThreadScoped", ThreadScoped.class);
-		SCOPE_CLASSES.put("SessionScoped", SessionScoped.class);
-		SCOPE_CLASSES.put("RequestScoped", RequestScoped.class);
+		SCOPE_CLASS_ALIASES.put("Singleton", Singleton.class);
+		SCOPE_CLASS_ALIASES.put("ApplicationScoped", ApplicationScoped.class);
+		SCOPE_CLASS_ALIASES.put("SessionScoped", SessionScoped.class);
+		SCOPE_CLASS_ALIASES.put("RequestScoped", RequestScoped.class);
 	}
 
 	private final Converter converter;
@@ -117,7 +117,7 @@ class ConfigModule extends AbstractModule {
 	private String scopeValue(String scopeValue) {
 		boolean simpleName = scopeValue.indexOf('.') == -1;
 		if (simpleName) {
-			Class<?> scopeClass = SCOPE_CLASSES.get(scopeValue);
+			Class<?> scopeClass = SCOPE_CLASS_ALIASES.get(scopeValue);
 			if (scopeClass == null) {
 				throw new IllegalStateException(format("Bad scope value |%s| for attribute <in> on binding definition.", scopeValue));
 			}

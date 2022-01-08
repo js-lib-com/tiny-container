@@ -145,6 +145,16 @@ public class ContainerLifeCycleTest {
 	}
 
 	@Test
+	public void GivenCloseException_WhenClose_ThenExceptionSwallowed() {
+		// given
+
+		// when
+		container.close();
+
+		// then
+	}
+
+	@Test
 	public void GivenManagedClass_WhenOnInstanceCreated_Then() {
 		// given
 		Object instance = new Object();

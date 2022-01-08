@@ -212,16 +212,15 @@ public class TinyContainer extends Container implements ServletContextListener, 
 	 */
 	@Override
 	public void contextInitialized(ServletContextEvent contextEvent) {
+		final long start = System.currentTimeMillis();
 		final ServletContext servletContext = contextEvent.getServletContext();
-
+		// if present, context path always starts with path separator
 		appName = servletContext.getContextPath().isEmpty() ? TinyContainer.ROOT_CONTEXT : servletContext.getContextPath().substring(1);
 
-		// logger diagnostic context stores contextual information regarding current request
+		// add application name as diagnostic data to logger diagnostic context
 		LogContext logContext = LogFactory.getLogContext();
 		logContext.put(LOG_CONTEXT_APP, appName);
-
-		final long start = System.currentTimeMillis();
-		log.debug("Starting container for application |%s| ...", appName);
+		log.debug("Initializing servlet context |%s|.", servletContext.getServletContextName());
 
 		Enumeration<String> parameterNames = servletContext.getInitParameterNames();
 		while (parameterNames.hasMoreElements()) {
@@ -244,7 +243,6 @@ public class TinyContainer extends Container implements ServletContextListener, 
 
 			bootstrap.startContainer(this, configBuilder.build());
 
-			// set tiny container reference on servlet context attribute ONLY if no exception
 			servletContext.setAttribute(TinyContainer.ATTR_INSTANCE, this);
 			log.info("Application |%s| container started in %d msec.", appName, System.currentTimeMillis() - start);
 		} catch (ConfigException e) {
@@ -271,12 +269,9 @@ public class TinyContainer extends Container implements ServletContextListener, 
 	 */
 	@Override
 	public void contextDestroyed(ServletContextEvent contextEvent) {
-		log.debug("Context |%s| destroying.", appName);
-		try {
-			close();
-		} catch (Throwable t) {
-			log.dump(String.format("Fatal error on container |%s| destroy:", appName), t);
-		}
+		ServletContext servletContext = contextEvent.getServletContext();
+		log.debug("Destroying servlet context |%s|.", servletContext.getServletContextName());
+		close();
 	}
 
 	/**
@@ -298,7 +293,7 @@ public class TinyContainer extends Container implements ServletContextListener, 
 	@Override
 	public void sessionDestroyed(HttpSessionEvent sessionEvent) {
 		HttpSession httpSession = sessionEvent.getSession();
-		log.debug("Destroying HTTP session |%s| .", httpSession.getId());
+		log.debug("Destroying HTTP session |%s|.", httpSession.getId());
 		SessionScopeProvider.destroyContext(this, httpSession);
 	}
 

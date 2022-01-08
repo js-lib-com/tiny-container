@@ -120,19 +120,6 @@ public class TinyContainerServletListenersTest {
 	}
 
 	@Test
-	public void GivenCloseException_WhenContextDestroyed_ThenExceptionSwallowed() {
-		// given
-		TinyContainer containerSpy = spy(container);
-		doThrow(RuntimeException.class).when(containerSpy).close();
-
-		// when
-		containerSpy.contextDestroyed(contextEvent);
-
-		// then
-		verify(containerSpy, times(1)).close();
-	}
-
-	@Test
 	public void Given_WhenSessionCreated_ThenSessionId() {
 		// given
 		

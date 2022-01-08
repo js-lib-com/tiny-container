@@ -27,8 +27,8 @@ public class SessionScopeProvider<T> extends ScopedProvider<T> {
 	private final Key<T> key;
 
 	/**
-	 * Construct this HTTP session scoped provider. Because is not allowed to nest the scoped providers, this factory method
-	 * throws illegal argument if given provisioning binding define a provider that is already a scoped provider.
+	 * Construct this HTTP session scoped provider. Because is not allowed to nest the scoped providers, throws illegal argument
+	 * if given provisioning binding define a provider that is already a scoped provider.
 	 * 
 	 * @param injector parent injector,
 	 * @param provisioningProvider provisioning binding, used for actual instances creation.
@@ -53,11 +53,6 @@ public class SessionScopeProvider<T> extends ScopedProvider<T> {
 
 	@Override
 	public T get() {
-		// SESSION instances are stored on current HTTP session as named attribute value, using instance key
-		// HTTP session is created on the fly if necessary
-		// if HTTP session exists and possesses an attribute with instance key, simply returns stored instance
-		// when HTTP session expires attribute values are removed and SESSION instances are garbage collected
-
 		T instance = getScopeInstance();
 		if (instance == null) {
 			synchronized (this) {

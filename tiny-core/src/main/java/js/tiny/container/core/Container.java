@@ -154,21 +154,25 @@ public class Container implements IContainer, EmbeddedContainer, IManagedLoader 
 	public void close() {
 		log.trace("close()");
 
-		SortedMap<Integer, IManagedClass<?>> managedClasses = new TreeMap<>(Collections.reverseOrder());
-		for (IManagedClass<?> managedClass : this.managedClasses) {
-			javax.annotation.Priority priorityAnnotation = managedClass.scanAnnotation(javax.annotation.Priority.class);
-			int priority = priorityAnnotation != null ? priorityAnnotation.value() : LOW_VALUE.getAndIncrement();
-			managedClasses.put(priority, managedClass);
-		}
-
-		for (IManagedClass<?> managedClass : managedClasses.values()) {
-			Object instance = cdi.getScopeInstance(Singleton.class, managedClass.getInterfaceClass());
-			if (instance != null) {
-				onInstanceOutOfScope(instance);
+		try {
+			SortedMap<Integer, IManagedClass<?>> managedClasses = new TreeMap<>(Collections.reverseOrder());
+			for (IManagedClass<?> managedClass : this.managedClasses) {
+				javax.annotation.Priority priorityAnnotation = managedClass.scanAnnotation(javax.annotation.Priority.class);
+				int priority = priorityAnnotation != null ? priorityAnnotation.value() : LOW_VALUE.getAndIncrement();
+				managedClasses.put(priority, managedClass);
 			}
-		}
 
-		services.forEach(IContainerService::destroy);
+			for (IManagedClass<?> managedClass : managedClasses.values()) {
+				Object instance = cdi.getScopeInstance(Singleton.class, managedClass.getInterfaceClass());
+				if (instance != null) {
+					onInstanceOutOfScope(instance);
+				}
+			}
+
+			services.forEach(IContainerService::destroy);
+		} catch (Throwable t) {
+			log.dump("Fatal error on container destroy:", t);
+		}
 	}
 
 	// --------------------------------------------------------------------------------------------
