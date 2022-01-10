@@ -3,11 +3,13 @@ package js.tiny.container.contextparam;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 
+import js.converter.ConverterRegistry;
 import js.lang.BugError;
 import js.log.Log;
 import js.log.LogFactory;
 import js.tiny.container.spi.IContainer;
 import js.tiny.container.spi.IContainerService;
+import js.util.Classes;
 
 /**
  * Common logic for both static and instance context parameter injection.
@@ -17,6 +19,7 @@ import js.tiny.container.spi.IContainerService;
 abstract class BaseContextParam implements IContainerService {
 	private static final Log log = LogFactory.getLog(BaseContextParam.class);
 
+	private final ConverterRegistry converterRegistry = ConverterRegistry.getInstance();
 	private IContainer container;
 
 	@Override
@@ -42,7 +45,21 @@ abstract class BaseContextParam implements IContainerService {
 		final String contextParameterName = contextParam.name();
 		log.debug("Initialize field |%s| from context parameter |%s|.", field, contextParameterName);
 
-		final Object value = container.getInitParameter(contextParameterName, field.getType());
+		Object value = null;
+		if (converterRegistry.hasClassConverter(field.getType())) {
+			value = container.getInitParameter(contextParameterName, field.getType());
+		}
+
+		if (!contextParam.parser().equals(ContextParam.NullParser.class)) {
+			ContextParam.Parser parser = Classes.newInstance(contextParam.parser());
+			try {
+				value = parser.parse(container.getInitParameter(contextParameterName, String.class));
+			} catch (Exception e) {
+				log.error("Fail to parse context parameter |%s| using |%s|", contextParameterName, contextParam.parser().getCanonicalName());
+				value = null;
+			}
+		}
+
 		if (value == null) {
 			if (contextParam.mandatory()) {
 				throw new RuntimeException(String.format("Missing context parameter |%s| requested by field |%s|.", contextParameterName, field));
@@ -58,5 +75,4 @@ abstract class BaseContextParam implements IContainerService {
 			throw new BugError(e);
 		}
 	}
-
 }

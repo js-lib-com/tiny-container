@@ -52,6 +52,42 @@ public class InstanceContextParamTest {
 		assertThat(instance.field, equalTo("value"));
 	}
 
+	@Test
+	public void GivenCustomParser_WhenPostConstructInstance_ThenFieldInitialized() {
+		// given
+		CustomParserClass instance = new CustomParserClass();
+
+		// when
+		processor.onInstancePostConstruct(instance);
+
+		// then
+		assertThat(instance.field, equalTo("custom"));
+	}
+
+	@Test
+	public void GivenCustomParserFailAndNotMandatory_WhenPostConstructInstance_ThenNullField() {
+		// given
+		CustomParserFailClass instance = new CustomParserFailClass();
+
+		// when
+		processor.onInstancePostConstruct(instance);
+
+		// then
+		assertThat(instance.field, nullValue());
+	}
+
+	@Test(expected = RuntimeException.class)
+	public void MandatoryGivenCustomParserFailAndNotMandatory_WhenPostConstructInstance_ThenException() {
+		// given
+		MandatoryCustomParserFailClass instance = new MandatoryCustomParserFailClass();
+
+		// when
+		processor.onInstancePostConstruct(instance);
+
+		// then
+		assertThat(instance.field, nullValue());
+	}
+
 	@Test(expected = IllegalStateException.class)
 	public void GivenFinalField_WhenPostLoadClass_ThenException() {
 		// given
@@ -103,5 +139,34 @@ public class InstanceContextParamTest {
 	private static class FinalFieldClass {
 		@ContextParam(name = "field")
 		final String field = "final";
+	}
+
+	private static class CustomParser implements ContextParam.Parser {
+		@Override
+		public Object parse(String value) throws Exception {
+			return "custom";
+		}
+	}
+
+	private static class CustomParserClass {
+		@ContextParam(name = "field", parser = CustomParser.class)
+		String field;
+	}
+
+	private static class CustomParserFail implements ContextParam.Parser {
+		@Override
+		public Object parse(String value) throws Exception {
+			throw new Exception("Parse fail.");
+		}
+	}
+
+	private static class CustomParserFailClass {
+		@ContextParam(name = "field", parser = CustomParserFail.class)
+		String field;
+	}
+
+	private static class MandatoryCustomParserFailClass {
+		@ContextParam(name = "field", parser = CustomParserFail.class, mandatory = true)
+		String field;
 	}
 }

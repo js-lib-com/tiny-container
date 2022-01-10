@@ -33,4 +33,16 @@ public @interface ContextParam {
 	 * @return mandatory flag, default to false.
 	 */
 	boolean mandatory() default false;
+
+	Class<? extends Parser> parser() default NullParser.class;
+
+	static interface Parser {
+		Object parse(String value) throws Exception;
+	}
+
+	static class NullParser implements Parser {
+		public Object parse(String value) {
+			return null;
+		}
+	}
 }
