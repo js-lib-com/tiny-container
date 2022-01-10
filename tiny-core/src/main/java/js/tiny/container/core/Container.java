@@ -77,6 +77,8 @@ public class Container implements IContainer, EmbeddedContainer, IManagedLoader 
 
 		bind(IContainer.class).instance(this).build();
 		bind(EmbeddedContainer.class).instance(this).build();
+		bind(ConverterRegistry.class).instance(ConverterRegistry.getInstance()).build();
+		bind(Converter.class).instance(ConverterRegistry.getConverter()).build();
 
 		for (IContainerService service : ServiceLoader.load(IContainerService.class)) {
 			log.debug("Load container service |%s|.", service.getClass());
