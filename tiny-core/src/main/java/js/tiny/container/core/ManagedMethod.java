@@ -16,6 +16,7 @@ import js.tiny.container.spi.IManagedClass;
 import js.tiny.container.spi.IManagedMethod;
 import js.tiny.container.spi.IMethodInvocationProcessor;
 import js.util.Strings;
+import js.util.Types;
 
 /**
  * A managed method, aka business or application method, is a thin wrapper around Java reflective method. It has methods to
@@ -132,6 +133,11 @@ class ManagedMethod implements IManagedMethod, IMethodInvocationProcessor {
 	@Override
 	public boolean isStatic() {
 		return Modifier.isStatic(method.getModifiers());
+	}
+
+	@Override
+	public boolean isVoid() {
+		return Types.isVoid(method.getReturnType());
 	}
 
 	/**

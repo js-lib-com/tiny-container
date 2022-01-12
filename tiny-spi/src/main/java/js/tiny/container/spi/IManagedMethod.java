@@ -55,6 +55,13 @@ public interface IManagedMethod {
 	boolean isStatic();
 
 	/**
+	 * Test if this method has no return value.
+	 * 
+	 * @return true if this method is void.
+	 */
+	boolean isVoid();
+
+	/**
 	 * Gets managed method parameter types. If a formal parameter type is a parameterized type, the {@link Type} object returned
 	 * for it must accurately reflect the actual type parameters used in the source code.
 	 * 
