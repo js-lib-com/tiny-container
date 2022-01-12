@@ -11,25 +11,23 @@ import js.tiny.container.spi.IManagedMethod;
 interface IAsynchronous {
 
 	/**
-	 * Scan for <code>ejb.Asynchronous</code> annotation on given managed method and its declaring managed class. This utility
-	 * method delegates {@link IManagedMethod#scanAnnotation(Class, js.tiny.container.spi.IManagedMethod.Flags...)} with flag
-	 * set to {@link IManagedMethod.Flags#INCLUDE_TYPES} .
+	 * Detect if <code>@Asynchronous</code> annotation is present on managed method or its declaring class. This utility method
+	 * delegates {@link IManagedMethod#scanAnnotation(Class, js.tiny.container.spi.IManagedMethod.Flags...)} with flag set to
+	 * {@link IManagedMethod.Flags#INCLUDE_TYPES} .
 	 * 
 	 * @param managedMethod managed method to scan.
-	 * @return asynchronous meta interface.
+	 * @return true if <code>@Asynchronous</code> annotation is present on managed method or its declaring class.
 	 */
-	static IAsynchronous scan(IManagedMethod managedMethod) {
+	static boolean isAnnotationPresent(IManagedMethod managedMethod) {
 		if (managedMethod.scanAnnotation(jakarta.ejb.Asynchronous.class, IManagedMethod.Flags.INCLUDE_TYPES) != null) {
-			return new IAsynchronous() {
-			};
+			return true;
 		}
 
 		if (managedMethod.scanAnnotation(javax.ejb.Asynchronous.class, IManagedMethod.Flags.INCLUDE_TYPES) != null) {
-			return new IAsynchronous() {
-			};
+			return true;
 		}
 
-		return null;
+		return false;
 	}
 
 }
