@@ -9,6 +9,7 @@ import js.log.Log;
 import js.log.LogFactory;
 import js.tiny.container.spi.IContainer;
 import js.tiny.container.spi.IContainerService;
+import js.tiny.container.spi.ServiceConfigurationException;
 import js.util.Classes;
 
 /**
@@ -37,7 +38,7 @@ abstract class BaseContextParam implements IContainerService {
 	 */
 	protected void setField(Field field, Object instance) {
 		if (Modifier.isFinal(field.getModifiers())) {
-			throw new IllegalStateException(String.format("Attempt to initialize final field |%s|.", field));
+			throw new ServiceConfigurationException("Attempt to initialize final field |%s|.", field);
 		}
 
 		ContextParam contextParam = field.getAnnotation(ContextParam.class);
@@ -62,7 +63,7 @@ abstract class BaseContextParam implements IContainerService {
 
 		if (value == null) {
 			if (contextParam.mandatory()) {
-				throw new RuntimeException(String.format("Missing context parameter |%s| requested by field |%s|.", contextParameterName, field));
+				throw new NoContextParamException("Missing context parameter |%s| requested by field |%s|.", contextParameterName, field);
 			}
 			log.warn("Field |%s| has no context parameter. Leave it unchanged.", field);
 			return;

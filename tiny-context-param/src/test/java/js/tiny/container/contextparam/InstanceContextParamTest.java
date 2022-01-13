@@ -13,6 +13,7 @@ import org.mockito.junit.MockitoJUnitRunner;
 
 import js.tiny.container.spi.IContainer;
 import js.tiny.container.spi.IInstancePostConstructProcessor.Priority;
+import js.tiny.container.spi.ServiceConfigurationException;
 
 @RunWith(MockitoJUnitRunner.class)
 public class InstanceContextParamTest {
@@ -88,7 +89,7 @@ public class InstanceContextParamTest {
 		assertThat(instance.field, nullValue());
 	}
 
-	@Test(expected = IllegalStateException.class)
+	@Test(expected = ServiceConfigurationException.class)
 	public void GivenFinalField_WhenPostLoadClass_ThenException() {
 		// given
 		FinalFieldClass instance = new FinalFieldClass();
@@ -112,7 +113,7 @@ public class InstanceContextParamTest {
 		assertThat(instance.field, nullValue());
 	}
 
-	@Test(expected = RuntimeException.class)
+	@Test(expected = NoContextParamException.class)
 	public void GivenMissingMandatoryField_WhenPostConstructInstance_ThenException() {
 		// given
 		when(container.getInitParameter("field", String.class)).thenReturn(null);
