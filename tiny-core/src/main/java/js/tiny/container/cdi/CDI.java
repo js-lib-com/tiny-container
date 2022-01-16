@@ -1,6 +1,7 @@
 package js.tiny.container.cdi;
 
 import java.lang.annotation.Annotation;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -107,18 +108,13 @@ public class CDI implements IProvisionListener {
 		return configure(new ConfigModule(config));
 	}
 
-	public List<IClassBinding<?>> configure(Object... arguments) {
-		log.trace("configure(Object...)");
+	public List<IClassBinding<?>> configure(IModule... modules) {
+		log.trace("configure(IModule...)");
 
 		ManagedModule managedModule = new ManagedModule(injector, managedLoader);
 		managedModule.addModule(staticModule);
 		managedModule.addModule(parametersModule);
-		for (Object argument : arguments) {
-			if (!(argument instanceof IModule)) {
-				throw new IllegalArgumentException("Invalid module type " + argument.getClass());
-			}
-			managedModule.addModule((IModule) argument);
-		}
+		Arrays.stream(modules).forEach(managedModule::addModule);
 
 		injector.configure(managedModule);
 		configured.set(true);

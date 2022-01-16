@@ -3,6 +3,7 @@ package js.tiny.container.core;
 import js.embedded.container.EmbeddedContainer;
 import js.embedded.container.EmbeddedContainerException;
 import js.embedded.container.EmbeddedContainerProvider;
+import js.injector.IModule;
 import js.lang.Config;
 import js.lang.ConfigBuilder;
 import js.lang.ConfigException;
@@ -37,9 +38,13 @@ public class Bootstrap implements EmbeddedContainerProvider {
 		} else if (arguments.length == 1 && arguments[0] instanceof Config) {
 			container.configure((Config) arguments[0]);
 		} else {
-			container.configure(arguments);
+			IModule[] modules = new IModule[arguments.length];
+			for (int i = 0; i < arguments.length; ++i) {
+				modules[i] = (IModule) arguments[i];
+			}
+			container.configure(modules);
 		}
-		
+
 		Factory.bind(container);
 		container.start();
 	}

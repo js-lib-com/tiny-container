@@ -20,6 +20,7 @@ import js.converter.Converter;
 import js.converter.ConverterRegistry;
 import js.embedded.container.EmbeddedContainer;
 import js.injector.IBindingBuilder;
+import js.injector.IModule;
 import js.injector.IScopeFactory;
 import js.injector.ProvisionException;
 import js.lang.Config;
@@ -113,7 +114,7 @@ public class Container implements IContainer, EmbeddedContainer, IManagedLoader 
 		}
 	}
 
-	public void configure(Object... modules) {
+	public void configure(IModule... modules) {
 		log.trace("configure(Object...)");
 		services.forEach(service -> service.configure(this));
 		create(cdi.configure(modules));
