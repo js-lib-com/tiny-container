@@ -34,6 +34,7 @@
 		<module>tiny-context-param</module>
 		<module>tiny-security</module>
 		<module>tiny-mvc</module>
+		<module>tiny-http-rmi</module>
 		<module>tiny-rest</module>
 		<module>tiny-transaction</module>
 		<module>tiny-perfmon</module>

@@ -1,4 +1,4 @@
-package js.tiny.container.net.unit;
+package js.tiny.container.net;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
@@ -20,7 +20,6 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
 import js.lang.InvocationException;
-import js.tiny.container.net.HttpRmiServlet;
 import js.tiny.container.servlet.AppServlet;
 import js.tiny.container.servlet.ITinyContainer;
 import js.tiny.container.servlet.RequestContext;

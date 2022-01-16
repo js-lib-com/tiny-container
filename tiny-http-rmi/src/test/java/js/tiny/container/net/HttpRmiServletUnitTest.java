@@ -1,4 +1,4 @@
-package js.tiny.container.net.unit;
+package js.tiny.container.net;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -17,7 +17,6 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
 import js.tiny.container.http.Resource;
-import js.tiny.container.net.HttpRmiServlet;
 import js.tiny.container.spi.IContainer;
 import js.tiny.container.spi.IManagedClass;
 import js.tiny.container.spi.IManagedMethod;
