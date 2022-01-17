@@ -5,7 +5,7 @@
 		<artifactId>tiny-container</artifactId>
 		<version>${revision}</version>
 	</parent>
-	<artifactId>tiny-web</artifactId>
+	<artifactId>tiny-servlet</artifactId>
 
 	<dependencies>
 		<dependency>
