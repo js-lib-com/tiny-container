@@ -36,6 +36,7 @@
 		<module>tiny-mvc</module>
 		<module>tiny-http-rmi</module>
 		<module>tiny-rest</module>
+		<module>tiny-event-stream</module>
 		<module>tiny-transaction</module>
 		<module>tiny-perfmon</module>
 		<module>tiny-async</module>

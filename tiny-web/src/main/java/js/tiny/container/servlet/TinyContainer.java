@@ -19,7 +19,6 @@ import javax.servlet.http.HttpSessionEvent;
 import javax.servlet.http.HttpSessionListener;
 
 import jakarta.enterprise.context.SessionScoped;
-import jakarta.inject.Singleton;
 import jakarta.ws.rs.core.SecurityContext;
 import js.lang.BugError;
 import js.lang.Config;
@@ -33,8 +32,6 @@ import js.tiny.container.cdi.CDI;
 import js.tiny.container.cdi.IClassBinding;
 import js.tiny.container.core.Bootstrap;
 import js.tiny.container.core.Container;
-import js.tiny.container.net.EventStreamManager;
-import js.tiny.container.net.EventStreamManagerImpl;
 import js.tiny.container.spi.ISecurityContext;
 import js.util.Classes;
 import js.util.Strings;
@@ -173,7 +170,6 @@ public class TinyContainer extends Container implements ServletContextListener, 
 
 		bind(HttpServletRequest.class).provider(new HttpRequestProvider()).build();
 		bind(RequestContext.class).build();
-		bind(EventStreamManager.class).to(EventStreamManagerImpl.class).in(Singleton.class).build();
 
 		bindScope(jakarta.enterprise.context.RequestScoped.class, new RequestScopeProvider.Factory<>());
 		bindScope(jakarta.enterprise.context.SessionScoped.class, new SessionScopeProvider.Factory<>());
