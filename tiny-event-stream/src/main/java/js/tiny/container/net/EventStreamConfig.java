@@ -8,7 +8,6 @@ package js.tiny.container.net;
  * {@link EventStream#config(EventStreamConfig)}.
  * 
  * @author Iulian Rotaru
- * @version final
  */
 public class EventStreamConfig {
 	/** Event stream keep alive period, in milliseconds or zero if to use server default value. */

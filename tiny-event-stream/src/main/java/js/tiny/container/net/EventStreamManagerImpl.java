@@ -1,7 +1,6 @@
 package js.tiny.container.net;
 
 import java.security.Principal;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -29,7 +28,7 @@ import js.tiny.container.spi.IContainer;
  * 
  * <pre>
  * // on client, event stream manager is declared as remote managed class
- * EventStreamManager eventStreamManager = factory.getInstance(EventStreamManager.class);
+ * EventStreamManager eventStreamManager = container.getInstance(EventStreamManager.class);
  * 
  * EventStreamConfig config = new EventStreamConfig();
  * config.setKeepAlivePeriod(KEEP_ALIVE_PERIOD);
@@ -52,9 +51,8 @@ import js.tiny.container.spi.IContainer;
  * </pre>
  * 
  * @author Iulian Rotaru
- * @version final
  */
-public class EventStreamManagerImpl implements EventStreamManager {
+class EventStreamManagerImpl implements EventStreamManager {
 	private static final Log log = LogFactory.getLog(EventStreamManagerImpl.class);
 
 	/** Parent container back reference. */
@@ -155,13 +153,6 @@ public class EventStreamManagerImpl implements EventStreamManager {
 			if (eventStream != null) {
 				eventStream.push(event);
 			}
-		}
-	}
-
-	@Override
-	public void push(Collection<? extends Principal> principals, Event event) {
-		for (Principal principal : principals) {
-			push(principal, event);
 		}
 	}
 }

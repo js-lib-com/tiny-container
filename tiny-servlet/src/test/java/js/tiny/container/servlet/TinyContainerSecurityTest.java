@@ -123,16 +123,17 @@ public class TinyContainerSecurityTest {
 		verify(security, times(1)).getUserPrincipal();
 	}
 
-	@Test(expected = IllegalStateException.class)
-	public void GivenMissingSecurityProvider_WhenGetUserPrincipal_ThenException() {
+	@Test
+	public void GivenMissingSecurityProvider_WhenGetUserPrincipal_ThenNull() {
 		// given
 		when(cdi.getInstance(ISecurityContext.class)).thenReturn(null);
 		container.create(Collections.emptyList());
 
 		// when
-		container.getUserPrincipal();
+		Principal userPrincipal = container.getUserPrincipal();
 		
 		// then
+		assertThat(userPrincipal, nullValue());
 	}
 
 	@Test

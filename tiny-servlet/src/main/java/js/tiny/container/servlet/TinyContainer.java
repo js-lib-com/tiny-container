@@ -341,10 +341,7 @@ public class TinyContainer extends Container implements ServletContextListener, 
 
 	@Override
 	public Principal getUserPrincipal() {
-		if (security == null) {
-			throw new IllegalStateException("Missing security provider.");
-		}
-		return security.getUserPrincipal();
+		return security != null? security.getUserPrincipal(): null;
 	}
 
 	@Override

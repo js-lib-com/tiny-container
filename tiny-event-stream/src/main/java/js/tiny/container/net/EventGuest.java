@@ -7,7 +7,6 @@ import java.util.concurrent.atomic.AtomicInteger;
  * Guest user for public event streams.
  * 
  * @author Iulian Rotaru
- * @version final
  */
 public final class EventGuest implements Principal {
 	/** Guest user should have unique name. This is the seed for incremental names. */

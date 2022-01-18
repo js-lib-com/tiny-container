@@ -1,13 +1,12 @@
 package js.tiny.container.net;
 
 import java.security.Principal;
-import java.util.Collection;
-import java.util.List;
 
 import javax.inject.Inject;
 
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.ws.rs.core.SecurityContext;
 import js.lang.Event;
-import js.tiny.container.spi.ISecurityContext;
 
 /**
  * Event stream manager facilitates server event push to connected clients. There are two events pushing scenarios: on security
@@ -32,9 +31,8 @@ import js.tiny.container.spi.ISecurityContext;
  * }
  * </pre>
  * <p>
- * For authenticated contexts uses {@link #push(Principal, Event)} to send event to a specific user or use
- * {@link #push(List, Event)} if in need to send the same event to multiple users. One can get authenticated user principal from
- * {@link ISecurityContext}, see sample code.
+ * For authenticated contexts uses {@link #push(Principal, Event)} to send event to a specific user. One can get authenticated
+ * user principal from {@link SecurityContext}, see sample code.
  * 
  * <pre>
  * public class Service {
@@ -58,6 +56,7 @@ import js.tiny.container.spi.ISecurityContext;
  * 
  * @author Iulian Rotaru
  */
+@ApplicationScoped
 public interface EventStreamManager {
 
 	/**
@@ -98,13 +97,5 @@ public interface EventStreamManager {
 	 * @param event event to push.
 	 */
 	void push(Principal principal, Event event);
-
-	/**
-	 * Convenient method to push the same event to a group of users. Event sending order is given collection iterator order.
-	 * 
-	 * @param principals users group,
-	 * @param event event to push.
-	 */
-	void push(Collection<? extends Principal> principals, Event event);
 
 }

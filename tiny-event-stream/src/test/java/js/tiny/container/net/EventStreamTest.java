@@ -1,4 +1,4 @@
-package js.tiny.container.net.unit;
+package js.tiny.container.net;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
@@ -34,8 +34,6 @@ import org.mockito.stubbing.Stubber;
 import js.json.Json;
 import js.lang.BugError;
 import js.lang.Event;
-import js.tiny.container.net.EventStream;
-import js.tiny.container.net.EventStreamConfig;
 import js.util.Classes;
 
 @RunWith(MockitoJUnitRunner.class)

@@ -1,4 +1,4 @@
-package js.tiny.container.net.unit;
+package js.tiny.container.net;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.instanceOf;
@@ -21,31 +21,31 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
-import js.tiny.container.net.EventGuest;
-import js.tiny.container.net.EventStream;
-import js.tiny.container.net.EventStreamConfig;
-import js.tiny.container.net.EventStreamManager;
-import js.tiny.container.net.EventStreamManagerImpl;
+import js.lang.Event;
 import js.tiny.container.spi.IContainer;
 
 @RunWith(MockitoJUnitRunner.class)
-public class EventStreamManagerSPITest {
+public class EventStreamManagerTest {
 	@Mock
 	private IContainer container;
 	@Mock
-	private Map<Principal, EventStream> eventsMap;
-	@Mock
-	private List<EventStream> eventsList;
+	private Map<Principal, EventStream> eventStreams;
 	@Mock
 	private EventStream eventStream;
 	@Mock
-	private EventStreamConfig config;
+	EventStreamConfig config;
+	@Mock
+	private Principal user;
+	@Mock
+	private Event event;
+	@Mock
+	private List<EventStream> eventsList;
 
 	private EventStreamManager manager;
 
 	@Before
 	public void beforeTest() {
-		manager = new EventStreamManagerImpl(container, eventsMap);
+		manager = new EventStreamManagerImpl(container, eventStreams);
 	}
 
 	@Test
@@ -57,7 +57,7 @@ public class EventStreamManagerSPITest {
 		verify(eventStream, times(0)).config(any(EventStreamConfig.class));
 
 		ArgumentCaptor<Principal> principalCaptor = ArgumentCaptor.forClass(Principal.class);
-		verify(eventsMap, times(1)).put(principalCaptor.capture(), eq(eventStream));
+		verify(eventStreams, times(1)).put(principalCaptor.capture(), eq(eventStream));
 
 		assertThat(principalCaptor.getValue(), notNullValue());
 		assertThat(principalCaptor.getValue(), instanceOf(EventGuest.class));
@@ -78,7 +78,7 @@ public class EventStreamManagerSPITest {
 		verify(eventStream, times(0)).config(any(EventStreamConfig.class));
 
 		ArgumentCaptor<Principal> principalCaptor = ArgumentCaptor.forClass(Principal.class);
-		verify(eventsMap, times(1)).put(principalCaptor.capture(), eq(eventStream));
+		verify(eventStreams, times(1)).put(principalCaptor.capture(), eq(eventStream));
 
 		assertThat(principalCaptor.getValue(), notNullValue());
 		assertThat(principalCaptor.getValue(), instanceOf(User.class));
@@ -93,7 +93,7 @@ public class EventStreamManagerSPITest {
 		verify(eventStream, times(1)).config(any(EventStreamConfig.class));
 
 		ArgumentCaptor<Principal> principalCaptor = ArgumentCaptor.forClass(Principal.class);
-		verify(eventsMap, times(1)).put(principalCaptor.capture(), eq(eventStream));
+		verify(eventStreams, times(1)).put(principalCaptor.capture(), eq(eventStream));
 
 		assertThat(principalCaptor.getValue(), notNullValue());
 		assertThat(principalCaptor.getValue(), instanceOf(EventGuest.class));
@@ -101,16 +101,30 @@ public class EventStreamManagerSPITest {
 
 	@Test
 	public void destroyEventStream() {
-		when(eventsMap.values()).thenReturn(eventsList);
+		when(eventStreams.values()).thenReturn(eventsList);
 		manager.destroyEventStream(eventStream);
 		verify(eventsList, times(1)).remove(eventStream);
 	}
 
 	@Test
 	public void preDestroy() {
-		when(eventsMap.size()).thenReturn(1);
-		when(eventsMap.values()).thenReturn(Arrays.asList(eventStream));
+		when(eventStreams.size()).thenReturn(1);
+		when(eventStreams.values()).thenReturn(Arrays.asList(eventStream));
 		((EventStreamManagerImpl) manager).preDestroy();
 		verify(eventStream, times(1)).close();
+	}
+
+	@Test
+	public void push() {
+		when(eventStreams.values()).thenReturn(Arrays.asList(eventStream));
+		manager.push(event);
+		verify(eventStream, times(1)).push(event);
+	}
+
+	@Test
+	public void push_Principal() {
+		when(eventStreams.get(user)).thenReturn(eventStream);
+		manager.push(user, event);
+		verify(eventStream, times(1)).push(event);
 	}
 }

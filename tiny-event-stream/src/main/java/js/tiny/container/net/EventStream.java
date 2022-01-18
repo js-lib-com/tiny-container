@@ -8,8 +8,6 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import javax.inject.Inject;
-
 import js.json.Json;
 import js.lang.BugError;
 import js.lang.Event;
@@ -24,13 +22,13 @@ import js.util.Strings;
  * events stream manager to create an instance of this class for every event stream request and block on it while
  * {@link #loop()} returns true.
  * <p>
- * Instances of this class are created by {@link EventStreamManagerImpl} via {@link EventStreamManagerSPI} interface. Usually
+ * Instances of this class are created by {@link EventStreamManagerImpl} via {@link EventStreamManager} interface. Usually
  * this class if not used by user space code but there is no formal restriction in extending it with custom functionality. If
- * this is the case, do not forget to declare this managed class on application descriptor.
+ * this is the case, do not forget to declare injector bindings.
  * 
  * <pre>
- *  &lt;managed-classes&gt;
- *      &lt;event-stream class="AppEventStream" interface="js.net.EventStream" /&gt;
+ *  &lt;app&gt;
+ *      &lt;binding bind="js.tiny.container.net.EventStream" to="AppEventStream" /&gt;
  *      ...
  * </pre>
  * <p>
@@ -65,10 +63,8 @@ import js.util.Strings;
  * client side has the chance to quickly know that event stream is properly initialized.
  * 
  * @author Iulian Rotaru
- * @version final
  */
 public class EventStream implements Closeable {
-	/** Class logger. */
 	private static final Log log = LogFactory.getLog(EventStream.class);
 
 	/** Events queue timeout used to guard queue offer operation, in milliseconds. */
@@ -86,7 +82,6 @@ public class EventStream implements Closeable {
 	 */
 	private static int STREAM_ID;
 
-	/** JSON serializer. */
 	private final JsonSerializer json;
 
 	/** Flag indicating this event stream instance is active. */
@@ -128,23 +123,12 @@ public class EventStream implements Closeable {
 	 * Now, some considerations about keep alive packages bandwidth consumption. Keep alive event data length is about 40 bytes.
 	 * With current 40 seconds period results in exactly one byte per second, a perfectly acceptable overload. And even if
 	 * include TCP/IP headers and acknowledge packet bandwidth consumption will not exceed 3 B/s.
-	 * <p>
-	 * Finally, events stream implementation is a managed class and this keep alive timeout value is customizable per server,
-	 * like in sample code below.
-	 * 
-	 * <pre>
-	 *    &lt;events-stream&gt;
-	 *        &lt;static-field name="KEEP_ALIVE_TIMEOUT" value="30000" /&gt;
-	 *    &lt;/events-stream&gt;
-	 * </pre>
 	 */
 	private int keepAlivePeriod = KEEP_ALIVE_TIMEOUT;
 
 	/** This events stream string representation used mostly for debugging. */
 	private String string;
 
-	/** Default constructor. */
-	@Inject
 	public EventStream() {
 		log.trace("EventStream()");
 		this.json = new JsonSerializer(Classes.loadService(Json.class));
@@ -155,12 +139,13 @@ public class EventStream implements Closeable {
 
 	/**
 	 * Test constructor.
-	 * 
+	 *
+	 * @param json mock for JSON implementation, 
 	 * @param eventsQueue mock events queue,
 	 * @param active flag for initialization of internal active state.
 	 */
 	public EventStream(Json json, BlockingQueue<Event> eventsQueue, boolean active) {
-		log.trace("EventStream(BlockingQueue<Event>,boolean)");
+		log.trace("EventStream(Json, BlockingQueue<Event>, boolean)");
 		this.json = new JsonSerializer(json);
 		this.eventsQueue = eventsQueue;
 		this.active = new AtomicBoolean(active);
@@ -268,11 +253,6 @@ public class EventStream implements Closeable {
 		log.debug("Event stream |%s| was closed.", this);
 	}
 
-	/**
-	 * Get event stream instance string representation.
-	 * 
-	 * @return this event stream instance string representation.
-	 */
 	@Override
 	public String toString() {
 		return string;
@@ -398,7 +378,6 @@ public class EventStream implements Closeable {
 	 * exceptions.
 	 * 
 	 * @author Iulian Rotaru
-	 * @version final
 	 */
 	private static final class JsonSerializer {
 		/** JSON service implementation. */
@@ -435,7 +414,6 @@ public class EventStream implements Closeable {
 	 * events stream {@link EventStream#loop() loop} is stopped and {@link EventStreamServlet} is released.
 	 * 
 	 * @author Iulian Rotaru
-	 * @version final
 	 */
 	public static final class ShutdownEvent implements Event {
 	}

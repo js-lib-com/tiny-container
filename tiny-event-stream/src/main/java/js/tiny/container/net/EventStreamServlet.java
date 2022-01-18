@@ -28,19 +28,15 @@ import js.util.Classes;
  * number of concurrent events streams due to limited execution threads and sockets usable by a process.
  * 
  * @author Iulian Rotaru
- * @version final
  */
 public class EventStreamServlet extends AppServlet {
-	/** Java serialization version. */
 	private static final long serialVersionUID = 1856456540830763376L;
 
-	/** Class logger. */
 	private static final Log log = LogFactory.getLog(EventStreamServlet.class);
 
 	/** Event stream manager reference. It is a managed instance with application scope. */
 	private EventStreamManager eventStreamManager;
 
-	/** Default constructor. */
 	public EventStreamServlet() {
 		log.trace("EventStreamServlet()");
 	}
@@ -107,8 +103,6 @@ public class EventStreamServlet extends AppServlet {
 			eventStreamManager.destroyEventStream(eventStream);
 		}
 	}
-
-	// --------------------------------------------------------------------------------------------
 
 	private static EventStreamConfig getEventStreamConfig(HttpServletRequest request) throws JsonException, ClassCastException, IOException {
 		// getContentLength() returns -1 if Content-Length header is not set 
