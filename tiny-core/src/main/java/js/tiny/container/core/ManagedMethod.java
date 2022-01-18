@@ -136,6 +136,11 @@ class ManagedMethod implements IManagedMethod, IMethodInvocationProcessor {
 	}
 
 	@Override
+	public boolean isFinal() {
+		return Modifier.isFinal(method.getModifiers());
+	}
+
+	@Override
 	public boolean isVoid() {
 		return Types.isVoid(method.getReturnType());
 	}

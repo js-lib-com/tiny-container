@@ -14,6 +14,7 @@ import js.log.LogFactory;
 import js.tiny.container.spi.IInstancePostConstructProcessor;
 import js.tiny.container.spi.IManagedClass;
 import js.tiny.container.spi.IManagedMethod;
+import js.tiny.container.spi.ServiceConfigurationException;
 import js.util.Params;
 
 public class CalendarTimerService implements IInstancePostConstructProcessor {
@@ -48,6 +49,7 @@ public class CalendarTimerService implements IInstancePostConstructProcessor {
 		managedClass.getManagedMethods().forEach(managedMethod -> {
 			ISchedule schedule = ISchedule.scan(managedMethod);
 			if (schedule != null) {
+				sanityCheck(managedMethod);
 				timers.add(managedMethod);
 				methodSchedules.put(managedMethod, schedule);
 			}
@@ -59,6 +61,21 @@ public class CalendarTimerService implements IInstancePostConstructProcessor {
 
 		classTimers.put(managedClass.getImplementationClass(), timers);
 		return true;
+	}
+
+	private static void sanityCheck(IManagedMethod managedMethod) {
+		if (managedMethod.isStatic()) {
+			throw new ServiceConfigurationException("Timeout callback method |%s| must not be static.", managedMethod);
+		}
+		if (managedMethod.isFinal()) {
+			throw new ServiceConfigurationException("Timeout callback method |%s| must not be final.", managedMethod);
+		}
+		if (!managedMethod.isVoid()) {
+			throw new ServiceConfigurationException("Timeout callback method |%s| must be void.", managedMethod);
+		}
+		if(managedMethod.getExceptionTypes().length > 0) {
+			throw new ServiceConfigurationException("Timeout callback method |%s| must not throw checked exceptions.", managedMethod);
+		}
 	}
 
 	// TODO: use onInstancePreDestroy to purge instance related timer(s)
