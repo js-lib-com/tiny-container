@@ -55,6 +55,13 @@ public interface IManagedMethod {
 	boolean isStatic();
 
 	/**
+	 * Test if this method is final.
+	 * 
+	 * @return true if this method is final.
+	 */
+	boolean isFinal();
+
+	/**
 	 * Test if this method has no return value.
 	 * 
 	 * @return true if this method is void.

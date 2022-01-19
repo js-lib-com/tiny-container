@@ -2,6 +2,7 @@ package js.tiny.container.transaction;
 
 import javax.annotation.PreDestroy;
 
+import jakarta.inject.Inject;
 import js.lang.BugError;
 import js.log.Log;
 import js.log.LogFactory;
@@ -47,6 +48,7 @@ final class TransactionalResource implements ITransactionalResource {
 	 * 
 	 * @param appFactory application factory.
 	 */
+	@Inject
 	public TransactionalResource(IContainer container) {
 		log.trace("TransactionalResource(IContainer)");
 		this.transactionManager = container.getOptionalInstance(TransactionManager.class);

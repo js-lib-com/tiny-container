@@ -23,12 +23,13 @@ class TimerTask implements Runnable {
 		log.debug("Execute timer method |%s|.", managedMethod);
 		try {
 			managedMethod.invoke(instance);
-			long delay = service.computeDelay(managedMethod);
-			if (delay > 0) {
-				service.schedule(this, delay);
-			}
 		} catch (Throwable t) {
 			log.dump(String.format("Fail on timer method |%s|: ", managedMethod), t);
+		}
+
+		long delay = service.computeDelay(managedMethod);
+		if (delay > 0) {
+			service.schedule(this, delay);
 		}
 		log.debug("Close timer method |%s|.", managedMethod);
 	}

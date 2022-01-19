@@ -30,11 +30,13 @@
 	<modules>
 		<module>tiny-spi</module>
 		<module>tiny-core</module>
-		<module>tiny-web</module>
+		<module>tiny-servlet</module>
 		<module>tiny-context-param</module>
 		<module>tiny-security</module>
 		<module>tiny-mvc</module>
+		<module>tiny-http-rmi</module>
 		<module>tiny-rest</module>
+		<module>tiny-event-stream</module>
 		<module>tiny-transaction</module>
 		<module>tiny-perfmon</module>
 		<module>tiny-async</module>

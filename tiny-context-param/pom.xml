@@ -10,7 +10,7 @@
 	<dependencies>
 		<dependency>
 			<groupId>com.js-lib</groupId>
-			<artifactId>tiny-web</artifactId>
+			<artifactId>tiny-servlet</artifactId>
 			<version>${revision}</version>
 		</dependency>
 	</dependencies>

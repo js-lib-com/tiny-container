@@ -2,6 +2,11 @@ package js.tiny.container.spi;
 
 import jakarta.ejb.EJBException;
 
+/**
+ * Runtime exception thrown if a container service configuration fails, usually because specifications constrains not respected.
+ * 
+ * @author Iulian Rotaru
+ */
 public class ServiceConfigurationException extends EJBException {
 	private static final long serialVersionUID = 3208319255630034338L;
 

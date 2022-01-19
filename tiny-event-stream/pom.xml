@@ -5,7 +5,7 @@
 		<artifactId>tiny-container</artifactId>
 		<version>${revision}</version>
 	</parent>
-	<artifactId>tiny-security</artifactId>
+	<artifactId>tiny-event-stream</artifactId>
 
 	<dependencies>
 		<dependency>
