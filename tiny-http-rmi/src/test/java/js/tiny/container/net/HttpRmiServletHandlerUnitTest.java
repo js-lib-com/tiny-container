@@ -9,6 +9,7 @@ import static org.mockito.Mockito.when;
 import java.lang.reflect.Type;
 import java.util.Collections;
 
+import javax.servlet.ServletContext;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -21,11 +22,11 @@ import org.mockito.junit.MockitoJUnitRunner;
 
 import js.lang.InvocationException;
 import js.tiny.container.servlet.AppServlet;
-import js.tiny.container.servlet.ITinyContainer;
 import js.tiny.container.servlet.RequestContext;
 import js.tiny.container.spi.AuthorizationException;
 import js.tiny.container.spi.IManagedClass;
 import js.tiny.container.spi.IManagedMethod;
+import js.tiny.container.spi.ITinyContainer;
 import js.util.Classes;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -37,6 +38,8 @@ public class HttpRmiServletHandlerUnitTest {
 	@Mock
 	private IManagedMethod managedMethod;
 	
+	@Mock
+	private ServletContext servletContext;
 	@Mock
 	private HttpServletRequest httpRequest;
 	@Mock
@@ -55,6 +58,7 @@ public class HttpRmiServletHandlerUnitTest {
 		when(managedMethod.getParameterTypes()).thenReturn(new Type[0]);
 		when(managedMethod.invoke(any(), any())).thenReturn("string value");
 		
+		when(httpRequest.getServletContext()).thenReturn(servletContext);
 		when(httpRequest.getRequestURI()).thenReturn("/test-app/java/lang/Object/toString");
 		when(httpRequest.getContextPath()).thenReturn("/test-app");
 		when(httpRequest.getHeaderNames()).thenReturn(Collections.emptyEnumeration());

@@ -99,7 +99,7 @@ public class HttpRmiServletUnitTest {
 
 	@Test(expected = NoSuchMethodException.class)
 	public void getManagedMethod_NoManagedMethod() throws Exception {
-		when(managedClass.getManagedMethod(any())).thenThrow(NoSuchMethodException.class);
+		when(managedClass.getManagedMethod(any())).thenReturn(null);
 		getManagedMethod(managedClass, "toString", "/java/lang/Object/toString");
 	}
 

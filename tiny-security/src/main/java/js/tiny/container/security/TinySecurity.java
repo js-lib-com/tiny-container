@@ -3,11 +3,13 @@ package js.tiny.container.security;
 import java.io.IOException;
 import java.security.Principal;
 
+import javax.enterprise.context.ContextNotActiveException;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
+import jakarta.ws.rs.core.SecurityContext;
 import js.lang.BugError;
 import js.lang.RolesPrincipal;
 import js.log.Log;
@@ -194,5 +196,48 @@ class TinySecurity implements ISecurityContext {
 	@Override
 	public boolean isAuthenticated() {
 		return getUserPrincipal() != null;
+	}
+
+	@Override
+	public boolean isUserInRole(String role) {
+		return isAuthorized(role);
+	}
+
+	@Override
+	public boolean isSecure() {
+		try {
+			final HttpServletRequest request = container.getInstance(HttpServletRequest.class);
+			return request.isSecure();
+		} catch (ContextNotActiveException e) {
+			throw new IllegalStateException(e.getMessage());
+		}
+	}
+
+	@Override
+	public String getAuthenticationScheme() {
+		HttpServletRequest httpRequest = null;
+		try {
+			httpRequest = container.getInstance(HttpServletRequest.class);
+		} catch (ContextNotActiveException e) {
+			throw new IllegalStateException(e.getMessage());
+		}
+		if (httpRequest == null || httpRequest.getAuthType() == null) {
+			return null;
+		}
+
+		switch (httpRequest.getAuthType()) {
+		case HttpServletRequest.BASIC_AUTH:
+			return SecurityContext.BASIC_AUTH;
+
+		case HttpServletRequest.CLIENT_CERT_AUTH:
+			return SecurityContext.CLIENT_CERT_AUTH;
+
+		case HttpServletRequest.DIGEST_AUTH:
+			return SecurityContext.DIGEST_AUTH;
+
+		case HttpServletRequest.FORM_AUTH:
+			return SecurityContext.FORM_AUTH;
+		}
+		return null;
 	}
 }

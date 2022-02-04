@@ -2,6 +2,7 @@ package js.tiny.container.spi;
 
 import java.security.Principal;
 
+import jakarta.ws.rs.core.SecurityContext;
 import js.lang.BugError;
 
 /**
@@ -20,7 +21,7 @@ import js.lang.BugError;
  * 
  * @author Iulian Rotaru
  */
-public interface ISecurityContext {
+public interface ISecurityContext extends SecurityContext {
 	/**
 	 * Authenticates the provided username and password and binds the authenticated principal to this security context. Use this
 	 * login variant when authentication is provided by servlet container. Implementation should delegate servlet container

@@ -15,6 +15,7 @@ import js.converter.ConverterRegistry;
 import js.lang.BugError;
 import js.log.Log;
 import js.log.LogFactory;
+import js.tiny.container.spi.IContainer;
 
 /**
  * Request context stored on current HTTP servlet request thread. This class allows access to container public services and to
@@ -34,7 +35,7 @@ public class RequestContext {
 
 	private final Converter converter;
 
-	private final ITinyContainer container;
+	private final IContainer container;
 
 	/**
 	 * Original, not pre-processed by {@link RequestPreprocessor} request URI including query string, if any. This value is
@@ -76,7 +77,7 @@ public class RequestContext {
 	 * @param container parent container.
 	 */
 	@Inject
-	public RequestContext(ITinyContainer container) {
+	public RequestContext(IContainer container) {
 		this.converter = ConverterRegistry.getConverter();
 		this.container = container;
 	}
@@ -87,7 +88,7 @@ public class RequestContext {
 	 * @return parent container.
 	 * @see #container
 	 */
-	public ITinyContainer getContainer() {
+	public IContainer getContainer() {
 		return container;
 	}
 

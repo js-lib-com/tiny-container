@@ -1,7 +1,6 @@
 package js.tiny.container.servlet;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.mockito.Mockito.when;
 
@@ -75,19 +74,6 @@ public class TinyContainerUnitTest {
 	@After
 	public void afterTest() {
 		container.close();
-	}
-
-	@Test
-	public void GivenContextPath_WhenGetAppName_ThenContextName() throws ConfigException {
-		// given
-		container.contextInitialized(contextEvent);
-
-		// when
-		String appName = container.getAppName();
-
-		// then
-		assertThat(appName, notNullValue());
-		assertThat(appName, equalTo("test"));
 	}
 
 	@Test

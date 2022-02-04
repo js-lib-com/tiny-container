@@ -27,7 +27,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
@@ -37,6 +36,7 @@ import org.mockito.junit.MockitoJUnitRunner;
 import js.json.Json;
 import js.lang.InvocationException;
 import js.rmi.BusinessException;
+import js.tiny.container.spi.ITinyContainer;
 import js.util.Classes;
 
 @SuppressWarnings({ "unused", "serial" })
@@ -77,6 +77,7 @@ public class AppServletUnitTest {
 	public void beforeTest() throws Exception {
 		when(container.getInstance(RequestContext.class)).thenReturn(requestContext);
 		when(requestContext.getContainer()).thenReturn(container);
+		when(requestContext.getRequest()).thenReturn(httpRequest);
 		when(requestContext.getResponse()).thenReturn(httpResponse);
 		when(requestContext.getLocale()).thenReturn(Locale.getDefault());
 
@@ -87,6 +88,7 @@ public class AppServletUnitTest {
 		when(servletContext.getServletContextName()).thenReturn("test-app");
 		when(servletContext.getAttribute(TinyContainer.ATTR_INSTANCE)).thenReturn(container);
 
+		when(httpRequest.getServletContext()).thenReturn(servletContext);
 		when(httpRequest.getMethod()).thenReturn("POST");
 		when(httpRequest.getContextPath()).thenReturn("test");
 		when(httpRequest.getRequestURI()).thenReturn("test/service");
@@ -267,8 +269,9 @@ public class AppServletUnitTest {
 	/** For non XHR request unauthorized access send 401 and WWW-Authenticate set to basic. */
 	@Test
 	public void GivenLoginRealm_WhenSendUnauthorized_ThenBasicRealm() throws Exception {
-		when(container.getAppName()).thenReturn("Test App");
-
+		// given
+		when(servletContext.getServletContextName()).thenReturn("Test App");
+		
 		// when
 		AppServlet.sendUnauthorized(requestContext);
 

@@ -31,9 +31,9 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
 import js.tiny.container.servlet.AppServlet;
-import js.tiny.container.servlet.ITinyContainer;
 import js.tiny.container.servlet.RequestContext;
 import js.tiny.container.servlet.TinyContainer;
+import js.tiny.container.spi.ITinyContainer;
 import js.util.Classes;
 
 @RunWith(MockitoJUnitRunner.class)

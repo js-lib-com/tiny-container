@@ -33,6 +33,7 @@ import js.tiny.container.cdi.IClassBinding;
 import js.tiny.container.core.Bootstrap;
 import js.tiny.container.core.Container;
 import js.tiny.container.spi.ISecurityContext;
+import js.tiny.container.spi.ITinyContainer;
 import js.util.Classes;
 import js.util.Strings;
 
@@ -102,7 +103,7 @@ import js.util.Strings;
  * 
  * @author Iulian Rotaru
  */
-public class TinyContainer extends Container implements ServletContextListener, HttpSessionListener, ServletRequestListener, ITinyContainer, SecurityContext {
+public class TinyContainer extends Container implements ServletContextListener, HttpSessionListener, ServletRequestListener, ITinyContainer {
 	private static final Log log = LogFactory.getLog(TinyContainer.class);
 
 	/** Container instance is stored on servlet context with this attribute name. */
@@ -117,8 +118,7 @@ public class TinyContainer extends Container implements ServletContextListener, 
 	/** Diagnostic context name for context path, aka application. */
 	private static final String LOG_CONTEXT_APP = "app";
 
-	/** The name of web application that own this tiny container. */
-	private String appName;
+	private String contextName;
 
 	/**
 	 * Development context is running in the same JVM and is allowed to do cross context forward to this context private
@@ -126,29 +126,6 @@ public class TinyContainer extends Container implements ServletContextListener, 
 	 * <code>js.tiny.container.dev.context</code>.
 	 */
 	private String developmentContext;
-
-	/**
-	 * Location for application login page, null if not configured. This field value is loaded from application descriptor.
-	 * Location can be relative or absolute to servlet container root, in which case starts with path separator. Container takes
-	 * care to convert to absolute location if configured value is relative.
-	 * 
-	 * <p>
-	 * Login page location is loaded from application descriptor, <code>login</code> section.
-	 * 
-	 * <pre>
-	 * &lt;login&gt;
-	 * 	...
-	 * 	&lt;property name="page" value="index.htm" /&gt;
-	 * &lt;/login&gt;
-	 * </pre>
-	 * 
-	 * <p>
-	 * This login page location is an alternative to servlet container declarative <code>form-login-page</code> from
-	 * <code>login-config</code> section from deployment descriptor. Anyway, if application has private resources accessed via
-	 * XHR, this login page location is mandatory. Otherwise client agent default login form is used when XHR attempt to access
-	 * not authorized resources.
-	 */
-	private String loginPage;
 
 	/**
 	 * Security context is defined in security module and this instance can be null if security module is not provided on
@@ -165,7 +142,6 @@ public class TinyContainer extends Container implements ServletContextListener, 
 		super(cdi);
 		log.trace("TinyContainer(CDI)");
 
-		bind(ITinyContainer.class).instance(this).build();
 		bind(SecurityContext.class).instance(this).build();
 
 		bind(HttpServletRequest.class).provider(new HttpRequestProvider()).build();
@@ -211,11 +187,11 @@ public class TinyContainer extends Container implements ServletContextListener, 
 		final long start = System.currentTimeMillis();
 		final ServletContext servletContext = contextEvent.getServletContext();
 		// if present, context path always starts with path separator
-		appName = servletContext.getContextPath().isEmpty() ? TinyContainer.ROOT_CONTEXT : servletContext.getContextPath().substring(1);
+		contextName = servletContext.getContextPath().isEmpty() ? TinyContainer.ROOT_CONTEXT : servletContext.getContextPath().substring(1);
 
 		// add application name as diagnostic data to logger diagnostic context
 		LogContext logContext = LogFactory.getLogContext();
-		logContext.put(LOG_CONTEXT_APP, appName);
+		logContext.put(LOG_CONTEXT_APP, contextName);
 		log.debug("Initializing servlet context |%s|.", servletContext.getServletContextName());
 
 		Enumeration<String> parameterNames = servletContext.getInitParameterNames();
@@ -240,14 +216,14 @@ public class TinyContainer extends Container implements ServletContextListener, 
 			bootstrap.startContainer(this, configBuilder.build());
 
 			servletContext.setAttribute(TinyContainer.ATTR_INSTANCE, this);
-			log.info("Application |%s| container started in %d msec.", appName, System.currentTimeMillis() - start);
+			log.info("Application |%s| container started in %d msec.", contextName, System.currentTimeMillis() - start);
 		} catch (ConfigException e) {
 			log.error(e);
-			log.fatal("Bad container |%s| configuration.", appName);
+			log.fatal("Bad container |%s| configuration.", contextName);
 		} catch (FileNotFoundException e) {
 			log.error(e);
 		} catch (Error | RuntimeException e) {
-			log.dump(String.format("Fatal error on container |%s| start:", appName), e);
+			log.dump(String.format("Fatal error on container |%s| start:", contextName), e);
 			log.debug("Signal fatal error |%s| to host container. Application abort.", e.getClass());
 			throw e;
 		}
@@ -311,11 +287,6 @@ public class TinyContainer extends Container implements ServletContextListener, 
 	// --------------------------------------------------------------------------------------------
 
 	@Override
-	public String getAppName() {
-		return appName;
-	}
-
-	@Override
 	public boolean login(String username, String password) {
 		if (security == null) {
 			throw new IllegalStateException("Missing security provider.");
@@ -369,11 +340,6 @@ public class TinyContainer extends Container implements ServletContextListener, 
 	}
 
 	@Override
-	public String getLoginPage() {
-		return loginPage;
-	}
-
-	@Override
 	public boolean isUserInRole(String role) {
 		return security != null ? security.isAuthorized(role) : false;
 	}
@@ -421,7 +387,7 @@ public class TinyContainer extends Container implements ServletContextListener, 
 	}
 
 	private String initParameterName(String name) {
-		return Strings.concat(appName, '.', name);
+		return Strings.concat(contextName, '.', name);
 	}
 
 	// --------------------------------------------------------------------------------------------

@@ -26,6 +26,7 @@ import js.tiny.container.http.HttpHeader;
 import js.tiny.container.spi.AuthorizationException;
 import js.tiny.container.spi.Factory;
 import js.tiny.container.spi.IContainer;
+import js.tiny.container.spi.ITinyContainer;
 import js.util.Strings;
 
 /**
@@ -257,7 +258,6 @@ public abstract class AppServlet extends HttpServlet {
 	 * @param context current request context.
 	 */
 	protected static void sendUnauthorized(RequestContext context) {
-		final ITinyContainer container = context.getContainer();
 		final HttpServletResponse httpResponse = context.getResponse();
 
 		if (httpResponse.isCommitted()) {
@@ -266,9 +266,10 @@ public abstract class AppServlet extends HttpServlet {
 		}
 		log.error("Reject unauthorized request for private resource or service: |%s|.", context.getRequestURI());
 
-		log.trace("Send WWW-Authenticate |Basic realm=%s| for rejected request: |%s|", container.getAppName(), context.getRequestURI());
+		final String realm = String.format("Basic realm=%s", context.getRequest().getServletContext().getServletContextName());
+		log.trace("Send WWW-Authenticate |%s| for rejected request: |%s|", realm, context.getRequestURI());
 		httpResponse.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-		httpResponse.setHeader(HttpHeader.WWW_AUTHENTICATE, String.format("Basic realm=%s", container.getAppName()));
+		httpResponse.setHeader(HttpHeader.WWW_AUTHENTICATE, realm);
 	}
 
 	/**
@@ -402,7 +403,7 @@ public abstract class AppServlet extends HttpServlet {
 		return servletName;
 	}
 
-	ITinyContainer container() {
+	IContainer container() {
 		return container;
 	}
 

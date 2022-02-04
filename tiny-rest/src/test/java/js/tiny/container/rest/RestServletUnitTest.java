@@ -30,13 +30,13 @@ import js.lang.InvocationException;
 import js.tiny.container.http.encoder.ArgumentsReader;
 import js.tiny.container.http.encoder.ServerEncoders;
 import js.tiny.container.http.encoder.ValueWriter;
-import js.tiny.container.servlet.ITinyContainer;
 import js.tiny.container.servlet.RequestContext;
 import js.tiny.container.servlet.TinyContainer;
 import js.tiny.container.spi.AuthorizationException;
 import js.tiny.container.spi.IContainerService;
 import js.tiny.container.spi.IManagedClass;
 import js.tiny.container.spi.IManagedMethod;
+import js.tiny.container.spi.ITinyContainer;
 
 @RunWith(MockitoJUnitRunner.class)
 public class RestServletUnitTest {
@@ -88,6 +88,7 @@ public class RestServletUnitTest {
 
 		doReturn(managedClass).when(managedMethod).getDeclaringClass();
 
+		when(httpRequest.getServletContext()).thenReturn(servletContext);
 		when(httpRequest.getMethod()).thenReturn("POST");
 		when(httpRequest.getRequestURI()).thenReturn("/test-app/rest/sub-resource");
 		when(httpRequest.getContextPath()).thenReturn("/test-app");
@@ -147,9 +148,9 @@ public class RestServletUnitTest {
 	@Test
 	public void GivenNotAuthorizedRemoteMethod_WhenInvoke_Then401() throws Exception {
 		// given
-		when(container.getAppName()).thenReturn("Test App");
 		when(managedMethod.getParameterTypes()).thenReturn(new Class[0]);
 		when(managedMethod.invoke(null, new Object[0])).thenThrow(AuthorizationException.class);
+		when(servletContext.getServletContextName()).thenReturn("Test App");
 
 		// when
 		servlet.handleRequest(context);

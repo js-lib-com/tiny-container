@@ -18,6 +18,7 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
+import js.tiny.container.spi.IContainer;
 import js.util.Classes;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -30,7 +31,7 @@ public class RequestContextUnitTest {
 	private HttpSession httpSession;
 
 	@Mock
-	private ITinyContainer container;
+	private IContainer container;
 
 	@Before
 	public void beforeTest() {
