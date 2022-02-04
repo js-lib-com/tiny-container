@@ -29,13 +29,13 @@ import js.tiny.container.http.NoSuchResourceException;
 import js.tiny.container.http.Resource;
 import js.tiny.container.http.encoder.ArgumentsReader;
 import js.tiny.container.http.encoder.ArgumentsReaderFactory;
-import js.tiny.container.servlet.ITinyContainer;
 import js.tiny.container.servlet.RequestContext;
 import js.tiny.container.servlet.TinyContainer;
 import js.tiny.container.spi.AuthorizationException;
 import js.tiny.container.spi.IContainerService;
 import js.tiny.container.spi.IManagedClass;
 import js.tiny.container.spi.IManagedMethod;
+import js.tiny.container.spi.ITinyContainer;
 
 @RunWith(MockitoJUnitRunner.class)
 public class ResourceServletHandlerTest {
@@ -84,6 +84,7 @@ public class ResourceServletHandlerTest {
 		when(servletContext.getServletContextName()).thenReturn("test-app");
 		when(servletContext.getAttribute(TinyContainer.ATTR_INSTANCE)).thenReturn(container);
 
+		when(httpRequest.getServletContext()).thenReturn(servletContext);
 		when(httpRequest.getRequestURI()).thenReturn("/test-app/controller/index");
 		when(httpRequest.getContextPath()).thenReturn("/test-app");
 		when(httpRequest.getHeaderNames()).thenReturn(Collections.emptyEnumeration());
@@ -149,7 +150,7 @@ public class ResourceServletHandlerTest {
 	@Test
 	public void GivenSecureMethodAndLoginPage_WhenInvoke_ThenHttpResponseRedirect() throws Exception {
 		// given
-		when(container.getLoginPage()).thenReturn("login-form.htm");
+		when(servletContext.getInitParameter("js.tiny.container.mvc.login")).thenReturn("login-form.htm");
 		when(managedMethod.invoke(any(), any())).thenThrow(AuthorizationException.class);
 
 		// when

@@ -94,6 +94,7 @@ public class ResourceServletIntegrationTest {
 			}
 		}).when(httpRequest).setAttribute(eq(RequestScopeProvider.ATTR_CACHE), any());
 
+		when(httpRequest.getServletContext()).thenReturn(servletContext);
 		when(httpRequest.getMethod()).thenReturn("GET");
 		when(httpRequest.getContextPath()).thenReturn("/test");
 		when(httpRequest.getHeaderNames()).thenReturn(Collections.emptyEnumeration());

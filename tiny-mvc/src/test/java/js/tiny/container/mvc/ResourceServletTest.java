@@ -13,11 +13,11 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
-import js.tiny.container.servlet.ITinyContainer;
 import js.tiny.container.servlet.TinyContainer;
 import js.tiny.container.spi.IContainerService;
 import js.tiny.container.spi.IManagedClass;
 import js.tiny.container.spi.IManagedMethod;
+import js.tiny.container.spi.ITinyContainer;
 
 @RunWith(MockitoJUnitRunner.class)
 public class ResourceServletTest {

@@ -23,7 +23,6 @@ import js.tiny.container.mvc.annotation.ResponseContentType;
 import js.tiny.container.servlet.AppServlet;
 import js.tiny.container.servlet.RequestContext;
 import js.tiny.container.spi.AuthorizationException;
-import js.tiny.container.spi.IContainer;
 import js.tiny.container.spi.IManagedClass;
 import js.tiny.container.spi.IManagedMethod;
 
@@ -67,9 +66,24 @@ import js.tiny.container.spi.IManagedMethod;
  * responds with method not found with status code 404. If method execution fails, sends server error -
  * {@link HttpServletResponse#sendError(int, String)} with status code 500.
  * <p>
- * If resource is private and HTTP request is not part of an authorized context this servlet redirect to login page, if
- * container has one defined, see {@link IContainer#getLoginPage()}. If there is not login page performs servlet container
- * authentication via {@link HttpServletRequest#authenticate(HttpServletResponse)}.
+ * If resource is private and HTTP request is not part of an authorized context this servlet redirect to login page, if this
+ * servlet has one defined. Servlet can declare a login page, relative to application context or absolute, using init parameter
+ * <code>js.tiny.container.mvc.login</code>.
+ * 
+ * <pre>
+ * 	&lt;servlet&gt;
+ * 		&lt;servlet-name&gt;xsp-servlet&lt;/servlet-name&gt;
+ * 		&lt;servlet-class&gt;js.mvc.ResourceServlet&lt;/servlet-class&gt;
+ *		&lt;init-param&gt;
+ *			&lt;param-name&gt;js.tiny.container.mvc.login&lt;/param-name&gt;
+ *			&lt;param-value&gt;login.htm&lt;/param-value&gt;
+ *		&lt;/init-param&gt;
+ * 		&lt;load-on-startup&gt;1&lt;/load-on-startup&gt;
+ * 	&lt;/servlet&gt;
+ * </pre>
+ * 
+ * If there is not login page performs servlet container authentication via
+ * {@link HttpServletRequest#authenticate(HttpServletResponse)}.
  * 
  * @author Iulian Rotaru
  */
@@ -77,6 +91,8 @@ public class ResourceServlet extends AppServlet {
 	private static final long serialVersionUID = 1397044817485752955L;
 
 	private static final Log log = LogFactory.getLog(ResourceServlet.class);
+
+	private static final String PARAMETER_MVC_LOGIN = "js.tiny.container.mvc.login";
 
 	/**
 	 * Factory for invocation arguments readers. Create instances to read resource methods arguments from HTTP request,
@@ -153,15 +169,15 @@ public class ResourceServlet extends AppServlet {
 			// otherwise servlet container should have one
 			// if no login page found send back servlet container error - that could be custom error page, if declared
 
-			String loginPage = container.getLoginPage();
+			String loginPage = httpRequest.getServletContext().getInitParameter(PARAMETER_MVC_LOGIN);
 			if (loginPage != null) {
 				// XMLHttpRequest specs mandates that redirection codes to be performed transparently by user agent
 				// this means redirect from server does not reach script counterpart
 				// as workaround uses 200 OK and X-JSLIB-Location extension header
 				if (HttpHeader.isXHR(context.getRequest())) {
-					log.trace("Send X-JSLIB-Location |%s| for rejected XHR request: |%s|", container.getLoginPage(), context.getRequestURI());
+					log.trace("Send X-JSLIB-Location |%s| for rejected XHR request: |%s|", loginPage, context.getRequestURI());
 					httpResponse.setStatus(HttpServletResponse.SC_OK);
-					httpResponse.setHeader(HttpHeader.X_HEADER_LOCATION, container.getLoginPage());
+					httpResponse.setHeader(HttpHeader.X_HEADER_LOCATION, loginPage);
 					return;
 				}
 
@@ -172,7 +188,7 @@ public class ResourceServlet extends AppServlet {
 				// else send back internal page with message about SC_UNAUTHORIZED
 
 				// authenticate can throw ServletException if fails, perhaps because is not configured
-				// let servlet container handle this error, that could be custom error page is configured
+				// let servlet container handle this error, that could be custom error page if configured
 				httpRequest.authenticate(httpResponse);
 			}
 			return;
