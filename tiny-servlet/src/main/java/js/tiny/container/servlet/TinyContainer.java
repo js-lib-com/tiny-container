@@ -18,7 +18,6 @@ import javax.servlet.http.HttpSession;
 import javax.servlet.http.HttpSessionEvent;
 import javax.servlet.http.HttpSessionListener;
 
-import jakarta.enterprise.context.SessionScoped;
 import jakarta.ws.rs.core.SecurityContext;
 import js.lang.BugError;
 import js.lang.Config;
@@ -38,9 +37,9 @@ import js.util.Classes;
 import js.util.Strings;
 
 /**
- * Container specialization for web applications. This class extends {@link Container} adding implementation for
- * {@link SessionScoped}, application context services and security context. Tiny container instance is accessible to
- * application code through {@link AppContext} interface.
+ * Container specialization for web applications. This class extends {@link Container} adding implementation for request and
+ * session scopes, application context services and security context. Tiny container instance is accessible to application code
+ * through {@link ITinyContainer} interface.
  * <p>
  * This class also implements {@link SecurityContext} services. For servlet container authentication this class delegates HTTP
  * request related services. For application provided authentication this class uses HTTP session to handle {@link Principal}
@@ -53,7 +52,7 @@ import js.util.Strings;
  * 
  * <pre>
  * &lt;listener&gt;
- * 	&lt;listener-class&gt;js.servlet.TinyContainer&lt;/listener-class&gt;
+ * 	&lt;listener-class&gt;js.tiny.container.servlet.TinyContainer&lt;/listener-class&gt;
  * &lt;/listener&gt;
  * </pre>
  * <p>
@@ -62,8 +61,9 @@ import js.util.Strings;
  * unloaded tiny container is destroyed by {@link #contextDestroyed(ServletContextEvent)}. On first tiny container creation
  * takes care to initialize server global state. This class also track HTTP sessions creation and destroy for debugging.
  * 
- * <h3>Application Boostrap</h3> Here are overall steps performed by bootstrap logic. It is executed for every web application
- * deployed on server.
+ * <h3>Application Boostrap</h3>
+ * <p>
+ * Here are overall steps performed by bootstrap logic. It is executed for every web application deployed on server.
  * <ul>
  * <li>servlet container creates tiny container instance because is declared as listener on deployment descriptor,
  * <li>super-container and tiny container constructors are executed,
@@ -133,6 +133,8 @@ public class TinyContainer extends Container implements ServletContextListener, 
 	 */
 	private ISecurityContext security;
 
+	private ServletContextProvider servletContextProvider;
+	
 	public TinyContainer() {
 		this(CDI.create());
 	}
@@ -144,6 +146,8 @@ public class TinyContainer extends Container implements ServletContextListener, 
 
 		bind(SecurityContext.class).instance(this).build();
 
+		servletContextProvider = new ServletContextProvider();
+		bind(ServletContext.class).provider(servletContextProvider).build();
 		bind(HttpServletRequest.class).provider(new HttpRequestProvider()).build();
 		bind(RequestContext.class).build();
 
@@ -186,6 +190,7 @@ public class TinyContainer extends Container implements ServletContextListener, 
 	public void contextInitialized(ServletContextEvent contextEvent) {
 		final long start = System.currentTimeMillis();
 		final ServletContext servletContext = contextEvent.getServletContext();
+		servletContextProvider.createContext(servletContext);
 		// if present, context path always starts with path separator
 		contextName = servletContext.getContextPath().isEmpty() ? TinyContainer.ROOT_CONTEXT : servletContext.getContextPath().substring(1);
 
@@ -244,6 +249,7 @@ public class TinyContainer extends Container implements ServletContextListener, 
 		ServletContext servletContext = contextEvent.getServletContext();
 		log.debug("Destroying servlet context |%s|.", servletContext.getServletContextName());
 		close();
+		servletContextProvider.destroyContext();
 	}
 
 	/**
@@ -312,7 +318,7 @@ public class TinyContainer extends Container implements ServletContextListener, 
 
 	@Override
 	public Principal getUserPrincipal() {
-		return security != null? security.getUserPrincipal(): null;
+		return security != null ? security.getUserPrincipal() : null;
 	}
 
 	@Override
