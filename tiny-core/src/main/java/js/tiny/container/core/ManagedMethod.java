@@ -3,6 +3,7 @@ package js.tiny.container.core;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.lang.reflect.Parameter;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
@@ -14,6 +15,7 @@ import js.tiny.container.spi.IInvocation;
 import js.tiny.container.spi.IInvocationProcessorsChain;
 import js.tiny.container.spi.IManagedClass;
 import js.tiny.container.spi.IManagedMethod;
+import js.tiny.container.spi.IManagedParameter;
 import js.tiny.container.spi.IMethodInvocationProcessor;
 import js.util.Strings;
 import js.util.Types;
@@ -113,6 +115,15 @@ class ManagedMethod implements IManagedMethod, IMethodInvocationProcessor {
 		// actual type parameters used in the source code.
 
 		return method.getGenericParameterTypes();
+	}
+
+	@Override
+	public List<IManagedParameter> getManagedParameters() {
+		List<IManagedParameter> managedParameters = new ArrayList<>();
+		for (Parameter parameter : method.getParameters()) {
+			managedParameters.add(new ManagedParameter(parameter));
+		}
+		return managedParameters;
 	}
 
 	@Override

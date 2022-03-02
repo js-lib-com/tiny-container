@@ -43,7 +43,7 @@ import js.util.Strings;
  * <p>
  * This class also implements {@link SecurityContext} services. For servlet container authentication this class delegates HTTP
  * request related services. For application provided authentication this class uses HTTP session to handle {@link Principal}
- * supplied via {@link #login(Principal)}.
+ * supplied via {@link #authenticate(Principal)}.
  * 
  * <h3>Servlet Container Integration</h3>
  * <p>
@@ -144,6 +144,7 @@ public class TinyContainer extends Container implements ServletContextListener, 
 		super(cdi);
 		log.trace("TinyContainer(CDI)");
 
+		bind(ITinyContainer.class).instance(this).build();
 		bind(SecurityContext.class).instance(this).build();
 
 		servletContextProvider = new ServletContextProvider();
@@ -278,14 +279,12 @@ public class TinyContainer extends Container implements ServletContextListener, 
 	@Override
 	public void requestInitialized(ServletRequestEvent requestEvent) {
 		HttpServletRequest httpRequest = (HttpServletRequest) requestEvent.getServletRequest();
-		log.trace("Initializing HTTP request |%s|.", httpRequest.getRequestURI());
 		HttpRequestProvider.createContext(httpRequest);
 	}
 
 	@Override
 	public void requestDestroyed(ServletRequestEvent requestEvent) {
 		HttpServletRequest httpRequest = (HttpServletRequest) requestEvent.getServletRequest();
-		log.trace("Destroying HTTP request |%s|.", httpRequest.getRequestURI());
 		HttpRequestProvider.destroyContext(httpRequest);
 		RequestScopeProvider.destroyContext(this, httpRequest);
 	}
@@ -301,11 +300,11 @@ public class TinyContainer extends Container implements ServletContextListener, 
 	}
 
 	@Override
-	public void login(Principal user) {
+	public void authenticate(Principal user) {
 		if (security == null) {
 			throw new IllegalStateException("Missing security provider.");
 		}
-		security.login(user);
+		security.authenticate(user);
 	}
 
 	@Override

@@ -66,10 +66,10 @@ public class TinyContainerSecurityTest {
 		Principal principal = mock(Principal.class);
 
 		// when
-		container.login(principal);
+		container.authenticate(principal);
 		
 		// then
-		verify(security, times(1)).login(principal);
+		verify(security, times(1)).authenticate(principal);
 	}
 
 	@Test(expected = IllegalStateException.class)
@@ -80,7 +80,7 @@ public class TinyContainerSecurityTest {
 		Principal principal = mock(Principal.class);
 
 		// when
-		container.login(principal);
+		container.authenticate(principal);
 		
 		// then
 	}

@@ -108,7 +108,7 @@ public class TinySecurityTest {
 		Principal principal = mock(Principal.class);
 
 		// when
-		security.login(principal);
+		security.authenticate(principal);
 
 		// then
 		verify(httpSession, times(1)).setAttribute(TinyContainer.ATTR_PRINCIPAL, principal);
@@ -121,7 +121,7 @@ public class TinySecurityTest {
 		Principal principal = new NonceUser(100);
 
 		// when
-		security.login(principal);
+		security.authenticate(principal);
 
 		// then
 		verify(httpSession, times(1)).setMaxInactiveInterval(100);
@@ -135,7 +135,7 @@ public class TinySecurityTest {
 		doThrow(IllegalStateException.class).when(httpSession).setAttribute(any(), any());
 
 		// when
-		security.login(principal);
+		security.authenticate(principal);
 
 		// then
 		verify(httpSession, times(1)).setAttribute(TinyContainer.ATTR_PRINCIPAL, principal);
@@ -149,7 +149,7 @@ public class TinySecurityTest {
 		Principal principal = mock(Principal.class);
 
 		// when
-		security.login(principal);
+		security.authenticate(principal);
 
 		// then
 	}
@@ -161,7 +161,7 @@ public class TinySecurityTest {
 		NonceUser nonce = mock(NonceUser.class);
 
 		// when
-		security.login(nonce);
+		security.authenticate(nonce);
 
 		// then
 		verify(httpSession, times(1)).setAttribute(TinyContainer.ATTR_PRINCIPAL, nonce);

@@ -11,6 +11,7 @@ import static org.mockito.Mockito.when;
 import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
+import java.util.Collections;
 import java.util.Locale;
 
 import javax.servlet.ReadListener;
@@ -75,6 +76,7 @@ public class RestServletIntegrationTest {
 		when(httpRequest.getLocale()).thenReturn(Locale.getDefault());
 		when(httpRequest.getInputStream()).thenReturn(inputStream);
 		when(httpResponse.getOutputStream()).thenReturn(outputStream);
+		when(httpRequest.getParameterNames()).thenReturn(Collections.emptyEnumeration());
 
 		servlet = new RestServlet();
 		servlet.init(servletConfig);

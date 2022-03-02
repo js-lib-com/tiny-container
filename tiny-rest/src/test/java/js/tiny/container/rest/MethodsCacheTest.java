@@ -50,7 +50,7 @@ public class MethodsCacheTest {
 		when(methodPath.value()).thenReturn("sub-resource");
 
 		// when
-		List<String> key = MethodsCache.key(managedMethod);
+		List<String> key = PathMethodsCache.key(managedMethod);
 
 		// then
 		assertThat(key, contains("GET", "resource", "sub-resource"));
@@ -63,7 +63,7 @@ public class MethodsCacheTest {
 		when(methodPath.value()).thenReturn("sub-resource");
 
 		// when
-		List<String> key = MethodsCache.key(managedMethod);
+		List<String> key = PathMethodsCache.key(managedMethod);
 
 		// then
 		assertThat(key, contains("GET", "sub-resource"));
@@ -76,7 +76,7 @@ public class MethodsCacheTest {
 		when(methodPath.value()).thenReturn("sub-resource");
 
 		// when
-		List<String> key = MethodsCache.key(managedMethod);
+		List<String> key = PathMethodsCache.key(managedMethod);
 
 		// then
 		assertThat(key, contains("GET", "sub-resource"));
@@ -89,7 +89,7 @@ public class MethodsCacheTest {
 		when(managedMethod.getName()).thenReturn("toString");
 
 		// when
-		List<String> key = MethodsCache.key(managedMethod);
+		List<String> key = PathMethodsCache.key(managedMethod);
 
 		// then
 		assertThat(key, contains("GET", "resource", "to-string"));
@@ -102,7 +102,7 @@ public class MethodsCacheTest {
 		when(managedMethod.getName()).thenReturn("toString");
 
 		// when
-		List<String> key = MethodsCache.key(managedMethod);
+		List<String> key = PathMethodsCache.key(managedMethod);
 
 		// then
 		assertThat(key, contains("GET", "resource", "to-string"));
@@ -115,7 +115,7 @@ public class MethodsCacheTest {
 		when(managedMethod.getName()).thenReturn("toString");
 
 		// when
-		List<String> key = MethodsCache.key(managedMethod);
+		List<String> key = PathMethodsCache.key(managedMethod);
 
 		// then
 		assertThat(key, contains("GET", "resource", "to-string"));
@@ -123,14 +123,14 @@ public class MethodsCacheTest {
 
 	@Test
 	public void GivenValidRequestPath_WhenCreateRetrieveKey_ThenValidKey() throws Exception {
-		assertThat(MethodsCache.key("GET", "/resource/sub-resource?query"), contains("GET", "resource", "sub-resource"));
-		assertThat(MethodsCache.key("GET", "/resource/sub-resource?"), contains("GET", "resource", "sub-resource"));
-		assertThat(MethodsCache.key("GET", "/resource/sub-resource"), contains("GET", "resource", "sub-resource"));
+		assertThat(PathMethodsCache.key("GET", "/resource/sub-resource?query"), contains("GET", "resource", "sub-resource"));
+		assertThat(PathMethodsCache.key("GET", "/resource/sub-resource?"), contains("GET", "resource", "sub-resource"));
+		assertThat(PathMethodsCache.key("GET", "/resource/sub-resource"), contains("GET", "resource", "sub-resource"));
 
-		assertThat(MethodsCache.key("GET", "/resource/sub-resource.ext?query"), contains("GET", "resource", "sub-resource"));
+		assertThat(PathMethodsCache.key("GET", "/resource/sub-resource.ext?query"), contains("GET", "resource", "sub-resource"));
 
-		assertThat(MethodsCache.key("GET", "/sub-resource?query"), contains("GET", "sub-resource"));
-		assertThat(MethodsCache.key("GET", "/sub-resource?"), contains("GET", "sub-resource"));
-		assertThat(MethodsCache.key("GET", "/sub-resource"), contains("GET", "sub-resource"));
+		assertThat(PathMethodsCache.key("GET", "/sub-resource?query"), contains("GET", "sub-resource"));
+		assertThat(PathMethodsCache.key("GET", "/sub-resource?"), contains("GET", "sub-resource"));
+		assertThat(PathMethodsCache.key("GET", "/sub-resource"), contains("GET", "sub-resource"));
 	}
 }

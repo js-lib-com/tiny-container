@@ -42,7 +42,7 @@ public class Bootstrap implements EmbeddedContainerProvider {
 			for (int i = 0; i < arguments.length; ++i) {
 				modules[i] = (IModule) arguments[i];
 			}
-			container.configure(modules);
+			container.modules(modules);
 		}
 
 		Factory.bind(container);

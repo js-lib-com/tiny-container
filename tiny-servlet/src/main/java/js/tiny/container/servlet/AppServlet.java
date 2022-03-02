@@ -159,12 +159,12 @@ public abstract class AppServlet extends HttpServlet {
 		logContext.put(LOG_CONTEXT_ID, Integer.toString(requestID.getAndIncrement(), Character.MAX_RADIX));
 
 		Factory.bind(container);
-		
+
 		if (isEmptyUriRequest(httpRequest)) {
 			log.debug("Empty URI request for |%s|. Please check for <img> with empty 'src' or <link>, <script> with empty 'href' in HTML source or script resulting in such condition.", httpRequest.getRequestURI());
 			return;
 		}
-		final long start = System.currentTimeMillis();
+		final long start = System.nanoTime();
 		final String requestURI = httpRequest.getRequestURI();
 
 		// request context has THREAD scope and this request thread may be reused by servlet container
@@ -177,7 +177,7 @@ public abstract class AppServlet extends HttpServlet {
 		// current context should declare context parameter js.tiny.container.preview.context
 		String forwardContextPath = (String) httpRequest.getAttribute(RequestDispatcher.FORWARD_CONTEXT_PATH);
 		if (previewContextPath != null && forwardContextPath != null && forwardContextPath.equals(previewContextPath)) {
-			container.login(new PreviewUser());
+			container.authenticate(new PreviewUser());
 		}
 
 		try {
@@ -188,7 +188,7 @@ public abstract class AppServlet extends HttpServlet {
 			dumpError(requestContext, t);
 			throw t;
 		} finally {
-			log.trace("%s %s processed in %d msec.", httpRequest.getMethod(), requestContext.getRequestURL(), System.currentTimeMillis() - start);
+			log.trace("%s %s processed in %.2f msec.", httpRequest.getMethod(), requestContext.getRequestURL(), (System.nanoTime() - start) / 1000000.0);
 			// cleanup remote address from logger context and detach request context instance from this request
 			logContext.clear();
 		}

@@ -114,8 +114,8 @@ public class Container implements IContainer, EmbeddedContainer, IManagedLoader 
 		}
 	}
 
-	public void configure(IModule... modules) {
-		log.trace("configure(Object...)");
+	public void modules(IModule... modules) {
+		log.trace("modules(Object...)");
 		services.forEach(service -> service.configure(this));
 		create(cdi.configure(modules));
 	}

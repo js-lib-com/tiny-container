@@ -70,7 +70,7 @@ class ManagedClass<T> implements IManagedClass<T>, IInstanceLifecycleListener {
 		boolean servicesFound = false;
 
 		for (Method method : implementationClass.getDeclaredMethods()) {
-			if(Modifier.isStatic(method.getModifiers())) {
+			if (Modifier.isStatic(method.getModifiers())) {
 				continue;
 			}
 			ManagedMethod managedMethod = new ManagedMethod(this, method);
@@ -78,6 +78,13 @@ class ManagedClass<T> implements IManagedClass<T>, IInstanceLifecycleListener {
 				servicesFound = true;
 			}
 			managedMethods.put(method.getName(), managedMethod);
+			
+			// TODO: refactor managed classes creation logic; CDI should not create class bindings for service and remote
+			// providers
+			// TODO: check for methods overload
+			// if (managedMethods.put(method.getName(), managedMethod) != null) {
+			// throw new IllegalStateException("Method overloaded not supported. See managed method " + managedMethod);
+			// }
 		}
 
 		for (IContainerService service : container.getServices()) {

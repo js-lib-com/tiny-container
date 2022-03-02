@@ -64,7 +64,7 @@ class TinySecurity implements ISecurityContext {
 	}
 
 	@Override
-	public void login(Principal principal) {
+	public void authenticate(Principal principal) {
 		log.trace("login(Principal)");
 		Params.notNull(principal, "User principal");
 

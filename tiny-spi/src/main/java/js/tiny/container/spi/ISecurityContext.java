@@ -8,7 +8,7 @@ import js.lang.BugError;
 /**
  * Security context is an unified interface for both servlet container and application provided authentication. There are two
  * login method variants: one for servlet container provided authentication, see {@link #login(String, String)} and the second
- * used when authentication is implemented by application, {@link #login(Principal)}. Security context implementation should
+ * used when authentication is implemented by application, {@link #authenticate(Principal)}. Security context implementation should
  * adapt behavior considering login variant.
  * 
  * Basically, a security context has means to login and logout and test if is currently authenticated. On successful login
@@ -40,7 +40,7 @@ public interface ISecurityContext extends SecurityContext {
 	 * 
 	 * @param principal application authenticated user principal.
 	 */
-	void login(Principal principal);
+	void authenticate(Principal principal);
 
 	/**
 	 * Remove authenticated user from this security context. After executing this method security context become not
@@ -53,7 +53,7 @@ public interface ISecurityContext extends SecurityContext {
 
 	/**
 	 * Get authenticated principal for this security context. A security context become authenticated, and has a principal,
-	 * after successful {@link #login(String, String)} or {@link #login(Principal)}. Returns null if this security context is
+	 * after successful {@link #login(String, String)} or {@link #authenticate(Principal)}. Returns null if this security context is
 	 * not authenticated.
 	 * 
 	 * @return this security context authenticated principal or null if none.

@@ -1,26 +1,38 @@
 package js.tiny.container.rest;
 
 import java.io.IOException;
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Type;
+import java.util.List;
 
 import javax.inject.Inject;
+import javax.servlet.AsyncContext;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.sse.SseEventSink;
+import js.converter.Converter;
+import js.converter.ConverterRegistry;
 import js.log.Log;
 import js.log.LogFactory;
 import js.tiny.container.http.ContentType;
+import js.tiny.container.http.HttpHeader;
 import js.tiny.container.http.encoder.ArgumentsReader;
 import js.tiny.container.http.encoder.ArgumentsReaderFactory;
 import js.tiny.container.http.encoder.ServerEncoders;
 import js.tiny.container.http.encoder.ValueWriter;
 import js.tiny.container.http.encoder.ValueWriterFactory;
+import js.tiny.container.rest.PathTree.Item;
+import js.tiny.container.rest.sse.SseEventSinkImpl;
 import js.tiny.container.servlet.AppServlet;
 import js.tiny.container.servlet.RequestContext;
 import js.tiny.container.spi.AuthorizationException;
 import js.tiny.container.spi.IManagedMethod;
+import js.tiny.container.spi.IManagedParameter;
 import js.util.Types;
 
 /**
@@ -93,6 +105,10 @@ public class RestServlet extends AppServlet {
 
 	private static final Log log = LogFactory.getLog(RestServlet.class);
 
+	private static final Object[] EMPTY_ARGUMENTS = new Object[0];
+
+	private final Converter converter = ConverterRegistry.getConverter();
+
 	/**
 	 * Factory for invocation arguments readers. Create instances to read invocation arguments from HTTP request, accordingly
 	 * request content type.
@@ -102,7 +118,7 @@ public class RestServlet extends AppServlet {
 	/** Factory for return value writers. Create instances to serialize method return value to HTTP response. */
 	private final ValueWriterFactory valueWriterFactory;
 
-	private MethodsCache cache;
+	private PathMethodsCache cache;
 
 	@Inject
 	public RestServlet() {
@@ -121,7 +137,7 @@ public class RestServlet extends AppServlet {
 	@Override
 	public void init(ServletConfig config) throws ServletException {
 		super.init(config);
-		cache = container.getInstance(MethodsCache.class);
+		cache = container.getInstance(PathMethodsCache.class);
 	}
 
 	/**
@@ -145,26 +161,30 @@ public class RestServlet extends AppServlet {
 			if (pathInfo == null) {
 				pathInfo = httpRequest.getRequestURI().substring(httpRequest.getContextPath().length());
 			}
-			PathTree.Item<IManagedMethod> item = cache.get(httpRequest.getMethod(), pathInfo);
-			managedMethod = item.getValue();
+			PathTree.Item<IManagedMethod> requestPath = cache.get(httpRequest.getMethod(), pathInfo);
+			managedMethod = requestPath.getValue();
 			if (managedMethod == null) {
 				throw new NoSuchMethodException();
 			}
 
-			Type[] formalParameters = managedMethod.getParameterTypes();
-			Object[] arguments;
-			if (item.hasVariables()) {
-				arguments = new Object[formalParameters.length];
-				for (int i = 0; i < arguments.length; ++i) {
-					arguments[i] = item.getVariableValue(i, formalParameters[i]);
-				}
-			} else {
+			Object[] arguments = getArguments(httpRequest, requestPath);
+			if (arguments == null) {
+				Type[] formalParameters = managedMethod.getParameterTypes();
 				argumentsReader = argumentsReaderFactory.getArgumentsReader(httpRequest, formalParameters);
 				arguments = argumentsReader.read(httpRequest, formalParameters);
 			}
 
 			Object instance = managedMethod.getDeclaringClass().getInstance();
 			value = managedMethod.invoke(instance, arguments);
+
+			if (isSseRequest(managedMethod)) {
+				if (!Types.isVoid(managedMethod.getReturnType())) {
+					throw new IllegalStateException("Non void SSE resource method: " + managedMethod);
+				}
+				handleSseRequest(httpRequest);
+				return;
+			}
+
 		} catch (AuthorizationException e) {
 			sendUnauthorized(context);
 			return;
@@ -223,5 +243,122 @@ public class RestServlet extends AppServlet {
 
 		ValueWriter valueWriter = valueWriterFactory.getValueWriter(contentType);
 		valueWriter.write(httpResponse, value);
+	}
+
+	private Object[] getArguments(HttpServletRequest httpRequest, Item<IManagedMethod> requestPath) throws IOException {
+		IManagedMethod managedMethod = requestPath.getValue();
+		List<IManagedParameter> managedParameters = managedMethod.getManagedParameters();
+		if (managedParameters.isEmpty()) {
+			return EMPTY_ARGUMENTS;
+		}
+
+		UrlParameters urlParameters = new UrlParameters(httpRequest);
+		int entityParametersCount = 0;
+		Object[] arguments = new Object[managedParameters.size()];
+		for (int argumentIndex = 0, pathVariableIndex = 0; argumentIndex < arguments.length; ++argumentIndex) {
+			IManagedParameter managedParameter = managedParameters.get(argumentIndex);
+			Class<?> parameterType = (Class<?>) managedParameter.getType();
+
+			Annotation[] annotations = managedParameter.getAnnotations();
+			if (annotations.length == 0) {
+				if (entityParametersCount++ > 0) {
+					log.error("Invalid resource method arguments: multiple entity parameters.");
+					return null;
+				}
+
+				Type[] formalParameters = new Type[] { parameterType };
+				ArgumentsReader argumentsReader = argumentsReaderFactory.getArgumentsReader(httpRequest, formalParameters);
+				Object[] entityArgument = argumentsReader.read(httpRequest, formalParameters);
+				arguments[argumentIndex] = entityArgument.length == 1 ? entityArgument[0] : null;
+				continue;
+			}
+
+			Annotation annotation = annotations[0];
+
+			if (IContext.cast(annotation) != null) {
+				arguments[argumentIndex] = container.getInstance(parameterType);
+			}
+
+			IPathParam pathParam = IPathParam.cast(annotation);
+			if (pathParam != null) {
+				// this logic assumes request path variables order is the same as related formal parameters
+				// therefore there is no the need to search variable by name
+				arguments[argumentIndex] = requestPath.getVariableValue(pathVariableIndex++, parameterType);
+			}
+
+			IQueryParam queryParam = IQueryParam.cast(annotation);
+			if (queryParam != null) {
+				String queryName = queryParam.value();
+				arguments[argumentIndex] = converter.asObject(urlParameters.getParameter(queryName), parameterType);
+			}
+
+			IMatrixParam matrixParam = IMatrixParam.cast(annotation);
+			if (matrixParam != null) {
+				String matrixName = matrixParam.value();
+				arguments[argumentIndex] = converter.asObject(urlParameters.getParameter(matrixName), parameterType);
+			}
+
+			IHeaderParam headerParam = IHeaderParam.cast(annotation);
+			if (headerParam != null) {
+				String headerName = headerParam.value();
+				arguments[argumentIndex] = converter.asObject(httpRequest.getHeader(headerName), parameterType);
+			}
+
+		}
+
+		return arguments;
+	}
+
+	protected void handleSseRequest(HttpServletRequest httpRequest) throws Exception {
+		if (!httpRequest.isAsyncSupported()) {
+			throw new IllegalStateException("REST SSE requires asynchronous mode. Missing <async-supported>true</async-supported> ?");
+		}
+
+		AsyncContext asyncContext = httpRequest.startAsync();
+		asyncContext.setTimeout(0);
+
+		// since event sink is bound with request scope next instance is the same as that injected on SSE method arguments
+		SseEventSinkImpl eventSink = (SseEventSinkImpl) container.getInstance(SseEventSink.class);
+		eventSink.setAsyncContext(asyncContext);
+
+		HttpServletResponse httpResponse = (HttpServletResponse) asyncContext.getResponse();
+		httpResponse.setContentType("text/event-stream;charset=UTF-8");
+		// no need to explicitly set character encoding since is already set by content type
+		// httpResponse.setCharacterEncoding("UTF-8");
+
+		httpResponse.setHeader(HttpHeader.CACHE_CONTROL, HttpHeader.NO_CACHE);
+		httpResponse.addHeader(HttpHeader.CACHE_CONTROL, HttpHeader.NO_STORE);
+		httpResponse.setHeader(HttpHeader.PRAGMA, HttpHeader.NO_CACHE);
+		httpResponse.setDateHeader(HttpHeader.EXPIRES, 0);
+		httpResponse.setHeader(HttpHeader.CONNECTION, HttpHeader.KEEP_ALIVE);
+
+		eventSink.setWriter(httpResponse.getWriter());
+	}
+
+	/**
+	 * Detect if current request is for a SSE method. Accordingly JAX-RS SEE spec: a resource method that injects an
+	 * SseEventSink and produces the media type text/event-stream is an SSE resource method.
+	 * 
+	 * @param managedMethod managed method pointed by current HTTP request.
+	 * @return true if current request is for a SSE method.
+	 */
+	private boolean isSseRequest(IManagedMethod managedMethod) {
+		IProduces producesMeta = IProduces.scan(managedMethod);
+		if (producesMeta == null) {
+			return false;
+		}
+		if (producesMeta.value().length != 1) {
+			return false;
+		}
+		if (!MediaType.SERVER_SENT_EVENTS.equalsIgnoreCase(producesMeta.value()[0])) {
+			return false;
+		}
+
+		for (IManagedParameter managedParameter : managedMethod.getManagedParameters()) {
+			if (IContext.scan(managedParameter) && SseEventSink.class.equals(managedParameter.getType())) {
+				return true;
+			}
+		}
+		return false;
 	}
 }

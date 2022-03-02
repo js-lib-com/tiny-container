@@ -1,1 +1,2 @@
 js.tiny.container.rest.RestConnector
+js.tiny.container.rest.ContextInjectionProcessor

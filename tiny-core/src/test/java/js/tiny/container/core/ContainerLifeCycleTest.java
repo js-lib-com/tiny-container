@@ -41,10 +41,7 @@ public class ContainerLifeCycleTest {
 
 	@Before
 	public void beforeTest() {
-		doReturn(Object.class).when(binding).getInterfaceClass();
-		doReturn(Object.class).when(binding).getImplementationClass();
 		when(cdi.configure(config)).thenReturn(Arrays.asList(binding));
-
 		container = new Container(cdi);
 	}
 
@@ -92,6 +89,8 @@ public class ContainerLifeCycleTest {
 	@Test
 	public void GivenDefaults_WhenConfig_ThenCDIConfigure() throws ConfigException {
 		// given
+		doReturn(Service.class).when(binding).getInterfaceClass();
+		doReturn(Service.class).when(binding).getImplementationClass();
 
 		// when
 		container.configure(config);
@@ -106,7 +105,7 @@ public class ContainerLifeCycleTest {
 		IModule module = mock(IModule.class);
 
 		// when
-		container.configure(module);
+		container.modules(module);
 
 		// then
 		verify(cdi, times(1)).configure(module);
@@ -125,6 +124,8 @@ public class ContainerLifeCycleTest {
 	@Test
 	public void GivenManagedClass_WhenClose_Then() {
 		// given
+		doReturn(Service.class).when(binding).getInterfaceClass();
+		doReturn(Service.class).when(binding).getImplementationClass();
 		container.create(Arrays.asList(binding));
 
 		// when
@@ -136,6 +137,8 @@ public class ContainerLifeCycleTest {
 	@Test
 	public void GivenNoManagedClass_WhenClose_Then() {
 		// given
+		doReturn(Service.class).when(binding).getInterfaceClass();
+		doReturn(Service.class).when(binding).getImplementationClass();
 		container.create(Arrays.asList(binding));
 
 		// when

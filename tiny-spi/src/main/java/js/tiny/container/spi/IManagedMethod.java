@@ -2,6 +2,7 @@ package js.tiny.container.spi;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Type;
+import java.util.List;
 import java.util.function.Function;
 
 /**
@@ -76,6 +77,8 @@ public interface IManagedMethod {
 	 */
 	Type[] getParameterTypes();
 
+	List<IManagedParameter> getManagedParameters();
+	
 	Type[] getExceptionTypes();
 
 	/**

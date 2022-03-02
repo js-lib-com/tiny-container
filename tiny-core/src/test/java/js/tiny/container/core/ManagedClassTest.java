@@ -49,8 +49,8 @@ public class ManagedClassTest {
 
 	@Before
 	public void beforeTest() {
-		doReturn(Object.class).when(binding).getInterfaceClass();
-		doReturn(Object.class).when(binding).getImplementationClass();
+		doReturn(IService1.class).when(binding).getInterfaceClass();
+		doReturn(Service1.class).when(binding).getImplementationClass();
 		managedClass = new ManagedClass<>(container, binding);
 
 		when(postConstructorProcessor.getPriority()).thenReturn(IInstancePostConstructProcessor.Priority.CONSTRUCTOR);
@@ -161,6 +161,9 @@ public class ManagedClassTest {
 	@Test
 	public void GivenManagedClass_WhenGetInstance_ThenDelegateContainer() {
 		// given
+		doReturn(Object.class).when(binding).getInterfaceClass();
+		doReturn(Object.class).when(binding).getImplementationClass();
+		managedClass = new ManagedClass<>(container, binding);
 
 		// when
 		managedClass.getInstance();
@@ -206,6 +209,9 @@ public class ManagedClassTest {
 	@Test
 	public void GivenMissingAnnotation_WhenGetAnnotation_ThenNull() {
 		// given
+		doReturn(Object.class).when(binding).getInterfaceClass();
+		doReturn(Object.class).when(binding).getImplementationClass();
+		managedClass = new ManagedClass<>(container, binding);
 
 		// when
 		Annotation annotation = managedClass.scanAnnotation(Singleton.class);

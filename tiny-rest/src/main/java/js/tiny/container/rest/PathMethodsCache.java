@@ -9,7 +9,7 @@ import js.tiny.container.spi.IManagedClass;
 import js.tiny.container.spi.IManagedMethod;
 import js.util.Strings;
 
-public class MethodsCache {
+public class PathMethodsCache {
 	private final PathTree<IManagedMethod> cache = new PathTree<>();
 
 	public List<String> add(IManagedMethod managedMethod) {
