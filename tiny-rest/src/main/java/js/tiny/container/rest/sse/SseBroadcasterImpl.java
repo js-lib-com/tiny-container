@@ -58,7 +58,7 @@ public class SseBroadcasterImpl implements SseBroadcaster, Runnable {
 		this.sinksQueue = new ConcurrentLinkedQueue<>();
 		this.eventsQueue = new SseEventsQueue();
 
-		this.thread = new Thread(this);
+		this.thread = new Thread(this, "SSE Broadcaster");
 		this.thread.setDaemon(true);
 		this.thread.start();
 
@@ -155,7 +155,7 @@ public class SseBroadcasterImpl implements SseBroadcaster, Runnable {
 			});
 		}
 
-		log.debug("End broadcaster processing loop. Active for %.2d sec.", (System.currentTimeMillis() - startTimeMillis) / 1000.0);
+		log.debug("End broadcaster processing loop. Active for %.2f sec.", (System.currentTimeMillis() - startTimeMillis) / 1000.0);
 	}
 
 	/**

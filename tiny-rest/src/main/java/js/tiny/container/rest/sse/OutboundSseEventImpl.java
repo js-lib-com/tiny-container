@@ -119,7 +119,8 @@ public class OutboundSseEventImpl implements OutboundSseEvent {
 		@SuppressWarnings("rawtypes")
 		@Override
 		public Builder data(Class type, Object data) {
-			throw new UnsupportedOperationException("OutboundSseEventBuilderImpl#data(Class type, Object data)");
+			event.data = data;
+			return this;
 		}
 
 		@SuppressWarnings("rawtypes")
