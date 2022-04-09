@@ -181,7 +181,7 @@ public class RestServlet extends AppServlet {
 				if (!Types.isVoid(managedMethod.getReturnType())) {
 					throw new IllegalStateException("Non void SSE resource method: " + managedMethod);
 				}
-				handleSseRequest(httpRequest);
+				handleSseRequest(httpRequest, httpResponse);
 				return;
 			}
 
@@ -216,6 +216,10 @@ public class RestServlet extends AppServlet {
 
 		httpResponse.setCharacterEncoding("UTF-8");
 
+		if("cors".equals(httpRequest.getHeader("Sec-Fetch-Mode"))) {
+			httpResponse.setHeader("Access-Control-Allow-Origin", "*");
+		}
+
 		if (Types.isVoid(managedMethod.getReturnType())) {
 			// expected servlet container behavior:
 			// since there is nothing written to respond to output stream, container either set content length to zero
@@ -240,7 +244,7 @@ public class RestServlet extends AppServlet {
 		}
 		httpResponse.setStatus(HttpServletResponse.SC_OK);
 		httpResponse.setContentType(contentType.getValue());
-
+		
 		ValueWriter valueWriter = valueWriterFactory.getValueWriter(contentType);
 		valueWriter.write(httpResponse, value);
 	}
@@ -309,19 +313,18 @@ public class RestServlet extends AppServlet {
 		return arguments;
 	}
 
-	protected void handleSseRequest(HttpServletRequest httpRequest) throws Exception {
+	protected void handleSseRequest(HttpServletRequest httpRequest, HttpServletResponse httpResponse) throws Exception {
 		if (!httpRequest.isAsyncSupported()) {
 			throw new IllegalStateException("REST SSE requires asynchronous mode. Missing <async-supported>true</async-supported> ?");
 		}
 
-		AsyncContext asyncContext = httpRequest.startAsync();
+		AsyncContext asyncContext = httpRequest.startAsync(httpRequest, httpResponse);
 		asyncContext.setTimeout(0);
 
 		// since event sink is bound with request scope next instance is the same as that injected on SSE method arguments
 		SseEventSinkImpl eventSink = (SseEventSinkImpl) container.getInstance(SseEventSink.class);
 		eventSink.setAsyncContext(asyncContext);
 
-		HttpServletResponse httpResponse = (HttpServletResponse) asyncContext.getResponse();
 		httpResponse.setContentType("text/event-stream;charset=UTF-8");
 		// no need to explicitly set character encoding since is already set by content type
 		// httpResponse.setCharacterEncoding("UTF-8");
@@ -331,6 +334,7 @@ public class RestServlet extends AppServlet {
 		httpResponse.setHeader(HttpHeader.PRAGMA, HttpHeader.NO_CACHE);
 		httpResponse.setDateHeader(HttpHeader.EXPIRES, 0);
 		httpResponse.setHeader(HttpHeader.CONNECTION, HttpHeader.KEEP_ALIVE);
+		httpResponse.setHeader("Access-Control-Allow-Origin", "*");
 
 		eventSink.setWriter(httpResponse.getWriter());
 	}
