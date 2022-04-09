@@ -3,6 +3,7 @@ package js.tiny.container.servlet;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.InputStream;
 import java.security.Principal;
 import java.util.Enumeration;
 import java.util.List;
@@ -21,8 +22,8 @@ import javax.servlet.http.HttpSessionListener;
 import jakarta.ws.rs.core.SecurityContext;
 import js.lang.BugError;
 import js.lang.Config;
-import js.lang.ConfigBuilder;
 import js.lang.ConfigException;
+import js.lang.NoSuchBeingException;
 import js.log.Log;
 import js.log.LogContext;
 import js.log.LogFactory;
@@ -134,7 +135,7 @@ public class TinyContainer extends Container implements ServletContextListener, 
 	private ISecurityContext security;
 
 	private ServletContextProvider servletContextProvider;
-	
+
 	public TinyContainer() {
 		this(CDI.create());
 	}
@@ -214,12 +215,19 @@ public class TinyContainer extends Container implements ServletContextListener, 
 
 		Bootstrap bootstrap = new Bootstrap();
 		try {
-			File contextDir = new File(servletContext.getRealPath(""));
-			File webinfDir = new File(contextDir, "WEB-INF");
-			File appDescriptorfile = new File(webinfDir, "app.xml");
-			ConfigBuilder configBuilder = new ConfigBuilder(new FileInputStream(appDescriptorfile));
-
-			bootstrap.startContainer(this, configBuilder.build());
+			InputStream descriptorStream = null;
+			if (servletContext.getRealPath("") != null) {
+				File contextDir = new File(servletContext.getRealPath(""));
+				File webinfDir = new File(contextDir, "WEB-INF");
+				descriptorStream = new FileInputStream(new File(webinfDir, "app.xml"));
+			} else {
+				try {
+					descriptorStream = Classes.getResourceAsStream("/app.xml");
+				} catch (NoSuchBeingException e) {
+					log.debug("Application binding descriptor not found.");
+				}
+			}
+			bootstrap.startContainer(this, descriptorStream);
 
 			servletContext.setAttribute(TinyContainer.ATTR_INSTANCE, this);
 			log.info("Application |%s| container started in %d msec.", contextName, System.currentTimeMillis() - start);
@@ -398,10 +406,13 @@ public class TinyContainer extends Container implements ServletContextListener, 
 	// --------------------------------------------------------------------------------------------
 
 	static {
-		LogProvider logProvider = Classes.loadService(LogProvider.class);
-		ShutdownHook shutdownHook = new ShutdownHook(logProvider);
-		shutdownHook.setDaemon(false);
-		Runtime.getRuntime().addShutdownHook(shutdownHook);
+		try {
+			LogProvider logProvider = Classes.loadService(LogProvider.class);
+			ShutdownHook shutdownHook = new ShutdownHook(logProvider);
+			shutdownHook.setDaemon(false);
+			Runtime.getRuntime().addShutdownHook(shutdownHook);
+		} catch (Throwable throwable) {
+		}
 	}
 
 	private static class ShutdownHook extends Thread {

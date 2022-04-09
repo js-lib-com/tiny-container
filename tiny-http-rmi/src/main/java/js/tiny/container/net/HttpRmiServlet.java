@@ -112,7 +112,7 @@ public final class HttpRmiServlet extends AppServlet {
 
 	/** Initialize invocation arguments reader and return value writer factories. */
 	public HttpRmiServlet() {
-		log.trace("RmiServlet()");
+		log.trace("HttpRmiServlet()");
 		// both factories are implemented by the same server encoders
 		argumentsReaderFactory = ServerEncoders.getInstance();
 		valueWriterFactory = ServerEncoders.getInstance();

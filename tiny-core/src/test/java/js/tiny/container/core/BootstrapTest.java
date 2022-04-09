@@ -6,12 +6,15 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
+import js.lang.Config;
 import js.lang.ConfigException;
 
 @RunWith(MockitoJUnitRunner.class)
 public class BootstrapTest {
 	@Mock
 	private Container container;
+	@Mock
+	private Config config;
 
 	private Bootstrap bootstrap;
 
@@ -21,21 +24,21 @@ public class BootstrapTest {
 	}
 
 	@Test
-	public void Given_WhenCreateAppContainer_Then() {
+	public void GivenEmptyConfigObject_WhenCreateAppContainer_ThenNoException() {
 		// given
 
 		// when
-		bootstrap.createAppContainer();
+		bootstrap.createAppContainer(config);
 
 		// then
 	}
 
 	@Test
-	public void Given_WhenStartContainer_Then() throws ConfigException {
+	public void GivenEmptyConfigObject_WhenStartContainer_ThenNoException() throws ConfigException {
 		// given
 
 		// when
-		bootstrap.startContainer(container);
+		bootstrap.startContainer(container, config);
 
 		// then
 	}
