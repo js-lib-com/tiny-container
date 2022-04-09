@@ -37,29 +37,43 @@ public class ResourcesInjectionProcessor implements IInstancePostConstructProces
 	private static final String GLOBAL_ENV = "java:global/env";
 	private static final String COMP_ENV = "java:comp/env";
 
+	private final Context rootContext;
 	private final Context globalEnvironment;
 	private final Context componentEnvironment;
 	private final FieldsCache fieldsCache;
 
 	public ResourcesInjectionProcessor() {
-		this.globalEnvironment = environment(GLOBAL_ENV);
-		this.componentEnvironment = environment(COMP_ENV);
+		this.rootContext = context();
+		this.globalEnvironment = context(rootContext, GLOBAL_ENV);
+		this.componentEnvironment = context(rootContext, COMP_ENV);
 		this.fieldsCache = new FieldsCache();
 	}
 
-	private static Context environment(String name) {
+	private static Context context() {
+		try {
+			return new InitialContext();
+		} catch (NamingException e) {
+			log.error("Fail to create JNDI initial context. Root cause: %s: %s", e.getClass().getCanonicalName(), e.getMessage());
+			return null;
+		}
+	}
+
+	private static Context context(Context rootContext, String contextName) {
+		if (rootContext == null) {
+			return null;
+		}
 		Context context = null;
 		try {
-			Context serverContext = new InitialContext();
-			context = (Context) serverContext.lookup(name);
+			context = (Context) rootContext.lookup(contextName);
 		} catch (NamingException e) {
-			log.error(e);
+			log.error("JNDI context |%s| lookup fail. Root cause: %s: %s", contextName, e.getClass().getCanonicalName(), e.getMessage());
 		}
 		return context;
 	}
 
 	/** Test constructor. */
 	ResourcesInjectionProcessor(Context globalEnvironment, Context componentEnvironment, FieldsCache fieldsCache) {
+		this.rootContext = null;
 		this.globalEnvironment = globalEnvironment;
 		this.componentEnvironment = componentEnvironment;
 		this.fieldsCache = fieldsCache;
@@ -140,6 +154,7 @@ public class ResourcesInjectionProcessor implements IInstancePostConstructProces
 		if (namingContext == null) {
 			return null;
 		}
+
 		Object value = null;
 		try {
 			value = namingContext.lookup(name);
