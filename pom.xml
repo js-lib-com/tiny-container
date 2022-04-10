@@ -43,6 +43,7 @@
 		<module>tiny-timer</module>
 		<module>tiny-interceptor</module>
 		<module>tiny-resource</module>
+		<module>tiny-ejb</module>
 	</modules>
 
 	<properties>
