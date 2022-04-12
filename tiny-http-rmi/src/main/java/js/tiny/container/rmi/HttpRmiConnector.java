@@ -1,4 +1,4 @@
-package js.tiny.container.net;
+package js.tiny.container.rmi;
 
 import js.tiny.container.spi.IConnector;
 import js.tiny.container.spi.IManagedClass;

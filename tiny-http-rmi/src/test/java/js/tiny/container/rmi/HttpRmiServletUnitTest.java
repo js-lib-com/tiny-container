@@ -1,4 +1,4 @@
-package js.tiny.container.net;
+package js.tiny.container.rmi;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;

@@ -8,7 +8,7 @@
  * 
  * <h3 id="http-rmi">HTTP-RMI, Hyper Text Remote Invocation Protocol</h3> HTTP-RMI is a remote method invocation protocol using
  * HTTP as transport. This package provides server side incoming requests handler, see
- * {@link js.tiny.container.net.HttpRmiServlet}; usually a HTTP-RMI request uses <b>rmi</b> extension. HTTP-RMI can be used to
+ * {@link js.tiny.container.rmi.HttpRmiServlet}; usually a HTTP-RMI request uses <b>rmi</b> extension. HTTP-RMI can be used to
  * connect JavaScript client logic via AJAX requests. Also using this library one can connect two Java processes via the same
  * HTTP-RMI protocol. Anyway, because it is a text protocol ending points language is not really relevant.
  * <p>
@@ -151,7 +151,7 @@
  *  &lt;stream of bytes&gt;
  * </pre>
  * 
- * <h4>HTTP-RMI Response for Exception</h4> If method execution fails {@link js.tiny.container.net.HttpRmiServlet} creates an
+ * <h4>HTTP-RMI Response for Exception</h4> If method execution fails {@link js.tiny.container.rmi.HttpRmiServlet} creates an
  * exception transport instance, see {@link js.rmi.RemoteException}, and initialize it with target exception class name and
  * message. Then sent it back to client using JSON encoding and response status code 500, server internal error.
  * 
@@ -444,4 +444,4 @@
  * 
  * @author Iulian Rotaru
  */
-package js.tiny.container.net;
+package js.tiny.container.rmi;

@@ -1,4 +1,4 @@
-package js.tiny.container.net;
+package js.tiny.container.rmi;
 
 import java.io.IOException;
 import java.lang.reflect.Type;

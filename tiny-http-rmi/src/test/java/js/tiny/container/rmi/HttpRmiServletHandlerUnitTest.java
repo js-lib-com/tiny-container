@@ -1,4 +1,4 @@
-package js.tiny.container.net;
+package js.tiny.container.rmi;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
