@@ -162,7 +162,6 @@ public class CDI implements IProvisionListener {
 			return null;
 		}
 		if (!(provider instanceof ScopedProvider)) {
-			log.debug("Not a scoped provider |%s|.", provider);
 			return null;
 		}
 
