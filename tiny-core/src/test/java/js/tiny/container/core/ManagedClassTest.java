@@ -14,8 +14,6 @@ import java.lang.annotation.Annotation;
 import java.util.Arrays;
 import java.util.Iterator;
 
-import javax.inject.Singleton;
-
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
 import org.hamcrest.TypeSafeDiagnosingMatcher;
@@ -25,6 +23,7 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
+import jakarta.inject.Singleton;
 import js.tiny.container.cdi.IClassBinding;
 import js.tiny.container.spi.IClassPostLoadedProcessor;
 import js.tiny.container.spi.IFlowProcessor;

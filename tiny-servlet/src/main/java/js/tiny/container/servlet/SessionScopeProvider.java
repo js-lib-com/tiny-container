@@ -4,12 +4,11 @@ import java.lang.annotation.Annotation;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpSession;
-
 import jakarta.enterprise.context.ContextNotActiveException;
 import jakarta.enterprise.context.SessionScoped;
 import jakarta.inject.Provider;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
 import js.injector.IBinding;
 import js.injector.IInjector;
 import js.injector.IScopeFactory;

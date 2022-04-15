@@ -10,7 +10,7 @@ import java.net.URL;
 import java.util.Collection;
 import java.util.List;
 
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 
 import js.converter.Converter;
 import js.converter.ConverterException;

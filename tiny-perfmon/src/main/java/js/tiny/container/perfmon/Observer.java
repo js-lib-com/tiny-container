@@ -2,9 +2,9 @@ package js.tiny.container.perfmon;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
-import javax.ejb.Startup;
-import javax.inject.Inject;
 
+import jakarta.ejb.Startup;
+import jakarta.inject.Inject;
 import js.log.Log;
 import js.log.LogFactory;
 

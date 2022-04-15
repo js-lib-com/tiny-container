@@ -10,8 +10,6 @@ import static org.mockito.Mockito.when;
 
 import java.lang.annotation.Annotation;
 
-import javax.inject.Named;
-
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -20,6 +18,7 @@ import org.mockito.junit.MockitoJUnitRunner;
 
 import jakarta.enterprise.context.RequestScoped;
 import jakarta.enterprise.context.SessionScoped;
+import jakarta.inject.Named;
 import jakarta.inject.Singleton;
 import js.injector.IBindingBuilder;
 import js.injector.IInjector;
@@ -202,7 +201,7 @@ public class ConfigModuleTest {
 		// given
 
 		// when
-		module.bindAttribute(bindingBuilder, "with", "javax.inject.Named");
+		module.bindAttribute(bindingBuilder, "with", "jakarta.inject.Named");
 
 		// then
 		verify(bindingBuilder, times(1)).with(Named.class);

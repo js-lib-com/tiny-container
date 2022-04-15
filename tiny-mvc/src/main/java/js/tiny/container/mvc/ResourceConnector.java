@@ -1,7 +1,6 @@
 package js.tiny.container.mvc;
 
-import javax.inject.Inject;
-
+import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
 import js.log.Log;
 import js.log.LogFactory;

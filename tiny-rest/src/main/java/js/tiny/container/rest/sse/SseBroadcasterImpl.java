@@ -13,6 +13,7 @@ import java.util.function.Consumer;
 import jakarta.ws.rs.sse.OutboundSseEvent;
 import jakarta.ws.rs.sse.SseBroadcaster;
 import jakarta.ws.rs.sse.SseEventSink;
+import js.lang.KeepAliveEvent;
 import js.log.Log;
 import js.log.LogFactory;
 

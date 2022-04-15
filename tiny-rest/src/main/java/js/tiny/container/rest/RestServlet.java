@@ -5,14 +5,19 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Type;
 import java.util.List;
 
-import javax.inject.Inject;
-import javax.servlet.AsyncContext;
-import javax.servlet.ServletConfig;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
+import jakarta.inject.Inject;
+import jakarta.servlet.AsyncContext;
+import jakarta.servlet.ServletConfig;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.ws.rs.HeaderParam;
+import jakarta.ws.rs.MatrixParam;
 import jakarta.ws.rs.Path;
+import jakarta.ws.rs.PathParam;
+import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.QueryParam;
+import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.sse.SseEventSink;
 import js.converter.Converter;
@@ -235,7 +240,7 @@ public class RestServlet extends AppServlet {
 		// JSON but with limited capacity; if capacity is not exceeded set response content length; if capacity is exceeded
 		// switch to chunked transfer
 
-		IProduces producesMeta = IProduces.scan(managedMethod);
+		Produces producesMeta = managedMethod.scanAnnotation(Produces.class, IManagedMethod.Flags.INCLUDE_TYPES);
 		String produces = producesMeta != null ? producesMeta.value().length > 0 ? producesMeta.value()[0] : null : null;
 
 		ContentType contentType = ContentType.valueOf(produces);
@@ -279,32 +284,28 @@ public class RestServlet extends AppServlet {
 
 			Annotation annotation = annotations[0];
 
-			if (IContext.cast(annotation) != null) {
+			if (annotation instanceof Context) {
 				arguments[argumentIndex] = container.getInstance(parameterType);
 			}
 
-			IPathParam pathParam = IPathParam.cast(annotation);
-			if (pathParam != null) {
+			if (annotation instanceof PathParam) {
 				// this logic assumes request path variables order is the same as related formal parameters
 				// therefore there is no the need to search variable by name
 				arguments[argumentIndex] = requestPath.getVariableValue(pathVariableIndex++, parameterType);
 			}
 
-			IQueryParam queryParam = IQueryParam.cast(annotation);
-			if (queryParam != null) {
-				String queryName = queryParam.value();
+			if (annotation instanceof QueryParam) {
+				String queryName = ((QueryParam)annotation).value();
 				arguments[argumentIndex] = converter.asObject(urlParameters.getParameter(queryName), parameterType);
 			}
 
-			IMatrixParam matrixParam = IMatrixParam.cast(annotation);
-			if (matrixParam != null) {
-				String matrixName = matrixParam.value();
+			if (annotation instanceof MatrixParam) {
+				String matrixName = ((MatrixParam)annotation).value();
 				arguments[argumentIndex] = converter.asObject(urlParameters.getParameter(matrixName), parameterType);
 			}
 
-			IHeaderParam headerParam = IHeaderParam.cast(annotation);
-			if (headerParam != null) {
-				String headerName = headerParam.value();
+			if (annotation instanceof HeaderParam) {
+				String headerName = ((HeaderParam)annotation).value();
 				arguments[argumentIndex] = converter.asObject(httpRequest.getHeader(headerName), parameterType);
 			}
 
@@ -347,7 +348,7 @@ public class RestServlet extends AppServlet {
 	 * @return true if current request is for a SSE method.
 	 */
 	private boolean isSseRequest(IManagedMethod managedMethod) {
-		IProduces producesMeta = IProduces.scan(managedMethod);
+		Produces producesMeta = managedMethod.scanAnnotation(Produces.class, IManagedMethod.Flags.INCLUDE_TYPES);
 		if (producesMeta == null) {
 			return false;
 		}
@@ -359,7 +360,7 @@ public class RestServlet extends AppServlet {
 		}
 
 		for (IManagedParameter managedParameter : managedMethod.getManagedParameters()) {
-			if (IContext.scan(managedParameter) && SseEventSink.class.equals(managedParameter.getType())) {
+			if (managedParameter.scanAnnotation(Context.class) != null && SseEventSink.class.equals(managedParameter.getType())) {
 				return true;
 			}
 		}

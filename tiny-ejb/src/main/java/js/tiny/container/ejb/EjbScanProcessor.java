@@ -3,6 +3,7 @@ package js.tiny.container.ejb;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 
+import jakarta.ejb.EJB;
 import jakarta.enterprise.context.ApplicationScoped;
 import js.lang.BugError;
 import js.net.client.HttpRmiFactory;
@@ -35,7 +36,7 @@ public class EjbScanProcessor implements IClassPostLoadedProcessor {
 		boolean createManagedClass = false;
 		Class<? extends T> implementationClass = managedClass.getImplementationClass();
 		for (Field field : implementationClass.getDeclaredFields()) {
-			if (IEJB.scan(field) != null) {
+			if (field.getAnnotation(EJB.class) != null) {
 				if (Modifier.isFinal(field.getModifiers())) {
 					throw new BugError("Attempt to inject EJB in final field |%s#%s|.", implementationClass.getCanonicalName(), field.getName());
 				}

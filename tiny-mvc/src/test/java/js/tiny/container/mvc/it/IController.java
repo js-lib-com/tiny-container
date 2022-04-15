@@ -3,9 +3,8 @@ package js.tiny.container.mvc.it;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 
-import javax.annotation.security.PermitAll;
-import javax.annotation.security.RolesAllowed;
-
+import jakarta.annotation.security.PermitAll;
+import jakarta.annotation.security.RolesAllowed;
 import js.tiny.container.http.form.Form;
 import js.tiny.container.http.form.FormIterator;
 import js.tiny.container.mvc.View;

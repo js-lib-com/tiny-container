@@ -32,10 +32,6 @@ class ManagedModule implements IModule {
 		PROXY_ANNOTATIONS.add(jakarta.annotation.ManagedBean.class);
 		PROXY_ANNOTATIONS.add(jakarta.ejb.Stateful.class);
 		PROXY_ANNOTATIONS.add(jakarta.ejb.Stateless.class);
-
-		PROXY_ANNOTATIONS.add(javax.annotation.ManagedBean.class);
-		PROXY_ANNOTATIONS.add(javax.ejb.Stateful.class);
-		PROXY_ANNOTATIONS.add(javax.ejb.Stateless.class);
 	}
 
 	private final IInjector injector;

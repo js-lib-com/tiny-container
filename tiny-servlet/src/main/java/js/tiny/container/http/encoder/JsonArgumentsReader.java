@@ -9,9 +9,8 @@ import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.nio.charset.Charset;
 
-import javax.inject.Inject;
-import javax.servlet.http.HttpServletRequest;
-
+import jakarta.inject.Inject;
+import jakarta.servlet.http.HttpServletRequest;
 import js.json.Json;
 import js.json.JsonException;
 import js.lang.IllegalArgumentException;

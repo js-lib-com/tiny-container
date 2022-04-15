@@ -10,10 +10,12 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
+import jakarta.ejb.Schedule;
+
 @RunWith(MockitoJUnitRunner.class)
 public class YearExpressionParserTest {
 	@Mock
-	private ISchedule schedule;
+	private Schedule schedule;
 
 	private CalendarEx now;
 

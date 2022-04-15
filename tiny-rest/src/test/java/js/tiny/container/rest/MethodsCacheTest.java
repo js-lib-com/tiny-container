@@ -7,15 +7,14 @@ import static org.mockito.Mockito.when;
 
 import java.util.List;
 
-import javax.ejb.Remote;
-import javax.ws.rs.Path;
-
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
+import jakarta.ejb.Remote;
+import jakarta.ws.rs.Path;
 import js.tiny.container.spi.IManagedClass;
 import js.tiny.container.spi.IManagedMethod;
 

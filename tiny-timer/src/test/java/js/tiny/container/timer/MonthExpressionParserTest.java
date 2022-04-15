@@ -7,18 +7,18 @@ import static org.mockito.Mockito.when;
 
 import java.util.SortedSet;
 
-import javax.ejb.Schedule;
-
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
+import jakarta.ejb.Schedule;
+
 @RunWith(MockitoJUnitRunner.class)
 public class MonthExpressionParserTest {
 	@Mock
-	private ISchedule schedule;
+	private Schedule schedule;
 
 	private CalendarEx now;
 	private MonthExpressionParser parser;

@@ -5,6 +5,7 @@ import static java.lang.String.format;
 import java.util.HashMap;
 import java.util.Map;
 
+import jakarta.annotation.PreDestroy;
 import js.log.Log;
 import js.log.LogFactory;
 import js.tiny.container.spi.IInstancePreDestroyProcessor;
@@ -31,7 +32,7 @@ public class InstancePreDestructor implements IInstancePreDestroyProcessor {
 
 		final Found found = new Found();
 		managedClass.getManagedMethods().forEach(managedMethod -> {
-			if (IPreDestroy.scan(managedMethod) != null) {
+			if (managedMethod.scanAnnotation(PreDestroy.class) != null) {
 				sanityCheck(managedMethod);
 				if (methodsCache.put(managedClass.getImplementationClass(), managedMethod) != null) {
 					throw new IllegalStateException("Only one pre-destructor allowed. See managed class " + managedClass);
@@ -39,7 +40,7 @@ public class InstancePreDestructor implements IInstancePreDestroyProcessor {
 				found.value = true;
 			}
 		});
-		
+
 		return found.value;
 	}
 

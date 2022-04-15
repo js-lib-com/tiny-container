@@ -1,7 +1,6 @@
 package js.tiny.container.perfmon;
 
-import javax.inject.Singleton;
-
+import jakarta.inject.Singleton;
 import js.tiny.container.spi.IContainer;
 import js.tiny.container.spi.IInvocation;
 import js.tiny.container.spi.IInvocationProcessorsChain;

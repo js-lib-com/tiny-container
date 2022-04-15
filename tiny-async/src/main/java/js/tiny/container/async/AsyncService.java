@@ -7,6 +7,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
+import jakarta.ejb.Asynchronous;
 import jakarta.inject.Inject;
 import js.lang.AsyncTask;
 import js.log.Log;
@@ -65,7 +66,7 @@ public class AsyncService implements IMethodInvocationProcessor {
 
 	@Override
 	public boolean bind(IManagedMethod managedMethod) {
-		if (!IAsynchronous.isAnnotationPresent(managedMethod)) {
+		if (managedMethod.scanAnnotation(Asynchronous.class, IManagedMethod.Flags.INCLUDE_TYPES) == null) {
 			return false;
 		}
 		if (managedMethod.isStatic()) {

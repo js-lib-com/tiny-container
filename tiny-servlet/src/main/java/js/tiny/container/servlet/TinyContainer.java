@@ -8,17 +8,18 @@ import java.security.Principal;
 import java.util.Enumeration;
 import java.util.List;
 
-import javax.enterprise.context.ContextNotActiveException;
-import javax.servlet.ServletContext;
-import javax.servlet.ServletContextEvent;
-import javax.servlet.ServletContextListener;
-import javax.servlet.ServletRequestEvent;
-import javax.servlet.ServletRequestListener;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpSession;
-import javax.servlet.http.HttpSessionEvent;
-import javax.servlet.http.HttpSessionListener;
-
+import jakarta.enterprise.context.ContextNotActiveException;
+import jakarta.enterprise.context.RequestScoped;
+import jakarta.enterprise.context.SessionScoped;
+import jakarta.servlet.ServletContext;
+import jakarta.servlet.ServletContextEvent;
+import jakarta.servlet.ServletContextListener;
+import jakarta.servlet.ServletRequestEvent;
+import jakarta.servlet.ServletRequestListener;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
+import jakarta.servlet.http.HttpSessionEvent;
+import jakarta.servlet.http.HttpSessionListener;
 import jakarta.ws.rs.core.SecurityContext;
 import js.lang.BugError;
 import js.lang.Config;
@@ -153,10 +154,8 @@ public class TinyContainer extends Container implements ServletContextListener, 
 		bind(HttpServletRequest.class).provider(new HttpRequestProvider()).build();
 		bind(RequestContext.class).build();
 
-		bindScope(jakarta.enterprise.context.RequestScoped.class, new RequestScopeProvider.Factory<>());
-		bindScope(jakarta.enterprise.context.SessionScoped.class, new SessionScopeProvider.Factory<>());
-		bindScope(javax.enterprise.context.RequestScoped.class, new RequestScopeProvider.Factory<>());
-		bindScope(javax.enterprise.context.SessionScoped.class, new SessionScopeProvider.Factory<>());
+		bindScope(RequestScoped.class, new RequestScopeProvider.Factory<>());
+		bindScope(SessionScoped.class, new SessionScopeProvider.Factory<>());
 	}
 
 	@Override
@@ -165,12 +164,12 @@ public class TinyContainer extends Container implements ServletContextListener, 
 		// security can be null if security module is not deployed on runtime
 		security = getOptionalInstance(ISecurityContext.class);
 	}
-
+	
 	// --------------------------------------------------------------------------------------------
-	// SERVLET CONTAINER LISTENERS
+	// JAKARTA SERVLET CONTAINER LISTENERS
 
 	/**
-	 * Implements tiny container boostrap logic. See class description for overall performed steps. Also loads context
+	 * Implements tiny container bootstrap logic. See class description for overall performed steps. Also loads context
 	 * parameters from external descriptors using {@link ServletContext#getInitParameter(String)}.
 	 * <p>
 	 * Context initialized listener is not allowed to throw exceptions and it seems there is no standard way to ask servlet

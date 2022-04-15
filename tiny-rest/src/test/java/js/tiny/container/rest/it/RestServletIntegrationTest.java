@@ -14,15 +14,15 @@ import java.io.StringWriter;
 import java.util.Collections;
 import java.util.Locale;
 
-import javax.servlet.ReadListener;
-import javax.servlet.ServletConfig;
-import javax.servlet.ServletContext;
-import javax.servlet.ServletInputStream;
-import javax.servlet.ServletOutputStream;
-import javax.servlet.ServletRequestEvent;
-import javax.servlet.WriteListener;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.ReadListener;
+import jakarta.servlet.ServletConfig;
+import jakarta.servlet.ServletContext;
+import jakarta.servlet.ServletInputStream;
+import jakarta.servlet.ServletOutputStream;
+import jakarta.servlet.ServletRequestEvent;
+import jakarta.servlet.WriteListener;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
 import org.junit.After;
 import org.junit.Before;
@@ -39,7 +39,7 @@ import js.tiny.container.servlet.TinyContainer;
 public class RestServletIntegrationTest {
 	private static final String DESCRIPTOR = "" + //
 			"<module package='js.tiny.container.rest.it'>" + //
-			"	<binding bind='Service' in='javax.inject.Singleton' />" + //
+			"	<binding bind='Service' in='jakarta.inject.Singleton' />" + //
 			"</module>";
 
 	@Mock

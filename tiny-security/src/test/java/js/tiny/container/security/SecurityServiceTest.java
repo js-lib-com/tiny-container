@@ -12,14 +12,13 @@ import static org.mockito.Mockito.when;
 import java.lang.annotation.Annotation;
 import java.security.Principal;
 
-import javax.servlet.http.HttpServletRequest;
-
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
+import jakarta.servlet.http.HttpServletRequest;
 import js.injector.IBindingBuilder;
 import js.tiny.container.spi.AuthorizationException;
 import js.tiny.container.spi.IContainer;
@@ -113,35 +112,9 @@ public class SecurityServiceTest {
 	}
 
 	@Test
-	public void GivenMethodJavaxPermitAll_WhenBind_ThenFalse() {
-		// given
-		Class<? extends Annotation> annotation = javax.annotation.security.PermitAll.class;
-		doReturn(mock(annotation)).when(managedMethod).scanAnnotation(annotation);
-
-		// when
-		boolean bind = service.bind(managedMethod);
-
-		// then
-		assertThat(bind, equalTo(false));
-	}
-
-	@Test
 	public void GivenMethodJakartaDenyAll_WhenBind_ThenTrue() {
 		// given
 		Class<? extends Annotation> annotation = jakarta.annotation.security.DenyAll.class;
-		doReturn(mock(annotation)).when(managedMethod).scanAnnotation(annotation);
-
-		// when
-		boolean bind = service.bind(managedMethod);
-
-		// then
-		assertThat(bind, equalTo(true));
-	}
-
-	@Test
-	public void GivenMethodJavaxDenyAll_WhenBind_ThenTrue() {
-		// given
-		Class<? extends Annotation> annotation = javax.annotation.security.DenyAll.class;
 		doReturn(mock(annotation)).when(managedMethod).scanAnnotation(annotation);
 
 		// when
@@ -165,35 +138,9 @@ public class SecurityServiceTest {
 	}
 
 	@Test
-	public void GivenMethodJavaxRolesAllowed_WhenBind_ThenTrue() {
-		// given
-		Class<? extends Annotation> annotation = javax.annotation.security.RolesAllowed.class;
-		doReturn(mock(annotation)).when(managedMethod).scanAnnotation(annotation);
-
-		// when
-		boolean bind = service.bind(managedMethod);
-
-		// then
-		assertThat(bind, equalTo(true));
-	}
-
-	@Test
 	public void GivenClassJakartaPermitAll_WhenBind_ThenFalse() {
 		// given
 		Class<? extends Annotation> annotation = jakarta.annotation.security.PermitAll.class;
-		doReturn(mock(annotation)).when(managedClass).scanAnnotation(annotation);
-
-		// when
-		boolean bind = service.bind(managedMethod);
-
-		// then
-		assertThat(bind, equalTo(false));
-	}
-
-	@Test
-	public void GivenClassJavaxPermitAll_WhenBind_ThenFalse() {
-		// given
-		Class<? extends Annotation> annotation = javax.annotation.security.PermitAll.class;
 		doReturn(mock(annotation)).when(managedClass).scanAnnotation(annotation);
 
 		// when
@@ -234,18 +181,6 @@ public class SecurityServiceTest {
 	public void GivenMethodJakartaDenyAll_WhenOnMethodInvocation_ThenException() throws Exception {
 		// given
 		Class<? extends Annotation> annotation = jakarta.annotation.security.DenyAll.class;
-		doReturn(mock(annotation)).when(managedMethod).scanAnnotation(annotation, IManagedMethod.Flags.INCLUDE_TYPES);
-
-		// when
-		service.onMethodInvocation(chain, invocation);
-
-		// then
-	}
-
-	@Test(expected = AuthorizationException.class)
-	public void GivenMethodJavaxDenyAll_WhenOnMethodInvocation_ThenException() throws Exception {
-		// given
-		Class<? extends Annotation> annotation = javax.annotation.security.DenyAll.class;
 		doReturn(mock(annotation)).when(managedMethod).scanAnnotation(annotation, IManagedMethod.Flags.INCLUDE_TYPES);
 
 		// when

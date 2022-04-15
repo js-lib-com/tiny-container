@@ -2,7 +2,7 @@ package js.tiny.container.http;
 
 import java.io.IOException;
 
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpServletResponse;
 
 /**
  * A resource is any entity serializable back to client. Classic example is the HTML page generated dynamically but by no means

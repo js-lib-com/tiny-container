@@ -1,6 +1,6 @@
 package js.tiny.container.spi;
 
-import javax.ejb.Startup;
+import jakarta.ejb.Startup;
 
 /**
  * Extension processors executed at container start.

@@ -4,7 +4,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Type;
 
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 
 /**
  * Method invocation arguments reader from HTTP request. Arguments reader deserializes a net method invocation arguments carried

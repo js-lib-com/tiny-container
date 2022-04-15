@@ -1,10 +1,9 @@
 package js.tiny.container.service;
 
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import java.util.Arrays;
-
-import javax.ejb.Startup;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -12,6 +11,7 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
+import jakarta.ejb.Startup;
 import js.tiny.container.spi.IContainer;
 import js.tiny.container.spi.IManagedClass;
 

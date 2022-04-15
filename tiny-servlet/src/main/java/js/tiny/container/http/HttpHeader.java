@@ -1,6 +1,6 @@
 package js.tiny.container.http;
 
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 
 /**
  * HTTP headers constants and related helpers.

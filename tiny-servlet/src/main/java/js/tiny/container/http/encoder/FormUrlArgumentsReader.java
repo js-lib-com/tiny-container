@@ -3,7 +3,7 @@ package js.tiny.container.http.encoder;
 import java.io.IOException;
 import java.lang.reflect.Type;
 
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 
 import js.lang.SyntaxException;
 

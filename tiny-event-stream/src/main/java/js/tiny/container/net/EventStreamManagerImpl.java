@@ -5,8 +5,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 import javax.annotation.PreDestroy;
-import javax.inject.Inject;
 
+import jakarta.inject.Inject;
 import js.lang.Event;
 import js.log.Log;
 import js.log.LogFactory;

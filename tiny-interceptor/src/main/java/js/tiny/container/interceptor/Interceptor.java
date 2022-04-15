@@ -1,6 +1,6 @@
 package js.tiny.container.interceptor;
 
-import javax.interceptor.Interceptors;
+import jakarta.interceptor.Interceptors;
 
 /**
  * Stateless managed method invocation interceptor. This interface is base abstraction for specialized interceptors executed

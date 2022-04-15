@@ -2,6 +2,7 @@ package js.tiny.container.timer;
 
 import java.util.SortedSet;
 
+import jakarta.ejb.Schedule;
 import js.util.Params;
 
 class NumericExpressionParser extends BaseExpressionParser {
@@ -13,7 +14,7 @@ class NumericExpressionParser extends BaseExpressionParser {
 	}
 
 	@Override
-	public SortedSet<Integer> parse(ISchedule schedule, CalendarEx calendar) {
+	public SortedSet<Integer> parse(Schedule schedule, CalendarEx calendar) {
 		Params.notNull(schedule, "Schedule");
 		Params.notNull(calendar, "Calendar");
 

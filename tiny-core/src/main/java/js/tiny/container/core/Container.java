@@ -14,8 +14,8 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import javax.inject.Singleton;
-
+import jakarta.annotation.Priority;
+import jakarta.inject.Singleton;
 import js.converter.Converter;
 import js.converter.ConverterRegistry;
 import js.embedded.container.EmbeddedContainer;
@@ -160,7 +160,7 @@ public class Container implements IContainer, EmbeddedContainer, IManagedLoader 
 		try {
 			SortedMap<Integer, IManagedClass<?>> managedClasses = new TreeMap<>(Collections.reverseOrder());
 			for (IManagedClass<?> managedClass : this.managedClasses) {
-				javax.annotation.Priority priorityAnnotation = managedClass.scanAnnotation(javax.annotation.Priority.class);
+				Priority priorityAnnotation = managedClass.scanAnnotation(Priority.class);
 				int priority = priorityAnnotation != null ? priorityAnnotation.value() : LOW_VALUE.getAndIncrement();
 				managedClasses.put(priority, managedClass);
 			}

@@ -6,9 +6,8 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.StringWriter;
 
-import javax.annotation.security.PermitAll;
-import javax.inject.Inject;
-
+import jakarta.annotation.security.PermitAll;
+import jakarta.inject.Inject;
 import js.tiny.container.http.form.Form;
 import js.tiny.container.http.form.FormField;
 import js.tiny.container.http.form.FormIterator;

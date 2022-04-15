@@ -5,7 +5,6 @@ import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -94,21 +93,6 @@ public class AsyncServiceTest {
 	public void GivenVoidAsynchronous_WhenBind_ThenBound() {
 		// given
 		when(managedMethod.scanAnnotation(jakarta.ejb.Asynchronous.class, IManagedMethod.Flags.INCLUDE_TYPES)).thenReturn(asynchronous);
-		when(managedMethod.isVoid()).thenReturn(true);
-		when(managedMethod.getExceptionTypes()).thenReturn(new Type[0]);
-
-		// when
-		boolean bound = service.bind(managedMethod);
-
-		// then
-		assertThat(bound, equalTo(true));
-	}
-
-	@Test
-	public void GivenVoidJavaxAsynchronous_WhenBind_ThenBound() {
-		// given
-		javax.ejb.Asynchronous asynchronous = mock(javax.ejb.Asynchronous.class);
-		when(managedMethod.scanAnnotation(javax.ejb.Asynchronous.class, IManagedMethod.Flags.INCLUDE_TYPES)).thenReturn(asynchronous);
 		when(managedMethod.isVoid()).thenReturn(true);
 		when(managedMethod.getExceptionTypes()).thenReturn(new Type[0]);
 

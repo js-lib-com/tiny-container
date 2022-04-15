@@ -1,9 +1,8 @@
 package js.tiny.container.servlet;
 
-import javax.servlet.ServletContext;
-
 import jakarta.enterprise.context.ContextNotActiveException;
 import jakarta.inject.Provider;
+import jakarta.servlet.ServletContext;
 
 /**
  * Inject provider for servlet context.

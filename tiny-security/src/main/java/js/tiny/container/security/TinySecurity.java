@@ -3,12 +3,11 @@ package js.tiny.container.security;
 import java.io.IOException;
 import java.security.Principal;
 
-import javax.enterprise.context.ContextNotActiveException;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
-
+import jakarta.enterprise.context.ContextNotActiveException;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 import jakarta.ws.rs.core.SecurityContext;
 import js.lang.BugError;
 import js.lang.RolesPrincipal;

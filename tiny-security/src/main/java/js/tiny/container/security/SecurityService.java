@@ -2,8 +2,10 @@ package js.tiny.container.security;
 
 import java.lang.annotation.Annotation;
 
-import javax.servlet.http.HttpServletRequest;
-
+import jakarta.annotation.security.DenyAll;
+import jakarta.annotation.security.PermitAll;
+import jakarta.annotation.security.RolesAllowed;
+import jakarta.servlet.http.HttpServletRequest;
 import js.log.Log;
 import js.log.LogFactory;
 import js.tiny.container.spi.AuthorizationException;
@@ -41,19 +43,19 @@ public class SecurityService implements IMethodInvocationProcessor {
 	@Override
 	public boolean bind(IManagedMethod managedMethod) {
 		// if method is 'PermitAll' there is no need to bind security processor
-		if (IPermitAll.isAnnotationPresent(managedMethod)) {
+		if (managedMethod.scanAnnotation(PermitAll.class) != null) {
 			return false;
 		}
 
-		if (IDenyAll.isAnnotationPresent(managedMethod)) {
+		if (managedMethod.scanAnnotation(DenyAll.class) != null) {
 			return true;
 		}
-		if (IRolesAllowed.isAnnotationPresent(managedMethod)) {
+		if (managedMethod.scanAnnotation(RolesAllowed.class) != null) {
 			return true;
 		}
 
 		// if declaring class is 'PermitAll' there is no need to bind security processor
-		if (IPermitAll.isAnnotationPresent(managedMethod.getDeclaringClass())) {
+		if (managedMethod.getDeclaringClass().scanAnnotation(PermitAll.class) != null) {
 			return false;
 		}
 
@@ -73,7 +75,7 @@ public class SecurityService implements IMethodInvocationProcessor {
 			return chain.invokeNextProcessor(invocation);
 		}
 
-		if (IDenyAll.isDenyAll(managedMethod)) {
+		if (managedMethod.scanAnnotation(DenyAll.class, IManagedMethod.Flags.INCLUDE_TYPES) != null) {
 			log.warn("Access denied to |%s|.", managedMethod);
 			throw new AuthorizationException();
 		}
@@ -91,7 +93,7 @@ public class SecurityService implements IMethodInvocationProcessor {
 	private static final String[] EMPTY_ROLES = new String[0];
 
 	private static String[] getRoles(IManagedMethod managedMethod) {
-		Annotation rolesAllowed = IRolesAllowed.scanAnnotation(managedMethod); 
+		Annotation rolesAllowed = managedMethod.scanAnnotation(RolesAllowed.class, IManagedMethod.Flags.INCLUDE_TYPES);
 		if (rolesAllowed == null) {
 			return EMPTY_ROLES;
 		}

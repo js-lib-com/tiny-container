@@ -4,14 +4,13 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
-import javax.inject.Singleton;
-
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
+import jakarta.inject.Singleton;
 import js.injector.IScopeFactory;
 import js.tiny.container.cdi.CDI;
 import js.tiny.container.spi.IContainer;

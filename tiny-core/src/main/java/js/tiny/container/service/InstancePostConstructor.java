@@ -6,6 +6,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
 import java.util.Map;
 
+import jakarta.annotation.PostConstruct;
 import js.lang.ManagedPostConstruct;
 import js.log.Log;
 import js.log.LogFactory;
@@ -39,7 +40,7 @@ public class InstancePostConstructor implements IInstancePostConstructProcessor 
 
 		final Found found = new Found();
 		managedClass.getManagedMethods().forEach(managedMethod -> {
-			if (IPostConstruct.scan(managedMethod) != null) {
+			if (managedMethod.scanAnnotation(PostConstruct.class) != null) {
 				sanityCheck(managedMethod);
 				if (methodsCache.put(managedClass.getImplementationClass(), managedMethod) != null) {
 					throw new IllegalStateException("Only one post-constructor allowed. See managed class " + managedClass);

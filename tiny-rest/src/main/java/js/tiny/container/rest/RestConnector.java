@@ -3,9 +3,11 @@ package js.tiny.container.rest;
 import java.lang.reflect.Field;
 import java.util.List;
 
+import jakarta.ejb.Remote;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.context.RequestScoped;
 import jakarta.inject.Inject;
+import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.sse.Sse;
 import jakarta.ws.rs.sse.SseEventSink;
 import js.json.Json;
@@ -57,7 +59,7 @@ public class RestConnector implements IConnector, IClassPostLoadedProcessor {
 
 	@Override
 	public <T> boolean bind(IManagedClass<T> managedClass) {
-		return IRemote.scan(managedClass) != null;
+		return managedClass.scanAnnotation(Remote.class) != null;
 	}
 
 	@Override
@@ -67,7 +69,7 @@ public class RestConnector implements IConnector, IClassPostLoadedProcessor {
 
 	@Override
 	public <T> boolean onClassPostLoaded(IManagedClass<T> managedClass) {
-		if (IRemote.scan(managedClass) == null) {
+		if (managedClass.scanAnnotation(Remote.class) == null) {
 			return false;
 		}
 
@@ -75,7 +77,7 @@ public class RestConnector implements IConnector, IClassPostLoadedProcessor {
 		Class<? extends T> implementationClass = managedClass.getImplementationClass();
 
 		for (Field field : implementationClass.getDeclaredFields()) {
-			if (IContext.scan(field)) {
+			if (field.getAnnotation(Context.class) != null) {
 				IMemberInjector injector = new IMemberInjector.FieldInjector(field);
 				injector.assertValid();
 				log.debug("Register context injector for field |%s|.", field);
@@ -84,7 +86,7 @@ public class RestConnector implements IConnector, IClassPostLoadedProcessor {
 		}
 
 		for (IManagedMethod managedMethod : managedClass.getManagedMethods()) {
-			if (IContext.scan(managedMethod)) {
+			if (managedMethod.scanAnnotation(Context.class) != null) {
 				IMemberInjector injector = new IMemberInjector.MethodInjector(managedMethod);
 				injector.assertValid();
 				log.debug("Register context injector for method |%s|.", managedMethod);

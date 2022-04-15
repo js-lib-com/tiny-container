@@ -9,6 +9,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
+import jakarta.ejb.Schedule;
 import js.log.Log;
 import js.log.LogFactory;
 import js.tiny.container.spi.IInstancePostConstructProcessor;
@@ -26,7 +27,7 @@ public class CalendarTimerService implements IInstancePostConstructProcessor {
 	private final ScheduledExecutorService scheduler;
 
 	private final Map<Class<?>, Set<IManagedMethod>> classTimers = new HashMap<>();
-	private final Map<IManagedMethod, ISchedule> methodSchedules = new HashMap<>();
+	private final Map<IManagedMethod, Schedule> methodSchedules = new HashMap<>();
 
 	public CalendarTimerService() {
 		log.trace("CalendarTimerService()");
@@ -47,7 +48,7 @@ public class CalendarTimerService implements IInstancePostConstructProcessor {
 	public <T> boolean bind(IManagedClass<T> managedClass) {
 		final Set<IManagedMethod> timers = new HashSet<>();
 		managedClass.getManagedMethods().forEach(managedMethod -> {
-			ISchedule schedule = ISchedule.scan(managedMethod);
+			Schedule schedule = managedMethod.scanAnnotation(Schedule.class);
 			if (schedule != null) {
 				sanityCheck(managedMethod);
 				timers.add(managedMethod);
@@ -123,7 +124,7 @@ public class CalendarTimerService implements IInstancePostConstructProcessor {
 	 * @return delay to the next scheduler timeout, in milliseconds, or zero if no schedule passed.
 	 */
 	public long computeDelay(IManagedMethod managedMethod) {
-		ISchedule schedule = methodSchedules.get(managedMethod);
+		Schedule schedule = methodSchedules.get(managedMethod);
 		final Date now = new Date();
 		Date next = getNextTimeout(now, schedule);
 		if (next == null) {
@@ -144,7 +145,7 @@ public class CalendarTimerService implements IInstancePostConstructProcessor {
 	 * @param schedule method configured schedule.
 	 * @return next scheduler event or null if configured schedule is passed.
 	 */
-	Date getNextTimeout(Date now, ISchedule schedule) {
+	Date getNextTimeout(Date now, Schedule schedule) {
 		CalendarEx evaluationMoment = new CalendarEx(now);
 		// next scheduler timeout should be at least one second after the evaluation moment
 		evaluationMoment.increment(CalendarUnit.SECOND);

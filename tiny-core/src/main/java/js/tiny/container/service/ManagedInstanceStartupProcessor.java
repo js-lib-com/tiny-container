@@ -4,8 +4,7 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import javax.ejb.Startup;
-
+import jakarta.ejb.Startup;
 import js.log.Log;
 import js.log.LogFactory;
 import js.tiny.container.spi.IContainer;
@@ -46,8 +45,8 @@ public class ManagedInstanceStartupProcessor implements IContainerStartProcessor
 
 		SortedMap<Integer, IManagedClass<?>> managedClasses = new TreeMap<>();
 		for (IManagedClass<?> managedClass : container.getManagedClasses()) {
-			if (IStartup.scan(managedClass) != null) {
-				IPriority priorityMeta = IPriority.scan(managedClass);
+			if (managedClass.scanAnnotation(Startup.class) != null) {
+				jakarta.annotation.Priority priorityMeta = managedClass.scanAnnotation(jakarta.annotation.Priority.class);
 				int priority = priorityMeta != null ? priorityMeta.value() : LOW_PRIORITY.getAndIncrement();
 				managedClasses.put(priority, managedClass);
 			}

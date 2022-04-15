@@ -6,8 +6,6 @@ import static org.mockito.Mockito.when;
 
 import java.util.Date;
 
-import javax.ejb.Schedule;
-
 import org.hamcrest.BaseMatcher;
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
@@ -17,10 +15,12 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
+import jakarta.ejb.Schedule;
+
 @RunWith(MockitoJUnitRunner.class)
 public class CalendarTimerServiceNextTimeoutTest {
 	@Mock
-	private ISchedule schedule;
+	private Schedule schedule;
 
 	private CalendarEx now;
 	private CalendarTimerService service;

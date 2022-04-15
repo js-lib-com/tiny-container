@@ -4,12 +4,11 @@ import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.annotation.security.DenyAll;
-import javax.annotation.security.PermitAll;
-import javax.ejb.Remote;
-import javax.servlet.http.HttpSession;
-import javax.ws.rs.Path;
-
+import jakarta.annotation.security.DenyAll;
+import jakarta.annotation.security.PermitAll;
+import jakarta.ejb.Remote;
+import jakarta.servlet.http.HttpSession;
+import jakarta.ws.rs.Path;
 import js.lang.BugError;
 import js.lang.Config;
 import js.lang.ConfigException;

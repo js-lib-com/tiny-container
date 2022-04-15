@@ -7,6 +7,7 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.regex.Pattern;
 
+import jakarta.ejb.Schedule;
 import js.util.Params;
 
 class DayExpressionParser extends BaseExpressionParser {
@@ -31,7 +32,7 @@ class DayExpressionParser extends BaseExpressionParser {
 	}
 
 	@Override
-	public SortedSet<Integer> parse(ISchedule schedule, CalendarEx calendar) {
+	public SortedSet<Integer> parse(Schedule schedule, CalendarEx calendar) {
 		Params.notNull(calendar, "Calendar");
 
 		String dayOfMonth = schedule.dayOfMonth();

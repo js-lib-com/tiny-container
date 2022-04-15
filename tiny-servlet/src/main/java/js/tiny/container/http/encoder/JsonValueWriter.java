@@ -3,7 +3,7 @@ package js.tiny.container.http.encoder;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpServletResponse;
 
 import js.json.Json;
 import js.util.Classes;

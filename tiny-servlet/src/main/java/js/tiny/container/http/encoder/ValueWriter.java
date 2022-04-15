@@ -3,7 +3,7 @@ package js.tiny.container.http.encoder;
 import java.io.IOException;
 import java.io.OutputStream;
 
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpServletResponse;
 
 /**
  * Net method return value writer to HTTP response. Value writer serializes value returned by a net method to the HTTP response

@@ -2,6 +2,8 @@ package js.tiny.container.timer;
 
 import java.util.SortedSet;
 
+import jakarta.ejb.Schedule;
+
 interface IScheduleExpressionParser {
 
 	/**
@@ -11,7 +13,7 @@ interface IScheduleExpressionParser {
 	 * @return
 	 * @throws IllegalArgumentException if schedule contains invalid expression(s).
 	 */
-	SortedSet<Integer> parse(ISchedule schedule, CalendarEx calendar);
+	SortedSet<Integer> parse(Schedule schedule, CalendarEx calendar);
 
 	/**
 	 * 

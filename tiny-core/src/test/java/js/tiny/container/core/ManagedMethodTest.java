@@ -4,8 +4,9 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.instanceOf;
+import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
-import static org.hamcrest.Matchers.*;
+import static org.hamcrest.Matchers.nullValue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.times;
@@ -19,15 +20,14 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-import javax.ejb.Asynchronous;
-import javax.ejb.Remote;
-
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
+import jakarta.ejb.Asynchronous;
+import jakarta.ejb.Remote;
 import js.tiny.container.spi.IMethodInvocationProcessor;
 import js.tiny.container.spi.IMethodInvocationProcessor.Priority;
 

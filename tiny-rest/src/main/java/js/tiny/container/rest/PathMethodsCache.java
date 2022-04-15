@@ -3,6 +3,8 @@ package js.tiny.container.rest;
 import java.util.ArrayList;
 import java.util.List;
 
+import jakarta.ws.rs.HttpMethod;
+import jakarta.ws.rs.Path;
 import js.tiny.container.servlet.RequestContext;
 import js.tiny.container.servlet.RequestPreprocessor;
 import js.tiny.container.spi.IManagedClass;
@@ -43,7 +45,7 @@ public class PathMethodsCache {
 	static List<String> key(IManagedMethod managedMethod) {
 		// scan all method annotations for first with meta-annotation @HttpMethod and gets its value
 		String httpMethod = managedMethod.scanAnnotations(annotation -> {
-			IHttpMethod httpMethodMeta = IHttpMethod.scan(annotation);
+			HttpMethod httpMethodMeta = annotation.annotationType().getAnnotation(HttpMethod.class);
 			return httpMethodMeta != null ? httpMethodMeta.value() : null;
 		});
 		if (httpMethod == null) {
@@ -52,13 +54,13 @@ public class PathMethodsCache {
 
 		// build path from class and / or method @Path annotation or from dashed method name
 		StringBuilder path = new StringBuilder();
-		String classPath = path(IPath.scan(managedMethod.getDeclaringClass()));
+		String classPath = path(managedMethod.getDeclaringClass().scanAnnotation(Path.class));
 		if (classPath != null && !classPath.equals("/")) {
 			path.append('/');
 			path.append(classPath);
 		}
 		path.append('/');
-		String methodPath = path(IPath.scan(managedMethod));
+		String methodPath = path(managedMethod.scanAnnotation(Path.class));
 		if (methodPath == null) {
 			methodPath = Strings.memberToDashCase(managedMethod.getName());
 		}
@@ -67,7 +69,7 @@ public class PathMethodsCache {
 		return paths(httpMethod, path.toString());
 	}
 
-	private static String path(IPath path) {
+	private static String path(Path path) {
 		String value = path != null ? path.value() : null;
 		if (value != null) {
 			value = value.trim();

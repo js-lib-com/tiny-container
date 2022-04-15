@@ -3,12 +3,11 @@ package js.tiny.container.mvc;
 import java.io.IOException;
 import java.lang.reflect.Type;
 
-import javax.inject.Inject;
-import javax.servlet.ServletConfig;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
+import jakarta.inject.Inject;
+import jakarta.servlet.ServletConfig;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import js.lang.BugError;
 import js.log.Log;
 import js.log.LogFactory;

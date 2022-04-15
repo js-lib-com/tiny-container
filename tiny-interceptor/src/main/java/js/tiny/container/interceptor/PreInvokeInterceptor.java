@@ -1,7 +1,6 @@
 package js.tiny.container.interceptor;
 
-import javax.interceptor.Interceptors;
-
+import jakarta.interceptor.Interceptors;
 import js.tiny.container.spi.IManagedMethod;
 
 /**
