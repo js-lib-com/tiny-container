@@ -8,7 +8,6 @@ import static org.mockito.Mockito.when;
 import java.lang.reflect.Field;
 import java.util.Arrays;
 
-import javax.annotation.Resource;
 import javax.naming.Context;
 import javax.naming.NamingException;
 
@@ -18,6 +17,7 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
+import jakarta.annotation.Resource;
 import js.lang.BugError;
 import js.tiny.container.spi.IContainer;
 

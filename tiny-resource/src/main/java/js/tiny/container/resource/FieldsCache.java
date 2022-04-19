@@ -70,7 +70,7 @@ public class FieldsCache {
 				// not clear why and how but was consistently observed on mock object from unit test run with coverage
 				continue;
 			}
-			if (IResource.scan(field) == null) {
+			if (field.getAnnotation(Resource.class) == null) {
 				continue;
 			}
 

@@ -124,8 +124,7 @@ public class ResourcesInjectionProcessor implements IInstancePostConstructProces
 	 * @return JNDI object or simple environment entry or null if not found.
 	 */
 	private Object getJndiValue(Field field) {
-		IResource resource = IResource.scan(field);
-		assert resource != null;
+		Resource resource = field.getAnnotation(Resource.class);
 
 		String lookupName = resource.lookup();
 		if (!lookupName.isEmpty()) {
