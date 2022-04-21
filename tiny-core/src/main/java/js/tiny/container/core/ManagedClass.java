@@ -69,7 +69,7 @@ class ManagedClass<T> implements IManagedClass<T>, IInstanceLifecycleListener {
 	public boolean scanServices() {
 		boolean servicesFound = false;
 
-		for (Method method : implementationClass.getDeclaredMethods()) {
+		for (Method method : interfaceClass.getDeclaredMethods()) {
 			if (Modifier.isStatic(method.getModifiers())) {
 				continue;
 			}

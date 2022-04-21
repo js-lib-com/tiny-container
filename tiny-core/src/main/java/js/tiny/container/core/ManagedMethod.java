@@ -10,6 +10,8 @@ import java.util.List;
 import java.util.Objects;
 import java.util.function.Function;
 
+import js.log.Log;
+import js.log.LogFactory;
 import js.tiny.container.spi.IContainerService;
 import js.tiny.container.spi.IInvocation;
 import js.tiny.container.spi.IInvocationProcessorsChain;
@@ -29,6 +31,8 @@ import js.util.Types;
  * @author Iulian Rotaru
  */
 class ManagedMethod implements IManagedMethod, IMethodInvocationProcessor {
+	private static final Log log = LogFactory.getLog(ManagedMethod.class);
+
 	/** Format string for managed method simple name, without class name. */
 	private static final String SIMPLE_NAME_FORMAT = "%s(%s)";
 
@@ -38,8 +42,11 @@ class ManagedMethod implements IManagedMethod, IMethodInvocationProcessor {
 	/** The managed class declaring this managed method. */
 	private final IManagedClass<?> declaringClass;
 
-	/** Wrapped Java reflective method. This method instance reflects the method declared by managed class implementation. */
-	private final Method method;
+	/** Wrapped Java reflective method. This method instance reflects the method declared by managed class interface. */
+	private final Method interfaceMethod;
+
+	/** Implementation method is used for annotation scanning and is not null only if declaring class has interface class. */
+	private final Method implementationMethod;
 
 	/** Managed method signature, mainly for debugging. */
 	private final String signature;
@@ -53,16 +60,28 @@ class ManagedMethod implements IManagedMethod, IMethodInvocationProcessor {
 	 */
 	private final FlowProcessorsSet<IMethodInvocationProcessor> invocationProcessors = new FlowProcessorsSet<>();
 
-	public ManagedMethod(IManagedClass<?> declaringClass, Method method) {
+	public ManagedMethod(IManagedClass<?> declaringClass, Method interfaceMethod) {
 		this.declaringClass = declaringClass;
-		this.method = method;
-		this.method.setAccessible(true);
+		this.interfaceMethod = interfaceMethod;
+		this.interfaceMethod.setAccessible(true);
+
+		Method implementationMethod = null;
+		if (!declaringClass.getInterfaceClass().equals(declaringClass.getImplementationClass())) {
+			final String name = interfaceMethod.getName();
+			final Class<?>[] parameterTypes = interfaceMethod.getParameterTypes();
+			try {
+				implementationMethod = declaringClass.getImplementationClass().getMethod(name, parameterTypes);
+			} catch (NoSuchMethodException | SecurityException e) {
+				log.error(e);
+			}
+		}
+		this.implementationMethod = implementationMethod;
 
 		List<String> formalParameters = new ArrayList<String>();
-		for (Class<?> formalParameter : method.getParameterTypes()) {
+		for (Class<?> formalParameter : interfaceMethod.getParameterTypes()) {
 			formalParameters.add(formalParameter.getSimpleName());
 		}
-		signature = String.format(QUALIFIED_NAME_FORMAT, declaringClass.getImplementationClass().getCanonicalName(), method.getName(), Strings.join(formalParameters, ','));
+		signature = String.format(QUALIFIED_NAME_FORMAT, declaringClass.getImplementationClass().getCanonicalName(), interfaceMethod.getName(), Strings.join(formalParameters, ','));
 	}
 
 	/**
@@ -98,7 +117,7 @@ class ManagedMethod implements IManagedMethod, IMethodInvocationProcessor {
 
 	@Override
 	public String getName() {
-		return method.getName();
+		return interfaceMethod.getName();
 	}
 
 	@Override
@@ -114,46 +133,55 @@ class ManagedMethod implements IManagedMethod, IMethodInvocationProcessor {
 		// If a formal parameter type is a parameterized type, the Type object returned for it must accurately reflect the
 		// actual type parameters used in the source code.
 
-		return method.getGenericParameterTypes();
+		return interfaceMethod.getGenericParameterTypes();
 	}
 
 	@Override
 	public List<IManagedParameter> getManagedParameters() {
 		List<IManagedParameter> managedParameters = new ArrayList<>();
-		for (Parameter parameter : method.getParameters()) {
-			managedParameters.add(new ManagedParameter(parameter));
+		if (implementationMethod == null) {
+			for (Parameter interfaceParameter : interfaceMethod.getParameters()) {
+				managedParameters.add(new ManagedParameter(interfaceParameter, null));
+			}
+		} else {
+			final Parameter[] interfaceParameters = interfaceMethod.getParameters();
+			final Parameter[] implementationParameters = implementationMethod.getParameters();
+			assert interfaceParameters.length == implementationParameters.length;
+			for (int i = 0; i < interfaceParameters.length; ++i) {
+				managedParameters.add(new ManagedParameter(interfaceParameters[i], implementationParameters[i]));
+			}
 		}
 		return managedParameters;
 	}
 
 	@Override
 	public Type[] getExceptionTypes() {
-		return method.getGenericExceptionTypes();
+		return interfaceMethod.getGenericExceptionTypes();
 	}
 
 	@Override
 	public Type getReturnType() {
-		return method.getGenericReturnType();
+		return interfaceMethod.getGenericReturnType();
 	}
 
 	@Override
 	public boolean isPublic() {
-		return Modifier.isPublic(method.getModifiers());
+		return Modifier.isPublic(interfaceMethod.getModifiers());
 	}
 
 	@Override
 	public boolean isStatic() {
-		return Modifier.isStatic(method.getModifiers());
+		return Modifier.isStatic(interfaceMethod.getModifiers());
 	}
 
 	@Override
 	public boolean isFinal() {
-		return Modifier.isFinal(method.getModifiers());
+		return Modifier.isFinal(interfaceMethod.getModifiers());
 	}
 
 	@Override
 	public boolean isVoid() {
-		return Types.isVoid(method.getReturnType());
+		return Types.isVoid(interfaceMethod.getReturnType());
 	}
 
 	/**
@@ -196,17 +224,14 @@ class ManagedMethod implements IManagedMethod, IMethodInvocationProcessor {
 	@Override
 	public Object onMethodInvocation(IInvocationProcessorsChain chain, IInvocation invocation) throws Exception {
 		Object[] arguments = argumentsValidator.validateArguments(this, invocation.arguments());
-		return method.invoke(invocation.instance(), arguments);
+		return interfaceMethod.invoke(invocation.instance(), arguments);
 	}
 
 	@Override
 	public <T extends Annotation> T scanAnnotation(Class<T> annotationClass, Flags... flags) {
-		T annotation = method.getAnnotation(annotationClass);
-		if (annotation == null && hasInterface()) {
-			try {
-				annotation = interfaceMethod().getAnnotation(annotationClass);
-			} catch (NoSuchMethodException unused) {
-			}
+		T annotation = interfaceMethod.getAnnotation(annotationClass);
+		if (annotation == null && implementationMethod != null) {
+			annotation = implementationMethod.getAnnotation(annotationClass);
 		}
 
 		// if desired annotation has target ElementType.TYPE give a try on method declaring class
@@ -218,37 +243,23 @@ class ManagedMethod implements IManagedMethod, IMethodInvocationProcessor {
 
 	@Override
 	public <T> T scanAnnotations(Function<Annotation, T> function) {
-		for (Annotation annotation : method.getAnnotations()) {
+		for (Annotation annotation : interfaceMethod.getAnnotations()) {
 			T t = function.apply(annotation);
 			if (t != null) {
 				return t;
 			}
 		}
 
-		if (hasInterface()) {
-			try {
-				for (Annotation annotation : interfaceMethod().getAnnotations()) {
-					T t = function.apply(annotation);
-					if (t != null) {
-						return t;
-					}
+		if (implementationMethod != null) {
+			for (Annotation annotation : implementationMethod.getAnnotations()) {
+				T t = function.apply(annotation);
+				if (t != null) {
+					return t;
 				}
-			} catch (NoSuchMethodException unused) {
 			}
 		}
 
 		return null;
-	}
-
-	private boolean hasInterface() {
-		return !declaringClass.getInterfaceClass().equals(declaringClass.getImplementationClass());
-	}
-
-	private Method interfaceMethod() throws NoSuchMethodException {
-		final String name = method.getName();
-		final Class<?>[] parameterTypes = method.getParameterTypes();
-		final Class<?> interfaceClass = declaringClass.getInterfaceClass();
-		return interfaceClass.getMethod(name, parameterTypes);
 	}
 
 	@Override
@@ -258,7 +269,7 @@ class ManagedMethod implements IManagedMethod, IMethodInvocationProcessor {
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(method);
+		return Objects.hash(interfaceMethod);
 	}
 
 	@Override
@@ -270,6 +281,6 @@ class ManagedMethod implements IManagedMethod, IMethodInvocationProcessor {
 		if (getClass() != obj.getClass())
 			return false;
 		ManagedMethod other = (ManagedMethod) obj;
-		return Objects.equals(method, other.method);
+		return Objects.equals(interfaceMethod, other.interfaceMethod);
 	}
 }

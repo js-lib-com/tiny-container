@@ -43,10 +43,10 @@ public class ManagedMethodTest {
 	@Before
 	public void beforeTest() throws NoSuchMethodException, SecurityException {
 		doReturn(Service.class).when(managedClass).getImplementationClass();
-		doReturn(Service.class).when(managedClass).getInterfaceClass();
+		doReturn(IService.class).when(managedClass).getInterfaceClass();
 
 		when(processor.getPriority()).thenReturn(IMethodInvocationProcessor.Priority.ASYNCHRONOUS);
-		managedMethod = new ManagedMethod(managedClass, Service.class.getMethod("task"));
+		managedMethod = new ManagedMethod(managedClass, IService.class.getMethod("task"));
 	}
 
 	@Test
@@ -58,14 +58,14 @@ public class ManagedMethodTest {
 
 		// then
 		assertThat(annotation, notNullValue());
-		verify(managedClass, times(0)).getInterfaceClass();
+		verify(managedClass, times(1)).getInterfaceClass();
 	}
 
 	@Test
 	public void GivenInterfaceAnnotation_WhenGetAnnotation_ThenLoadFromInterface() throws NoSuchMethodException, SecurityException {
 		// given
 		doReturn(IService.class).when(managedClass).getInterfaceClass();
-		managedMethod = new ManagedMethod(managedClass, Service.class.getMethod("services", List.class));
+		managedMethod = new ManagedMethod(managedClass, IService.class.getMethod("services", List.class));
 
 		// when
 		Annotation annotation = managedMethod.scanAnnotation(Asynchronous.class);
@@ -135,7 +135,7 @@ public class ManagedMethodTest {
 	@Test
 	public void GivenGenericReturn_WhenGetReturnType_ThenTypeParameter() throws NoSuchMethodException, SecurityException {
 		// given
-		managedMethod = new ManagedMethod(managedClass, Service.class.getMethod("services", List.class));
+		managedMethod = new ManagedMethod(managedClass, IService.class.getMethod("services", List.class));
 
 		// when
 		Type returnType = managedMethod.getReturnType();
@@ -153,7 +153,7 @@ public class ManagedMethodTest {
 	@Test
 	public void GivenGenericArgument_WhenGetParameterTypes_ThenTypeParameter() throws NoSuchMethodException, SecurityException {
 		// given
-		managedMethod = new ManagedMethod(managedClass, Service.class.getMethod("services", List.class));
+		managedMethod = new ManagedMethod(managedClass, IService.class.getMethod("services", List.class));
 
 		// when
 		Type[] parameterTypes = managedMethod.getParameterTypes();
@@ -182,7 +182,7 @@ public class ManagedMethodTest {
 	@Test
 	public void GivenManagedMethod_WhenGetSignature_ThenIncludeImplementationNameAndParameters() throws NoSuchMethodException, SecurityException {
 		// given
-		managedMethod = new ManagedMethod(managedClass, Service.class.getMethod("services", List.class));
+		managedMethod = new ManagedMethod(managedClass, IService.class.getMethod("services", List.class));
 
 		// when
 		String signature = managedMethod.getSignature();
@@ -210,7 +210,7 @@ public class ManagedMethodTest {
 	@Test
 	public void GivenAnotherInstanceOnSameJavaMethod_WhenEquals_ThenTrue() throws NoSuchMethodException, SecurityException {
 		// given
-		ManagedMethod managedMethod2 = new ManagedMethod(managedClass, Service.class.getMethod("task"));
+		ManagedMethod managedMethod2 = new ManagedMethod(managedClass, IService.class.getMethod("task"));
 
 		// when
 		boolean equals = managedMethod.equals(managedMethod2);
@@ -226,7 +226,7 @@ public class ManagedMethodTest {
 	@Test
 	public void GivenAnotherInstanceOnSameJavaMethod_WhenHashCode_ThenEqual() throws NoSuchMethodException, SecurityException {
 		// given
-		ManagedMethod managedMethod2 = new ManagedMethod(managedClass, Service.class.getMethod("task"));
+		ManagedMethod managedMethod2 = new ManagedMethod(managedClass, IService.class.getMethod("task"));
 
 		// when
 		int hashCode1 = managedMethod.hashCode();
@@ -239,6 +239,8 @@ public class ManagedMethodTest {
 	// --------------------------------------------------------------------------------------------
 
 	private interface IService {
+		void task();
+		
 		@Asynchronous
 		List<Service> services(List<Service> services);
 	}
