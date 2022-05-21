@@ -52,19 +52,18 @@ public class PathMethodsCache {
 			httpMethod = "GET";
 		}
 
-		// build path from class and / or method @Path annotation or from dashed method name
+		// build path from class and / or method @Path annotation
 		StringBuilder path = new StringBuilder();
 		String classPath = path(managedMethod.getDeclaringClass().scanAnnotation(Path.class));
 		if (classPath != null && !classPath.equals("/")) {
 			path.append('/');
 			path.append(classPath);
 		}
-		path.append('/');
 		String methodPath = path(managedMethod.scanAnnotation(Path.class));
-		if (methodPath == null) {
-			methodPath = Strings.memberToDashCase(managedMethod.getName());
+		if (methodPath != null) {
+			path.append('/');
+			path.append(methodPath);
 		}
-		path.append(methodPath);
 
 		return paths(httpMethod, path.toString());
 	}

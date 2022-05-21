@@ -82,42 +82,39 @@ public class MethodsCacheTest {
 	}
 
 	@Test
-	public void GivenMissingMethodPath_WhenCreateStorageKey_ThenUseMethodName() {
+	public void GivenMissingMethodPath_WhenCreateStorageKey_ThenNoMethodPath() {
 		// given
 		when(methodPath.value()).thenReturn(null);
-		when(managedMethod.getName()).thenReturn("toString");
 
 		// when
 		List<String> key = PathMethodsCache.key(managedMethod);
 
 		// then
-		assertThat(key, contains("GET", "resource", "to-string"));
+		assertThat(key, contains("GET", "resource"));
 	}
 
 	@Test
-	public void GivenEmptyMethodPath_WhenCreateStorageKey_ThenUseMethodName() {
+	public void GivenEmptyMethodPath_WhenCreateStorageKey_ThenNoMethodPath() {
 		// given
 		when(methodPath.value()).thenReturn("");
-		when(managedMethod.getName()).thenReturn("toString");
 
 		// when
 		List<String> key = PathMethodsCache.key(managedMethod);
 
 		// then
-		assertThat(key, contains("GET", "resource", "to-string"));
+		assertThat(key, contains("GET", "resource"));
 	}
 
 	@Test
-	public void GivenWhitespaceMethodPath_WhenCreateStorageKey_ThenUseMethodName() {
+	public void GivenWhitespaceMethodPath_WhenCreateStorageKey_ThenNoMethodPath() {
 		// given
 		when(methodPath.value()).thenReturn("	 ");
-		when(managedMethod.getName()).thenReturn("toString");
 
 		// when
 		List<String> key = PathMethodsCache.key(managedMethod);
 
 		// then
-		assertThat(key, contains("GET", "resource", "to-string"));
+		assertThat(key, contains("GET", "resource"));
 	}
 
 	@Test
