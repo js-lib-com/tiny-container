@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Type;
 import java.util.List;
+import java.util.Map;
 
 import jakarta.inject.Inject;
 import jakarta.servlet.AsyncContext;
@@ -11,6 +12,7 @@ import jakarta.servlet.ServletConfig;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.HeaderParam;
 import jakarta.ws.rs.MatrixParam;
 import jakarta.ws.rs.Path;
@@ -19,6 +21,8 @@ import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.MultivaluedHashMap;
+import jakarta.ws.rs.core.MultivaluedMap;
 import jakarta.ws.rs.sse.SseEventSink;
 import js.converter.Converter;
 import js.converter.ConverterRegistry;
@@ -37,6 +41,7 @@ import js.tiny.container.servlet.AppServlet;
 import js.tiny.container.servlet.RequestContext;
 import js.tiny.container.spi.AuthorizationException;
 import js.tiny.container.spi.IManagedMethod;
+import js.tiny.container.spi.IManagedMethod.Flags;
 import js.tiny.container.spi.IManagedParameter;
 import js.util.Types;
 
@@ -174,6 +179,7 @@ public class RestServlet extends AppServlet {
 
 			Object[] arguments = getArguments(httpRequest, requestPath);
 			if (arguments == null) {
+				// back door for non standard behavior, compatible with HTTP-RMI
 				Type[] formalParameters = managedMethod.getParameterTypes();
 				argumentsReader = argumentsReaderFactory.getArgumentsReader(httpRequest, formalParameters);
 				arguments = argumentsReader.read(httpRequest, formalParameters);
@@ -221,7 +227,7 @@ public class RestServlet extends AppServlet {
 
 		httpResponse.setCharacterEncoding("UTF-8");
 
-		if("cors".equals(httpRequest.getHeader("Sec-Fetch-Mode"))) {
+		if ("cors".equals(httpRequest.getHeader("Sec-Fetch-Mode"))) {
 			httpResponse.setHeader("Access-Control-Allow-Origin", "*");
 		}
 
@@ -249,16 +255,35 @@ public class RestServlet extends AppServlet {
 		}
 		httpResponse.setStatus(HttpServletResponse.SC_OK);
 		httpResponse.setContentType(contentType.getValue());
-		
+
 		ValueWriter valueWriter = valueWriterFactory.getValueWriter(contentType);
 		valueWriter.write(httpResponse, value);
 	}
 
+	@SuppressWarnings("unchecked")
 	private Object[] getArguments(HttpServletRequest httpRequest, Item<IManagedMethod> requestPath) throws IOException {
 		IManagedMethod managedMethod = requestPath.getValue();
 		List<IManagedParameter> managedParameters = managedMethod.getManagedParameters();
 		if (managedParameters.isEmpty()) {
 			return EMPTY_ARGUMENTS;
+		}
+
+		Consumes consumesAnnotation = managedMethod.scanAnnotation(Consumes.class, Flags.INCLUDE_TYPES);
+		if (consumesAnnotation != null) {
+			String[] consumes = consumesAnnotation.value();
+			if (consumes.length == 1 && MediaType.APPLICATION_FORM_URLENCODED.equals(consumes[0])) {
+				if (managedParameters.size() != 1) {
+					log.error("Current implementation for resource with URL encoded form supports only one parameter.");
+					return null;
+				}
+				if (!Types.isKindOf(managedParameters.get(0).getType(), MultivaluedMap.class)) {
+					log.error("Current implementation for resource with URL encoded form supports only multi-valued map.");
+					return null;
+				}
+
+				Map<String, String> form = (Map<String, String>) getEntityArgument(httpRequest, Map.class);
+				return new Object[] { new MultivaluedHashMap<>(form) };
+			}
 		}
 
 		UrlParameters urlParameters = new UrlParameters(httpRequest);
@@ -274,11 +299,7 @@ public class RestServlet extends AppServlet {
 					log.error("Invalid resource method arguments: multiple entity parameters.");
 					return null;
 				}
-
-				Type[] formalParameters = new Type[] { parameterType };
-				ArgumentsReader argumentsReader = argumentsReaderFactory.getArgumentsReader(httpRequest, formalParameters);
-				Object[] entityArgument = argumentsReader.read(httpRequest, formalParameters);
-				arguments[argumentIndex] = entityArgument.length == 1 ? entityArgument[0] : null;
+				arguments[argumentIndex] = getEntityArgument(httpRequest, parameterType);
 				continue;
 			}
 
@@ -295,23 +316,30 @@ public class RestServlet extends AppServlet {
 			}
 
 			if (annotation instanceof QueryParam) {
-				String queryName = ((QueryParam)annotation).value();
+				String queryName = ((QueryParam) annotation).value();
 				arguments[argumentIndex] = converter.asObject(urlParameters.getParameter(queryName), parameterType);
 			}
 
 			if (annotation instanceof MatrixParam) {
-				String matrixName = ((MatrixParam)annotation).value();
+				String matrixName = ((MatrixParam) annotation).value();
 				arguments[argumentIndex] = converter.asObject(urlParameters.getParameter(matrixName), parameterType);
 			}
 
 			if (annotation instanceof HeaderParam) {
-				String headerName = ((HeaderParam)annotation).value();
+				String headerName = ((HeaderParam) annotation).value();
 				arguments[argumentIndex] = converter.asObject(httpRequest.getHeader(headerName), parameterType);
 			}
 
 		}
 
 		return arguments;
+	}
+
+	private Object getEntityArgument(HttpServletRequest httpRequest, Type parameterType) throws IOException {
+		Type[] formalParameters = new Type[] { parameterType };
+		ArgumentsReader argumentsReader = argumentsReaderFactory.getArgumentsReader(httpRequest, formalParameters);
+		Object[] entityArgument = argumentsReader.read(httpRequest, formalParameters);
+		return entityArgument.length == 1 ? entityArgument[0] : null;
 	}
 
 	protected void handleSseRequest(HttpServletRequest httpRequest, HttpServletResponse httpResponse) throws Exception {
