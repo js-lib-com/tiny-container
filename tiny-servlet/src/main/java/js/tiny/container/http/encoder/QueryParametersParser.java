@@ -13,6 +13,7 @@ import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 import js.converter.Converter;
 import js.converter.ConverterException;
@@ -230,6 +231,14 @@ final class QueryParametersParser {
 			return new Object[] { object };
 		}
 
+		if (isMap(formalParameters)) {
+			Map<String, String> map = Classes.newMap(formalParameters[0]);
+			for (Parameter parameter : parameters) {
+				map.put(parameter.getName(), parameter.getValue());
+			}
+			return new Object[] { map };
+		}
+
 		int i = 0, argumentsCount = Math.min(formalParameters.length, parameters.size());
 		for (i = 0; i < argumentsCount; ++i) {
 			arguments[i] = asObject(parameters.get(i).getValue(), formalParameters[i]);
@@ -327,6 +336,14 @@ final class QueryParametersParser {
 			return false;
 		}
 		return true;
+	}
+
+	private static boolean isMap(Type[] formalParameters) {
+		if (formalParameters.length != 1) {
+			return false;
+		}
+		final Type type = formalParameters[0];
+		return Types.isMap(type);
 	}
 
 	// --------------------------------------------------------------------------------------------
