@@ -47,5 +47,5 @@ public @interface Intercepted {
 	 * 
 	 * @return interceptor class.
 	 */
-	Class<? extends Interceptor> value();
+	Class<? extends Interceptor>[] value();
 }
