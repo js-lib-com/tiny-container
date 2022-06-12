@@ -35,6 +35,7 @@ import js.tiny.container.spi.IContainer;
 import js.tiny.container.spi.IContainerService;
 import js.tiny.container.spi.IContainerStartProcessor;
 import js.tiny.container.spi.IManagedClass;
+import js.tiny.container.spi.IThreadsPool;
 import js.util.Params;
 
 /**
@@ -78,6 +79,7 @@ public class Container implements IContainer, EmbeddedContainer, IManagedLoader 
 
 		bind(IContainer.class).instance(this).build();
 		bind(EmbeddedContainer.class).instance(this).build();
+		bind(IThreadsPool.class).to(ThreadsPool.class).build();
 		bind(ConverterRegistry.class).instance(ConverterRegistry.getInstance()).build();
 		bind(Converter.class).instance(ConverterRegistry.getConverter()).build();
 

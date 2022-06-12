@@ -1,16 +1,13 @@
 package js.tiny.container.async;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.notNullValue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.lang.reflect.Type;
-import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
 import org.junit.After;
@@ -18,20 +15,24 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
-import org.mockito.invocation.InvocationOnMock;
 import org.mockito.junit.MockitoJUnitRunner;
-import org.mockito.stubbing.Answer;
 
 import jakarta.ejb.AsyncResult;
 import jakarta.ejb.Asynchronous;
+import js.tiny.container.spi.IContainer;
 import js.tiny.container.spi.IInvocation;
 import js.tiny.container.spi.IInvocationProcessorsChain;
 import js.tiny.container.spi.IManagedMethod;
 import js.tiny.container.spi.IMethodInvocationProcessor.Priority;
+import js.tiny.container.spi.IThreadsPool;
 import js.tiny.container.spi.ServiceConfigurationException;
 
 @RunWith(MockitoJUnitRunner.class)
 public class AsyncServiceTest {
+	@Mock
+	private IContainer container;
+	@Mock
+	private IThreadsPool threadsPool;
 	@Mock
 	private IManagedMethod managedMethod;
 	@Mock
@@ -45,9 +46,11 @@ public class AsyncServiceTest {
 
 	@Before
 	public void beforeTest() throws Exception {
+		when(container.getInstance(IThreadsPool.class)).thenReturn(threadsPool);
 		when(invocation.method()).thenReturn(managedMethod);
 
-		service = new AsyncService(Executors.newSingleThreadExecutor());
+		service = new AsyncService();
+		service.create(container);
 	}
 
 	@After
@@ -142,48 +145,22 @@ public class AsyncServiceTest {
 	}
 
 	@Test
-	public void GivenVoidMethod_WhenOnMethodInvocation_ThenChainNextProcessor() throws Exception {
+	public void GivenVoidMethod_WhenOnMethodInvocation_ThenThreadsPoolExecute() throws Exception {
 		// given
-		Object lock = new Object();
-
 		when(managedMethod.isVoid()).thenReturn(true);
-		when(chain.invokeNextProcessor(invocation)).thenAnswer(new Answer<Void>() {
-			@Override
-			public Void answer(InvocationOnMock invocation) throws Throwable {
-				synchronized (lock) {
-					lock.notify();
-					return null;
-				}
-			}
-		});
 
 		// when
 		service.onMethodInvocation(chain, invocation);
 
 		// then
-		synchronized (lock) {
-			lock.wait();
-		}
-		verify(chain, times(1)).invokeNextProcessor(any());
-	}
-
-	/** A runtime exception on a void method is dumped to logger but does not propagate exception to caller. */
-	@Test
-	public void GivenVoidMethodRuntimeException_WhenOnMethodInvocation_ThenDumpToLogger() throws Exception {
-		// given
-		when(managedMethod.isVoid()).thenReturn(true);
-		when(chain.invokeNextProcessor(invocation)).thenThrow(RuntimeException.class);
-
-		// when
-		service.onMethodInvocation(chain, invocation);
-
-		// then
+		verify(threadsPool, times(1)).execute(any(), any());
+		verify(threadsPool, times(0)).submit(any(), any());
 	}
 
 	@Test
 	public void GivenFutureMethod_WhenOnMethodInvocation_ThenChainNextProcessor() throws Exception {
 		// given
-		when(chain.invokeNextProcessor(invocation)).thenReturn(new AsyncResult<String>("Tom Joad"));
+		when(threadsPool.submit(any(), any())).thenReturn(new AsyncResult<Object>("Tom Joad"));
 
 		// when
 		@SuppressWarnings("unchecked")
@@ -191,27 +168,5 @@ public class AsyncServiceTest {
 
 		// then
 		assertThat(future.get(), equalTo("Tom Joad"));
-		verify(chain, times(1)).invokeNextProcessor(any());
-	}
-
-	@Test
-	public void GivenFutureMethodException_WhenOnMethodInvocation_ThenFutureGetException() throws Exception {
-		// given
-		when(chain.invokeNextProcessor(invocation)).thenThrow(new Exception("boom!"));
-
-		// when
-		@SuppressWarnings("unchecked")
-		Future<String> future = (Future<String>) service.onMethodInvocation(chain, invocation);
-
-		// then
-		assertThat(future, notNullValue());
-
-		String exception = null;
-		try {
-			future.get();
-		} catch (Exception e) {
-			exception = e.getMessage();
-		}
-		assertThat(exception, containsString("boom!"));
 	}
 }
