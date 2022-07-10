@@ -91,6 +91,7 @@ public class InstancePostConstructor implements IInstancePostConstructProcessor 
 			if (t instanceof InvocationTargetException) {
 				t = ((InvocationTargetException) t).getTargetException();
 			}
+			log.dump(format("Managed instance |%s| post-construct fail:", implementationClass.getCanonicalName()), t);
 			throw new RuntimeException(format("Managed instance |%s| post-construct fail: %s: %s", implementationClass.getCanonicalName(), t.getClass().getCanonicalName(), t.getMessage()));
 		}
 	}

@@ -164,7 +164,7 @@ public class TinyContainer extends Container implements ServletContextListener, 
 		// security can be null if security module is not deployed on runtime
 		security = getOptionalInstance(ISecurityContext.class);
 	}
-	
+
 	// --------------------------------------------------------------------------------------------
 	// JAKARTA SERVLET CONTAINER LISTENERS
 
@@ -231,14 +231,13 @@ public class TinyContainer extends Container implements ServletContextListener, 
 			servletContext.setAttribute(TinyContainer.ATTR_INSTANCE, this);
 			log.info("Application |%s| container started in %d msec.", contextName, System.currentTimeMillis() - start);
 		} catch (ConfigException e) {
-			log.error(e);
-			log.fatal("Bad container |%s| configuration.", contextName);
+			log.error("Bad container |%s| configuration: %s", contextName, e.getMessage());
 		} catch (FileNotFoundException e) {
 			log.error(e);
-		} catch (Error | RuntimeException e) {
-			log.dump(String.format("Fatal error on container |%s| start:", contextName), e);
-			log.debug("Signal fatal error |%s| to host container. Application abort.", e.getClass());
-			throw e;
+		} catch (Throwable t) {
+			log.dump(String.format("Fatal error on container |%s| start:", contextName), t);
+			log.debug("Signal fatal error |%s| to host container. Application abort.", t.getClass());
+			throw t;
 		}
 	}
 
