@@ -30,8 +30,8 @@ public class JavaConformityTest {
 		Class<?> clsB = Class.forName("js.tiny.container.api.JavaConformityTest$TestClass", true, loader2);
 		assertFalse(clsA.equals(clsB));
 
-		Object instanceA = clsA.newInstance();
-		Object instanceB = clsB.newInstance();
+		Object instanceA = clsA.getConstructor().newInstance();
+		Object instanceB = clsB.getConstructor().newInstance();
 		Classes.invoke(instanceA, "setField", 1);
 
 		assertFalse(Classes.getFieldValue(instanceA, "field") == Classes.getFieldValue(instanceB, "field"));

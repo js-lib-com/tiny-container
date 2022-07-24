@@ -1,6 +1,6 @@
 package js.tiny.container.transaction;
 
-import javax.annotation.PreDestroy;
+import jakarta.annotation.PreDestroy;
 
 import jakarta.inject.Inject;
 import js.lang.BugError;

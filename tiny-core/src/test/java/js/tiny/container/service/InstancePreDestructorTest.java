@@ -8,7 +8,7 @@ import static org.mockito.Mockito.when;
 import java.lang.reflect.Type;
 import java.util.Arrays;
 
-import javax.annotation.PreDestroy;
+import jakarta.annotation.PreDestroy;
 
 import org.junit.Before;
 import org.junit.Test;

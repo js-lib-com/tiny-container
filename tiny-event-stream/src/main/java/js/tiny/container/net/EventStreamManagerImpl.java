@@ -4,7 +4,7 @@ import java.security.Principal;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.annotation.PreDestroy;
+import jakarta.annotation.PreDestroy;
 
 import jakarta.inject.Inject;
 import js.lang.Event;

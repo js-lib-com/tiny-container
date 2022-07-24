@@ -13,7 +13,7 @@ import js.tiny.container.spi.IManagedClass;
 
 /**
  * Auto-create managed instances marked with {@link Startup} annotation in the order declared with
- * {@link javax.annotation.Priority} annotation.
+ * {@link jakarta.annotation.Priority} annotation.
  * 
  * @author Iulian Rotaru
  */
@@ -35,7 +35,7 @@ public class ManagedInstanceStartupProcessor implements IContainerStartProcessor
 	 * Ensure all managed classes marked with {@link Startup} annotation are instantiated at container start. Takes care to
 	 * execute all instance creation services like resources injection and post-construct hook.
 	 * 
-	 * If startup classes has also {@link javax.annotation.Priority} annotation use it to control startup order. Zero is the top
+	 * If startup classes has also {@link jakarta.annotation.Priority} annotation use it to control startup order. Zero is the top
 	 * priority and is guaranteed to be executed first. If more classes with the same priority order between them is not
 	 * guaranteed. If priority is not declared classes are started last, in no particular order.
 	 */

@@ -115,6 +115,6 @@ public class CDIConformityTest {
 		}
 	}
 
-	private interface IService {
+	public interface IService {
 	}
 }

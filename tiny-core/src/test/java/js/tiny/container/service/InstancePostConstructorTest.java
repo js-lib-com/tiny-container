@@ -9,7 +9,7 @@ import static org.mockito.Mockito.when;
 import java.lang.reflect.Type;
 import java.util.Arrays;
 
-import javax.annotation.PostConstruct;
+import jakarta.annotation.PostConstruct;
 
 import org.junit.Before;
 import org.junit.Test;

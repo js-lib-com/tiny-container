@@ -4,8 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.TimerTask;
 
-import javax.annotation.PreDestroy;
-
+import jakarta.annotation.PreDestroy;
 import js.lang.AsyncExceptionListener;
 import js.log.Log;
 import js.log.LogFactory;

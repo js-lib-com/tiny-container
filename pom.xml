@@ -90,6 +90,14 @@
 		<plugins>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<version>3.10.1</version>
+				<configuration>
+					<release>11</release>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-source-plugin</artifactId>
 				<version>3.2.1</version>
 				<executions>
@@ -111,9 +119,7 @@
 						</goals>
 						<configuration>
 							<show>private</show>
-							<additionalOptions>
-								<additionalOption>-Xdoclint:none</additionalOption>
-							</additionalOptions>
+							<doclint>none</doclint>
 						</configuration>
 					</execution>
 				</executions>
@@ -169,28 +175,4 @@
 			</distributionManagement>
 		</profile>
 	</profiles>
-
-	<repositories>
-		<repository>
-			<id>js-lib</id>
-			<url>https://maven.js-lib.com/</url>
-		</repository>
-	</repositories>
-	<pluginRepositories>
-		<pluginRepository>
-			<id>js-lib</id>
-			<url>https://maven.js-lib.com/</url>
-		</pluginRepository>
-	</pluginRepositories>
-
-	<distributionManagement>
-		<snapshotRepository>
-			<id>js-lib</id>
-			<url>https://maven.js-lib.com/</url>
-		</snapshotRepository>
-		<repository>
-			<id>js-lib</id>
-			<url>https://maven.js-lib.com/</url>
-		</repository>
-	</distributionManagement>
 </project>

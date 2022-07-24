@@ -6,6 +6,7 @@ import static org.hamcrest.Matchers.notNullValue;
 import static org.mockito.Mockito.when;
 
 import java.lang.annotation.Annotation;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Proxy;
 import java.util.ArrayList;
 import java.util.List;
@@ -244,7 +245,12 @@ public class ProxyProcessingTest {
 		@SuppressWarnings("unchecked")
 		public Binding(Class<? extends T> implementationClass) throws InstantiationException, IllegalAccessException {
 			Class<T> interfaceClass = (Class<T>) implementationClass.getInterfaces()[0];
-			T instance = implementationClass.newInstance();
+			T instance;
+			try {
+				instance = implementationClass.getConstructor().newInstance();
+			} catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException | NoSuchMethodException | SecurityException e) {
+				throw new IllegalStateException(e);
+			}
 
 			Provider<T> provider = new ITypedProvider<T>() {
 				@Override
