@@ -173,7 +173,7 @@ class TinySecurity implements ISecurityContext {
 			return false;
 		}
 		if (!(attribute instanceof RolesPrincipal)) {
-			log.bug("Attempt to use authorization without roles principal. Authenticated user class is |%s|.", attribute.getClass());
+			log.debug("Attempt to use authorization without roles principal. Authenticated user class is |%s|.", attribute.getClass());
 			return false;
 		}
 

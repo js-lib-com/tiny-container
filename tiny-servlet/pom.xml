@@ -15,11 +15,6 @@
 		</dependency>
 		<dependency>
 			<groupId>com.js-lib</groupId>
-			<artifactId>js-servlet-api</artifactId>
-			<version>1.1</version>
-		</dependency>
-		<dependency>
-			<groupId>com.js-lib</groupId>
 			<artifactId>js-dom-api</artifactId>
 			<version>1.2</version>
 		</dependency>
