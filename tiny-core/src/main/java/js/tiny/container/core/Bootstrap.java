@@ -12,7 +12,7 @@ import js.lang.ConfigException;
 import js.log.Log;
 import js.log.LogFactory;
 import js.tiny.container.spi.Factory;
-import js.util.Params;
+import js.util.Classes;
 
 public class Bootstrap implements EmbeddedContainerProvider {
 	private static final Log log = LogFactory.getLog(Bootstrap.class);
@@ -35,9 +35,11 @@ public class Bootstrap implements EmbeddedContainerProvider {
 	}
 
 	public void startContainer(Container container, Object... arguments) throws ConfigException {
-		Params.GT(arguments.length, 0, "Arguments length");
-
-		if (arguments.length == 1) {
+		if (arguments.length == 0) {
+			log.debug("Load bindings from default '/app.xml' resource.");
+			ConfigBuilder builder = new ConfigBuilder(Classes.getResourceAsStream("/app.xml"));
+			container.configure(builder.build());
+		} else if (arguments.length == 1) {
 			if (arguments[0] == null) {
 				// if application bindings descriptor is not present argument is null
 				log.debug("Empty application bindings.");
