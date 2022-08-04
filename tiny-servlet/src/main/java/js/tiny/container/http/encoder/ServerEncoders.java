@@ -5,14 +5,14 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.ServiceLoader;
 
-import jakarta.servlet.http.HttpServletRequest;
+import com.jslib.api.log.Log;
+import com.jslib.api.log.LogFactory;
 
+import jakarta.servlet.http.HttpServletRequest;
 import js.dom.Document;
 import js.io.StreamHandler;
 import js.lang.BugError;
 import js.lang.IllegalArgumentException;
-import js.log.Log;
-import js.log.LogFactory;
 import js.tiny.container.http.ContentType;
 
 /**

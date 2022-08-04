@@ -8,6 +8,11 @@ import java.security.Principal;
 import java.util.Enumeration;
 import java.util.List;
 
+import com.jslib.api.log.Log;
+import com.jslib.api.log.LogContext;
+import com.jslib.api.log.LogFactory;
+import com.jslib.api.log.LogProvider;
+
 import jakarta.enterprise.context.ContextNotActiveException;
 import jakarta.enterprise.context.RequestScoped;
 import jakarta.enterprise.context.SessionScoped;
@@ -25,10 +30,6 @@ import js.lang.BugError;
 import js.lang.Config;
 import js.lang.ConfigException;
 import js.lang.NoSuchBeingException;
-import js.log.Log;
-import js.log.LogContext;
-import js.log.LogFactory;
-import js.log.LogProvider;
 import js.tiny.container.cdi.CDI;
 import js.tiny.container.cdi.IClassBinding;
 import js.tiny.container.core.Bootstrap;
@@ -422,7 +423,7 @@ public class TinyContainer extends Container implements ServletContextListener, 
 
 		@Override
 		public void run() {
-			logProvider.forceImmediateFlush();
+			logProvider.flush();
 		}
 	}
 }

@@ -8,14 +8,13 @@ import static org.mockito.Mockito.when;
 import java.lang.reflect.Type;
 import java.util.Arrays;
 
-import jakarta.annotation.PreDestroy;
-
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
+import jakarta.annotation.PreDestroy;
 import js.tiny.container.spi.IInstancePreDestroyProcessor.Priority;
 import js.tiny.container.spi.IManagedClass;
 import js.tiny.container.spi.IManagedMethod;

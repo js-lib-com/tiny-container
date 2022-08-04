@@ -17,11 +17,6 @@ import static org.mockito.Mockito.when;
 import java.io.IOException;
 import java.security.Principal;
 
-import jakarta.servlet.ServletException;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
-import jakarta.servlet.http.HttpSession;
-
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -29,6 +24,10 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
 import jakarta.enterprise.context.ContextNotActiveException;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 import js.lang.RolesPrincipal;
 import js.tiny.container.servlet.RequestContext;
 import js.tiny.container.servlet.TinyContainer;

@@ -5,9 +5,10 @@ import static java.lang.String.format;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.jslib.api.log.Log;
+import com.jslib.api.log.LogFactory;
+
 import jakarta.annotation.PreDestroy;
-import js.log.Log;
-import js.log.LogFactory;
 import js.tiny.container.spi.IInstancePreDestroyProcessor;
 import js.tiny.container.spi.IManagedClass;
 import js.tiny.container.spi.IManagedMethod;

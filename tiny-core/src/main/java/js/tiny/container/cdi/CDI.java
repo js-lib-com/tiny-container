@@ -7,6 +7,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import com.jslib.api.log.Log;
+import com.jslib.api.log.LogFactory;
+
 import jakarta.inject.Provider;
 import js.injector.AbstractModule;
 import js.injector.IInjector;
@@ -17,8 +20,6 @@ import js.injector.IScopeFactory;
 import js.injector.ProvisionException;
 import js.injector.ScopedProvider;
 import js.lang.Config;
-import js.log.Log;
-import js.log.LogFactory;
 import js.tiny.container.spi.IInstanceLifecycleListener;
 import js.util.Classes;
 import js.util.Params;

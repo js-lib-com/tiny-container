@@ -4,6 +4,9 @@ import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.jslib.api.log.Log;
+import com.jslib.api.log.LogFactory;
+
 import jakarta.annotation.security.DenyAll;
 import jakarta.annotation.security.PermitAll;
 import jakarta.ejb.Remote;
@@ -12,8 +15,6 @@ import jakarta.ws.rs.Path;
 import js.lang.BugError;
 import js.lang.Config;
 import js.lang.ConfigException;
-import js.log.Log;
-import js.log.LogFactory;
 import js.tiny.container.http.NoSuchResourceException;
 import js.tiny.container.http.Resource;
 import js.tiny.container.mvc.FileResource;

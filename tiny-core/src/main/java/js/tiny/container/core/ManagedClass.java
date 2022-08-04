@@ -8,9 +8,10 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.jslib.api.log.Log;
+import com.jslib.api.log.LogFactory;
+
 import js.lang.InstanceInvocationHandler;
-import js.log.Log;
-import js.log.LogFactory;
 import js.tiny.container.cdi.IClassBinding;
 import js.tiny.container.spi.IClassPostLoadedProcessor;
 import js.tiny.container.spi.IConnector;

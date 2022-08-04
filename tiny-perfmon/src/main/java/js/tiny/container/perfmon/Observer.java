@@ -1,11 +1,12 @@
 package js.tiny.container.perfmon;
 
+import com.jslib.api.log.Log;
+import com.jslib.api.log.LogFactory;
+
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.PreDestroy;
 import jakarta.ejb.Startup;
 import jakarta.inject.Inject;
-import js.log.Log;
-import js.log.LogFactory;
 
 /**
  * Performance meters observer. Collect periodically application invocation meters and dump values to meter logger. In order to

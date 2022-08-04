@@ -1,7 +1,8 @@
 package js.tiny.container.timer;
 
-import js.log.Log;
-import js.log.LogFactory;
+import com.jslib.api.log.Log;
+import com.jslib.api.log.LogFactory;
+
 import js.tiny.container.spi.IManagedMethod;
 
 class TimerTask implements Runnable {

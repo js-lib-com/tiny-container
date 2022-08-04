@@ -2,10 +2,11 @@ package js.tiny.container.async;
 
 import java.util.concurrent.Future;
 
+import com.jslib.api.log.Log;
+import com.jslib.api.log.LogFactory;
+
 import jakarta.ejb.Asynchronous;
 import js.lang.AsyncTask;
-import js.log.Log;
-import js.log.LogFactory;
 import js.tiny.container.spi.IContainer;
 import js.tiny.container.spi.IInvocation;
 import js.tiny.container.spi.IInvocationProcessorsChain;

@@ -2,10 +2,11 @@ package js.tiny.container.transaction;
 
 import java.lang.reflect.InvocationTargetException;
 
+import com.jslib.api.log.Log;
+import com.jslib.api.log.LogFactory;
+
 import jakarta.enterprise.context.ApplicationScoped;
 import js.lang.InvocationException;
-import js.log.Log;
-import js.log.LogFactory;
 import js.tiny.container.spi.IContainer;
 import js.tiny.container.spi.IInvocation;
 import js.tiny.container.spi.IInvocationProcessorsChain;

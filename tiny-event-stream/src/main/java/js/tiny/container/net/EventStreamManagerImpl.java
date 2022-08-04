@@ -4,12 +4,12 @@ import java.security.Principal;
 import java.util.HashMap;
 import java.util.Map;
 
-import jakarta.annotation.PreDestroy;
+import com.jslib.api.log.Log;
+import com.jslib.api.log.LogFactory;
 
+import jakarta.annotation.PreDestroy;
 import jakarta.inject.Inject;
 import js.lang.Event;
-import js.log.Log;
-import js.log.LogFactory;
 import js.tiny.container.spi.IContainer;
 
 /**

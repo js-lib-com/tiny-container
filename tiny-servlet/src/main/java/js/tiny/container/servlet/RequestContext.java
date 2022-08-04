@@ -3,6 +3,9 @@ package js.tiny.container.servlet;
 import java.util.Enumeration;
 import java.util.Locale;
 
+import com.jslib.api.log.Log;
+import com.jslib.api.log.LogFactory;
+
 import jakarta.enterprise.context.RequestScoped;
 import jakarta.inject.Inject;
 import jakarta.servlet.RequestDispatcher;
@@ -12,8 +15,6 @@ import jakarta.servlet.http.HttpSession;
 import js.converter.Converter;
 import js.converter.ConverterRegistry;
 import js.lang.BugError;
-import js.log.Log;
-import js.log.LogFactory;
 import js.tiny.container.spi.IContainer;
 
 /**

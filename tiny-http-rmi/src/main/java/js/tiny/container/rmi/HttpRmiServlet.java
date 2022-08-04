@@ -5,11 +5,11 @@ import java.lang.reflect.Type;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import com.jslib.api.log.Log;
+import com.jslib.api.log.LogFactory;
+
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-
-import js.log.Log;
-import js.log.LogFactory;
 import js.tiny.container.http.ContentType;
 import js.tiny.container.http.Resource;
 import js.tiny.container.http.encoder.ArgumentsReader;

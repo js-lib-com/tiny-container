@@ -2,12 +2,13 @@ package js.tiny.container.security;
 
 import java.lang.annotation.Annotation;
 
+import com.jslib.api.log.Log;
+import com.jslib.api.log.LogFactory;
+
 import jakarta.annotation.security.DenyAll;
 import jakarta.annotation.security.PermitAll;
 import jakarta.annotation.security.RolesAllowed;
 import jakarta.servlet.http.HttpServletRequest;
-import js.log.Log;
-import js.log.LogFactory;
 import js.tiny.container.spi.AuthorizationException;
 import js.tiny.container.spi.IContainer;
 import js.tiny.container.spi.IInvocation;

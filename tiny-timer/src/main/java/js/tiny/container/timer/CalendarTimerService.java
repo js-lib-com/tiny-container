@@ -9,9 +9,10 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
+import com.jslib.api.log.Log;
+import com.jslib.api.log.LogFactory;
+
 import jakarta.ejb.Schedule;
-import js.log.Log;
-import js.log.LogFactory;
 import js.tiny.container.spi.IInstancePostConstructProcessor;
 import js.tiny.container.spi.IManagedClass;
 import js.tiny.container.spi.IManagedMethod;

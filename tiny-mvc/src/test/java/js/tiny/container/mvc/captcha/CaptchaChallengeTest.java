@@ -8,14 +8,14 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import java.io.File;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import jakarta.servlet.http.HttpSession;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -23,6 +23,7 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
+import jakarta.servlet.http.HttpSession;
 import js.lang.BugError;
 import js.lang.ConfigBuilder;
 import js.tiny.container.servlet.RequestContext;

@@ -1,6 +1,6 @@
 package js.tiny.container.mvc;
 
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.when;
 
 import org.junit.Before;
 import org.junit.Test;

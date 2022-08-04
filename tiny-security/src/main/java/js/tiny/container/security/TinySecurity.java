@@ -3,6 +3,9 @@ package js.tiny.container.security;
 import java.io.IOException;
 import java.security.Principal;
 
+import com.jslib.api.log.Log;
+import com.jslib.api.log.LogFactory;
+
 import jakarta.enterprise.context.ContextNotActiveException;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -11,8 +14,6 @@ import jakarta.servlet.http.HttpSession;
 import jakarta.ws.rs.core.SecurityContext;
 import js.lang.BugError;
 import js.lang.RolesPrincipal;
-import js.log.Log;
-import js.log.LogFactory;
 import js.tiny.container.servlet.RequestContext;
 import js.tiny.container.servlet.TinyContainer;
 import js.tiny.container.spi.IContainer;

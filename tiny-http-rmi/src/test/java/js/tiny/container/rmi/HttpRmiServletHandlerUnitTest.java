@@ -9,17 +9,16 @@ import static org.mockito.Mockito.when;
 import java.lang.reflect.Type;
 import java.util.Collections;
 
-import jakarta.servlet.ServletContext;
-import jakarta.servlet.ServletOutputStream;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
-
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
+import jakarta.servlet.ServletContext;
+import jakarta.servlet.ServletOutputStream;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import js.lang.InvocationException;
 import js.tiny.container.servlet.AppServlet;
 import js.tiny.container.servlet.RequestContext;

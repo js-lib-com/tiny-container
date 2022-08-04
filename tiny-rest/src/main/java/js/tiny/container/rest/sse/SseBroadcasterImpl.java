@@ -10,12 +10,13 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
+import com.jslib.api.log.Log;
+import com.jslib.api.log.LogFactory;
+
 import jakarta.ws.rs.sse.OutboundSseEvent;
 import jakarta.ws.rs.sse.SseBroadcaster;
 import jakarta.ws.rs.sse.SseEventSink;
 import js.lang.KeepAliveEvent;
-import js.log.Log;
-import js.log.LogFactory;
 
 public class SseBroadcasterImpl implements SseBroadcaster, Runnable {
 	private static final Log log = LogFactory.getLog(SseBroadcasterImpl.class);

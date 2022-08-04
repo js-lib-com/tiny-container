@@ -8,11 +8,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.jslib.api.log.Log;
+import com.jslib.api.log.LogFactory;
+
 import jakarta.ejb.Asynchronous;
 import js.lang.BugError;
 import js.lang.InvocationException;
-import js.log.Log;
-import js.log.LogFactory;
 import js.tiny.container.spi.IContainer;
 import js.tiny.container.spi.IInvocation;
 import js.tiny.container.spi.IInvocationProcessorsChain;

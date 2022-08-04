@@ -3,10 +3,11 @@ package js.tiny.container.contextparam;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 
+import com.jslib.api.log.Log;
+import com.jslib.api.log.LogFactory;
+
 import js.converter.ConverterRegistry;
 import js.lang.BugError;
-import js.log.Log;
-import js.log.LogFactory;
 import js.tiny.container.spi.IContainer;
 import js.tiny.container.spi.IContainerService;
 import js.tiny.container.spi.ServiceConfigurationException;

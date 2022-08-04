@@ -4,7 +4,6 @@ import java.io.File;
 import java.io.IOException;
 
 import jakarta.servlet.http.HttpServletResponse;
-
 import js.tiny.container.http.ContentType;
 import js.tiny.container.http.HttpHeader;
 import js.tiny.container.http.Resource;

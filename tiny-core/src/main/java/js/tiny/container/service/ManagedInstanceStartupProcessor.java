@@ -4,9 +4,10 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import com.jslib.api.log.Log;
+import com.jslib.api.log.LogFactory;
+
 import jakarta.ejb.Startup;
-import js.log.Log;
-import js.log.LogFactory;
 import js.tiny.container.spi.IContainer;
 import js.tiny.container.spi.IContainerStartProcessor;
 import js.tiny.container.spi.IManagedClass;

@@ -6,10 +6,11 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.jslib.api.log.Log;
+import com.jslib.api.log.LogFactory;
+
 import jakarta.annotation.PostConstruct;
 import js.lang.ManagedPostConstruct;
-import js.log.Log;
-import js.log.LogFactory;
 import js.tiny.container.spi.IInstancePostConstructProcessor;
 import js.tiny.container.spi.IManagedClass;
 import js.tiny.container.spi.IManagedMethod;

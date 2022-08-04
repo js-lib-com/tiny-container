@@ -14,6 +14,13 @@ import java.io.StringWriter;
 import java.util.Collections;
 import java.util.Locale;
 
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.Mock;
+import org.mockito.junit.MockitoJUnitRunner;
+
 import jakarta.servlet.ReadListener;
 import jakarta.servlet.ServletConfig;
 import jakarta.servlet.ServletContext;
@@ -23,14 +30,6 @@ import jakarta.servlet.ServletRequestEvent;
 import jakarta.servlet.WriteListener;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
-
 import js.lang.ConfigBuilder;
 import js.tiny.container.rest.RestServlet;
 import js.tiny.container.servlet.TinyContainer;

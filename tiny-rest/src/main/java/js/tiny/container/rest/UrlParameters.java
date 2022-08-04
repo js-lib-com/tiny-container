@@ -5,9 +5,10 @@ import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.jslib.api.log.Log;
+import com.jslib.api.log.LogFactory;
+
 import jakarta.servlet.http.HttpServletRequest;
-import js.log.Log;
-import js.log.LogFactory;
 
 public class UrlParameters {
 	private static final Log log = LogFactory.getLog(UrlParameters.class);

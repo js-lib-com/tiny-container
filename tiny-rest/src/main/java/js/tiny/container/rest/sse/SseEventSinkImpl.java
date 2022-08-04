@@ -8,6 +8,9 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
+import com.jslib.api.log.Log;
+import com.jslib.api.log.LogFactory;
+
 import jakarta.inject.Inject;
 import jakarta.servlet.AsyncContext;
 import jakarta.servlet.AsyncEvent;
@@ -17,8 +20,6 @@ import jakarta.ws.rs.sse.SseBroadcaster;
 import jakarta.ws.rs.sse.SseEventSink;
 import js.json.Json;
 import js.lang.BugError;
-import js.log.Log;
-import js.log.LogFactory;
 
 public class SseEventSinkImpl implements SseEventSink, AsyncListener {
 	private static final Log log = LogFactory.getLog(SseEventSinkImpl.class);

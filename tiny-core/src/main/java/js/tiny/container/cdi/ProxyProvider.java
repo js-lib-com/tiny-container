@@ -5,13 +5,14 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 
+import com.jslib.api.log.Log;
+import com.jslib.api.log.LogFactory;
+
 import jakarta.inject.Provider;
 import js.injector.ITypedProvider;
 import js.lang.BugError;
 import js.lang.InstanceInvocationHandler;
 import js.lang.InvocationException;
-import js.log.Log;
-import js.log.LogFactory;
 import js.tiny.container.spi.IManagedClass;
 import js.tiny.container.spi.IManagedMethod;
 

@@ -12,6 +12,12 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Locale;
 
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.Mock;
+import org.mockito.junit.MockitoJUnitRunner;
+
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.FilterConfig;
 import jakarta.servlet.RequestDispatcher;
@@ -20,13 +26,6 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.UnavailableException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
-
 import js.tiny.container.spi.IContainer;
 
 @RunWith(MockitoJUnitRunner.class)

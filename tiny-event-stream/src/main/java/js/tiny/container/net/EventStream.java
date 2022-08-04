@@ -8,12 +8,13 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import com.jslib.api.log.Log;
+import com.jslib.api.log.LogFactory;
+
 import js.json.Json;
 import js.lang.BugError;
 import js.lang.Event;
 import js.lang.KeepAliveEvent;
-import js.log.Log;
-import js.log.LogFactory;
 import js.util.Classes;
 import js.util.Strings;
 

@@ -3,6 +3,9 @@ package js.tiny.container.rest;
 import java.lang.reflect.Field;
 import java.util.List;
 
+import com.jslib.api.log.Log;
+import com.jslib.api.log.LogFactory;
+
 import jakarta.ejb.Remote;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.context.RequestScoped;
@@ -11,8 +14,6 @@ import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.sse.Sse;
 import jakarta.ws.rs.sse.SseEventSink;
 import js.json.Json;
-import js.log.Log;
-import js.log.LogFactory;
 import js.tiny.container.http.Resource;
 import js.tiny.container.rest.sse.SseEventSinkImpl;
 import js.tiny.container.rest.sse.SseImpl;

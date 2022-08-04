@@ -1,10 +1,11 @@
 package js.tiny.container.rest.sse;
 
+import com.jslib.api.log.Log;
+import com.jslib.api.log.LogFactory;
+
 import jakarta.ws.rs.sse.OutboundSseEvent;
 import jakarta.ws.rs.sse.Sse;
 import jakarta.ws.rs.sse.SseBroadcaster;
-import js.log.Log;
-import js.log.LogFactory;
 
 public class SseImpl implements Sse {
 	private static final Log log = LogFactory.getLog(SseImpl.class);

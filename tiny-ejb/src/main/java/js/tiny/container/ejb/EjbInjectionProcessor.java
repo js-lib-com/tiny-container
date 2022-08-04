@@ -1,7 +1,8 @@
 package js.tiny.container.ejb;
 
-import js.log.Log;
-import js.log.LogFactory;
+import com.jslib.api.log.Log;
+import com.jslib.api.log.LogFactory;
+
 import js.rmi.RemoteFactory;
 import js.tiny.container.spi.IContainer;
 import js.tiny.container.spi.IInstancePostConstructProcessor;

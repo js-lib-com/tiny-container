@@ -10,8 +10,9 @@ import java.util.List;
 import java.util.Objects;
 import java.util.function.Function;
 
-import js.log.Log;
-import js.log.LogFactory;
+import com.jslib.api.log.Log;
+import com.jslib.api.log.LogFactory;
+
 import js.tiny.container.spi.IContainerService;
 import js.tiny.container.spi.IInvocation;
 import js.tiny.container.spi.IInvocationProcessorsChain;

@@ -15,13 +15,14 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
+import com.jslib.api.log.Log;
+import com.jslib.api.log.LogFactory;
+
 import js.converter.Converter;
 import js.converter.ConverterException;
 import js.converter.ConverterRegistry;
 import js.lang.BugError;
 import js.lang.SyntaxException;
-import js.log.Log;
-import js.log.LogFactory;
 import js.util.Classes;
 import js.util.Strings;
 import js.util.Types;

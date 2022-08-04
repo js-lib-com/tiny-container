@@ -14,6 +14,9 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import com.jslib.api.log.Log;
+import com.jslib.api.log.LogFactory;
+
 import jakarta.annotation.Priority;
 import jakarta.inject.Singleton;
 import js.converter.Converter;
@@ -25,8 +28,6 @@ import js.injector.IScopeFactory;
 import js.injector.ProvisionException;
 import js.lang.Config;
 import js.lang.ConfigException;
-import js.log.Log;
-import js.log.LogFactory;
 import js.tiny.container.cdi.BindingParametersBuilder;
 import js.tiny.container.cdi.CDI;
 import js.tiny.container.cdi.IClassBinding;

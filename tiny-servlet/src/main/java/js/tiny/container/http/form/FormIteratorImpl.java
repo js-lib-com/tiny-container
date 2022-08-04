@@ -10,10 +10,11 @@ import org.apache.commons.fileupload.FileItemStream;
 import org.apache.commons.fileupload.FileUploadException;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
 
+import com.jslib.api.log.Log;
+import com.jslib.api.log.LogFactory;
+
 import jakarta.servlet.http.HttpServletRequest;
 import js.converter.ConverterRegistry;
-import js.log.Log;
-import js.log.LogFactory;
 import js.util.Files;
 import js.util.Params;
 import js.util.Strings;

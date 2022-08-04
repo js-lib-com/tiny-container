@@ -13,9 +13,6 @@ import java.lang.reflect.Type;
 import java.util.List;
 import java.util.Map;
 
-import jakarta.servlet.ServletInputStream;
-import jakarta.servlet.http.HttpServletRequest;
-
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -25,6 +22,8 @@ import org.mockito.invocation.InvocationOnMock;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.mockito.stubbing.Answer;
 
+import jakarta.servlet.ServletInputStream;
+import jakarta.servlet.http.HttpServletRequest;
 import js.json.Json;
 import js.lang.GType;
 import js.tiny.container.http.encoder.JsonArgumentsReader;

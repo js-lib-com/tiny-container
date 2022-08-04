@@ -4,9 +4,10 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
+import com.jslib.api.log.Log;
+import com.jslib.api.log.LogFactory;
+
 import jakarta.ws.rs.sse.OutboundSseEvent;
-import js.log.Log;
-import js.log.LogFactory;
 
 public class SseEventsQueue {
 	private static final Log log = LogFactory.getLog(SseEventsQueue.class);

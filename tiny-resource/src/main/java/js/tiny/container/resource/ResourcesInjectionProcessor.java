@@ -7,9 +7,10 @@ import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
+import com.jslib.api.log.Log;
+import com.jslib.api.log.LogFactory;
+
 import jakarta.annotation.Resource;
-import js.log.Log;
-import js.log.LogFactory;
 import js.tiny.container.spi.IInstancePostConstructProcessor;
 import js.util.Classes;
 import js.util.Strings;

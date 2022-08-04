@@ -3,7 +3,6 @@ package js.tiny.container.mvc;
 import java.io.IOException;
 
 import jakarta.servlet.http.HttpServletResponse;
-
 import js.tiny.container.http.Resource;
 import js.util.Params;
 

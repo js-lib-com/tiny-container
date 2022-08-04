@@ -22,6 +22,11 @@
 		</dependency>
 		<dependency>
 			<groupId>com.js-lib</groupId>
+			<artifactId>js-log-api</artifactId>
+			<version>1.0</version>
+		</dependency>
+		<dependency>
+			<groupId>com.js-lib</groupId>
 			<artifactId>js-injector</artifactId>
 			<version>1.0.0</version>
 			<scope>test</scope>

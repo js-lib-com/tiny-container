@@ -6,6 +6,9 @@ import java.lang.reflect.Type;
 import java.util.List;
 import java.util.Map;
 
+import com.jslib.api.log.Log;
+import com.jslib.api.log.LogFactory;
+
 import jakarta.inject.Inject;
 import jakarta.servlet.AsyncContext;
 import jakarta.servlet.ServletConfig;
@@ -26,8 +29,6 @@ import jakarta.ws.rs.core.MultivaluedMap;
 import jakarta.ws.rs.sse.SseEventSink;
 import js.converter.Converter;
 import js.converter.ConverterRegistry;
-import js.log.Log;
-import js.log.LogFactory;
 import js.tiny.container.http.ContentType;
 import js.tiny.container.http.HttpHeader;
 import js.tiny.container.http.encoder.ArgumentsReader;

@@ -4,14 +4,13 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.when;
 
-import jakarta.servlet.http.HttpServletRequest;
-
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
+import jakarta.servlet.http.HttpServletRequest;
 import js.tiny.container.http.HttpHeader;
 
 @RunWith(MockitoJUnitRunner.class)

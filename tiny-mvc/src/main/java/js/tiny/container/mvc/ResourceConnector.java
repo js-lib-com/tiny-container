@@ -1,9 +1,10 @@
 package js.tiny.container.mvc;
 
+import com.jslib.api.log.Log;
+import com.jslib.api.log.LogFactory;
+
 import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
-import js.log.Log;
-import js.log.LogFactory;
 import js.tiny.container.http.Resource;
 import js.tiny.container.mvc.annotation.Controller;
 import js.tiny.container.spi.IClassPostLoadedProcessor;

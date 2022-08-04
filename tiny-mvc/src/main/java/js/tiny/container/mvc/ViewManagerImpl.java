@@ -3,12 +3,13 @@ package js.tiny.container.mvc;
 import java.io.IOException;
 import java.util.Properties;
 
+import com.jslib.api.log.Log;
+import com.jslib.api.log.LogFactory;
+
 import js.lang.BugError;
 import js.lang.Config;
 import js.lang.ConfigBuilder;
 import js.lang.ConfigException;
-import js.log.Log;
-import js.log.LogFactory;
 import js.tiny.container.servlet.RequestContext;
 import js.tiny.container.spi.IContainer;
 import js.util.Classes;

@@ -2,17 +2,16 @@ package js.tiny.container.mvc;
 
 import static org.mockito.Mockito.when;
 
-import jakarta.servlet.ServletConfig;
-import jakarta.servlet.ServletContext;
-import jakarta.servlet.ServletException;
-import jakarta.servlet.UnavailableException;
-
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
+import jakarta.servlet.ServletConfig;
+import jakarta.servlet.ServletContext;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.UnavailableException;
 import js.tiny.container.servlet.TinyContainer;
 import js.tiny.container.spi.IContainerService;
 import js.tiny.container.spi.IManagedClass;
