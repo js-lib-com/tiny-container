@@ -1,0 +1,2 @@
+com.jslib.container.rest.RestConnector
+com.jslib.container.rest.ContextInjectionProcessor
