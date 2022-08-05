@@ -1,0 +1,3 @@
+com.jslib.tiny.container.service.ManagedInstanceStartupProcessor
+com.jslib.tiny.container.service.InstancePostConstructor
+com.jslib.tiny.container.service.InstancePreDestructor

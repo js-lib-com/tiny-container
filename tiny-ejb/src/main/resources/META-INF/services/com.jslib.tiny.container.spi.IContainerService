@@ -1,0 +1,2 @@
+com.jslib.tiny.container.ejb.EjbScanProcessor
+com.jslib.tiny.container.ejb.EjbInjectionProcessor
