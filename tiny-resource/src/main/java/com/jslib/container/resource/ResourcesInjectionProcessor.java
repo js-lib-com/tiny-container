@@ -55,7 +55,7 @@ public class ResourcesInjectionProcessor implements IInstancePostConstructProces
 		try {
 			return new InitialContext();
 		} catch (NamingException e) {
-			log.error("Fail to create JNDI initial context. Root cause: %s: %s", e.getClass().getCanonicalName(), e.getMessage());
+			log.error("Fail to create JNDI initial context. Root cause: {exception_class}: {exception_message}", e.getClass().getCanonicalName(), e.getMessage());
 			return null;
 		}
 	}
@@ -68,7 +68,7 @@ public class ResourcesInjectionProcessor implements IInstancePostConstructProces
 		try {
 			context = (Context) rootContext.lookup(contextName);
 		} catch (NamingException e) {
-			log.error("JNDI context |%s| lookup fail. Root cause: %s: %s", contextName, e.getClass().getCanonicalName(), e.getMessage());
+			log.error("JNDI context |{jndi_context}| lookup fail. Root cause: {exception_class}: {exception_message}", contextName, e.getClass().getCanonicalName(), e.getMessage());
 		}
 		return context;
 	}
@@ -102,11 +102,11 @@ public class ResourcesInjectionProcessor implements IInstancePostConstructProces
 		fieldsCache.get(instance.getClass()).forEach(field -> {
 			Object value = getJndiValue(field);
 			if (value == null) {
-				log.debug("Null dependency for field |%s|. Leave it unchanged.", field);
+				log.debug("Null dependency for field |{java_field}|. Leave it unchanged.", field);
 				return;
 			}
 			Classes.setFieldValue(instance, field, value);
-			log.debug("Inject field |%s| value |%s|.", field, value);
+			log.debug("Inject field |{java_field}| value |{value}|.", field, value);
 		});
 	}
 
@@ -159,9 +159,9 @@ public class ResourcesInjectionProcessor implements IInstancePostConstructProces
 		Object value = null;
 		try {
 			value = namingContext.lookup(name);
-			log.info("Load JDNI object |%s/%s| of type |%s|.", contextName, name, value.getClass());
+			log.debug("Load JDNI object |{jndi_context}/{jndi_path}| of type |{java_type}|.", contextName, name, value.getClass());
 		} catch (NamingException e) {
-			log.warn("Missing JNDI object |%s/%s|.", contextName, name);
+			log.warn("Missing JNDI object |{jndi_context}/{jndi_path}|.", contextName, name);
 		}
 		return value;
 	}

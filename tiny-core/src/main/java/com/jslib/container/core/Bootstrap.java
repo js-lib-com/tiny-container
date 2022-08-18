@@ -8,6 +8,7 @@ import com.jslib.api.container.EmbeddedContainerProvider;
 import com.jslib.api.injector.IModule;
 import com.jslib.api.log.Log;
 import com.jslib.api.log.LogFactory;
+import com.jslib.container.cdi.CDI;
 import com.jslib.container.spi.Factory;
 import com.jslib.lang.Config;
 import com.jslib.lang.ConfigBuilder;
@@ -26,6 +27,7 @@ public class Bootstrap implements EmbeddedContainerProvider {
 		log.trace("createAppContainer(Object...)");
 		try {
 			Container container = new Container();
+			container.init(CDI.create());
 			startContainer(container, arguments);
 			return container;
 		} catch (Exception e) {
@@ -36,33 +38,33 @@ public class Bootstrap implements EmbeddedContainerProvider {
 
 	public void startContainer(Container container, Object... arguments) throws ConfigException {
 		if (arguments.length == 0) {
-			log.debug("Load bindings from default '/app.xml' resource.");
+			log.debug("Load injector bindings from default '/app.xml' resource.");
 			ConfigBuilder builder = new ConfigBuilder(Classes.getResourceAsStream("/app.xml"));
 			container.configure(builder.build());
 		}
 
 		else if (arguments[0] == null) {
 			// if application bindings descriptor is not present argument is null
-			log.debug("Empty application bindings.");
+			log.debug("Empty injector bindings.");
 			Config config = new Config("app");
 			container.configure(config);
 		}
 
 		else if (arguments[0] instanceof InputStream) {
-			log.debug("Load bindings from configuration stream.");
+			log.debug("Load injector bindings from configuration stream.");
 			ConfigBuilder builder = new ConfigBuilder((InputStream) arguments[0]);
 			container.configure(builder.build());
 		}
 
 		else if (arguments[0] instanceof Config) {
-			log.debug("Load bindings from configuration object.");
+			log.debug("Load injector bindings from configuration object.");
 			container.configure((Config) arguments[0]);
 		}
 
 		else {
 			IModule[] modules = new IModule[arguments.length];
 			for (int i = 0; i < arguments.length; ++i) {
-				log.debug("Load bindings from module |%s|.", arguments[i].getClass());
+				log.debug("Load injector bindings from module |{java_type}|.", arguments[i].getClass());
 				modules[i] = (IModule) arguments[i];
 			}
 			container.modules(modules);

@@ -52,9 +52,9 @@ public class FieldsCache {
 			String implementationURL = (String) context.lookup(ejbUrl);
 			EjbField ejbField = new EjbField(field, implementationURL);
 			ejbFields.add(ejbField);
-			log.debug("Discover EJB |%s| on field |%s#%s|.", ejbField, implementationClass.getCanonicalName(), field.getName());
+			log.debug("Discover EJB |{ejb_class}| on field |{java_type}#{java_field}|.", ejbField, implementationClass.getCanonicalName(), field.getName());
 		} catch (NamingException e) {
-			log.error("JNDI lookup fail on EJB |%s|. Root cause: %s: %s", ejbUrl, e.getClass().getCanonicalName(), e.getMessage());
+			log.error("JNDI lookup fail on EJB |{ejb_class}|. Root cause: {exception_class}: {exception_message}", ejbUrl, e.getClass().getCanonicalName(), e.getMessage());
 		}
 	}
 }

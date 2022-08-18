@@ -62,11 +62,11 @@ public class ResourceConnector implements IConnector, IClassPostLoadedProcessor 
 			return false;
 		}
 
-		log.debug("Scan MVC controller |%s|.", managedClass);
+		log.debug("Scan MVC controller |{managed_class}|.", managedClass);
 		for (IManagedMethod managedMethod : managedClass.getManagedMethods()) {
 			if (managedMethod.isPublic() && Types.isKindOf(managedMethod.getReturnType(), Resource.class)) {
 				String path = cache.add(managedMethod);
-				log.debug("Register MVC method |%s| to path |%s|.", managedMethod, path);
+				log.debug("Register MVC method |{managed_method}| to path |{http_path}|.", managedMethod, path);
 			}
 		}
 		return true;

@@ -47,36 +47,36 @@ import jakarta.inject.Singleton;
 public class Container implements IContainer, EmbeddedContainer, IManagedLoader {
 	private static final Log log = LogFactory.getLog(Container.class);
 
-	private final CDI cdi;
+	private CDI cdi;
 
-	private final Set<IContainerService> services = new HashSet<>();
+	private Set<IContainerService> services;
 
 	/**
 	 * Master cache for all managed classes registered to container. Since an application has one container instance, managed
 	 * classes cache is unique per application.
 	 */
-	private List<IManagedClass<?>> managedClasses = new ArrayList<>();
+	private List<IManagedClass<?>> managedClasses;
 
 	/** Managed classes indexed by interface class. */
-	private final Map<Class<?>, IManagedClass<?>> managedInterfaces = new HashMap<>();
+	private Map<Class<?>, IManagedClass<?>> managedInterfaces;
 
 	/** Managed classes indexed by implementation class. */
-	private final Map<Class<?>, ManagedClass<?>> managedImplementations = new HashMap<>();
+	private Map<Class<?>, ManagedClass<?>> managedImplementations;
 
-	private final FlowProcessorsSet<IContainerStartProcessor> containerStartProcessors = new FlowProcessorsSet<>();
+	private FlowProcessorsSet<IContainerStartProcessor> containerStartProcessors;
 
-	public Container() {
-		this(CDI.create());
-	}
+	protected void init(CDI cdi) {
+		log.trace("CDI");
 
-	/**
-	 * Create factories and processors for instance retrieval but leave classes pool loading for {@link #configure(Config)}.
-	 * This constructor creates built-in factories and processors but subclass may add its own.
-	 */
-	public Container(CDI cdi) {
 		this.cdi = cdi;
 		this.cdi.setManagedLoader(this);
 		this.cdi.setInstanceCreatedListener(this);
+
+		this.services = new HashSet<>();
+		this.managedClasses = new ArrayList<>();
+		this.managedInterfaces = new HashMap<>();
+		this.managedImplementations = new HashMap<>();
+		this.containerStartProcessors = new FlowProcessorsSet<>();
 
 		bind(IContainer.class).instance(this).build();
 		bind(EmbeddedContainer.class).instance(this).build();
@@ -85,11 +85,11 @@ public class Container implements IContainer, EmbeddedContainer, IManagedLoader 
 		bind(Converter.class).instance(ConverterRegistry.getConverter()).build();
 
 		for (IContainerService service : ServiceLoader.load(IContainerService.class)) {
-			log.debug("Load container service |%s|.", service.getClass());
+			log.debug("Load container service |{java_type}|.", service.getClass());
 			services.add(service);
 		}
 	}
-
+	
 	@Override
 	public <T> IBindingBuilder<T> bind(Class<T> interfaceClass) {
 		return new BindingParametersBuilder<>(cdi, interfaceClass);
@@ -139,17 +139,21 @@ public class Container implements IContainer, EmbeddedContainer, IManagedLoader 
 				continue;
 			}
 
-			log.debug("Create managed class |%s|.", managedClass);
+			log.debug("Create managed class |{managed_class}|.", managedClass);
 			managedClasses.add(managedClass);
 
 			managedInterfaces.put(binding.getInterfaceClass(), managedClass);
 			managedImplementations.put(binding.getImplementationClass(), managedClass);
 		}
+
+		services.forEach(service -> {
+			service.postCreate(this);
+		});
 	}
 
 	/** Execute container start processors, registered to {@link #containerStartProcessors}. */
 	public void start() {
-		log.trace("start()");
+		log.debug("Start container.");
 		containerStartProcessors.forEach(processor -> processor.onContainerStart(this));
 	}
 
@@ -158,7 +162,7 @@ public class Container implements IContainer, EmbeddedContainer, IManagedLoader 
 	/** Execute container close processors, registered to {@link #containerCloseProcessors}, then destroy all services. */
 	@Override
 	public void close() {
-		log.trace("close()");
+		log.debug("Destroy container.");
 
 		try {
 			SortedMap<Integer, IManagedClass<?>> managedClasses = new TreeMap<>(Collections.reverseOrder());

@@ -6,6 +6,9 @@ import java.util.Locale;
 import com.jslib.api.log.Log;
 import com.jslib.api.log.LogFactory;
 import com.jslib.container.spi.IContainer;
+import com.jslib.converter.Converter;
+import com.jslib.converter.ConverterRegistry;
+import com.jslib.lang.BugError;
 
 import jakarta.enterprise.context.RequestScoped;
 import jakarta.inject.Inject;
@@ -13,9 +16,6 @@ import jakarta.servlet.RequestDispatcher;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
-import com.jslib.converter.Converter;
-import com.jslib.converter.ConverterRegistry;
-import com.jslib.lang.BugError;
 
 /**
  * Request context stored on current HTTP servlet request thread. This class allows access to container public services and to
@@ -340,34 +340,30 @@ public class RequestContext {
 
 	/** Dump this request context state to error logger. If this instance is not attached this method is NOP. */
 	public void dump() {
-		StringBuilder message = new StringBuilder();
-		message.append("Request context |");
-		message.append(httpRequest.getRequestURI());
-		message.append("|:");
+		StringBuilder context = new StringBuilder();
+		context.append("- remote-address: ");
+		context.append(httpRequest.getRemoteHost());
 
-		message.append(System.lineSeparator());
-		message.append("\t- remote-address: ");
-		message.append(httpRequest.getRemoteHost());
+		context.append(System.lineSeparator());
+		context.append("- method: ");
+		context.append(httpRequest.getMethod());
 
-		message.append(System.lineSeparator());
-		message.append("\t- method: ");
-		message.append(httpRequest.getMethod());
-
-		message.append(System.lineSeparator());
-		message.append("\t- query-string: ");
+		context.append(System.lineSeparator());
+		context.append("- query-string: ");
 		if (httpRequest.getQueryString() != null) {
-			message.append(httpRequest.getQueryString());
+			context.append(httpRequest.getQueryString());
 		}
 
 		Enumeration<String> headerNames = httpRequest.getHeaderNames();
 		while (headerNames.hasMoreElements()) {
-			message.append(System.lineSeparator());
+			context.append(System.lineSeparator());
 			String headerName = headerNames.nextElement();
-			message.append("\t- ");
-			message.append(headerName);
-			message.append(": ");
-			message.append(httpRequest.getHeader(headerName));
+			context.append("- ");
+			context.append(headerName);
+			context.append(": ");
+			context.append(httpRequest.getHeader(headerName));
 		}
-		log.error(message.toString());
+
+		log.error("Request context dump for {http_request}:{__message_extra__}", httpRequest.getRequestURI(), context);
 	}
 }

@@ -41,6 +41,7 @@ public class ResourceServletTest {
 		when(servletConfig.getServletContext()).thenReturn(servletContext);
 		when(servletContext.getServletContextName()).thenReturn("test-app");
 		when(servletContext.getAttribute(TinyContainer.ATTR_INSTANCE)).thenReturn(container);
+		when(servletContext.getContextPath()).thenReturn("");
 	}
 
 	@Test

@@ -72,7 +72,7 @@ public class EventStreamServlet extends AppServlet {
 	@Override
 	protected void handleRequest(RequestContext context) throws IOException {
 		log.trace("handleRequest(RequestContext)");
-		log.debug("Event stream request from |%s|.", context.getRemoteHost());
+		log.debug("Event stream request from |{remote_host}|.", context.getRemoteHost());
 		final HttpServletResponse httpResponse = context.getResponse();
 
 		final EventStreamConfig config = getEventStreamConfig(context.getRequest());
@@ -94,11 +94,11 @@ public class EventStreamServlet extends AppServlet {
 		eventStream.setWriter(httpResponse.getWriter());
 		try {
 			eventStream.onOpen();
-			log.debug("Event stream |%s| opened.", eventStream);
+			log.debug("Event stream |{event_stream}| opened.", eventStream);
 			while (eventStream.loop()) {
 			}
 		} finally {
-			log.debug("Close servlet for event stream |%s|.", eventStream);
+			log.debug("Close servlet for event stream |{event_stream}|.", eventStream);
 			eventStream.onClose();
 			eventStreamManager.destroyEventStream(eventStream);
 		}
@@ -110,12 +110,12 @@ public class EventStreamServlet extends AppServlet {
 			return null;
 		}
 		if(!"POST".equalsIgnoreCase(request.getMethod())) {
-			log.warn("Invalid event stream request from |%s|. It has body but is not a POST.", request.getRemoteHost());
+			log.warn("Invalid event stream request from |{remote_host}|. It has body but is not a POST.", request.getRemoteHost());
 			return null;
 		}
 		ContentType contentType = new ContentType(request.getContentType());
 		if (!contentType.isJSON()) {
-			log.warn("Invalid event stream request from |%s|. It has body but with bad content type |%s|.", request.getRemoteHost(), contentType);
+			log.warn("Invalid event stream request from |{remote_host}|. It has body but with bad content type |{http_type}|.", request.getRemoteHost(), contentType);
 			return null;
 		}
 		Json json = Classes.loadService(Json.class);

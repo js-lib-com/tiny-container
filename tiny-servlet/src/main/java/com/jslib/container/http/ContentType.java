@@ -117,7 +117,7 @@ public class ContentType {
 		Params.notNull(file, "File");
 		ContentType contentType = FILE_TYPES.get(Files.getExtension(file));
 		if (contentType == null) {
-			log.debug("Unknown content type for |%s|. Replace with default |%s|.", file, TEXT_HTML);
+			log.debug("Unknown content type for |{file_type}|. Replace with default |{http_content_type}|.", file, TEXT_HTML);
 			contentType = TEXT_HTML;
 		}
 		return contentType;

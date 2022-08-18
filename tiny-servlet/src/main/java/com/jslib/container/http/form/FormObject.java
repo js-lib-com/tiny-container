@@ -248,7 +248,7 @@ public final class FormObject {
 				field = Classes.getFieldEx(object.getClass(), Strings.toMemberName(childName));
 			} catch (NoSuchFieldException e) {
 				// best effort approach: form to object mapping is not so strictly but still log missing fields
-				log.debug("Missing field |%s| from object |%s|.", childName, object.getClass());
+				log.debug("Missing field |{java_field}| from object |{java_type}|.", childName, object.getClass());
 				return null;
 			}
 
@@ -277,7 +277,7 @@ public final class FormObject {
 				field = Classes.getFieldEx(object.getClass(), Strings.toMemberName(childName));
 			} catch (NoSuchFieldException e) {
 				// best effort approach: form to object mapping is not so strictly - i.e. ignores missing fields
-				log.debug("Missing field |%s| from object |%s|.", childName, object.getClass());
+				log.debug("Missing field |{java_field}| from object |{java_type}|.", childName, object.getClass());
 				return;
 			}
 
@@ -447,7 +447,7 @@ public final class FormObject {
 			Params.isNumeric(childIndex, "Child index");
 			int index = Integer.parseInt(childIndex);
 			if (index >= Array.getLength(array)) {
-				log.debug("Array capacity exceeded. Ingore value |%s| for array index |%d|.", value, index);
+				log.debug("Array capacity exceeded. Ingore value |{value}| for array index |{index}|.", value, index);
 				return;
 			}
 			if (!String.class.equals(componentType)) {

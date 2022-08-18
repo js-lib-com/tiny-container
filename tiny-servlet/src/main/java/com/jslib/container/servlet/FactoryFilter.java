@@ -71,7 +71,7 @@ public class FactoryFilter implements Filter {
 	@Override
 	public void init(FilterConfig config) throws ServletException {
 		final ServletContext context = config.getServletContext();
-		log.trace("Initialize filter |%s#%s|.", context.getServletContextName(), config.getFilterName());
+		log.trace("Initialize filter |{context_name}#{filter_name}|.", context.getServletContextName(), config.getFilterName());
 		container = (IContainer) context.getAttribute(TinyContainer.ATTR_INSTANCE);
 	}
 

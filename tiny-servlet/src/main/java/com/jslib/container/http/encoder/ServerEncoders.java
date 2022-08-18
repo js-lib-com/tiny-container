@@ -68,11 +68,11 @@ public class ServerEncoders implements ArgumentsReaderFactory, ValueWriterFactor
 
 		for (HttpEncoderProvider encoderProvider : ServiceLoader.load(HttpEncoderProvider.class)) {
 			for (Map.Entry<EncoderKey, ArgumentsReader> entry : encoderProvider.getArgumentsReaders().entrySet()) {
-				log.debug("Register arguments reader |%s| for |%s|.", entry.getValue().getClass(), entry.getKey());
+				log.debug("Register arguments reader |{java_type}| for |{key}|.", entry.getValue().getClass(), entry.getKey());
 				readers.put(entry.getKey(), entry.getValue());
 			}
 			for (Map.Entry<ContentType, ValueWriter> entry : encoderProvider.getValueWriters().entrySet()) {
-				log.debug("Register value writer |%s| for |%s|.", entry.getValue().getClass(), entry.getKey());
+				log.debug("Register value writer |{java_type}| for |{key}|.", entry.getValue().getClass(), entry.getKey());
 				writers.put(entry.getKey(), entry.getValue());
 			}
 		}

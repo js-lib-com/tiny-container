@@ -88,7 +88,7 @@ class ProxyProvider<T> implements ITypedProvider<T> {
 			if (managedMethod == null) {
 				throw new BugError("Attempt to use not managed method |%s|.", method);
 			}
-			log.trace("Invoke |%s|.", managedMethod);
+			log.trace("Invoke |{managed_method}|.", managedMethod);
 
 			try {
 				return managedMethod.invoke(managedInstance, args);

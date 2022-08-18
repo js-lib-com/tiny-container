@@ -130,7 +130,7 @@ public class RequestPreprocessor implements Filter {
 		if (localeParameter != null) {
 			locales = Strings.split(localeParameter, ',');
 			for (String locale : locales) {
-				log.debug("Register locale |%s| for request pre-processing.", locale);
+				log.debug("Register locale |{locale}| for request pre-processing.", locale);
 			}
 		}
 
@@ -138,7 +138,7 @@ public class RequestPreprocessor implements Filter {
 		if (securityDomainParameter != null) {
 			securityDomains = Strings.split(securityDomainParameter, ',');
 			for (String securityDomain : securityDomains) {
-				log.debug("Register security domain |%s| for request pre-processing.", securityDomain);
+				log.debug("Register security domain |{security_domain}| for request pre-processing.", securityDomain);
 			}
 		}
 	}

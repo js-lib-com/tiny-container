@@ -113,7 +113,6 @@ public final class HttpRmiServlet extends AppServlet {
 
 	/** Initialize invocation arguments reader and return value writer factories. */
 	public HttpRmiServlet() {
-		log.trace("HttpRmiServlet()");
 		// both factories are implemented by the same server encoders
 		argumentsReaderFactory = ServerEncoders.getInstance();
 		valueWriterFactory = ServerEncoders.getInstance();
@@ -204,12 +203,12 @@ public final class HttpRmiServlet extends AppServlet {
 	private static IManagedClass<?> getManagedClass(IContainer container, String interfaceName, String requestURI) throws ClassNotFoundException {
 		Class<?> interfaceClass = Classes.forOptionalName(interfaceName);
 		if (interfaceClass == null) {
-			log.error("HTTP-RMI request for not existing class |%s|.", interfaceName);
+			log.error("HTTP-RMI request for not existing class |{java_type}|.", interfaceName);
 			throw new ClassNotFoundException(requestURI);
 		}
 		IManagedClass<?> managedClass = container.getManagedClass(interfaceClass);
 		if (managedClass == null) {
-			log.error("HTTP-RMI request for not existing managed class |%s|.", interfaceName);
+			log.error("HTTP-RMI request for not existing managed class |{java_type}|.", interfaceName);
 			throw new ClassNotFoundException(requestURI);
 		}
 		return managedClass;
@@ -228,11 +227,11 @@ public final class HttpRmiServlet extends AppServlet {
 	private static IManagedMethod getManagedMethod(IManagedClass<?> managedClass, String methodName, String requestURI) throws NoSuchMethodException {
 		IManagedMethod managedMethod = managedClass.getManagedMethod(methodName);
 		if (managedMethod == null) {
-			log.error("HTTP-RMI request for not existing managed method |%s#%s|.", managedClass, methodName);
+			log.error("HTTP-RMI request for not existing managed method |{managed_class}#{managed_method}}|.", managedClass, methodName);
 			throw new NoSuchMethodException(requestURI);
 		}
 		if (Types.isKindOf(managedMethod.getReturnType(), Resource.class)) {
-			log.error("HTTP-RMI request for managed method |%s#%s| returning a resource.", managedClass, methodName);
+			log.error("HTTP-RMI request for managed method |{managed_class}#{managed_method}| returning a resource.", managedClass, methodName);
 			throw new NoSuchMethodException(requestURI);
 		}
 		return managedMethod;

@@ -175,7 +175,7 @@ class ManagedClass<T> implements IManagedClass<T>, IInstanceLifecycleListener {
 	public IManagedMethod getManagedMethod(String methodName) {
 		IManagedMethod managedMethod = managedMethods.get(methodName);
 		if (managedMethod == null) {
-			log.error("Missing remote method |%s| from |%s|.", methodName, implementationClass);
+			log.error("Missing remote method |{java_method}| from |{java_type}|.", methodName, implementationClass);
 			return null;
 		}
 		return managedMethod;

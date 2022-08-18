@@ -65,7 +65,7 @@ public class InstancePreDestructor implements IInstancePreDestroyProcessor {
 	public <T> void onInstancePreDestroy(T instance) {
 		Params.notNull(instance, "Instance");
 		final Class<?> implementationClass = instance.getClass();
-		log.debug("Pre-destroy managed instance |%s|.", implementationClass);
+		log.debug("Pre-destroy managed instance |{java_type}|.", implementationClass);
 
 		IManagedMethod managedMethod = methodsCache.get(implementationClass);
 		if (managedMethod == null) {

@@ -32,7 +32,7 @@ public class UrlParameters {
 				String value = URLDecoder.decode(requestParts[i].substring(equalIndex + 1).trim(), "UTF-8");
 				parameters.put(name, value);
 			} catch (Exception e) {
-				log.error("Invalid matrix parameters |%s|: %s: %s", requestURI, e.getClass().getSimpleName(), e.getMessage());
+				log.error("Invalid matrix parameters |{http_request}|: {exception_class}: {exception_message}", requestURI, e.getClass().getSimpleName(), e.getMessage());
 			}
 		}
 	}

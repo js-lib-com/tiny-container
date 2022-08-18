@@ -5,8 +5,8 @@ import java.lang.reflect.InvocationTargetException;
 import java.security.Principal;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import com.jslib.api.json.Json;
 import com.jslib.api.log.Log;
-import com.jslib.api.log.LogContext;
 import com.jslib.api.log.LogFactory;
 import com.jslib.container.http.ContentType;
 import com.jslib.container.http.HttpHeader;
@@ -14,6 +14,9 @@ import com.jslib.container.spi.AuthorizationException;
 import com.jslib.container.spi.Factory;
 import com.jslib.container.spi.IContainer;
 import com.jslib.container.spi.ITinyContainer;
+import com.jslib.lang.InvocationException;
+import com.jslib.rmi.BusinessException;
+import com.jslib.rmi.RemoteException;
 
 import jakarta.servlet.RequestDispatcher;
 import jakarta.servlet.ServletConfig;
@@ -23,11 +26,7 @@ import jakarta.servlet.UnavailableException;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import com.jslib.api.json.Json;
-import com.jslib.lang.InvocationException;
-import com.jslib.rmi.BusinessException;
-import com.jslib.rmi.RemoteException;
-import com.jslib.util.Strings;
+import jakarta.servlet.http.HttpSession;
 
 /**
  * Base for all application's servlets. Implements common request processing and provides utility functions. Concrete servlet
@@ -64,17 +63,6 @@ public abstract class AppServlet extends HttpServlet {
 	/** Class logger. */
 	private static final Log log = LogFactory.getLog(AppServlet.class);
 
-	private static final String PARAMETER_PREVIEW_CONTEXT = "js.tiny.container.preview.context";
-
-	/** Logger diagnostic context stores contextual information regarding current request. */
-	private static final LogContext logContext = LogFactory.getLogContext();
-	/** Diagnostic context name for context path, aka application. */
-	private static final String LOG_CONTEXT_APP = "app";
-	/** Diagnostic context name for remote host, aka IP address. */
-	private static final String LOG_CONTEXT_IP = "ip";
-	/** Diagnostic context name for current request ID. */
-	private static final String LOG_CONTEXT_ID = "id";
-
 	/** Sequence generator for request ID. Every new HTTP request got an ID guaranteed to be unique for practical purposes. */
 	private static final AtomicInteger requestID = new AtomicInteger();
 
@@ -90,7 +78,9 @@ public abstract class AppServlet extends HttpServlet {
 	 */
 	protected abstract void handleRequest(RequestContext context) throws IOException, ServletException;
 
-	/** Servlet name, merely for logging. */
+	/** Application, context and servlet names, merely for logging. */
+	protected String appName;
+	protected String contextName;
 	protected String servletName;
 
 	/**
@@ -118,15 +108,19 @@ public abstract class AppServlet extends HttpServlet {
 		super.init(config);
 
 		final ServletContext context = config.getServletContext();
-		previewContextPath = context.getInitParameter(PARAMETER_PREVIEW_CONTEXT);
+		appName = context.getServletContextName();
+		contextName = context.getContextPath().isEmpty() ? CT.ROOT_CONTEXT : context.getContextPath().substring(1);
+		servletName = config.getServletName();
+
+		updateLogContext();
+		log.debug("Initializing servlet {app_name}#{servlet_name}.", appName, servletName);
+
+		previewContextPath = context.getInitParameter(CT.PARAMETER_PREVIEW_CONTEXT);
 		container = (ITinyContainer) context.getAttribute(TinyContainer.ATTR_INSTANCE);
 		if (container == null) {
-			log.fatal("Tiny container instance not properly created, probably misconfigured. Servlet |%s| permanently unvailable.", config.getServletName());
+			log.fatal("Tiny container instance not properly created, probably misconfigured. Servlet {servlet} permanently unvailable.", config.getServletName());
 			throw new UnavailableException("Tiny container instance not properly created, probably misconfigured.");
 		}
-
-		servletName = Strings.concat(context.getServletContextName(), '#', config.getServletName());
-		log.trace("Initialize servlet |%s|.", servletName);
 	}
 
 	/**
@@ -135,7 +129,8 @@ public abstract class AppServlet extends HttpServlet {
 	 */
 	@Override
 	public void destroy() {
-		log.trace("Destroy servlet |%s|.", servletName);
+		updateLogContext();
+		log.debug("Destroying servlet {app_name}#{servlet_name}.", appName, servletName);
 		super.destroy();
 	}
 
@@ -153,25 +148,32 @@ public abstract class AppServlet extends HttpServlet {
 	 */
 	@Override
 	protected void service(HttpServletRequest httpRequest, HttpServletResponse httpResponse) throws IOException, ServletException {
-		// push context path and remote address of the requested processed by this thread to logger diagnostic context
-		logContext.put(LOG_CONTEXT_APP, httpRequest.getContextPath().isEmpty() ? TinyContainer.ROOT_CONTEXT : httpRequest.getContextPath().substring(1));
-		logContext.put(LOG_CONTEXT_IP, httpRequest.getRemoteHost());
-		logContext.put(LOG_CONTEXT_ID, Integer.toString(requestID.getAndIncrement(), Character.MAX_RADIX));
+		updateLogContext();
+
+		LogFactory.getLogContext().put(CT.LOG_REMOTE_HOST, httpRequest.getRemoteHost());
+		HttpSession session = httpRequest.getSession(false);
+		if (session != null) {
+			LogFactory.getLogContext().put(CT.LOG_SESSION_ID, session.getId());
+		}
+		String traceId = httpRequest.getHeader(HttpHeader.TRACE_ID);
+		if (traceId == null) {
+			traceId = Integer.toString(requestID.getAndIncrement(), Character.MAX_RADIX);
+		}
+		LogFactory.getLogContext().put(CT.LOG_TRACE_ID, traceId);
 
 		Factory.bind(container);
 
 		if (isEmptyUriRequest(httpRequest)) {
-			log.debug("Empty URI request for |%s|. Please check for <img> with empty 'src' or <link>, <script> with empty 'href' in HTML source or script resulting in such condition.", httpRequest.getRequestURI());
+			log.debug("Empty URI request for |{uri}|. Please check for <img> with empty 'src' or <link>, <script> with empty 'href' in HTML source or script resulting in such condition.", httpRequest.getRequestURI());
 			return;
 		}
 		final long start = System.nanoTime();
-		final String requestURI = httpRequest.getRequestURI();
+		log.trace("Processing request |{http_method}:{uri}|.", httpRequest.getMethod(), httpRequest.getRequestURI());
 
 		// request context has THREAD scope and this request thread may be reused by servlet container
 		RequestContext requestContext = container.getInstance(RequestContext.class);
 		// takes care to properly initialize (attach) request context on every HTTP request
 		requestContext.attach(httpRequest, httpResponse);
-		log.trace("Processing request |%s:%s|.", httpRequest.getMethod(), requestURI);
 
 		// if this request was forwarded from preview servlet ensure container is authenticated
 		// current context should declare context parameter js.tiny.container.preview.context
@@ -188,10 +190,16 @@ public abstract class AppServlet extends HttpServlet {
 			dumpError(requestContext, t);
 			throw t;
 		} finally {
-			log.trace("%s %s processed in %.2f msec.", httpRequest.getMethod(), requestContext.getRequestURL(), (System.nanoTime() - start) / 1000000.0);
+			log.info("{http_method} {uri} processed in {processing_time} msec.", httpRequest.getMethod(), requestContext.getRequestURL(), (System.nanoTime() - start) / 1000000.0);
 			// cleanup remote address from logger context and detach request context instance from this request
-			logContext.clear();
+			LogFactory.getLogContext().clear();
 		}
+	}
+
+	private void updateLogContext() {
+		LogFactory.getLogContext().put(CT.LOG_APP_NAME, appName);
+		LogFactory.getLogContext().put(CT.LOG_CONTEXT_NAME, contextName);
+		LogFactory.getLogContext().put(CT.LOG_SERVLET_NAME, servletName);
 	}
 
 	/**
@@ -264,10 +272,10 @@ public abstract class AppServlet extends HttpServlet {
 			log.fatal("Abort HTTP transaction. Attempt to send reponse after response already commited.");
 			return;
 		}
-		log.error("Reject unauthorized request for private resource or service: |%s|.", context.getRequestURI());
+		log.error("Reject unauthorized request for private resource or service: |{uri}|.", context.getRequestURI());
 
 		final String realm = String.format("Basic realm=%s", context.getRequest().getServletContext().getServletContextName());
-		log.trace("Send WWW-Authenticate |%s| for rejected request: |%s|", realm, context.getRequestURI());
+		log.trace("Send WWW-Authenticate |{http_realm}| for rejected request: |{uri}|", realm, context.getRequestURI());
 		httpResponse.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
 		httpResponse.setHeader(HttpHeader.WWW_AUTHENTICATE, realm);
 	}
@@ -281,7 +289,7 @@ public abstract class AppServlet extends HttpServlet {
 	 * @throws IOException if writing to HTTP response fails.
 	 */
 	protected static void sendBadRequest(RequestContext context) throws IOException {
-		log.error("Bad request format for resource or service: |%s|.", context.getRequestURI());
+		log.error("Bad request format for resource or service: |{uri}|.", context.getRequestURI());
 		context.dump();
 		context.getResponse().sendError(HttpServletResponse.SC_BAD_REQUEST, context.getRequestURI());
 	}
@@ -296,7 +304,7 @@ public abstract class AppServlet extends HttpServlet {
 	 * @throws IOException if writing to response stream fails.
 	 */
 	protected static void sendNotFound(RequestContext context, Exception exception) throws IOException {
-		log.error("Request for missing resource or service: |%s|.", context.getRequestURI());
+		log.error("Request for missing resource or service: |{uri}|.", context.getRequestURI());
 		sendJsonObject(context, new RemoteException(exception), HttpServletResponse.SC_NOT_FOUND);
 	}
 
@@ -324,7 +332,7 @@ public abstract class AppServlet extends HttpServlet {
 		if (throwable instanceof BusinessException) {
 			// business constrains exception is generated by user space code and sent to client using HTTP response
 			// status 400 - HttpServletResponse.SC_BAD_REQUEST, as JSON serialized object
-			log.debug("Send business constrain exception |%d|.", ((BusinessException) throwable).getErrorCode());
+			log.debug("Send business constrain exception |{business_code}|.", ((BusinessException) throwable).getErrorCode());
 			sendJsonObject(context, throwable, HttpServletResponse.SC_BAD_REQUEST);
 		} else {
 			dumpError(context, throwable);
@@ -339,7 +347,7 @@ public abstract class AppServlet extends HttpServlet {
 	 * @param throwable throwable to dump stack trace for.
 	 */
 	protected static void dumpError(RequestContext context, Throwable throwable) {
-		log.dump("Error on HTTP request:", throwable);
+		log.dump(throwable);
 		context.dump();
 	}
 
@@ -358,10 +366,10 @@ public abstract class AppServlet extends HttpServlet {
 			log.fatal("Abort HTTP transaction. Attempt to send JSON object after reponse commited.");
 			return;
 		}
-		log.trace("Send response object |%s|.", object.toString());
 
 		Json json = context.getContainer().getInstance(Json.class);
 		String buffer = json.stringify(object);
+		log.trace("Send response object {java_type}. Object dump:{__message_extra__}", object.getClass(), buffer);
 		byte[] bytes = buffer.getBytes("UTF-8");
 
 		httpResponse.setStatus(statusCode);
@@ -383,7 +391,7 @@ public abstract class AppServlet extends HttpServlet {
 			log.fatal("Abort HTTP transaction. Attempt to redirect after reponse commited.");
 			return;
 		}
-		log.trace("Send redirect |%d| to |%s|.", statusCode, location);
+		log.trace("Send redirect |{http_status}| to |{http_location}|.", statusCode, location);
 		httpResponse.setStatus(statusCode);
 		httpResponse.setHeader("Location", location);
 		httpResponse.getOutputStream().flush();

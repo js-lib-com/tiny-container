@@ -175,7 +175,7 @@ public class ResourceServlet extends AppServlet {
 				// this means redirect from server does not reach script counterpart
 				// as workaround uses 200 OK and X-JSLIB-Location extension header
 				if (HttpHeader.isXHR(context.getRequest())) {
-					log.trace("Send X-JSLIB-Location |%s| for rejected XHR request: |%s|", loginPage, context.getRequestURI());
+					log.trace("Send X-JSLIB-Location |{http_location}| for rejected XHR request: |{http_request}|", loginPage, context.getRequestURI());
 					httpResponse.setStatus(HttpServletResponse.SC_OK);
 					httpResponse.setHeader(HttpHeader.X_HEADER_LOCATION, loginPage);
 					return;

@@ -12,7 +12,6 @@ import org.mockito.junit.MockitoJUnitRunner;
 
 import com.jslib.api.injector.IScopeFactory;
 import com.jslib.container.cdi.CDI;
-import com.jslib.container.spi.IContainer;
 
 import jakarta.inject.Singleton;
 
@@ -21,11 +20,12 @@ public class ContainerTest {
 	@Mock
 	private CDI cdi;
 
-	private IContainer container;
+	private Container container;
 
 	@Before
 	public void beforeTest() {
-		container = new Container(cdi);
+		container = new Container();
+		container.init(cdi);
 	}
 
 	@Test

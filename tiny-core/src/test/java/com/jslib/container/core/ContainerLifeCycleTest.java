@@ -42,7 +42,8 @@ public class ContainerLifeCycleTest {
 	@Before
 	public void beforeTest() {
 		when(cdi.configure(config)).thenReturn(Arrays.asList(binding));
-		container = new Container(cdi);
+		container = new Container();
+		container.init(cdi);
 	}
 
 	@Test

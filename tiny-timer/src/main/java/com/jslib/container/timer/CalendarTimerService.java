@@ -135,7 +135,7 @@ public class CalendarTimerService implements IInstancePostConstructProcessor {
 		}
 
 		long delay = (next.getTime() - now.getTime());
-		log.debug("Next execution date |%s|. Delay is |%d|", next, delay);
+		log.debug("Next execution date |{schedule_date}|. Delay is |{schedule_delay}|", next, delay);
 		return delay;
 	}
 
@@ -151,7 +151,6 @@ public class CalendarTimerService implements IInstancePostConstructProcessor {
 		CalendarEx evaluationMoment = new CalendarEx(now);
 		// next scheduler timeout should be at least one second after the evaluation moment
 		evaluationMoment.increment(CalendarUnit.SECOND);
-		log.debug("Evaluation moment: %s.", evaluationMoment.getTime());
 
 		// next timeout calendar is started with evaluation moment - that is already incremented with one second
 		CalendarEx nextTimeout = evaluationMoment.clone();
@@ -190,7 +189,6 @@ public class CalendarTimerService implements IInstancePostConstructProcessor {
 		}
 
 		Date date = nextTimeout.getTime();
-		log.debug("Computed next timeout: %s.", date);
 		return date;
 	}
 

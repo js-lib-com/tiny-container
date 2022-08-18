@@ -1,4 +1,4 @@
-package com.jslib.container.mvc.it;
+package com.jslib.container.servlet;
 
 import com.jslib.container.mvc.View;
 import com.jslib.container.mvc.annotation.Controller;

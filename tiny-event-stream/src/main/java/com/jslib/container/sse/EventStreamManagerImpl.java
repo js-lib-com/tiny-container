@@ -109,7 +109,7 @@ class EventStreamManagerImpl implements EventStreamManager {
 			}
 
 			for (EventStream eventStream : eventStreamsArray) {
-				log.debug("Force close stale event stream |%s|.", eventStream);
+				log.debug("Force close stale event stream |{event_stream}|.", eventStream);
 				eventStream.close();
 			}
 		}

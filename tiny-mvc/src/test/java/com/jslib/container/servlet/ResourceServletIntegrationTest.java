@@ -1,4 +1,4 @@
-package com.jslib.container.mvc.it;
+package com.jslib.container.servlet;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
@@ -28,9 +28,8 @@ import org.mockito.invocation.InvocationOnMock;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.mockito.stubbing.Answer;
 
+import com.jslib.container.cdi.CDI;
 import com.jslib.container.mvc.ResourceServlet;
-import com.jslib.container.servlet.RequestScopeProvider;
-import com.jslib.container.servlet.TinyContainer;
 import com.jslib.lang.ConfigBuilder;
 
 import jakarta.servlet.ReadListener;
@@ -47,7 +46,7 @@ import jakarta.servlet.http.HttpServletResponse;
 @RunWith(MockitoJUnitRunner.class)
 public class ResourceServletIntegrationTest {
 	private static final String DESCRIPTOR = "" + //
-			"<module package='com.jslib.container.mvc.it'>" + //
+			"<module package='com.jslib.container.servlet'>" + //
 			"	<binding bind='App' in='Singleton' />" + //
 			"	<binding bind='DefaultController' in='Singleton' />" + //
 			"	<binding bind='IController' to='ControllerImpl' in='Singleton' />" + //
@@ -74,12 +73,14 @@ public class ResourceServletIntegrationTest {
 	@Before
 	public void beforeTest() throws Exception {
 		container = new TinyContainer();
+		container.init(CDI.create());
 		container.configure(new ConfigBuilder(DESCRIPTOR).build());
 
 		when(servletConfig.getServletContext()).thenReturn(servletContext);
 		when(servletConfig.getServletName()).thenReturn("ResourceServlet");
 		when(servletContext.getServletContextName()).thenReturn("app");
 		when(servletContext.getAttribute(TinyContainer.ATTR_INSTANCE)).thenReturn(container);
+		when(servletContext.getContextPath()).thenReturn("");
 
 		doAnswer(new Answer<Object>() {
 			public Object answer(InvocationOnMock invocation) throws Throwable {

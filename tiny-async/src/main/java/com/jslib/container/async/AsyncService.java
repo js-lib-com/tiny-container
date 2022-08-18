@@ -71,7 +71,7 @@ public class AsyncService implements IMethodInvocationProcessor {
 	@Override
 	public Object onMethodInvocation(final IInvocationProcessorsChain chain, final IInvocation invocation) throws Exception {
 		final String methodName = invocation.method().toString();
-		log.debug("Execute asynchronous |%s|.", methodName);
+		log.debug("Execute asynchronous |{java_method}|.", methodName);
 
 		if (invocation.method().isVoid()) {
 			threadsPool.execute(methodName, () -> chain.invokeNextProcessor(invocation));

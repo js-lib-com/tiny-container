@@ -105,7 +105,7 @@ public class Observer implements Runnable {
 
 	@Override
 	public void run() {
-		log.debug("Start meters observer on thread |%s|.", thread);
+		log.debug("Start meters observer on thread |{observer_thread}|.", thread);
 
 		for (;;) {
 			try {
@@ -127,6 +127,6 @@ public class Observer implements Runnable {
 		synchronized (this) {
 			this.notify();
 		}
-		log.debug("Stop meters observer on thread |%s|.", thread);
+		log.debug("Stop meters observer on thread |{observer_thread}|.", thread);
 	}
 }

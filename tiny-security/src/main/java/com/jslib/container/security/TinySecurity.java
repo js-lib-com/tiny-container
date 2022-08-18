@@ -50,16 +50,16 @@ class TinySecurity implements ISecurityContext {
 		try {
 			request.login(username, password);
 			if (!request.authenticate(response)) {
-				log.warn("Session authentication fail for user |%s|.", username);
+				log.warn("Session authentication fail for user |{user_name}|.", username);
 			}
 		} catch (ServletException | IOException e) {
 			// exception is thrown if request is already authenticated, servlet container authentication is not enabled or
 			// credentials are not accepted; consider all these conditions as login fail but record on logger
-			log.warn("Login fail for user |%s|. Cause: %s", username, e.getMessage());
+			log.warn("Login fail for user |{user_name}|. Cause: {exception_message}", username, e.getMessage());
 			return false;
 		}
 
-		log.info("Login user |%s|.", username);
+		log.info("Login user |{user_name}|.", username);
 		return true;
 	}
 
@@ -81,9 +81,9 @@ class TinySecurity implements ISecurityContext {
 			// it may occur only if another thread temper with login and somehow invalidates the session
 			// while is arguable hard to believe, it can theoretically happen an need to be handled
 			// anyway, is not a security breach; if storing principal on session fails, session is not authenticated
-			log.debug(e);
+			log.warn(e);
 		}
-		log.info("Login principal |%s|.", principal);
+		log.info("Login principal |{user_principal}|.", principal);
 	}
 
 	@Override
@@ -100,7 +100,7 @@ class TinySecurity implements ISecurityContext {
 		} catch (ServletException e) {
 			// api-doc is not very explicit about this exception: ' If the logout fails'
 			// swallow this exception but record to application logger
-			log.warn("Logout fail for user |%s|. Cause: %s", username, e.getMessage());
+			log.warn("Logout fail for user |{user_name}|. Cause: {exception_message}", username, e.getMessage());
 		}
 
 		HttpSession session = request.getSession(false);
@@ -114,10 +114,10 @@ class TinySecurity implements ISecurityContext {
 			} catch (IllegalStateException e) {
 				// when enter 'if' block session is valid but could be changed from separated thread
 				// swallow this exception but record to application logger
-				log.debug(e);
+				log.warn(e);
 			}
 		}
-		log.info("Logout user |%s|.", username);
+		log.info("Logout user |{user_name}|.", username);
 	}
 
 	@Override
@@ -174,7 +174,7 @@ class TinySecurity implements ISecurityContext {
 			return false;
 		}
 		if (!(attribute instanceof RolesPrincipal)) {
-			log.debug("Attempt to use authorization without roles principal. Authenticated user class is |%s|.", attribute.getClass());
+			log.debug("Attempt to use authorization without roles principal. Authenticated user class is |{java_type}|.", attribute.getClass());
 			return false;
 		}
 

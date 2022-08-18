@@ -87,10 +87,10 @@ public class AppServletUnitTest {
 		when(servletConfig.getServletContext()).thenReturn(servletContext);
 		when(servletContext.getServletContextName()).thenReturn("test-app");
 		when(servletContext.getAttribute(TinyContainer.ATTR_INSTANCE)).thenReturn(container);
+		when(servletContext.getContextPath()).thenReturn("test");
 
 		when(httpRequest.getServletContext()).thenReturn(servletContext);
 		when(httpRequest.getMethod()).thenReturn("POST");
-		when(httpRequest.getContextPath()).thenReturn("test");
 		when(httpRequest.getRequestURI()).thenReturn("test/service");
 
 		when(httpResponse.getOutputStream()).thenReturn(responseStream);
@@ -109,7 +109,7 @@ public class AppServletUnitTest {
 		servlet.init(servletConfig);
 
 		// then
-		assertThat(servlet.servletName(), equalTo("test-app#ServletName"));
+		assertThat(servlet.servletName(), equalTo("ServletName"));
 		assertThat(servlet.container(), notNullValue());
 		assertThat(servlet.container(), equalTo(container));
 	}

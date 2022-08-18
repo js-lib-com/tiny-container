@@ -1,4 +1,4 @@
-package com.jslib.container.rest.it;
+package com.jslib.container.servlet;
 
 import jakarta.ejb.Remote;
 import jakarta.ws.rs.GET;

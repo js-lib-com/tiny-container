@@ -245,11 +245,11 @@ final class QueryParametersParser {
 			arguments[i] = asObject(parameters.get(i).getValue(), formalParameters[i]);
 		}
 		for (; i < formalParameters.length; ++i) {
-			log.debug("Missing request parameter |%s|. Set it to null.", i, formalParameters[i]);
+			log.debug("Missing request parameter |{parameter}|. Set it to null.", i, formalParameters[i]);
 			arguments[i] = null;
 		}
 		for (; i < parameters.size(); ++i) {
-			log.debug("Unused request parameter |%s|. Ignore it.", parameters.get(i));
+			log.debug("Unused request parameter |{parameter}|. Ignore it.", parameters.get(i));
 		}
 		return arguments;
 	}
@@ -283,7 +283,7 @@ final class QueryParametersParser {
 			if (ConverterRegistry.hasType(type)) {
 				return ConverterRegistry.getConverter().asObject(value, (Class<T>) type);
 			}
-			log.debug("Missing converter for query parameter of type |%s|.", type);
+			log.debug("Missing converter for query parameter of type |{java_type}|.", type);
 			return (T) Types.getEmptyValue(type);
 		}
 

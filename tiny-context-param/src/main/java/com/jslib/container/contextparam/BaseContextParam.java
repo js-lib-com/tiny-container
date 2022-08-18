@@ -44,7 +44,7 @@ abstract class BaseContextParam implements IContainerService {
 		ContextParam contextParam = field.getAnnotation(ContextParam.class);
 		assert contextParam != null;
 		final String contextParameterName = contextParam.name();
-		log.debug("Initialize field |%s| from context parameter |%s|.", field, contextParameterName);
+		log.debug("Initialize field |{java_field}| from context parameter |{context_parameter}|.", field, contextParameterName);
 
 		Object value = null;
 		if (converterRegistry.hasClassConverter(field.getType())) {
@@ -56,16 +56,16 @@ abstract class BaseContextParam implements IContainerService {
 			try {
 				value = parser.parse(container.getInitParameter(contextParameterName, String.class));
 			} catch (Exception e) {
-				log.error("Fail to parse context parameter |%s| using |%s|", contextParameterName, contextParam.parser().getCanonicalName());
+				log.error("Fail to parse context parameter |{context_parameter}| using |{java_type}|", contextParameterName, contextParam.parser().getCanonicalName());
 				value = null;
 			}
 		}
 
 		if (value == null) {
 			if (contextParam.mandatory()) {
-				throw new NoContextParamException("Missing context parameter |%s| requested by field |%s|.", contextParameterName, field);
+				throw new NoContextParamException("Missing context parameter |{context_parameter}| requested by field |{java_field}|.", contextParameterName, field);
 			}
-			log.warn("Field |%s| has no context parameter. Leave it unchanged.", field);
+			log.warn("Field |{java_field}| has no context parameter. Leave it unchanged.", field);
 			return;
 		}
 

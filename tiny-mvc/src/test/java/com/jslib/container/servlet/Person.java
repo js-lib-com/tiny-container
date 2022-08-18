@@ -1,4 +1,4 @@
-package com.jslib.container.mvc.it;
+package com.jslib.container.servlet;
 
 class Person {
 	String name;

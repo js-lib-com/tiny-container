@@ -54,7 +54,7 @@ public class ManagedInstanceStartupProcessor implements IContainerStartProcessor
 		}
 
 		managedClasses.values().forEach(managedClass -> {
-			log.debug("Startup managed instance |%s|.", managedClass);
+			log.debug("Startup managed instance |{managed_class}|.", managedClass);
 			managedClass.getInstance();
 		});
 	}

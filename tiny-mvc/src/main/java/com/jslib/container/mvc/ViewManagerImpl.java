@@ -110,9 +110,9 @@ public final class ViewManagerImpl implements ViewManager {
 			for (I18nFile template : repository) {
 				ViewMeta meta = new ViewMeta(template.getFile(), viewImplementation, properties);
 				if (viewsMetaPool.put(meta.getName(), meta, template.getLocale())) {
-					log.warn("Override view |%s|", meta);
+					log.warn("Override view |{view_meta}|", meta);
 				} else {
-					log.debug("Register view |%s|", meta);
+					log.debug("Register view |{view_meta}|", meta);
 				}
 			}
 		}

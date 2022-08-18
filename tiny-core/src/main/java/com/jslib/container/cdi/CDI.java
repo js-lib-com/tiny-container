@@ -33,7 +33,7 @@ public class CDI implements IProvisionListener {
 	private static final Log log = LogFactory.getLog(CDI.class);
 
 	public static CDI create() {
-		log.trace("create()");
+		log.trace("CDI.create()");
 		return new CDI();
 	}
 
@@ -159,7 +159,7 @@ public class CDI implements IProvisionListener {
 		Params.notNull(interfaceClass, "Interface class");
 		Provider<T> provider = injector.getProvider(interfaceClass);
 		if (provider == null) {
-			log.debug("No provider for |%s|.", interfaceClass);
+			log.debug("No provider for |{java_type}|.", interfaceClass);
 			return null;
 		}
 		if (!(provider instanceof ScopedProvider)) {
@@ -197,12 +197,12 @@ public class CDI implements IProvisionListener {
 		@Override
 		protected void configure() {
 			instances.forEach((interfaceClass, instance) -> {
-				log.debug("CDI register instance for |%s|.", interfaceClass);
+				log.debug("CDI register instance for |{java_type}|.", interfaceClass);
 				bindInstance((Class<Object>) interfaceClass, instance);
 			});
 
 			scopeFactories.forEach((annotation, scope) -> {
-				log.debug("CDI register scope |%s|.", annotation);
+				log.debug("CDI register scope |{java_annotation}|.", annotation);
 				injector.bindScopeFactory(annotation, scope);
 			});
 		}

@@ -16,6 +16,7 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
+import com.jslib.container.cdi.CDI;
 import com.jslib.lang.Config;
 import com.jslib.lang.ConfigException;
 
@@ -57,6 +58,7 @@ public class TinyContainerServletListenersTest {
 		when(sessionEvent.getSession()).thenReturn(httpSession);
 		
 		container = new TinyContainer();
+		container.init(CDI.create());
 	}
 	
 	@Test

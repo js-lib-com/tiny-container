@@ -20,7 +20,7 @@ class TimerTask implements Runnable {
 
 	@Override
 	public void run() {
-		log.debug("Execute timer method |%s|.", managedMethod);
+		log.debug("Execute timer method |{managed_method}|.", managedMethod);
 		try {
 			managedMethod.invoke(instance);
 		} catch (Throwable t) {
@@ -31,6 +31,6 @@ class TimerTask implements Runnable {
 		if (delay > 0) {
 			service.schedule(this, delay);
 		}
-		log.debug("Close timer method |%s|.", managedMethod);
+		log.debug("Close timer method |{managed_method}|.", managedMethod);
 	}
 }

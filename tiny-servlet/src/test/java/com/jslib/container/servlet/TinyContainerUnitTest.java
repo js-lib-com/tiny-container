@@ -68,7 +68,8 @@ public class TinyContainerUnitTest {
 		when(servletContext.getInitParameterNames()).thenReturn(Collections.emptyEnumeration());
 		when(servletContext.getRealPath("")).thenReturn("src/test/resources");
 
-		container = new TinyContainer(cdi);
+		container = new TinyContainer();
+		container.init(cdi);
 	}
 
 	@After

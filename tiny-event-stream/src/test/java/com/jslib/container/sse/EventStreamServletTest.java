@@ -68,6 +68,7 @@ public class EventStreamServletTest {
 
 		when(servletContext.getServletContextName()).thenReturn("test-app");
 		when(servletContext.getAttribute(TinyContainer.ATTR_INSTANCE)).thenReturn(container);
+		when(servletContext.getContextPath()).thenReturn("");
 
 		when(requestContext.getRequest()).thenReturn(request);
 		when(requestContext.getResponse()).thenReturn(response);

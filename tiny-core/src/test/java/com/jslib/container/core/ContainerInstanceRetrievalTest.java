@@ -34,7 +34,8 @@ public class ContainerInstanceRetrievalTest {
 	public void beforeTest() {
 		when(cdi.getInstance(eq(Object.class))).thenReturn(new Object());
 
-		container = new Container(cdi);
+		container = new Container();
+		container.init(cdi);
 	}
 
 	/** Container has managed class registered and CDI has related injector binding. */

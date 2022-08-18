@@ -1,4 +1,4 @@
-package com.jslib.container.rest.it;
+package com.jslib.container.servlet;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.emptyString;
@@ -21,8 +21,8 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
+import com.jslib.container.cdi.CDI;
 import com.jslib.container.rest.RestServlet;
-import com.jslib.container.servlet.TinyContainer;
 import com.jslib.lang.ConfigBuilder;
 
 import jakarta.servlet.ReadListener;
@@ -38,7 +38,7 @@ import jakarta.servlet.http.HttpServletResponse;
 @RunWith(MockitoJUnitRunner.class)
 public class RestServletIntegrationTest {
 	private static final String DESCRIPTOR = "" + //
-			"<module package='com.jslib.container.rest.it'>" + //
+			"<module package='com.jslib.container.servlet'>" + //
 			"	<binding bind='Service' in='jakarta.inject.Singleton' />" + //
 			"</module>";
 
@@ -63,11 +63,13 @@ public class RestServletIntegrationTest {
 	@Before
 	public void beforeTest() throws Exception {
 		container = new TinyContainer();
+		container.init(CDI.create());
 		container.configure(new ConfigBuilder(DESCRIPTOR).build());
 
 		when(servletConfig.getServletContext()).thenReturn(servletContext);
 		when(servletConfig.getServletName()).thenReturn("RestServlet");
 		
+		when(servletContext.getContextPath()).thenReturn("");
 		when(servletContext.getServletContextName()).thenReturn("app");
 		when(servletContext.getAttribute(TinyContainer.ATTR_INSTANCE)).thenReturn(container);
 

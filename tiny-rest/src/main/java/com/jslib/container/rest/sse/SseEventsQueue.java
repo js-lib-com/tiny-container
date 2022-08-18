@@ -25,10 +25,10 @@ public class SseEventsQueue {
 		log.trace("offer(OutboundSseEvent)");
 		try {
 			if (!eventsQueue.offer(event, EVENTS_QUEUE_PUSH_TIMEOUT, TimeUnit.MILLISECONDS)) {
-				log.warn("Timeout trying to push event on events queue. Event |%s| not processed.", event);
+				log.warn("Timeout trying to push event on events queue. Event |{event}| not processed.", event);
 			}
 		} catch (InterruptedException unused) {
-			log.warn("Thread interruption on event stream |%s| while trying to push event to queue. Event |%s| not processed.", this, event);
+			log.warn("Thread interruption on event queue |{event_queue}| while trying to push event. Event |{event}| not processed.", this, event);
 			Thread.currentThread().interrupt();
 		}
 	}

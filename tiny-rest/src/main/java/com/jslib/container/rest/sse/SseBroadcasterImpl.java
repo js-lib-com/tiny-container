@@ -79,7 +79,7 @@ public class SseBroadcasterImpl implements SseBroadcaster, Runnable {
 
 	@Override
 	public void register(SseEventSink eventSink) {
-		log.debug("Add event sink |%s| to broadcaster queue.", eventSink);
+		log.debug("Add event sink |{event_sink}| to broadcaster queue.", eventSink);
 		if (closed.get()) {
 			throw new IllegalStateException("Attempt to register event sink after SSE broadcaster close.");
 		}
@@ -143,7 +143,7 @@ public class SseBroadcasterImpl implements SseBroadcaster, Runnable {
 			for (SseEventSinkImpl sink : sinksQueue) {
 				sink.send(event).thenAccept(value -> {
 					if (!((Boolean) value)) {
-						log.debug("Send fail on event sink |%s|; most probably SSE client close. Remove event sink from broadcaster queue.", sink);
+						log.debug("Send fail on event sink |{event_sink}|; most probably SSE client close. Remove event sink from broadcaster queue.", sink);
 						closedSinks.add(sink);
 					}
 				});
@@ -157,7 +157,7 @@ public class SseBroadcasterImpl implements SseBroadcaster, Runnable {
 			});
 		}
 
-		log.debug("End broadcaster processing loop. Active for %.2f sec.", (System.currentTimeMillis() - startTimeMillis) / 1000.0);
+		log.debug("End broadcaster processing loop. Active for {active_time} sec.", (System.currentTimeMillis() - startTimeMillis) / 1000.0);
 	}
 
 	/**

@@ -31,6 +31,10 @@ public interface IContainerService {
 	default void create(IContainer container) {
 	}
 
+	default void postCreate(IContainer container) {
+		
+	}
+	
 	/**
 	 * Release resources used by container service.
 	 */

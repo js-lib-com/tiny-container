@@ -90,6 +90,7 @@ public class RestServletUnitTest {
 
 		when(servletConfig.getServletContext()).thenReturn(servletContext);
 		when(servletContext.getAttribute(TinyContainer.ATTR_INSTANCE)).thenReturn(container);
+		when(servletContext.getContextPath()).thenReturn("");
 
 		doReturn(managedClass).when(managedMethod).getDeclaringClass();
 		when(managedMethod.getManagedParameters()).thenReturn(Arrays.asList(managedParameter));

@@ -183,10 +183,10 @@ public class EventStream implements Closeable {
 		// BlockingQueue is thread safe so we do not need to synchronize this method
 		try {
 			if (!eventsQueue.offer(event, EVENTS_QUEUE_PUSH_TIMEOUT, TimeUnit.MILLISECONDS)) {
-				log.warn("Timeout trying to push event on events queue. Event |%s| not processed.", event);
+				log.warn("Timeout trying to push event on events queue. Event |{event}| not processed.", event);
 			}
 		} catch (InterruptedException unused) {
-			log.warn("Thread interruption on event stream |%s| while trying to push event to queue. Event |%s| not processed.", this, event);
+			log.warn("Thread interruption on event stream |{event_stream}| while trying to push event to queue. Event |{event}| not processed.", this, event);
 			Thread.currentThread().interrupt();
 		}
 	}
@@ -211,13 +211,13 @@ public class EventStream implements Closeable {
 			event = eventsQueue.poll(keepAlivePeriod, TimeUnit.MILLISECONDS);
 		} catch (InterruptedException unused) {
 			if (!active.get()) {
-				log.debug("Events stream |%s| thread is interrupted. Break events stream loop.", this);
+				log.debug("Events stream |{event_stream}| thread is interrupted. Break events stream loop.", this);
 				return false;
 			}
 			// in a perfect world, now would be the right moment to stop the events stream, returning false...
 			// but i'm not sure interruption occurs only when current thread is interrupted
 			// for now i play safe, allowing events stream to continue and use shutdown event to break it
-			log.warn("Events stream |%s| thread is interrupted. Continue events stream loop.", this);
+			log.warn("Events stream |{event_stream}| thread is interrupted. Continue events stream loop.", this);
 			return true;
 		}
 
@@ -225,7 +225,7 @@ public class EventStream implements Closeable {
 			// we are here due to keep-alive period expiration
 			// returns true to signal event stream should continue
 			sendKeepAlive();
-			log.debug("Keep-alive was sent to event stream |%s|.", this);
+			log.debug("Keep-alive was sent to event stream |{event_stream}|.", this);
 			return !writer.checkError();
 		}
 
@@ -237,7 +237,7 @@ public class EventStream implements Closeable {
 
 		sendEvent(event);
 		onSent(event);
-		log.trace("Event |%s| was sent to event stream |%s|.", event, this);
+		log.trace("Event |{event}| was sent to event stream |{event_stream}|.", event, this);
 		return !writer.checkError();
 	}
 
@@ -247,11 +247,11 @@ public class EventStream implements Closeable {
 		if (!active.get()) {
 			return;
 		}
-		log.debug("Closing event stream |%s| ...", this);
+		log.debug("Closing event stream |{event_stream}| ...", this);
 
 		push(new ShutdownEvent());
 		active.set(false);
-		log.debug("Event stream |%s| was closed.", this);
+		log.debug("Event stream |{event_stream}| was closed.", this);
 	}
 
 	@Override

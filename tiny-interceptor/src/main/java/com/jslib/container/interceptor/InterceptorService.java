@@ -33,7 +33,6 @@ public class InterceptorService implements IMethodInvocationProcessor {
 	private final Map<IManagedMethod, List<CacheItem<PreInvokeInterceptor>>> preInvokeInterceptorsCache = new HashMap<>();
 	private final Map<IManagedMethod, List<CacheItem<PostInvokeInterceptor>>> postInvokeInterceptorsCache = new HashMap<>();
 
-	private IContainer container;
 	private IThreadsPool threadsPool;
 
 	public InterceptorService() {
@@ -43,7 +42,6 @@ public class InterceptorService implements IMethodInvocationProcessor {
 	@Override
 	public void create(IContainer container) {
 		log.trace("create(IContainer)");
-		this.container = container;
 		this.threadsPool = container.getInstance(IThreadsPool.class);
 	}
 
@@ -67,22 +65,45 @@ public class InterceptorService implements IMethodInvocationProcessor {
 
 		List<CacheItem<PostInvokeInterceptor>> postInterceptors = new ArrayList<>();
 		postInvokeInterceptorsCache.put(managedMethod, postInterceptors);
-
-		for (Class<? extends Interceptor> interceptorClass : intercepted.value()) {
-			Interceptor instance = container.getOptionalInstance(interceptorClass);
-			if (instance == null) {
-				instance = Classes.newInstance(interceptorClass);
-			}
-
-			if (instance instanceof PreInvokeInterceptor) {
-				preInterceptors.add(new CacheItem<>((PreInvokeInterceptor) instance, isAsynchronous(instance, "preInvoke")));
-			}
-
-			if (instance instanceof PostInvokeInterceptor) {
-				postInterceptors.add(new CacheItem<>((PostInvokeInterceptor) instance, isAsynchronous(instance, "postInvoke")));
-			}
-		}
 		return true;
+	}
+
+	@Override
+	public void postCreate(IContainer container) {
+		preInvokeInterceptorsCache.forEach((managedMethod, preInterceptors) -> {
+			Intercepted intercepted = managedMethod.scanAnnotation(Intercepted.class);
+			for (Class<? extends Interceptor> interceptorClass : intercepted.value()) {
+				Interceptor instance = container.getOptionalInstance(interceptorClass);
+				if (instance instanceof PreInvokeInterceptor) {
+					preInterceptors.add(new CacheItem<>((PreInvokeInterceptor) instance, isAsynchronous(instance, "preInvoke")));
+				}
+			}
+		});
+
+		postInvokeInterceptorsCache.forEach((managedMethod, postInterceptors) -> {
+			Intercepted intercepted = managedMethod.scanAnnotation(Intercepted.class);
+			for (Class<? extends Interceptor> interceptorClass : intercepted.value()) {
+				Interceptor instance = container.getOptionalInstance(interceptorClass);
+				if (instance instanceof PostInvokeInterceptor) {
+					postInterceptors.add(new CacheItem<>((PostInvokeInterceptor) instance, isAsynchronous(instance, "postInvoke")));
+				}
+			}
+		});
+		
+//		for (Class<? extends Interceptor> interceptorClass : intercepted.value()) {
+//			Interceptor instance = container.getOptionalInstance(interceptorClass);
+//			if (instance == null) {
+//				instance = Classes.newInstance(interceptorClass);
+//			}
+//
+//			if (instance instanceof PreInvokeInterceptor) {
+//				preInterceptors.add(new CacheItem<>((PreInvokeInterceptor) instance, isAsynchronous(instance, "preInvoke")));
+//			}
+//
+//			if (instance instanceof PostInvokeInterceptor) {
+//				postInterceptors.add(new CacheItem<>((PostInvokeInterceptor) instance, isAsynchronous(instance, "postInvoke")));
+//			}
+//		}
 	}
 
 	private static boolean isAsynchronous(Object instance, String methodName) {
@@ -100,7 +121,7 @@ public class InterceptorService implements IMethodInvocationProcessor {
 		final Object[] arguments = invocation.arguments();
 
 		for (CacheItem<PreInvokeInterceptor> interceptor : preInvokeInterceptorsCache.get(managedMethod)) {
-			log.debug("Execute pre-invoke interceptor for method |%s|.", managedMethod);
+			log.debug("Execute pre-invoke interceptor for method |{managed_method}|.", managedMethod);
 			final PreInvokeInterceptor preInvokeInterceptor = interceptor.instance;
 
 			if (interceptor.asynchronous) {
@@ -110,7 +131,7 @@ public class InterceptorService implements IMethodInvocationProcessor {
 				try {
 					preInvokeInterceptor.preInvoke(managedMethod, arguments);
 				} catch (Exception e) {
-					log.error("Exception on pre-invoke interceptor |%s|: %s", preInvokeInterceptor.getClass().getCanonicalName(), e);
+					log.error("Exception on pre-invoke interceptor |{java_type}|: {exception}", preInvokeInterceptor.getClass().getCanonicalName(), e);
 					throw new InvocationException(e);
 				}
 			}
@@ -119,7 +140,7 @@ public class InterceptorService implements IMethodInvocationProcessor {
 		Object returnValue = chain.invokeNextProcessor(invocation);
 
 		for (CacheItem<PostInvokeInterceptor> interceptor : postInvokeInterceptorsCache.get(managedMethod)) {
-			log.debug("Execute post-invoke interceptor for method |%s|.", managedMethod);
+			log.debug("Execute post-invoke interceptor for method |{managed_method}|.", managedMethod);
 			final PostInvokeInterceptor postInvokeInterceptor = interceptor.instance;
 
 			if (interceptor.asynchronous) {
@@ -129,7 +150,7 @@ public class InterceptorService implements IMethodInvocationProcessor {
 				try {
 					postInvokeInterceptor.postInvoke(managedMethod, arguments, returnValue);
 				} catch (Exception e) {
-					log.error("Exception on post-invoke interceptor |%s|: %s", postInvokeInterceptor.getClass().getCanonicalName(), e);
+					log.error("Exception on post-invoke interceptor |{java_type}|: {exception}", postInvokeInterceptor.getClass().getCanonicalName(), e);
 					throw new InvocationException(e);
 				}
 			}

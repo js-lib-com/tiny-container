@@ -135,7 +135,7 @@ public final class Timer {
 			try {
 				this.periodicTask.onPeriod();
 			} catch (Throwable throwable) {
-				Timer.log.error("%s: %s: %s", this.periodicTask.getClass(), throwable.getClass(), throwable.getMessage());
+				Timer.log.error("{java_type}: {exception_class}: {exception_message}", this.periodicTask.getClass(), throwable.getClass(), throwable.getMessage());
 				AsyncExceptionListener listener = container.getOptionalInstance(AsyncExceptionListener.class);
 				if (listener != null) {
 					listener.onAsyncException(throwable);
@@ -162,7 +162,7 @@ public final class Timer {
 			try {
 				this.timeoutTask.onTimeout();
 			} catch (Throwable throwable) {
-				Timer.log.error("%s: %s: %s", this.timeoutTask.getClass(), throwable.getClass(), throwable.getMessage());
+				Timer.log.error("{java_type}: {exception_class}: {exception_message}", this.timeoutTask.getClass(), throwable.getClass(), throwable.getMessage());
 				AsyncExceptionListener listener = container.getOptionalInstance(AsyncExceptionListener.class);
 				if (listener != null) {
 					listener.onAsyncException(throwable);

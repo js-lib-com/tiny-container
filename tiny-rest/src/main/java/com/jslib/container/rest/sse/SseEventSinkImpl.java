@@ -90,7 +90,7 @@ public class SseEventSinkImpl implements SseEventSink, AsyncListener {
 		if (closed.get()) {
 			throw new IllegalStateException("Attempt to send SSE event to closed event sink: " + toString());
 		}
-		log.trace("Send event |%s| to event sink |%s|.", event, this);
+		log.trace("Send event |{event}| to event sink |{event_sink}|.", event, this);
 
 		CompletableFuture<Boolean> future = new CompletableFuture<>();
 		int fieldsCount = 0;
@@ -171,11 +171,11 @@ public class SseEventSinkImpl implements SseEventSink, AsyncListener {
 	 */
 	public void close(boolean closeAsyncContext) {
 		if (!closed.getAndSet(true)) {
-			log.debug("Close response print writer on event sink |%s|.", this);
+			log.debug("Close response print writer on event sink |{event_sink}|.", this);
 			writer.close();
 
 			if (closeAsyncContext) {
-				log.debug("Mark asynchronous context complete for event sink |%s|.", this);
+				log.debug("Mark asynchronous context complete for event sink |{event_sink}|.", this);
 				asyncContext.complete();
 			}
 
@@ -200,25 +200,25 @@ public class SseEventSinkImpl implements SseEventSink, AsyncListener {
 
 	@Override
 	public void onStartAsync(AsyncEvent event) throws IOException {
-		log.debug("Event sink |%s| restarted.", this);
+		log.debug("Event sink |{event_sink}| restarted.", this);
 	}
 
 	@Override
 	public void onComplete(AsyncEvent event) throws IOException {
-		log.info("Event sink |%s| complete. Active for %.2f sec.", this, (System.currentTimeMillis() - startTimeMillis) / 1000.0);
+		log.info("Event sink |{event_sink}| complete. Active for {active_time} sec.", this, (System.currentTimeMillis() - startTimeMillis) / 1000.0);
 		// do not ask event sink close method to complete (finish) related asynchronous context; it is already completed
 		close(false);
 	}
 
 	@Override
 	public void onTimeout(AsyncEvent event) throws IOException {
-		log.error("Timeout on event sink |%s|.", this);
+		log.error("Timeout on event sink |{event_sink}|.", this);
 	}
 
 	@Override
 	public void onError(AsyncEvent event) throws IOException {
 		if (event.getThrowable() instanceof IOException) {
-			log.debug("IO exeption on event sink |%s|; most probably SSE client close.", this);
+			log.debug("IO exeption on event sink |{event_sink}|; most probably SSE client close.", this);
 		} else {
 			log.dump(String.format("Error on event sink |%s|:", this), event.getThrowable());
 		}

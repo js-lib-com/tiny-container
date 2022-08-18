@@ -73,17 +73,17 @@ public class SecurityService implements IMethodInvocationProcessor {
 		// grant unchecked access for methods executed outside HTTP request
 		// e.g. post construct executed from main thread at container startup
 		if (httpRequest == null) {
-			log.debug("Attempt use security service outside HTTP request. Grant unchecked access to |%s|!", managedMethod);
+			log.debug("Attempt use security service outside HTTP request. Grant unchecked access to |{managed_method}|!", managedMethod);
 			return chain.invokeNextProcessor(invocation);
 		}
 
 		if (managedMethod.scanAnnotation(DenyAll.class, IManagedMethod.Flags.INCLUDE_TYPES) != null) {
-			log.warn("Access denied to |%s|.", managedMethod);
+			log.warn("Access denied to |{managed_method}|.", managedMethod);
 			throw new AuthorizationException();
 		}
 
 		if (!security.isAuthorized(getRoles(managedMethod))) {
-			log.info("Reject not authorized access to |%s|.", managedMethod);
+			log.info("Reject not authorized access to |{managed_method}|.", managedMethod);
 			throw new AuthorizationException();
 		}
 

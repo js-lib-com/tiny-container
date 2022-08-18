@@ -83,6 +83,7 @@ public class ResourceServletHandlerTest {
 		when(servletConfig.getServletContext()).thenReturn(servletContext);
 		when(servletContext.getServletContextName()).thenReturn("test-app");
 		when(servletContext.getAttribute(TinyContainer.ATTR_INSTANCE)).thenReturn(container);
+		when(servletContext.getContextPath()).thenReturn("");
 
 		when(httpRequest.getServletContext()).thenReturn(servletContext);
 		when(httpRequest.getRequestURI()).thenReturn("/test-app/controller/index");

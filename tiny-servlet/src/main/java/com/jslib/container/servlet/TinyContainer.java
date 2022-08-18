@@ -9,7 +9,6 @@ import java.util.Enumeration;
 import java.util.List;
 
 import com.jslib.api.log.Log;
-import com.jslib.api.log.LogContext;
 import com.jslib.api.log.LogFactory;
 import com.jslib.api.log.LogProvider;
 import com.jslib.container.cdi.CDI;
@@ -18,6 +17,12 @@ import com.jslib.container.core.Bootstrap;
 import com.jslib.container.core.Container;
 import com.jslib.container.spi.ISecurityContext;
 import com.jslib.container.spi.ITinyContainer;
+import com.jslib.lang.BugError;
+import com.jslib.lang.Config;
+import com.jslib.lang.ConfigException;
+import com.jslib.lang.NoSuchBeingException;
+import com.jslib.util.Classes;
+import com.jslib.util.Strings;
 
 import jakarta.enterprise.context.ContextNotActiveException;
 import jakarta.enterprise.context.RequestScoped;
@@ -32,12 +37,6 @@ import jakarta.servlet.http.HttpSession;
 import jakarta.servlet.http.HttpSessionEvent;
 import jakarta.servlet.http.HttpSessionListener;
 import jakarta.ws.rs.core.SecurityContext;
-import com.jslib.lang.BugError;
-import com.jslib.lang.Config;
-import com.jslib.lang.ConfigException;
-import com.jslib.lang.NoSuchBeingException;
-import com.jslib.util.Classes;
-import com.jslib.util.Strings;
 
 /**
  * Container specialization for web applications. This class extends {@link Container} adding implementation for request and
@@ -115,12 +114,7 @@ public class TinyContainer extends Container implements ServletContextListener, 
 	/** Session attribute name for principal storage when authentication is provided by application. */
 	public static final String ATTR_PRINCIPAL = "js.tiny.container.principal";
 
-	/** Name used for root context path. */
-	public static final String ROOT_CONTEXT = "root";
-
-	/** Diagnostic context name for context path, aka application. */
-	private static final String LOG_CONTEXT_APP = "app";
-
+	private String appName;
 	private String contextName;
 
 	/**
@@ -138,13 +132,9 @@ public class TinyContainer extends Container implements ServletContextListener, 
 
 	private ServletContextProvider servletContextProvider;
 
-	public TinyContainer() {
-		this(CDI.create());
-	}
-
-	/** Test constructor. */
-	public TinyContainer(CDI cdi) {
-		super(cdi);
+	@Override
+	protected void init(CDI cdi) {
+		super.init(cdi);
 		log.trace("TinyContainer(CDI)");
 
 		bind(ITinyContainer.class).instance(this).build();
@@ -190,16 +180,19 @@ public class TinyContainer extends Container implements ServletContextListener, 
 	 */
 	@Override
 	public void contextInitialized(ServletContextEvent contextEvent) {
-		final long start = System.currentTimeMillis();
-		final ServletContext servletContext = contextEvent.getServletContext();
-		servletContextProvider.createContext(servletContext);
-		// if present, context path always starts with path separator
-		contextName = servletContext.getContextPath().isEmpty() ? TinyContainer.ROOT_CONTEXT : servletContext.getContextPath().substring(1);
+		final long start = System.nanoTime();
 
-		// add application name as diagnostic data to logger diagnostic context
-		LogContext logContext = LogFactory.getLogContext();
-		logContext.put(LOG_CONTEXT_APP, contextName);
-		log.debug("Initializing servlet context |%s|.", servletContext.getServletContextName());
+		final ServletContext servletContext = contextEvent.getServletContext();
+		appName = servletContext.getServletContextName();
+		// if present, context path always starts with path separator
+		contextName = servletContext.getContextPath().isEmpty() ? CT.ROOT_CONTEXT : servletContext.getContextPath().substring(1);
+		LogFactory.getLogContext().put(CT.LOG_APP_NAME, appName);
+		LogFactory.getLogContext().put(CT.LOG_CONTEXT_NAME, contextName);
+		
+		log.debug("Initializing servlet context {context_name} for application {app_name}.", contextName, appName);
+		init(CDI.create());
+
+		servletContextProvider.createContext(servletContext);
 
 		Enumeration<String> parameterNames = servletContext.getInitParameterNames();
 		while (parameterNames.hasMoreElements()) {
@@ -207,7 +200,7 @@ public class TinyContainer extends Container implements ServletContextListener, 
 			final String value = servletContext.getInitParameter(name);
 			final String initParameterName = initParameterName(name);
 			System.setProperty(initParameterName, value);
-			log.debug("Load context parameter |%s| value |%s| into system properties |%s|.", name, value, initParameterName);
+			log.debug("Load context parameter |{context_parameter}| value |{value}| into system properties |{property}|.", name, value, initParameterName);
 		}
 
 		// WARN: if development context is declared it can access private resources without authentication
@@ -230,14 +223,14 @@ public class TinyContainer extends Container implements ServletContextListener, 
 			bootstrap.startContainer(this, descriptorStream);
 
 			servletContext.setAttribute(TinyContainer.ATTR_INSTANCE, this);
-			log.info("Application |%s| container started in %d msec.", contextName, System.currentTimeMillis() - start);
+			log.info("Application |{app_name}| container started in {processing_time} msec.", appName, (System.nanoTime() - start) / 1000000D);
 		} catch (ConfigException e) {
-			log.error("Bad container |%s| configuration: %s", contextName, e.getMessage());
+			log.error("Bad application |{app_name}| configuration: {exception}", appName, e);
 		} catch (FileNotFoundException e) {
 			log.error(e);
 		} catch (Throwable t) {
-			log.dump(String.format("Fatal error on container |%s| start:", contextName), t);
-			log.debug("Signal fatal error |%s| to host container. Application abort.", t.getClass());
+			log.fatal("Fatal error on application |{app_name}| start: {exception}", appName, t);
+			log.dump(t);
 			throw t;
 		}
 	}
@@ -254,8 +247,10 @@ public class TinyContainer extends Container implements ServletContextListener, 
 	 */
 	@Override
 	public void contextDestroyed(ServletContextEvent contextEvent) {
-		ServletContext servletContext = contextEvent.getServletContext();
-		log.debug("Destroying servlet context |%s|.", servletContext.getServletContextName());
+		LogFactory.getLogContext().put(CT.LOG_APP_NAME, appName);
+		LogFactory.getLogContext().put(CT.LOG_CONTEXT_NAME, contextName);
+		log.debug("Destroying servlet context {context_name} for application {app_name}.", contextName, appName);
+
 		close();
 		servletContextProvider.destroyContext();
 	}
@@ -268,7 +263,7 @@ public class TinyContainer extends Container implements ServletContextListener, 
 	@Override
 	public void sessionCreated(HttpSessionEvent sessionEvent) {
 		HttpSession httpSession = sessionEvent.getSession();
-		log.debug("Creating HTTP session |%s|.", httpSession.getId());
+		log.debug("Creating HTTP session |{session_id}|.", httpSession.getId());
 	}
 
 	/**
@@ -279,7 +274,7 @@ public class TinyContainer extends Container implements ServletContextListener, 
 	@Override
 	public void sessionDestroyed(HttpSessionEvent sessionEvent) {
 		HttpSession httpSession = sessionEvent.getSession();
-		log.debug("Destroying HTTP session |%s|.", httpSession.getId());
+		log.debug("Destroying HTTP session |{session_id}|.", httpSession.getId());
 		SessionScopeProvider.destroyContext(this, httpSession);
 	}
 
@@ -423,7 +418,7 @@ public class TinyContainer extends Container implements ServletContextListener, 
 
 		@Override
 		public void run() {
-			logProvider.flush();
+			logProvider.close();
 		}
 	}
 }

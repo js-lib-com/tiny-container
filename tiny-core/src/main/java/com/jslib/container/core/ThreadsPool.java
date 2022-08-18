@@ -28,7 +28,7 @@ public class ThreadsPool implements IThreadsPool {
 	@Inject
 	public ThreadsPool() {
 		log.trace("ThreadsPool()");
-		log.debug("Create threads pool for asynchronous commands and tasks. Pool size |%d|.", THREAD_POOL_SIZE);
+		log.debug("Create threads pool for asynchronous commands and tasks. Pool size |{thread_pool_size}|.", THREAD_POOL_SIZE);
 		this.executor = Executors.newFixedThreadPool(THREAD_POOL_SIZE);
 	}
 
@@ -86,7 +86,7 @@ public class ThreadsPool implements IThreadsPool {
 
 		@Override
 		public void close() throws Exception {
-			log.trace("Asynchronous %s processed in %.2f msec.", callableName, (System.nanoTime() - start) / 1000000.0);
+			log.info("Asynchronous {task_name} processed in {processing_time} msec.", callableName, (System.nanoTime() - start) / 1000000.0);
 		}
 	}
 }

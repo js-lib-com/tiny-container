@@ -79,7 +79,7 @@ public class InstancePostConstructor implements IInstancePostConstructProcessor 
 	public <T> void onInstancePostConstruct(T instance) {
 		Params.notNull(instance, "Instance");
 		final Class<?> implementationClass = instance.getClass();
-		log.debug("Post-construct managed instance |%s|", implementationClass);
+		log.debug("Post-construct managed instance |{java_type}|", implementationClass);
 
 		IManagedMethod managedMethod = methodsCache.get(implementationClass);
 		if (managedMethod == null) {

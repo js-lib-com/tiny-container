@@ -91,6 +91,9 @@ public class HttpHeader {
 	/** Header value for requested from Android library. */
 	private static final String ANDROID_USER_AGENT = "j(s)-lib android";
 
+	
+	public static final String TRACE_ID = "X-Trace-Id";
+
 	/** Prevent default constructor synthesis but allow sub-classing. */
 	protected HttpHeader() {
 	}

@@ -35,7 +35,8 @@ public class TinyContainerSecurityTest {
 	public void beforeTest() throws ConfigException {
 		when(cdi.getInstance(ISecurityContext.class)).thenReturn(security);
 
-		container = new TinyContainer(cdi);
+		container = new TinyContainer();
+		container.init(cdi);
 		container.create(Collections.emptyList());
 	}
 
