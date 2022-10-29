@@ -2,11 +2,13 @@ package com.jslib.container.api;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 import java.io.DataInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.junit.Test;
 
@@ -16,16 +18,18 @@ public class JavaConformityTest {
 	/**
 	 * Static field is 'static' only inside a class loader. If uses two class loaders to load the same class, static field is in
 	 * fact in two instances that can be changed independently.
-	 * <p>
+	 * 
 	 * This is particularly important if we remember that every web application has its own class loader. So a 'shared' static
 	 * field has its own instance on every web application.
 	 */
 	@Test
-	public void staticInitialization() throws Throwable {
+	public void GivenDifferentClassLoaders_WhenStaticFieldAssigment_ThenDifferentValues() throws Throwable {
+		// given
 		TestClassLoader loader1 = new TestClassLoader();
 		TestClassLoader loader2 = new TestClassLoader();
 		assertFalse(loader1.equals(loader2));
 
+		// when
 		Class<?> clsA = Class.forName("com.jslib.container.api.JavaConformityTest$TestClass", true, loader1);
 		Class<?> clsB = Class.forName("com.jslib.container.api.JavaConformityTest$TestClass", true, loader2);
 		assertFalse(clsA.equals(clsB));
@@ -34,27 +38,89 @@ public class JavaConformityTest {
 		Object instanceB = clsB.getConstructor().newInstance();
 		Classes.invoke(instanceA, "setField", 1);
 
+		// then
 		assertFalse(Classes.getFieldValue(instanceA, "field") == Classes.getFieldValue(instanceB, "field"));
-		assertEquals((int)Classes.getFieldValue(instanceA, "field"), 1);
-		assertEquals((int)Classes.getFieldValue(instanceB, "field"), 0);
+		assertEquals((int) Classes.getFieldValue(instanceA, "field"), 1);
+		assertEquals((int) Classes.getFieldValue(instanceB, "field"), 0);
 	}
 
 	/** New operator as a whole fails with exception if constructor throw it. */
 	@Test(expected = RuntimeException.class)
-	public void newOperatorConstructorException() {
+	public void GivenConstructorException_WhenNewOperator_ThenException() {
+		// given
 		class ExceptionalObject {
 			ExceptionalObject() {
 				throw new RuntimeException();
 			}
 		}
 
+		// when
 		new ExceptionalObject();
+		
+		// then
 	}
 
 	/** Null value does not qualify for any type on instanceof operator. */
 	@Test
-	public void nullInstanceOf() {
+	public void GivenInstanceOfOperator_WhenNull_ThenFalse() {
 		assertFalse(null instanceof Object);
+	}
+
+	@Test
+	public void GivenThreadWaitingOnLock_WhenInterrupt_ThenLockInterruptException() throws InterruptedException {
+		// given
+		Object lock = new Object();
+		AtomicBoolean interrupted = new AtomicBoolean(false);
+
+		Thread thread = new Thread(() -> {
+			synchronized (lock) {
+				try {
+					lock.wait();
+				} catch (InterruptedException e) {
+					interrupted.set(true);
+				}
+			}
+		});
+
+		thread.setDaemon(false);
+		thread.start();
+
+		// when
+		while (!thread.isAlive())
+			;
+		synchronized (lock) {
+			thread.interrupt();
+		}
+
+		// then
+		thread.join();
+		assertTrue("Thread lock not interrupted.", interrupted.get());
+	}
+
+	@Test
+	public void GivenSleepingThread_WhenInterrupt_ThenSleepInterruptException() throws InterruptedException {
+		// given
+		AtomicBoolean interrupted = new AtomicBoolean(false);
+
+		Thread thread = new Thread(() -> {
+			try {
+				Thread.sleep(31536000000L); // sleep for one year
+			} catch (InterruptedException e) {
+				interrupted.set(true);
+			}
+		});
+
+		thread.setDaemon(false);
+		thread.start();
+
+		// when
+		while (!thread.isAlive())
+			;
+		thread.interrupt();
+
+		// then
+		thread.join();
+		assertTrue("Thread sleep not interrupted.", interrupted.get());
 	}
 
 	// ------------------------------------------------------

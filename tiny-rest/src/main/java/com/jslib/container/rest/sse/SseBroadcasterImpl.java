@@ -95,7 +95,11 @@ public class SseBroadcasterImpl implements SseBroadcaster, Runnable {
 		if (closed.get()) {
 			throw new IllegalStateException("Attempt to send outbound event after SSE broadcaster close.");
 		}
-		eventsQueue.offer(event);
+		// do not bother to push event on events queue if there are no sink subscribed
+		// sinks queue is thread-safe
+		if (!sinksQueue.isEmpty()) {
+			eventsQueue.offer(event);
+		}
 		return CompletableFuture.completedFuture(null);
 	}
 
