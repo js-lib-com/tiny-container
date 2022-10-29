@@ -68,7 +68,7 @@ public class ResourcesInjectionProcessor implements IInstancePostConstructProces
 		try {
 			context = (Context) rootContext.lookup(contextName);
 		} catch (NamingException e) {
-			log.error("JNDI context |{jndi_context}| lookup fail. Root cause: {exception_class}: {exception_message}", contextName, e.getClass().getCanonicalName(), e.getMessage());
+			log.debug("JNDI context |{jndi_context}| lookup fail. Root cause: {exception_class}: {exception_message}", contextName, e.getClass().getCanonicalName(), e.getMessage());
 		}
 		return context;
 	}
