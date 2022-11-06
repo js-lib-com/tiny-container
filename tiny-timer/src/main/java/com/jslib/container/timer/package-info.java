@@ -1,7 +1,7 @@
 package com.jslib.container.timer;
 
 /**
- * Timer services, both declarative calendar based and fixed period or timeout values. 
+ * Calendar based timer service based on {@link jakarta.ejb.Schedule} annotation. 
  * 
  * @author Iulian Rotaru
  */

@@ -8,10 +8,10 @@ import java.util.regex.Pattern;
 import com.jslib.util.Params;
 
 /**
- * Extensible parser for schedule expressions. Expression parser deals per se only with strict positive integer values; for
- * textual expressions it delegates external parsers - see {@link ExpressionParser#ExpressionParser(ITextualParser)}. Anyway,
- * this parser also compound expression, e.g. list, range and increment.
- * <p>
+ * Extensible parser for schedule element expression. Expression parser deals per se only with strict positive integer values;
+ * for textual expressions it delegates external parsers - see {@link ExpressionParser#ExpressionParser(ITextualParser)}.
+ * Anyway, this parser handle also compound expression, e.g. list, range and increment.
+ * 
  * In order to process label based expressions this parser has a reference to an external textual parser. When this parser needs
  * to process single values it first delegates the textual parser and if {@link ITextualParser#parseText(String)} returns null
  * continue parsing the integer value - see {@link #parseValue(String)}.
@@ -19,19 +19,15 @@ import com.jslib.util.Params;
  * @author Iulian Rotaru
  */
 class ExpressionParser {
-	private final SortedSet<Integer> values = new TreeSet<>();
+	private final SortedSet<Integer> values;
 	private final ITextualParser textualParser;
 
 	public ExpressionParser() {
-		this.textualParser = new ITextualParser() {
-			@Override
-			public Integer parseText(String text) {
-				return null;
-			}
-		};
+		this(text -> null);
 	}
 
 	public ExpressionParser(ITextualParser textualParser) {
+		this.values = new TreeSet<>();
 		this.textualParser = textualParser;
 	}
 

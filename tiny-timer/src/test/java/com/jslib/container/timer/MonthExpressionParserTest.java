@@ -5,8 +5,6 @@ import static org.hamcrest.Matchers.hasItems;
 import static org.hamcrest.Matchers.hasSize;
 import static org.mockito.Mockito.when;
 
-import java.util.SortedSet;
-
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -37,11 +35,11 @@ public class MonthExpressionParserTest {
 		// given
 
 		// when
-		SortedSet<Integer> values = parser.parse(schedule, now);
+		parser.parse(schedule, now);
 
 		// then
-		assertThat(values, hasSize(12));
-		assertThat(values, hasItems(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12));
+		assertThat(parser.values, hasSize(12));
+		assertThat(parser.values, hasItems(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12));
 	}
 
 	@Test
@@ -51,11 +49,11 @@ public class MonthExpressionParserTest {
 		when(schedule.month()).thenReturn("3");
 
 		// when
-		SortedSet<Integer> values = parser.parse(schedule, now);
+		parser.parse(schedule, now);
 
 		// then
-		assertThat(values, hasSize(1));
-		assertThat(values, hasItems(3));
+		assertThat(parser.values, hasSize(1));
+		assertThat(parser.values, hasItems(3));
 	}
 
 	@Test
@@ -65,11 +63,11 @@ public class MonthExpressionParserTest {
 		when(schedule.month()).thenReturn("Mar");
 
 		// when
-		SortedSet<Integer> values = parser.parse(schedule, now);
+		parser.parse(schedule, now);
 
 		// then
-		assertThat(values, hasSize(1));
-		assertThat(values, hasItems(3));
+		assertThat(parser.values, hasSize(1));
+		assertThat(parser.values, hasItems(3));
 	}
 
 	@Test
@@ -79,11 +77,11 @@ public class MonthExpressionParserTest {
 		when(schedule.month()).thenReturn("mar");
 
 		// when
-		SortedSet<Integer> values = parser.parse(schedule, now);
+		parser.parse(schedule, now);
 
 		// then
-		assertThat(values, hasSize(1));
-		assertThat(values, hasItems(3));
+		assertThat(parser.values, hasSize(1));
+		assertThat(parser.values, hasItems(3));
 	}
 
 	@Test
@@ -93,11 +91,11 @@ public class MonthExpressionParserTest {
 		when(schedule.month()).thenReturn("3, 6");
 
 		// when
-		SortedSet<Integer> values = parser.parse(schedule, now);
+		parser.parse(schedule, now);
 
 		// then
-		assertThat(values, hasSize(2));
-		assertThat(values, hasItems(3, 6));
+		assertThat(parser.values, hasSize(2));
+		assertThat(parser.values, hasItems(3, 6));
 	}
 
 	@Test
@@ -107,11 +105,11 @@ public class MonthExpressionParserTest {
 		when(schedule.month()).thenReturn("Mar, Jun");
 
 		// when
-		SortedSet<Integer> values = parser.parse(schedule, now);
+		parser.parse(schedule, now);
 
 		// then
-		assertThat(values, hasSize(2));
-		assertThat(values, hasItems(3, 6));
+		assertThat(parser.values, hasSize(2));
+		assertThat(parser.values, hasItems(3, 6));
 	}
 
 	@Test
@@ -121,11 +119,11 @@ public class MonthExpressionParserTest {
 		when(schedule.month()).thenReturn("mar, jun");
 
 		// when
-		SortedSet<Integer> values = parser.parse(schedule, now);
+		parser.parse(schedule, now);
 
 		// then
-		assertThat(values, hasSize(2));
-		assertThat(values, hasItems(3, 6));
+		assertThat(parser.values, hasSize(2));
+		assertThat(parser.values, hasItems(3, 6));
 	}
 
 	@Test
@@ -135,11 +133,11 @@ public class MonthExpressionParserTest {
 		when(schedule.month()).thenReturn("3-6");
 
 		// when
-		SortedSet<Integer> values = parser.parse(schedule, now);
+		parser.parse(schedule, now);
 
 		// then
-		assertThat(values, hasSize(4));
-		assertThat(values, hasItems(3, 4, 5, 6));
+		assertThat(parser.values, hasSize(4));
+		assertThat(parser.values, hasItems(3, 4, 5, 6));
 	}
 
 	@Test
@@ -149,11 +147,11 @@ public class MonthExpressionParserTest {
 		when(schedule.month()).thenReturn("Mar-Jun");
 
 		// when
-		SortedSet<Integer> values = parser.parse(schedule, now);
+		parser.parse(schedule, now);
 
 		// then
-		assertThat(values, hasSize(4));
-		assertThat(values, hasItems(3, 4, 5, 6));
+		assertThat(parser.values, hasSize(4));
+		assertThat(parser.values, hasItems(3, 4, 5, 6));
 	}
 
 	@Test
@@ -163,11 +161,11 @@ public class MonthExpressionParserTest {
 		when(schedule.month()).thenReturn("mar-jun");
 
 		// when
-		SortedSet<Integer> values = parser.parse(schedule, now);
+		parser.parse(schedule, now);
 
 		// then
-		assertThat(values, hasSize(4));
-		assertThat(values, hasItems(3, 4, 5, 6));
+		assertThat(parser.values, hasSize(4));
+		assertThat(parser.values, hasItems(3, 4, 5, 6));
 	}
 
 	@Test
@@ -177,11 +175,11 @@ public class MonthExpressionParserTest {
 		when(schedule.month()).thenReturn("3/3");
 
 		// when
-		SortedSet<Integer> values = parser.parse(schedule, now);
+		parser.parse(schedule, now);
 
 		// then
-		assertThat(values, hasSize(4));
-		assertThat(values, hasItems(3, 6, 9, 12));
+		assertThat(parser.values, hasSize(4));
+		assertThat(parser.values, hasItems(3, 6, 9, 12));
 	}
 
 	@Test
@@ -191,10 +189,10 @@ public class MonthExpressionParserTest {
 		when(schedule.month()).thenReturn("*/3");
 
 		// when
-		SortedSet<Integer> values = parser.parse(schedule, now);
+		parser.parse(schedule, now);
 
 		// then
-		assertThat(values, hasSize(4));
-		assertThat(values, hasItems(1, 4, 7, 10));
+		assertThat(parser.values, hasSize(4));
+		assertThat(parser.values, hasItems(1, 4, 7, 10));
 	}
 }

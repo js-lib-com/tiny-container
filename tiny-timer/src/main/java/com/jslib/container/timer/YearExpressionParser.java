@@ -1,6 +1,6 @@
 package com.jslib.container.timer;
 
-public class YearExpressionParser extends NumericExpressionParser {
+class YearExpressionParser extends NumericExpressionParser {
 	public YearExpressionParser() {
 		super(CalendarUnit.YEAR);
 	}

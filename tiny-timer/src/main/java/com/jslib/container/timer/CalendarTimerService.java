@@ -1,25 +1,37 @@
 package com.jslib.container.timer;
 
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Consumer;
 
 import com.jslib.api.log.Log;
 import com.jslib.api.log.LogFactory;
 import com.jslib.container.spi.IInstancePostConstructProcessor;
 import com.jslib.container.spi.IManagedClass;
-import com.jslib.container.spi.IManagedMethod;
 import com.jslib.container.spi.ServiceConfigurationException;
+import com.jslib.util.Params;
+import com.jslib.util.Types;
 
 import jakarta.ejb.Schedule;
 
-import com.jslib.util.Params;
-
+/**
+ * Calendar based timer service based on {@link Schedule} annotation. This class scans for timer methods, see
+ * {@link #bind(IManagedClass)} and register found timers to {@link #classTimers}. When an instance of a managed class that has
+ * timer methods is created - see {@link #onInstancePostConstruct(Object)}, takes care to schedule timer tasks. On timer task
+ * execution complete re-schedule the timer task to the next execution time from calendar.
+ * 
+ * @author Iulian Rotaru
+ */
 public class CalendarTimerService implements IInstancePostConstructProcessor {
 	private static final Log log = LogFactory.getLog(CalendarTimerService.class);
 
@@ -28,11 +40,10 @@ public class CalendarTimerService implements IInstancePostConstructProcessor {
 	private static final int SCHEDULERS_THREAD_POLL = 2;
 	private final ScheduledExecutorService scheduler;
 
-	private final Map<Class<?>, Set<IManagedMethod>> classTimers = new HashMap<>();
-	private final Map<IManagedMethod, Schedule> methodSchedules = new HashMap<>();
+	private final Map<Class<?>, Set<Method>> classTimers = new HashMap<>();
+	private final Map<Method, Schedule> methodSchedules = new HashMap<>();
 
 	public CalendarTimerService() {
-		log.trace("CalendarTimerService()");
 		scheduler = Executors.newScheduledThreadPool(SCHEDULERS_THREAD_POLL);
 	}
 
@@ -46,17 +57,46 @@ public class CalendarTimerService implements IInstancePostConstructProcessor {
 		return Priority.TIMER;
 	}
 
+	/**
+	 * This method scans managed class for {@link Schedule} annotation and register found timer methods, if any. Both managed
+	 * class interface and implementation are scanned. Ignore annotation if timer method is redeclared on implementation class.
+	 * 
+	 * All methods are scanned, including private methods. Anyway, candidate timer method is subject to validation - see
+	 * {@link CalendarTimerService#sanityCheck(Method)}.
+	 * 
+	 * Returns true if at least one timer method was found, to signal container that given managed class parameter has a
+	 * service.
+	 * 
+	 * @param managedClass managed class to scan for {@link Schedule} annotation.
+	 * @return true only if at least one timer method has found.
+	 * @throws ServiceConfigurationException if {@link Schedule} annotation is used on a not valid method.
+	 */
 	@Override
 	public <T> boolean bind(IManagedClass<T> managedClass) {
-		final Set<IManagedMethod> timers = new HashSet<>();
-		managedClass.getManagedMethods().forEach(managedMethod -> {
-			Schedule schedule = managedMethod.scanAnnotation(Schedule.class);
-			if (schedule != null) {
-				sanityCheck(managedMethod);
-				timers.add(managedMethod);
-				methodSchedules.put(managedMethod, schedule);
+		final Set<Method> timers = new HashSet<>();
+		final List<String> names = new ArrayList<>();
+
+		Consumer<Class<?>> scanner = clazz -> {
+			for (Method method : clazz.getDeclaredMethods()) {
+				Schedule schedule = method.getAnnotation(Schedule.class);
+				if (schedule != null) {
+					method.setAccessible(true);
+					sanityCheck(method);
+
+					if (names.contains(method.getName())) {
+						log.warn("Timer method {} redeclared on managed class implementation. Ignore annotation.", method);
+						continue;
+					}
+					names.add(method.getName());
+
+					timers.add(method);
+					methodSchedules.put(method, schedule);
+				}
 			}
-		});
+		};
+
+		scanner.accept(managedClass.getInterfaceClass());
+		scanner.accept(managedClass.getImplementationClass());
 
 		if (timers.isEmpty()) {
 			return false;
@@ -66,28 +106,47 @@ public class CalendarTimerService implements IInstancePostConstructProcessor {
 		return true;
 	}
 
-	private static void sanityCheck(IManagedMethod managedMethod) {
-		if (managedMethod.isStatic()) {
-			throw new ServiceConfigurationException("Timeout callback method |%s| must not be static.", managedMethod);
+	/**
+	 * Check if method qualifies as timer method. This method throws service configuration exception if method:
+	 * <ul>
+	 * <li>is static or final,
+	 * <li>has formal parameters,
+	 * <li>does returns value,
+	 * <li>does throw checked exception.
+	 * </ul>
+	 * 
+	 * @param method method to validate.
+	 * @throws ServiceConfigurationException if given method does not qualifies as timer method.
+	 */
+	private static void sanityCheck(Method method) {
+		if (Modifier.isStatic(method.getModifiers())) {
+			throw new ServiceConfigurationException("Timer callback %s must not be static.", method);
 		}
-		if (managedMethod.isFinal()) {
-			throw new ServiceConfigurationException("Timeout callback method |%s| must not be final.", managedMethod);
+		if (Modifier.isFinal(method.getModifiers())) {
+			throw new ServiceConfigurationException("Timer callback %s must not be final.", method);
 		}
-		if (!managedMethod.isVoid()) {
-			throw new ServiceConfigurationException("Timeout callback method |%s| must be void.", managedMethod);
+		if (!Types.isVoid(method.getReturnType())) {
+			throw new ServiceConfigurationException("Timer callback %s must be void.", method);
 		}
-		if(managedMethod.getExceptionTypes().length > 0) {
-			throw new ServiceConfigurationException("Timeout callback method |%s| must not throw checked exceptions.", managedMethod);
+		if (method.getExceptionTypes().length > 0) {
+			throw new ServiceConfigurationException("Timer callback %s must not throw checked exceptions.", method);
 		}
 	}
 
-	// TODO: use onInstancePreDestroy to purge instance related timer(s)
+	/**
+	 * This handler is invoked after managed instance creation and takes care to create and schedule timer task(s). This method
+	 * assume that managed instance parameter is a managed class with at least one timer method, as detected by
+	 * {@link #bind(IManagedClass)} method - if bind returns false it is expected that container does not invoke this handler
+	 * for that particular managed class.
+	 * 
+	 * @param instance managed instance.
+	 */
 	@Override
 	public <T> void onInstancePostConstruct(final T instance) {
 		log.trace("onInstancePostConstruct(final T)");
 
 		Class<?> implementationClass = instance.getClass();
-		Set<IManagedMethod> timerMethods = classTimers.get(implementationClass);
+		Set<Method> timerMethods = classTimers.get(implementationClass);
 		assert timerMethods != null;
 
 		// computed remaining time can be zero in which case managed method is executed instantly
@@ -95,6 +154,8 @@ public class CalendarTimerService implements IInstancePostConstructProcessor {
 			schedule(new TimerTask(this, instance, managedMethod), computeDelay(managedMethod));
 		});
 	}
+
+	// TODO: use onInstancePreDestroy to purge instance related timer(s)
 
 	@Override
 	public synchronized void destroy() {
@@ -112,20 +173,21 @@ public class CalendarTimerService implements IInstancePostConstructProcessor {
 		}
 	}
 
-	public synchronized void schedule(TimerTask task, Long delay) {
+	// --------------------------------------------------------------------------------------------
+
+	synchronized void schedule(TimerTask task, long delay) {
 		Params.notNull(task, "Timer task");
-		Params.notNull(delay, "Delay");
 		scheduler.schedule(task, delay, TimeUnit.MILLISECONDS);
 	}
 
 	/**
 	 * Return remaining time, in milliseconds, to the next scheduler timeout or 0 if given schedule is passed. This method
-	 * creates evaluation date to <code>now</code> and delegates {@link #getNextTimeout(CalendarEx, ISchedule)}.
+	 * creates evaluation date to <code>now</code> and delegates {@link #getNextTimeout(Date, Schedule)}.
 	 * 
 	 * @param schedule method configured schedule.
 	 * @return delay to the next scheduler timeout, in milliseconds, or zero if no schedule passed.
 	 */
-	public long computeDelay(IManagedMethod managedMethod) {
+	long computeDelay(Method managedMethod) {
 		Schedule schedule = methodSchedules.get(managedMethod);
 		final Date now = new Date();
 		Date next = getNextTimeout(now, schedule);
@@ -134,14 +196,14 @@ public class CalendarTimerService implements IInstancePostConstructProcessor {
 			return 0;
 		}
 
-		long delay = (next.getTime() - now.getTime());
+		long delay = next.getTime() - now.getTime();
 		log.debug("Next execution date |{schedule_date}|. Delay is |{schedule_delay}|", next, delay);
 		return delay;
 	}
 
 	/**
 	 * Return next scheduler timeout or null if given schedule instance is passed. This method is designed to be invoked by
-	 * {@link #getTimeRemaining(ISchedule)} and does alter given <code>now</code> parameter.
+	 * {@link #computeDelay(Method)} and does alter given <code>now</code> parameter.
 	 * 
 	 * @param evaluationMoment next timeout evaluation moment,
 	 * @param schedule method configured schedule.
@@ -161,7 +223,7 @@ public class CalendarTimerService implements IInstancePostConstructProcessor {
 
 		for (int i = 0; i < CalendarUnit.length(); ++i) {
 			CalendarUnit unit = CalendarUnit.get(i);
-			IScheduleExpressionParser parser = getCalendarUnitParser(unit);
+			IScheduleExpressionParser parser = getScheduleExpressionParser(unit);
 			parser.parse(schedule, nextTimeout);
 
 			if (nextTimeout.after(evaluationMoment) && !nextTimeout.isUpdated(unit)) {
@@ -192,7 +254,7 @@ public class CalendarTimerService implements IInstancePostConstructProcessor {
 		return date;
 	}
 
-	public IScheduleExpressionParser getCalendarUnitParser(CalendarUnit unit) {
+	IScheduleExpressionParser getScheduleExpressionParser(CalendarUnit unit) {
 		switch (unit) {
 		case SECOND:
 		case MINUTE:

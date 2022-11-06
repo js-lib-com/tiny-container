@@ -2,10 +2,10 @@ package com.jslib.container.timer;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.SortedSet;
+
+import com.jslib.util.Params;
 
 import jakarta.ejb.Schedule;
-import com.jslib.util.Params;
 
 class MonthExpressionParser extends BaseExpressionParser {
 	private static final Map<String, Integer> ALIASES = new HashMap<>();
@@ -25,7 +25,7 @@ class MonthExpressionParser extends BaseExpressionParser {
 	}
 
 	@Override
-	public SortedSet<Integer> parse(Schedule schedule, CalendarEx calendar) {
+	public void parse(Schedule schedule, CalendarEx calendar) {
 		Params.notNull(schedule, "Schedule");
 		Params.notNull(calendar, "Calendar");
 
@@ -35,6 +35,5 @@ class MonthExpressionParser extends BaseExpressionParser {
 		ITextualParser textualParser = value -> ALIASES.get(value.toLowerCase());
 		ExpressionParser expressionParser = new ExpressionParser(textualParser);
 		values = expressionParser.parseExpression(schedule.month(), minimum, maximum);
-		return values;
 	}
 }

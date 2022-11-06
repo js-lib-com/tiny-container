@@ -6,14 +6,13 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.lang.reflect.Method;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
-
-import com.jslib.container.spi.IManagedMethod;
-import com.jslib.lang.InvocationException;
 
 @RunWith(MockitoJUnitRunner.class)
 public class TimerTaskTest {
@@ -21,20 +20,22 @@ public class TimerTaskTest {
 	private CalendarTimerService service;
 	@Mock
 	private Object instance;
-	@Mock
-	private IManagedMethod managedMethod;
 
+	private Method method;
 	private TimerTask task;
 
 	@Before
-	public void beforeTest() {
-		task = new TimerTask(service, instance, managedMethod);
+	public void beforeTest() throws NoSuchMethodException, SecurityException {
+		method = TimerTaskTest.class.getDeclaredMethod("timer");
+		method.setAccessible(true);
+		exception = false;
+		task = new TimerTask(service, instance, method);
 	}
 
 	@Test
 	public void GivenPositiveDelay_WhenTaskRun_ThenInvokeServiceSchedule() {
 		// given
-		when(service.computeDelay(managedMethod)).thenReturn(100L);
+		when(service.computeDelay(any())).thenReturn(100L);
 
 		// when
 		task.run();
@@ -46,7 +47,7 @@ public class TimerTaskTest {
 	@Test
 	public void GivenZeroDelay_WhenTaskRun_ThenDoNotInvokeServiceSchedule() {
 		// given
-		when(service.computeDelay(managedMethod)).thenReturn(0L);
+		when(service.computeDelay(any())).thenReturn(0L);
 
 		// when
 		task.run();
@@ -56,13 +57,22 @@ public class TimerTaskTest {
 	}
 
 	@Test
-	public void GivenMethodInvokationFail_WhenTaskRun_ThenLog() throws Exception {
+	public void GivenMethodInvokationFail_WhenTaskRun_ThenNoException() throws Exception {
 		// given
-		when(managedMethod.invoke(instance)).thenThrow(InvocationException.class);
+		exception = true;
 
 		// when
 		task.run();
 
 		// then
+	}
+
+	private static boolean exception;
+
+	@SuppressWarnings("unused")
+	private static void timer() {
+		if (exception) {
+			throw new RuntimeException();
+		}
 	}
 }

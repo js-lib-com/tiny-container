@@ -8,8 +8,6 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.mockito.Mockito.when;
 
-import java.util.SortedSet;
-
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -40,11 +38,11 @@ public class SecondExpressionParserTest {
 		// given
 
 		// when
-		SortedSet<Integer> values = parser.parse(schedule, now);
+		parser.parse(schedule, now);
 
 		// then
-		assertThat(values, hasSize(1));
-		assertThat(values, hasItems(0));
+		assertThat(parser.values, hasSize(1));
+		assertThat(parser.values, hasItems(0));
 	}
 
 	@Test
@@ -54,11 +52,11 @@ public class SecondExpressionParserTest {
 		when(schedule.second()).thenReturn("*");
 
 		// when
-		SortedSet<Integer> values = parser.parse(schedule, now);
+		parser.parse(schedule, now);
 
 		// then
-		assertThat(values, hasSize(60));
-		assertThat(values, hasItems(0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 28, 29, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 3, 8, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59));
+		assertThat(parser.values, hasSize(60));
+		assertThat(parser.values, hasItems(0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 28, 29, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 3, 8, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59));
 	}
 
 	@Test
@@ -152,11 +150,11 @@ public class SecondExpressionParserTest {
 		when(schedule.second()).thenReturn("30");
 
 		// when
-		SortedSet<Integer> values = parser.parse(schedule, now);
+		parser.parse(schedule, now);
 
 		// then
-		assertThat(values, hasSize(1));
-		assertThat(values, hasItems(30));
+		assertThat(parser.values, hasSize(1));
+		assertThat(parser.values, hasItems(30));
 	}
 
 	@Test
@@ -166,11 +164,11 @@ public class SecondExpressionParserTest {
 		when(schedule.second()).thenReturn("30-32");
 
 		// when
-		SortedSet<Integer> values = parser.parse(schedule, now);
+		parser.parse(schedule, now);
 
 		// then
-		assertThat(values, hasSize(3));
-		assertThat(values, hasItems(30, 31, 32));
+		assertThat(parser.values, hasSize(3));
+		assertThat(parser.values, hasItems(30, 31, 32));
 	}
 
 	@Test
@@ -180,11 +178,11 @@ public class SecondExpressionParserTest {
 		when(schedule.second()).thenReturn("58-02");
 
 		// when
-		SortedSet<Integer> values = parser.parse(schedule, now);
+		parser.parse(schedule, now);
 
 		// then
-		assertThat(values, hasSize(5));
-		assertThat(values, hasItems(0, 1, 2, 58, 59));
+		assertThat(parser.values, hasSize(5));
+		assertThat(parser.values, hasItems(0, 1, 2, 58, 59));
 	}
 
 	@Test
@@ -194,11 +192,11 @@ public class SecondExpressionParserTest {
 		when(schedule.second()).thenReturn("30-30");
 
 		// when
-		SortedSet<Integer> values = parser.parse(schedule, now);
+		parser.parse(schedule, now);
 
 		// then
-		assertThat(values, hasSize(1));
-		assertThat(values, hasItems(30));
+		assertThat(parser.values, hasSize(1));
+		assertThat(parser.values, hasItems(30));
 	}
 
 	@Test
@@ -208,11 +206,11 @@ public class SecondExpressionParserTest {
 		when(schedule.second()).thenReturn("10/20");
 
 		// when
-		SortedSet<Integer> values = parser.parse(schedule, now);
+		parser.parse(schedule, now);
 
 		// then
-		assertThat(values, hasSize(3));
-		assertThat(values, hasItems(10, 30, 50));
+		assertThat(parser.values, hasSize(3));
+		assertThat(parser.values, hasItems(10, 30, 50));
 	}
 
 	@Test
@@ -222,11 +220,11 @@ public class SecondExpressionParserTest {
 		when(schedule.second()).thenReturn("*/20");
 
 		// when
-		SortedSet<Integer> values = parser.parse(schedule, now);
+		parser.parse(schedule, now);
 
 		// then
-		assertThat(values, hasSize(3));
-		assertThat(values, hasItems(0, 20, 40));
+		assertThat(parser.values, hasSize(3));
+		assertThat(parser.values, hasItems(0, 20, 40));
 	}
 
 	@Test
@@ -236,11 +234,11 @@ public class SecondExpressionParserTest {
 		when(schedule.second()).thenReturn("10, 25, 40");
 
 		// when
-		SortedSet<Integer> values = parser.parse(schedule, now);
+		parser.parse(schedule, now);
 
 		// then
-		assertThat(values, hasSize(3));
-		assertThat(values, hasItems(10, 25, 40));
+		assertThat(parser.values, hasSize(3));
+		assertThat(parser.values, hasItems(10, 25, 40));
 	}
 
 	@Test
@@ -250,11 +248,11 @@ public class SecondExpressionParserTest {
 		when(schedule.second()).thenReturn("10-15, 25, 40");
 
 		// when
-		SortedSet<Integer> values = parser.parse(schedule, now);
+		parser.parse(schedule, now);
 
 		// then
-		assertThat(values, hasSize(8));
-		assertThat(values, hasItems(10, 11, 12, 13, 14, 15, 25, 40));
+		assertThat(parser.values, hasSize(8));
+		assertThat(parser.values, hasItems(10, 11, 12, 13, 14, 15, 25, 40));
 	}
 
 	@Test(expected = IllegalArgumentException.class)

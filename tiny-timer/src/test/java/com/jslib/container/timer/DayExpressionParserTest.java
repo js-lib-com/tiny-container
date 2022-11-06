@@ -6,8 +6,6 @@ import static org.hamcrest.Matchers.hasItems;
 import static org.hamcrest.Matchers.hasSize;
 import static org.mockito.Mockito.when;
 
-import java.util.SortedSet;
-
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -40,11 +38,11 @@ public class DayExpressionParserTest {
 		// given
 
 		// when
-		SortedSet<Integer> values = parser.parse(schedule, now);
+		parser.parse(schedule, now);
 
 		// then
-		assertThat(values, hasSize(31));
-		assertThat(values, hasItems(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31));
+		assertThat(parser.values, hasSize(31));
+		assertThat(parser.values, hasItems(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31));
 	}
 
 	@Test
@@ -54,11 +52,11 @@ public class DayExpressionParserTest {
 		when(schedule.dayOfMonth()).thenReturn("15");
 
 		// when
-		SortedSet<Integer> values = parser.parse(schedule, now);
+		parser.parse(schedule, now);
 
 		// then
-		assertThat(values, hasSize(1));
-		assertThat(values, contains(15));
+		assertThat(parser.values, hasSize(1));
+		assertThat(parser.values, contains(15));
 	}
 
 	@Test
@@ -68,11 +66,11 @@ public class DayExpressionParserTest {
 		when(schedule.dayOfMonth()).thenReturn("15, 20, 25");
 
 		// when
-		SortedSet<Integer> values = parser.parse(schedule, now);
+		parser.parse(schedule, now);
 
 		// then
-		assertThat(values, hasSize(3));
-		assertThat(values, hasItems(15, 20, 25));
+		assertThat(parser.values, hasSize(3));
+		assertThat(parser.values, hasItems(15, 20, 25));
 	}
 
 	@Test
@@ -82,11 +80,11 @@ public class DayExpressionParserTest {
 		when(schedule.dayOfMonth()).thenReturn("15-20");
 
 		// when
-		SortedSet<Integer> values = parser.parse(schedule, now);
+		parser.parse(schedule, now);
 
 		// then
-		assertThat(values, hasSize(6));
-		assertThat(values, hasItems(15, 16, 17, 18, 19, 20));
+		assertThat(parser.values, hasSize(6));
+		assertThat(parser.values, hasItems(15, 16, 17, 18, 19, 20));
 	}
 
 	@Test
@@ -96,11 +94,11 @@ public class DayExpressionParserTest {
 		when(schedule.dayOfMonth()).thenReturn("30-2");
 
 		// when
-		SortedSet<Integer> values = parser.parse(schedule, now);
+		parser.parse(schedule, now);
 
 		// then
-		assertThat(values, hasSize(4));
-		assertThat(values, hasItems(1, 2, 30, 31));
+		assertThat(parser.values, hasSize(4));
+		assertThat(parser.values, hasItems(1, 2, 30, 31));
 	}
 
 	@Test
@@ -110,11 +108,11 @@ public class DayExpressionParserTest {
 		when(schedule.dayOfMonth()).thenReturn("15/5");
 
 		// when
-		SortedSet<Integer> values = parser.parse(schedule, now);
+		parser.parse(schedule, now);
 
 		// then
-		assertThat(values, hasSize(4));
-		assertThat(values, hasItems(15, 20, 25, 30));
+		assertThat(parser.values, hasSize(4));
+		assertThat(parser.values, hasItems(15, 20, 25, 30));
 	}
 
 	/** Day of month increment is not supported by JEE. */
@@ -125,11 +123,11 @@ public class DayExpressionParserTest {
 		when(schedule.dayOfMonth()).thenReturn("*/5");
 
 		// when
-		SortedSet<Integer> values = parser.parse(schedule, now);
+		parser.parse(schedule, now);
 
 		// then
-		assertThat(values, hasSize(7));
-		assertThat(values, hasItems(1, 6, 11, 16, 21, 26, 31));
+		assertThat(parser.values, hasSize(7));
+		assertThat(parser.values, hasItems(1, 6, 11, 16, 21, 26, 31));
 	}
 
 	/** List with increment is not supported by JEE. */
@@ -152,11 +150,11 @@ public class DayExpressionParserTest {
 		when(schedule.dayOfMonth()).thenReturn("Last");
 
 		// when
-		SortedSet<Integer> values = parser.parse(schedule, now);
+		parser.parse(schedule, now);
 
 		// then
-		assertThat(values, hasSize(1));
-		assertThat(values, hasItems(31));
+		assertThat(parser.values, hasSize(1));
+		assertThat(parser.values, hasItems(31));
 	}
 
 	@Test
@@ -166,11 +164,11 @@ public class DayExpressionParserTest {
 		when(schedule.dayOfMonth()).thenReturn("last");
 
 		// when
-		SortedSet<Integer> values = parser.parse(schedule, now);
+		parser.parse(schedule, now);
 
 		// then
-		assertThat(values, hasSize(1));
-		assertThat(values, hasItems(31));
+		assertThat(parser.values, hasSize(1));
+		assertThat(parser.values, hasItems(31));
 	}
 
 	@Test
@@ -180,11 +178,11 @@ public class DayExpressionParserTest {
 		when(schedule.dayOfMonth()).thenReturn("-1");
 
 		// when
-		SortedSet<Integer> values = parser.parse(schedule, now);
+		parser.parse(schedule, now);
 
 		// then
-		assertThat(values, hasSize(1));
-		assertThat(values, hasItems(30));
+		assertThat(parser.values, hasSize(1));
+		assertThat(parser.values, hasItems(30));
 	}
 
 	@Test
@@ -194,11 +192,11 @@ public class DayExpressionParserTest {
 		when(schedule.dayOfMonth()).thenReturn("-7");
 
 		// when
-		SortedSet<Integer> values = parser.parse(schedule, now);
+		parser.parse(schedule, now);
 
 		// then
-		assertThat(values, hasSize(1));
-		assertThat(values, hasItems(24));
+		assertThat(parser.values, hasSize(1));
+		assertThat(parser.values, hasItems(24));
 	}
 
 	@Test
@@ -208,11 +206,11 @@ public class DayExpressionParserTest {
 		when(schedule.dayOfMonth()).thenReturn("-3 - -1");
 
 		// when
-		SortedSet<Integer> values = parser.parse(schedule, now);
+		parser.parse(schedule, now);
 
 		// then
-		assertThat(values, hasSize(3));
-		assertThat(values, hasItems(28, 29, 30));
+		assertThat(parser.values, hasSize(3));
+		assertThat(parser.values, hasItems(28, 29, 30));
 	}
 
 	@Test
@@ -222,11 +220,11 @@ public class DayExpressionParserTest {
 		when(schedule.dayOfMonth()).thenReturn("-3--1");
 
 		// when
-		SortedSet<Integer> values = parser.parse(schedule, now);
+		parser.parse(schedule, now);
 
 		// then
-		assertThat(values, hasSize(3));
-		assertThat(values, hasItems(28, 29, 30));
+		assertThat(parser.values, hasSize(3));
+		assertThat(parser.values, hasItems(28, 29, 30));
 	}
 
 	@Test
@@ -236,11 +234,11 @@ public class DayExpressionParserTest {
 		when(schedule.dayOfMonth()).thenReturn("28--1");
 
 		// when
-		SortedSet<Integer> values = parser.parse(schedule, now);
+		parser.parse(schedule, now);
 
 		// then
-		assertThat(values, hasSize(3));
-		assertThat(values, hasItems(28, 29, 30));
+		assertThat(parser.values, hasSize(3));
+		assertThat(parser.values, hasItems(28, 29, 30));
 	}
 
 	@Test
@@ -250,11 +248,11 @@ public class DayExpressionParserTest {
 		when(schedule.dayOfMonth()).thenReturn("1-3, 15, -1, last");
 
 		// when
-		SortedSet<Integer> values = parser.parse(schedule, now);
+		parser.parse(schedule, now);
 
 		// then
-		assertThat(values, hasSize(6));
-		assertThat(values, hasItems(1, 2, 3, 15, 30, 31));
+		assertThat(parser.values, hasSize(6));
+		assertThat(parser.values, hasItems(1, 2, 3, 15, 30, 31));
 	}
 
 	@Test
@@ -265,11 +263,11 @@ public class DayExpressionParserTest {
 		when(schedule.dayOfMonth()).thenReturn("Last");
 
 		// when
-		SortedSet<Integer> values = parser.parse(schedule, now);
+		parser.parse(schedule, now);
 
 		// then
-		assertThat(values, hasSize(1));
-		assertThat(values, hasItems(29));
+		assertThat(parser.values, hasSize(1));
+		assertThat(parser.values, hasItems(29));
 	}
 
 	@Test
@@ -279,11 +277,11 @@ public class DayExpressionParserTest {
 		when(schedule.dayOfMonth()).thenReturn("2nd Fri");
 
 		// when
-		SortedSet<Integer> values = parser.parse(schedule, now);
+		parser.parse(schedule, now);
 
 		// then
-		assertThat(values, hasSize(1));
-		assertThat(values, hasItems(10));
+		assertThat(parser.values, hasSize(1));
+		assertThat(parser.values, hasItems(10));
 	}
 
 	@Test(expected = IllegalArgumentException.class)
@@ -317,11 +315,11 @@ public class DayExpressionParserTest {
 		when(schedule.dayOfMonth()).thenReturn("2nd Fri, 4th Fri");
 
 		// when
-		SortedSet<Integer> values = parser.parse(schedule, now);
+		parser.parse(schedule, now);
 
 		// then
-		assertThat(values, hasSize(2));
-		assertThat(values, hasItems(10, 24));
+		assertThat(parser.values, hasSize(2));
+		assertThat(parser.values, hasItems(10, 24));
 	}
 
 	@Test
@@ -331,11 +329,11 @@ public class DayExpressionParserTest {
 		when(schedule.dayOfMonth()).thenReturn("1st Fri - 1st Sun");
 
 		// when
-		SortedSet<Integer> values = parser.parse(schedule, now);
+		parser.parse(schedule, now);
 
 		// then
-		assertThat(values, hasSize(3));
-		assertThat(values, hasItems(3, 4, 5));
+		assertThat(parser.values, hasSize(3));
+		assertThat(parser.values, hasItems(3, 4, 5));
 	}
 
 	@Test
@@ -345,11 +343,11 @@ public class DayExpressionParserTest {
 		when(schedule.dayOfMonth()).thenReturn("1st Fri-1st Sun");
 
 		// when
-		SortedSet<Integer> values = parser.parse(schedule, now);
+		parser.parse(schedule, now);
 
 		// then
-		assertThat(values, hasSize(3));
-		assertThat(values, hasItems(3, 4, 5));
+		assertThat(parser.values, hasSize(3));
+		assertThat(parser.values, hasItems(3, 4, 5));
 	}
 
 	@Test
@@ -359,11 +357,11 @@ public class DayExpressionParserTest {
 		when(schedule.dayOfWeek()).thenReturn("Fri");
 
 		// when
-		SortedSet<Integer> values = parser.parse(schedule, now);
+		parser.parse(schedule, now);
 
 		// then
-		assertThat(values, hasSize(5));
-		assertThat(values, hasItems(3, 10, 17, 24, 31));
+		assertThat(parser.values, hasSize(5));
+		assertThat(parser.values, hasItems(3, 10, 17, 24, 31));
 	}
 
 	@Test
@@ -373,11 +371,11 @@ public class DayExpressionParserTest {
 		when(schedule.dayOfWeek()).thenReturn("Mon-Fri");
 
 		// when
-		SortedSet<Integer> values = parser.parse(schedule, now);
+		parser.parse(schedule, now);
 
 		// then
-		assertThat(values, hasSize(23));
-		assertThat(values, hasItems(1, 2, 3, 6, 7, 8, 9, 10, 13, 14, 15, 16, 17, 20, 21, 22, 23, 24, 27, 28, 29, 30, 31));
+		assertThat(parser.values, hasSize(23));
+		assertThat(parser.values, hasItems(1, 2, 3, 6, 7, 8, 9, 10, 13, 14, 15, 16, 17, 20, 21, 22, 23, 24, 27, 28, 29, 30, 31));
 	}
 
 	@Test
@@ -387,11 +385,11 @@ public class DayExpressionParserTest {
 		when(schedule.dayOfWeek()).thenReturn("Fri-Mon");
 
 		// when
-		SortedSet<Integer> values = parser.parse(schedule, now);
+		parser.parse(schedule, now);
 
 		// then
-		assertThat(values, hasSize(17));
-		assertThat(values, hasItems(3, 4, 5, 6, 10, 11, 12, 13, 17, 18, 19, 20, 24, 25, 26, 27, 31));
+		assertThat(parser.values, hasSize(17));
+		assertThat(parser.values, hasItems(3, 4, 5, 6, 10, 11, 12, 13, 17, 18, 19, 20, 24, 25, 26, 27, 31));
 	}
 
 	@Test
@@ -402,11 +400,11 @@ public class DayExpressionParserTest {
 		when(schedule.dayOfWeek()).thenReturn("Fri");
 
 		// when
-		SortedSet<Integer> values = parser.parse(schedule, now);
+		parser.parse(schedule, now);
 
 		// then
-		assertThat(values, hasSize(6));
-		assertThat(values, hasItems(1, 3, 10, 17, 24, 31));
+		assertThat(parser.values, hasSize(6));
+		assertThat(parser.values, hasItems(1, 3, 10, 17, 24, 31));
 	}
 
 	@Test

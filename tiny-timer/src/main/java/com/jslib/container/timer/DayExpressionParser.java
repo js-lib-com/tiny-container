@@ -3,12 +3,12 @@ package com.jslib.container.timer;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
-import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.regex.Pattern;
 
-import jakarta.ejb.Schedule;
 import com.jslib.util.Params;
+
+import jakarta.ejb.Schedule;
 
 class DayExpressionParser extends BaseExpressionParser {
 	private static final Map<String, Integer> WEEK_DAYS = new HashMap<>();
@@ -32,7 +32,7 @@ class DayExpressionParser extends BaseExpressionParser {
 	}
 
 	@Override
-	public SortedSet<Integer> parse(Schedule schedule, CalendarEx calendar) {
+	public void parse(Schedule schedule, CalendarEx calendar) {
 		Params.notNull(calendar, "Calendar");
 
 		String dayOfMonth = schedule.dayOfMonth();
@@ -59,8 +59,6 @@ class DayExpressionParser extends BaseExpressionParser {
 				parseDayOfWeek(schedule.dayOfWeek(), calendar);
 			}
 		}
-
-		return values;
 	}
 
 	private void parseDayOfMonth(String expression, CalendarEx calendar) {

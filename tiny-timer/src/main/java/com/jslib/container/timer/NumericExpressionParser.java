@@ -1,9 +1,8 @@
 package com.jslib.container.timer;
 
-import java.util.SortedSet;
+import com.jslib.util.Params;
 
 import jakarta.ejb.Schedule;
-import com.jslib.util.Params;
 
 class NumericExpressionParser extends BaseExpressionParser {
 	private final CalendarUnit calendarUnit;
@@ -14,7 +13,7 @@ class NumericExpressionParser extends BaseExpressionParser {
 	}
 
 	@Override
-	public SortedSet<Integer> parse(Schedule schedule, CalendarEx calendar) {
+	public void parse(Schedule schedule, CalendarEx calendar) {
 		Params.notNull(schedule, "Schedule");
 		Params.notNull(calendar, "Calendar");
 
@@ -45,6 +44,5 @@ class NumericExpressionParser extends BaseExpressionParser {
 
 		ExpressionParser expressionParser = new ExpressionParser();
 		values = expressionParser.parseExpression(expression, minimum, maximum);
-		return values;
 	}
 }

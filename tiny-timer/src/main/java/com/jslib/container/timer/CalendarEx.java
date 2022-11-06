@@ -77,9 +77,9 @@ class CalendarEx {
 	}
 
 	public CalendarEx clone() {
-		CalendarEx calendarEx = new CalendarEx();
-		calendarEx.calendar.setTimeInMillis(calendar.getTimeInMillis());
-		return calendarEx;
+		CalendarEx clone = new CalendarEx();
+		clone.calendar.setTimeInMillis(this.calendar.getTimeInMillis());
+		return clone;
 	}
 
 	public int getActualMinimum(CalendarUnit unit) {
@@ -161,12 +161,13 @@ class CalendarEx {
 
 	@Override
 	public String toString() {
-		// this algorithm depends on calendar units order; it is assumed from years to seconds
-		Object[] args = new Object[CalendarUnit.length()];
-		for (int i = 0; i < args.length; ++i) {
-			args[i] = get(CalendarUnit.get(i));
-		}
-		return String.format("%04d-%02d-%02d %02d:%02d:%02d", args);
+		return String.format("%04d-%02d-%02d %02d:%02d:%02d", //
+				get(CalendarUnit.YEAR), //
+				get(CalendarUnit.MONTH), //
+				get(CalendarUnit.DAY), //
+				get(CalendarUnit.HOUR), //
+				get(CalendarUnit.MINUTE), //
+				get(CalendarUnit.SECOND));
 	}
 
 	public boolean equals(int... values) {

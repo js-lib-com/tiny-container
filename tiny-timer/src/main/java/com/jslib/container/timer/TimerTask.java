@@ -1,36 +1,38 @@
 package com.jslib.container.timer;
 
+import java.lang.reflect.Method;
+
 import com.jslib.api.log.Log;
 import com.jslib.api.log.LogFactory;
-import com.jslib.container.spi.IManagedMethod;
 
 class TimerTask implements Runnable {
 	private static final Log log = LogFactory.getLog(TimerTask.class);
 
 	private final CalendarTimerService service;
 	private final Object instance;
-	private final IManagedMethod managedMethod;
+	private final Method method;
 
-	public TimerTask(CalendarTimerService service, Object instance, IManagedMethod managedMethod) {
-		log.trace("TimerTask(service, instance, managedMethod)");
+	public TimerTask(CalendarTimerService service, Object instance, Method method) {
+		log.trace("TimerTask(CalendarTimerService, Object, Method)");
 		this.service = service;
 		this.instance = instance;
-		this.managedMethod = managedMethod;
+		this.method = method;
 	}
 
 	@Override
 	public void run() {
-		log.debug("Execute timer method |{managed_method}|.", managedMethod);
+		long start = System.nanoTime();
+		log.debug("Execute timer method {}.", method);
 		try {
-			managedMethod.invoke(instance);
+			method.invoke(instance);
 		} catch (Throwable t) {
-			log.dump(String.format("Fail on timer method |%s|: ", managedMethod), t);
+			log.dump(t);
 		}
 
-		long delay = service.computeDelay(managedMethod);
-		if (delay > 0) {
-			service.schedule(this, delay);
+		long delayMillis = service.computeDelay(method);
+		if (delayMillis > 0) {
+			service.schedule(this, delayMillis);
 		}
-		log.debug("Close timer method |{managed_method}|.", managedMethod);
+		log.debug("Close timer method {}. Processing time {processing_time} msec.", method, (System.nanoTime() - start) / 1000000.0);
 	}
 }
