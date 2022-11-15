@@ -6,7 +6,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class ContextInjectionCache {
+class ContextInjectionCache {
 	private final Map<Class<?>, List<IMemberInjector>> cache = new HashMap<>();
 
 	public void add(Class<?> implementationClass, IMemberInjector injector) {

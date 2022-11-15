@@ -6,7 +6,7 @@ import java.lang.reflect.Modifier;
 import com.jslib.container.spi.IManagedMethod;
 import com.jslib.container.spi.ServiceConfigurationException;
 
-public interface IMemberInjector {
+interface IMemberInjector {
 
 	void assertValid();
 

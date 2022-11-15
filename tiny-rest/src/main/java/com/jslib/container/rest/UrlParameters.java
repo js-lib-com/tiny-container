@@ -10,7 +10,7 @@ import com.jslib.api.log.LogFactory;
 
 import jakarta.servlet.http.HttpServletRequest;
 
-public class UrlParameters {
+class UrlParameters {
 	private static final Log log = LogFactory.getLog(UrlParameters.class);
 
 	private final Map<String, String> parameters = new HashMap<>();

@@ -2,7 +2,7 @@ package com.jslib.container.rest;
 
 import jakarta.ejb.EJBException;
 
-public class ContextInjectionException extends EJBException {
+class ContextInjectionException extends EJBException {
 	private static final long serialVersionUID = -3158638921603450821L;
 
 	public ContextInjectionException(String message, Object... args) {

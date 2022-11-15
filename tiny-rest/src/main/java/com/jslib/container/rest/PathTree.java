@@ -1,16 +1,13 @@
 package com.jslib.container.rest;
 
-import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 
-import com.jslib.converter.Converter;
-import com.jslib.converter.ConverterRegistry;
 import com.jslib.util.Params;
 
-public class PathTree<T> {
+class PathTree<T> {
 	private final Node root;
 
 	public PathTree() {
@@ -86,8 +83,6 @@ public class PathTree<T> {
 	// --------------------------------------------------------------------------------------------
 
 	public static class Item<T> {
-		private static final Converter converter = ConverterRegistry.getConverter();
-		
 		private final T value;
 		private final List<String> variables;
 
@@ -113,8 +108,8 @@ public class PathTree<T> {
 			return !variables.isEmpty();
 		}
 
-		public Object getVariableValue(int index, Type formalParameters) {
-			return converter.asObject(variables.get(index), (Class<?>) formalParameters);
+		public String getVariableValue(int index) {
+			return variables.get(index);
 		}
 	}
 

@@ -15,22 +15,26 @@ import com.jslib.container.http.encoder.ArgumentsReaderFactory;
 import com.jslib.container.http.encoder.ServerEncoders;
 import com.jslib.container.http.encoder.ValueWriter;
 import com.jslib.container.http.encoder.ValueWriterFactory;
-import com.jslib.container.rest.PathTree.Item;
 import com.jslib.container.rest.sse.SseEventSinkImpl;
 import com.jslib.container.servlet.AppServlet;
 import com.jslib.container.servlet.RequestContext;
 import com.jslib.container.spi.AuthorizationException;
 import com.jslib.container.spi.IManagedMethod;
-import com.jslib.container.spi.IManagedParameter;
 import com.jslib.container.spi.IManagedMethod.Flags;
+import com.jslib.container.spi.IManagedParameter;
+import com.jslib.converter.Converter;
+import com.jslib.converter.ConverterRegistry;
+import com.jslib.util.Types;
 
 import jakarta.inject.Inject;
 import jakarta.servlet.AsyncContext;
 import jakarta.servlet.ServletConfig;
 import jakarta.servlet.ServletException;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.ws.rs.Consumes;
+import jakarta.ws.rs.CookieParam;
 import jakarta.ws.rs.HeaderParam;
 import jakarta.ws.rs.MatrixParam;
 import jakarta.ws.rs.Path;
@@ -42,9 +46,6 @@ import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.MultivaluedHashMap;
 import jakarta.ws.rs.core.MultivaluedMap;
 import jakarta.ws.rs.sse.SseEventSink;
-import com.jslib.converter.Converter;
-import com.jslib.converter.ConverterRegistry;
-import com.jslib.util.Types;
 
 /**
  * Servlet for services invoked by REST requests. This REST servlet is enacted for web services; it is not usable for dynamic
@@ -208,6 +209,22 @@ public class RestServlet extends AppServlet {
 			// see https://httpstatuses.com/422
 			sendBadRequest(context);
 			return;
+		} catch (ParameterNotFoundException e) {
+			sendNotFound(context, e);
+			return;
+		} catch (ParameterConversionException e) {
+			// If the JAX-RS provider fails to convert a string into the Java type specified, it is considered a client error.
+			// If this failure happens during the processing of an injection for an @MatrixParam, @QueryParam, or @PathParam, an
+			// error status of 404 Not Found is sent back to the client. If the failure happens with @HeaderParam or
+			// @CookieParam, an error response code of 400 Bad Request is sent.
+
+			// @MatrixParam, @QueryParam and @PathParam are URL annotations
+			if (e.getAnnotationType() == AnnotationType.URL) {
+				sendNotFound(context, e);
+			} else {
+				sendBadRequest(context);
+			}
+			return;
 		} catch (Exception e) {
 			sendError(context, e);
 			return;
@@ -262,7 +279,7 @@ public class RestServlet extends AppServlet {
 	}
 
 	@SuppressWarnings("unchecked")
-	private Object[] getArguments(HttpServletRequest httpRequest, Item<IManagedMethod> requestPath) throws IOException {
+	private Object[] getArguments(HttpServletRequest httpRequest, PathTree.Item<IManagedMethod> requestPath) throws IOException, ParameterNotFoundException, ParameterConversionException {
 		IManagedMethod managedMethod = requestPath.getValue();
 		List<IManagedParameter> managedParameters = managedMethod.getManagedParameters();
 		if (managedParameters.isEmpty()) {
@@ -311,29 +328,53 @@ public class RestServlet extends AppServlet {
 			}
 
 			if (annotation instanceof PathParam) {
+				String name = ((PathParam) annotation).value();
 				// this logic assumes request path variables order is the same as related formal parameters
 				// therefore there is no the need to search variable by name
-				arguments[argumentIndex] = requestPath.getVariableValue(pathVariableIndex++, parameterType);
+				arguments[argumentIndex] = convert(AnnotationType.URL, name, requestPath.getVariableValue(pathVariableIndex++), parameterType);
 			}
 
 			if (annotation instanceof QueryParam) {
-				String queryName = ((QueryParam) annotation).value();
-				arguments[argumentIndex] = converter.asObject(urlParameters.getParameter(queryName), parameterType);
+				String name = ((QueryParam) annotation).value();
+				arguments[argumentIndex] = convert(AnnotationType.URL, name, urlParameters.getParameter(name), parameterType);
 			}
 
 			if (annotation instanceof MatrixParam) {
-				String matrixName = ((MatrixParam) annotation).value();
-				arguments[argumentIndex] = converter.asObject(urlParameters.getParameter(matrixName), parameterType);
+				String name = ((MatrixParam) annotation).value();
+				arguments[argumentIndex] = convert(AnnotationType.URL, name, urlParameters.getParameter(name), parameterType);
 			}
 
 			if (annotation instanceof HeaderParam) {
-				String headerName = ((HeaderParam) annotation).value();
-				arguments[argumentIndex] = converter.asObject(httpRequest.getHeader(headerName), parameterType);
+				String name = ((HeaderParam) annotation).value();
+				arguments[argumentIndex] = convert(AnnotationType.REQUEST, name, httpRequest.getHeader(name), parameterType);
 			}
 
+			if (annotation instanceof CookieParam) {
+				String name = ((CookieParam) annotation).value();
+				String value = null;
+				for (Cookie cookie : httpRequest.getCookies()) {
+					if (cookie.getName().equalsIgnoreCase(name)) {
+						value = cookie.getValue();
+						break;
+					}
+				}
+				arguments[argumentIndex] = convert(AnnotationType.REQUEST, name, value, parameterType);
+			}
 		}
 
 		return arguments;
+	}
+
+	private Object convert(AnnotationType parameterType, String name, String value, Class<?> type) throws ParameterConversionException, ParameterNotFoundException {
+		if (value == null) {
+			throw new ParameterNotFoundException("Missing parameter %s", name);
+		}
+		try {
+			return converter.asObject(value, type);
+		} catch (Throwable e) {
+			log.warn("Fail to convert value {} to parameter {} of type {}.", value, name, type);
+			throw new ParameterConversionException(parameterType, "Fail to convert parameter %s", name);
+		}
 	}
 
 	private Object getEntityArgument(HttpServletRequest httpRequest, Type parameterType) throws IOException {

@@ -52,6 +52,7 @@ public class PathMethodsCache {
 		if (httpMethod == null) {
 			httpMethod = "GET";
 		}
+		httpMethod = httpMethod.toUpperCase();
 
 		// build path from class and / or method @Path annotation
 		StringBuilder path = new StringBuilder();
