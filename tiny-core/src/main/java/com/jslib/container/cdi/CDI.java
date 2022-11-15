@@ -7,11 +7,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import com.jslib.api.log.Log;
-import com.jslib.api.log.LogFactory;
-import com.jslib.container.spi.IInstanceLifecycleListener;
-
-import jakarta.inject.Provider;
 import com.jslib.api.injector.AbstractModule;
 import com.jslib.api.injector.IInjector;
 import com.jslib.api.injector.IModule;
@@ -20,9 +15,13 @@ import com.jslib.api.injector.IProvisionListener;
 import com.jslib.api.injector.IScopeFactory;
 import com.jslib.api.injector.ProvisionException;
 import com.jslib.api.injector.ScopedProvider;
+import com.jslib.api.log.Log;
+import com.jslib.api.log.LogFactory;
+import com.jslib.container.spi.IInstanceLifecycleListener;
 import com.jslib.lang.Config;
-import com.jslib.util.Classes;
 import com.jslib.util.Params;
+
+import jakarta.inject.Provider;
 
 /**
  * Facade for injection implementation.
@@ -168,15 +167,7 @@ public class CDI implements IProvisionListener {
 
 		ScopedProvider<T> scopedProvider = (ScopedProvider<T>) provider;
 		if (!scopedProvider.getScope().equals(scope)) {
-			// scoped provider uses Jakarta packages but business code may still use deprecated Javax package
-			// if this is the case rewrite the package
-			String scopeClassName = scope.getCanonicalName();
-			if (scopeClassName.startsWith("javax.")) {
-				scope = Classes.forName("jakarta." + scopeClassName.substring("javax.".length()));
-			}
-			if (!scopedProvider.getScope().equals(scope)) {
-				return null;
-			}
+			return null;
 		}
 		return scopedProvider.getScopeInstance();
 	}

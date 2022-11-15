@@ -109,62 +109,6 @@ public class ProxyProcessingTest {
 		assertThat(Proxy.isProxyClass(instance.getClass()), is(false));
 	}
 
-	@Test
-	public void GivenStatefulInterface_WhenGetInstance_ThenInstanceProxy() throws InstantiationException, IllegalAccessException {
-		// given
-		bindings.add(new Binding<>(Stateful1.class));
-		cdi.configure(module);
-
-		// when
-		IStateful1 instance = cdi.getInstance(IStateful1.class);
-
-		// then
-		assertThat(instance, notNullValue());
-		assertThat(Proxy.isProxyClass(instance.getClass()), is(true));
-	}
-
-	@Test
-	public void GivenStatefulClass_WhenGetInstance_ThenInstanceProxy() throws InstantiationException, IllegalAccessException {
-		// given
-		bindings.add(new Binding<>(Stateful2.class));
-		cdi.configure(module);
-
-		// when
-		IStateful2 instance = cdi.getInstance(IStateful2.class);
-
-		// then
-		assertThat(instance, notNullValue());
-		assertThat(Proxy.isProxyClass(instance.getClass()), is(true));
-	}
-
-	@Test
-	public void GivenStatelessInterface_WhenGetInstance_ThenInstanceProxy() throws InstantiationException, IllegalAccessException {
-		// given
-		bindings.add(new Binding<>(Stateless1.class));
-		cdi.configure(module);
-
-		// when
-		IStateless1 instance = cdi.getInstance(IStateless1.class);
-
-		// then
-		assertThat(instance, notNullValue());
-		assertThat(Proxy.isProxyClass(instance.getClass()), is(true));
-	}
-
-	@Test
-	public void GivenStatelessClass_WhenGetInstance_ThenInstanceProxy() throws InstantiationException, IllegalAccessException {
-		// given
-		bindings.add(new Binding<>(Stateless2.class));
-		cdi.configure(module);
-
-		// when
-		IStateless2 instance = cdi.getInstance(IStateless2.class);
-
-		// then
-		assertThat(instance, notNullValue());
-		assertThat(Proxy.isProxyClass(instance.getClass()), is(true));
-	}
-
 	// --------------------------------------------------------------------------------------------
 
 	public static interface IService {

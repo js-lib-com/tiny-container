@@ -4,15 +4,15 @@ import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.List;
 
-import jakarta.annotation.ManagedBean;
-import jakarta.ejb.Stateful;
-import jakarta.ejb.Stateless;
-import jakarta.inject.Provider;
 import com.jslib.api.injector.IBinding;
 import com.jslib.api.injector.IInjector;
 import com.jslib.api.injector.IModule;
 import com.jslib.api.injector.ITypedProvider;
 import com.jslib.api.injector.ScopedProvider;
+import com.jslib.util.Classes;
+
+import jakarta.annotation.ManagedBean;
+import jakarta.inject.Provider;
 
 /**
  * Managed module collects all modules, from container and application, and pre-process them before handing to injector.
@@ -20,18 +20,26 @@ import com.jslib.api.injector.ScopedProvider;
  * managed classes bindings used by container to actually create internal managed classes.
  * 
  * This module takes care to replace provider with {@link ProxyProvider} is given bound type has a {@link #PROXY_ANNOTATIONS}
- * annotation. Current implementation considers {@link ManagedBean}, {@link Stateful} and {@link Stateless} annotations for
- * proxy processing.
+ * annotation. Current implementation considers only {@link ManagedBean} annotation for proxy processing.
  * 
  * @author Iulian Rotaru
  */
 class ManagedModule implements IModule {
 
+	private static final List<String> PROXY_CLASS_NAMES = new ArrayList<>();
+	static {
+		PROXY_CLASS_NAMES.add("com.jslib.api.transaction.Transactional");
+		PROXY_CLASS_NAMES.add("jakarta.annotation.ManagedBean");
+	}
+
 	private static final List<Class<? extends Annotation>> PROXY_ANNOTATIONS = new ArrayList<>();
 	static {
-		PROXY_ANNOTATIONS.add(jakarta.annotation.ManagedBean.class);
-		PROXY_ANNOTATIONS.add(jakarta.ejb.Stateful.class);
-		PROXY_ANNOTATIONS.add(jakarta.ejb.Stateless.class);
+		for (String className : PROXY_CLASS_NAMES) {
+			Class<? extends Annotation> annotation = Classes.forOptionalName(className);
+			if (annotation != null) {
+				PROXY_ANNOTATIONS.add(annotation);
+			}
+		}
 	}
 
 	private final IInjector injector;
@@ -65,14 +73,14 @@ class ManagedModule implements IModule {
 		Class<? extends T> implementationClass = ((ITypedProvider<T>) provider).type();
 		classBindings.add(new ClassBinding<>(interfaceClass, implementationClass));
 
-		if (isProxyAnnotationPresent(interfaceClass, implementationClass)) {
+		if (isProxyRequired(interfaceClass, implementationClass)) {
 			injectorBindings.add(ProxyBinding.create(managedLoader, binding));
 		} else {
 			injectorBindings.add(binding);
 		}
 	}
 
-	private static <T> boolean isProxyAnnotationPresent(Class<T> interfaceClass, Class<? extends T> implementationClass) {
+	private static <T> boolean isProxyRequired(Class<T> interfaceClass, Class<? extends T> implementationClass) {
 		for (Class<? extends Annotation> annotation : PROXY_ANNOTATIONS) {
 			if (interfaceClass.isAnnotationPresent(annotation)) {
 				return true;
