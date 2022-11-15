@@ -3,15 +3,15 @@ package com.jslib.container.ejb;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 
-import jakarta.ejb.EJB;
-import jakarta.enterprise.context.ApplicationScoped;
-
 import com.jslib.container.spi.IClassPostLoadedProcessor;
 import com.jslib.container.spi.IContainer;
 import com.jslib.container.spi.IManagedClass;
-import com.jslib.lang.BugError;
+import com.jslib.container.spi.ServiceConfigurationException;
 import com.jslib.net.client.HttpRmiFactory;
 import com.jslib.rmi.RemoteFactory;
+
+import jakarta.ejb.EJB;
+import jakarta.enterprise.context.ApplicationScoped;
 
 public class EjbScanProcessor implements IClassPostLoadedProcessor {
 	private FieldsCache cache;
@@ -39,10 +39,13 @@ public class EjbScanProcessor implements IClassPostLoadedProcessor {
 		for (Field field : implementationClass.getDeclaredFields()) {
 			if (field.getAnnotation(EJB.class) != null) {
 				if (Modifier.isFinal(field.getModifiers())) {
-					throw new BugError("Attempt to inject EJB in final field |%s#%s|.", implementationClass.getCanonicalName(), field.getName());
+					throw new ServiceConfigurationException("Attempt to inject EJB in final field |%s#%s|.", implementationClass.getCanonicalName(), field.getName());
 				}
 				if (Modifier.isStatic(field.getModifiers())) {
-					throw new BugError("Attempt to inject EJB in static field |%s#%s|.", implementationClass.getCanonicalName(), field.getName());
+					throw new ServiceConfigurationException("Attempt to inject EJB in static field |%s#%s|.", implementationClass.getCanonicalName(), field.getName());
+				}
+				if(!field.getType().isInterface()) {
+					throw new ServiceConfigurationException("EJB field |%s#%s| must be an interface.", implementationClass.getCanonicalName(), field.getName());
 				}
 				createManagedClass = true;
 				cache.add(implementationClass, field);
