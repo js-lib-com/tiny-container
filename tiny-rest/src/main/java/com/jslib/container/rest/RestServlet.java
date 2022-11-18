@@ -37,7 +37,6 @@ import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.CookieParam;
 import jakarta.ws.rs.HeaderParam;
 import jakarta.ws.rs.MatrixParam;
-import jakarta.ws.rs.Path;
 import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.QueryParam;
@@ -48,18 +47,22 @@ import jakarta.ws.rs.core.MultivaluedMap;
 import jakarta.ws.rs.sse.SseEventSink;
 
 /**
- * Servlet for services invoked by REST requests. This REST servlet is enacted for web services; it is not usable for dynamic
- * resources. REST servlet actually invokes a REST method that executes service logic and may return a value. If present, value
- * is serialized back to client.
- * <p>
- * In order to enable this servlet it should be declared into deployment descriptor. REST servlet is always mapped by path, most
- * common <code>rest</code> prefix; it never uses extensions.
+ * Servlet for services invoked by REST requests. This servlet facilitates REST access to business services, based on JAX-RS
+ * annotations. This servlet implements only a subset of the JSR 370 specification, but still usable in production.
+ * 
+ * <h3>Request Routing</h3>
+ * 
+ * REST requests must be routed to <code>com.jslib.container.rest.RestServlet</code> servlet. For this we need to declare the
+ * REST servlet on application deployment descriptor, web.xml.
+ * 
+ * For REST servlet mapping we cannot use extension like *.rmi because REST protocol, by design, does not have file extensions.
+ * The only option we left is path selector and usually it is /rest/*, meaning that everything after /rest/ is delivered to REST
+ * servlet.
  * 
  * <pre>
  * 	&lt;servlet&gt;
  * 		&lt;servlet-name&gt;rest-servlet&lt;/servlet-name&gt;
- * 		&lt;servlet-class&gt;js.rest.RestServlet&lt;/servlet-class&gt;
- * 		&lt;load-on-startup&gt;1&lt;/load-on-startup&gt;
+ * 		&lt;servlet-class&gt;com.jslib.container.rest.RestServlet&lt;/servlet-class&gt;
  * 	&lt;/servlet&gt;
  * 	...
  * 	&lt;servlet-mapping&gt;
@@ -68,49 +71,7 @@ import jakarta.ws.rs.sse.SseEventSink;
  * 	&lt;/servlet-mapping&gt;
  * </pre>
  * 
- * <h3>Request Routing</h3>
- * <p>
- * In order to execute service logic, the REST method should be located. Since servlet mapping always uses map by path, this
- * servlet uses {@link HttpServletRequest#getPathInfo()} to locate REST method. Path info syntax is standard:
- * 
- * <pre>
- * path-info = ["/" resource] "/" sub-resource ["?" query-string]
- * </pre>
- * 
- * Resource part identify method declaring class and is optional, in which case default class is used. In this context default
- * class means one without request path. Sub-resource identifies managed method by its request path,
- * {@link IManagedMethod#getRequestPath()}. Note that if managed method is not annotated with {@link Path} it request path is
- * method name converted to dashed case.
- * <p>
- * In order to locate REST method this servlet keeps a cache of methods, {@link #restMethods} initialized eagerly by
- * {@link #init(ServletConfig)}. It maps path info to REST method. When a request is processed a quick lookup identifies the
- * method.
- * 
- * <pre>
- * Class 0        Class 1                 Class i                 REST Methods Mapper
- * +-----------+  +-----------+           +-----------+           +--------------------+
- * | method 00 |  | method 10 |    ...    | method i0 |           | key 00 : method 00 |
- * | method 01 |  | method 11 |           | method i1 |           | key 01 : method 01 | 
- * | ...       |  | ...       |           | ...       |           | ...                | 
- * | method 0j |  | method 1k |           | method il |           | key 0j : method 0j |
- * +-----|-----+  +-----|-----+           +-----|-----+           | key 10 : method 10 |
- *       |              |                       +---------------&gt; | key 11 : method 11 |
- *       |              +---------------------------------------&gt; | ...                |
- *       +------------------------------------------------------&gt; | key 1k : method 1k |
- *              Servlet                                           | key i0 : method i0 |
- *              +-----------------------+                         | key i1 : method i1 |
- *              |  +-------------+      |           +-----+       | ...                |
- *              |  | pathInfo    +------------------&gt; key +-----&gt; | key il : method il |
- *              |  +-------------+      |           +-----+       +----------|---------+
- *              |                       |                                    | 
- *              |  +---------------+    |                                    |
- *              |  | method.invoke | &lt;---------------------------------------+
- *              |  +---------------+    |
- *              +-----------------------+
- * </pre>
- * 
  * @author Iulian Rotaru
- * @version experimental
  */
 public class RestServlet extends AppServlet {
 	private static final long serialVersionUID = 1970024026367020016L;

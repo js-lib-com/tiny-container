@@ -9,7 +9,7 @@ import com.jslib.api.log.LogFactory;
 
 import jakarta.ws.rs.sse.OutboundSseEvent;
 
-public class SseEventsQueue {
+class SseEventsQueue {
 	private static final Log log = LogFactory.getLog(SseEventsQueue.class);
 
 	private static final int EVENTS_QUEUE_PUSH_TIMEOUT = 4000;

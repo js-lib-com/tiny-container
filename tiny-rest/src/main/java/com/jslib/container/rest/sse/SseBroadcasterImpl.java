@@ -18,7 +18,7 @@ import jakarta.ws.rs.sse.SseBroadcaster;
 import jakarta.ws.rs.sse.SseEventSink;
 import com.jslib.lang.KeepAliveEvent;
 
-public class SseBroadcasterImpl implements SseBroadcaster, Runnable {
+class SseBroadcasterImpl implements SseBroadcaster, Runnable {
 	private static final Log log = LogFactory.getLog(SseBroadcasterImpl.class);
 
 	/**

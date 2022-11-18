@@ -8,7 +8,7 @@ import jakarta.ws.rs.sse.OutboundSseEvent;
 import com.jslib.util.Params;
 import com.jslib.util.Strings;
 
-public class OutboundSseEventImpl implements OutboundSseEvent {
+class OutboundSseEventImpl implements OutboundSseEvent {
 	private String id;
 	private String name;
 	private Object data;

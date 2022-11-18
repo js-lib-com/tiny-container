@@ -12,7 +12,7 @@ import com.jslib.container.spi.IManagedClass;
 import com.jslib.container.spi.IManagedMethod;
 import com.jslib.util.Strings;
 
-public class PathMethodsCache {
+class PathMethodsCache {
 	private final PathTree<IManagedMethod> cache = new PathTree<>();
 
 	public List<String> add(IManagedMethod managedMethod) {
