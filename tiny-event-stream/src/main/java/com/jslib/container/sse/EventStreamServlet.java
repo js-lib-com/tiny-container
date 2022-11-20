@@ -53,7 +53,7 @@ public class EventStreamServlet extends AppServlet {
 	public void init(ServletConfig config) throws ServletException {
 		super.init(config);
 		log.trace("init(ServletConfig)");
-		eventStreamManager = container.getInstance(EventStreamManager.class);
+		eventStreamManager = getContainer().getInstance(EventStreamManager.class);
 	}
 
 	/**
@@ -76,7 +76,7 @@ public class EventStreamServlet extends AppServlet {
 		final HttpServletResponse httpResponse = context.getResponse();
 
 		final EventStreamConfig config = getEventStreamConfig(context.getRequest());
-		final Principal principal = container.getUserPrincipal();
+		final Principal principal = getContainer().getUserPrincipal();
 		EventStream eventStream = eventStreamManager.createEventStream(principal, config);
 
 		httpResponse.setContentType("text/event-stream;charset=UTF-8");

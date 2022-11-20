@@ -110,7 +110,7 @@ public class RestServlet extends AppServlet {
 	@Override
 	public void init(ServletConfig config) throws ServletException {
 		super.init(config);
-		cache = container.getInstance(PathMethodsCache.class);
+		cache = getContainer().getInstance(PathMethodsCache.class);
 	}
 
 	/**
@@ -285,7 +285,7 @@ public class RestServlet extends AppServlet {
 			Annotation annotation = annotations[0];
 
 			if (annotation instanceof Context) {
-				arguments[argumentIndex] = container.getInstance(parameterType);
+				arguments[argumentIndex] = getContainer().getInstance(parameterType);
 			}
 
 			if (annotation instanceof PathParam) {
@@ -354,7 +354,7 @@ public class RestServlet extends AppServlet {
 		asyncContext.setTimeout(0);
 
 		// since event sink is bound with request scope next instance is the same as that injected on SSE method arguments
-		SseEventSinkImpl eventSink = (SseEventSinkImpl) container.getInstance(SseEventSink.class);
+		SseEventSinkImpl eventSink = (SseEventSinkImpl) getContainer().getInstance(SseEventSink.class);
 		eventSink.setAsyncContext(asyncContext);
 
 		httpResponse.setContentType("text/event-stream;charset=UTF-8");

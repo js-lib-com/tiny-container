@@ -87,7 +87,14 @@ public abstract class AppServlet extends HttpServlet {
 	 * Container of the application on behalf of which this servlet instance is acquired. From servlet instance perspective
 	 * container is a singleton and its reference can be safely stored.
 	 */
-	protected transient ITinyContainer container;
+	private transient volatile ITinyContainer container;
+
+	public ITinyContainer getContainer() {
+		if (container == null) {
+			throw new IllegalStateException("Attempt to use Tiny container instance before servlet initialization.");
+		}
+		return container;
+	}
 
 	private String previewContextPath;
 

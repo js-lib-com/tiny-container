@@ -151,7 +151,7 @@ public final class HttpRmiServlet extends AppServlet {
 		Object value = null;
 
 		try {
-			IManagedClass<?> managedClass = getManagedClass(container, interfaceName, httpRequest.getRequestURI());
+			IManagedClass<?> managedClass = getManagedClass(getContainer(), interfaceName, httpRequest.getRequestURI());
 			managedMethod = getManagedMethod(managedClass, methodName, httpRequest.getRequestURI());
 
 			final Type[] formalParameters = managedMethod.getParameterTypes();
