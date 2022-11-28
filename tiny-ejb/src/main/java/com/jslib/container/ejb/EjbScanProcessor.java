@@ -14,17 +14,20 @@ import jakarta.ejb.EJB;
 import jakarta.enterprise.context.ApplicationScoped;
 
 public class EjbScanProcessor implements IClassPostLoadedProcessor {
-	private FieldsCache cache;
+	private FieldsCache fieldsCache;
+	private EjbProxies ejbProxies;
 
 	@Override
 	public void configure(IContainer container) {
 		container.bind(RemoteFactory.class).to(HttpRmiFactory.class).in(ApplicationScoped.class).build();
 		container.bind(FieldsCache.class).in(ApplicationScoped.class).build();
+		container.bind(EjbProxies.class).in(ApplicationScoped.class).build();
 	}
 
 	@Override
 	public void create(IContainer container) {
-		cache = container.getInstance(FieldsCache.class);
+		fieldsCache = container.getInstance(FieldsCache.class);
+		ejbProxies = container.getInstance(EjbProxies.class);
 	}
 
 	@Override
@@ -48,7 +51,8 @@ public class EjbScanProcessor implements IClassPostLoadedProcessor {
 					throw new ServiceConfigurationException("EJB field |%s#%s| must be an interface.", implementationClass.getCanonicalName(), field.getName());
 				}
 				createManagedClass = true;
-				cache.add(implementationClass, field);
+				fieldsCache.addField(implementationClass, field);
+				ejbProxies.createProxy(field.getType());
 			}
 		}
 		return createManagedClass;

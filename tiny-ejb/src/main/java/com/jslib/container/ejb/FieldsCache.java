@@ -8,53 +8,59 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import javax.naming.Context;
-import javax.naming.InitialContext;
-import javax.naming.NamingException;
-
 import com.jslib.api.log.Log;
 import com.jslib.api.log.LogFactory;
 
-import com.jslib.util.Strings;
-
-public class FieldsCache {
+/**
+ * Cache for fields annotated with {@literal}EJB annotation. Cache key is the class of the instance containing annotated fields.
+ * Since it is legal to have multiple fields annotated with {@literal}EJB annotation in the same class, internal cache value is
+ * a collection. This collection is returned when retrieve cached fields, see {@link #getFields(Class)}.
+ * 
+ * @author Iulian Rotaru
+ */
+class FieldsCache {
 	private static final Log log = LogFactory.getLog(FieldsCache.class);
 
-	private static final String COMP_ENV = "java:comp/env";
+	/**
+	 * Cache for class fields annotated with {@literal}EJB. Cache key is the class of the instance containing annotated fields.
+	 * Since it is legal to have multiple fields annotated with {@literal}EJB in the same class, cache value is a set.
+	 */
+	private final Map<Class<?>, Set<Field>> cache;
 
-	/** Cache for class fields annotated with {@literal}EJB. */
-	private final Map<Class<?>, Set<EjbField>> cache = new HashMap<>();
-
-	private final Context context;
-
-	public FieldsCache() throws NamingException {
-		Context root = new InitialContext();
-		context = (Context) root.lookup(COMP_ENV);
+	public FieldsCache() {
+		this.cache = new HashMap<>();
 	}
 
-	public Collection<EjbField> get(Class<?> implementationClass) {
-		return cache.getOrDefault(implementationClass, Collections.emptySet());
-	}
-
-	public void add(Class<?> implementationClass, Field field) {
-		Set<EjbField> ejbFields = cache.get(implementationClass);
-		if (ejbFields == null) {
+	/**
+	 * Add field to cache if it is not already cached. If field parameter is already cached this method silently does nothing.
+	 * 
+	 * @param instanceClass cache key is the class of the instance containing annotated field,
+	 * @param field field annotated with {@literal}EJB annotation.
+	 */
+	public void addField(Class<?> instanceClass, Field field) {
+		Set<Field> fields = cache.get(instanceClass);
+		if (fields == null) {
 			synchronized (this) {
-				if (ejbFields == null) {
-					ejbFields = new HashSet<>();
-					cache.put(implementationClass, ejbFields);
+				fields = cache.get(instanceClass);
+				if (fields == null) {
+					fields = new HashSet<>();
+					cache.put(instanceClass, fields);
 				}
 			}
 		}
-
-		String ejbUrl = Strings.concat(field.getType().getCanonicalName(), ".url");
-		try {
-			String implementationURL = (String) context.lookup(ejbUrl);
-			EjbField ejbField = new EjbField(field, implementationURL);
-			ejbFields.add(ejbField);
-			log.debug("Discover EJB |{ejb_class}| on field |{java_type}#{java_field}|.", ejbField, implementationClass.getCanonicalName(), field.getName());
-		} catch (NamingException e) {
-			log.error("JNDI lookup fail on EJB |{ejb_class}|. Root cause: {exception_class}: {exception_message}", ejbUrl, e.getClass().getCanonicalName(), e.getMessage());
+		if (fields.add(field)) {
+			log.debug("Cache EJB field {}.", field);
 		}
+	}
+
+	/**
+	 * Return annotated fields collection of the requested instance class. Return empty collection if there is no cached fields
+	 * for given instance class. Instance class is used as cache key and should match {@link #addField(Class, Field)} key.
+	 * 
+	 * @param instanceClass the class to return annotated fields for, used as cache key.
+	 * @return annotated fields collection, possible empty but never null.
+	 */
+	public Collection<Field> getFields(Class<?> instanceClass) {
+		return cache.getOrDefault(instanceClass, Collections.emptySet());
 	}
 }

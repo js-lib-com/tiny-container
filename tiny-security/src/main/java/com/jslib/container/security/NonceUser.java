@@ -6,8 +6,7 @@ import com.jslib.container.spi.ISecurityContext;
 
 /**
  * A nonce user has access only one time and for a short period of time. Container takes care to quickly invalidate the session.
- * Default value for session duration is 10 seconds.
- * <p>
+ * 
  * An example use case would be granting guest access to private resources based on a coupon or credit points of some sort.
  * Guest user is requested to enter coupon code; application checks coupon validity then creates a <code>nonce</code> principal
  * and authenticate it via {@link ISecurityContext#authenticate(Principal)}. Security context takes care to auto-logout

@@ -17,7 +17,7 @@ import com.jslib.lang.BugError;
  * 
  * Security context can be injected into application classes. Anyway, since security context implementation depends on HTTP
  * session it can be used only inside business methods, in a valid HTTP request context. Attempting to use security context
- * outside HTTP request will throw exception, e.g. post construct or timer methods.
+ * outside HTTP request - e.g. post construct or timer methods, will throw exception.
  * 
  * @author Iulian Rotaru
  */
