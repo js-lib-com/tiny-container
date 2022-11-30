@@ -3,6 +3,7 @@ package com.jslib.container.rest;
 import java.io.IOException;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Type;
+import java.security.GeneralSecurityException;
 import java.util.List;
 import java.util.Map;
 
@@ -18,7 +19,6 @@ import com.jslib.container.http.encoder.ValueWriterFactory;
 import com.jslib.container.rest.sse.SseEventSinkImpl;
 import com.jslib.container.servlet.AppServlet;
 import com.jslib.container.servlet.RequestContext;
-import com.jslib.container.spi.AuthorizationException;
 import com.jslib.container.spi.IManagedMethod;
 import com.jslib.container.spi.IManagedMethod.Flags;
 import com.jslib.container.spi.IManagedParameter;
@@ -159,7 +159,7 @@ public class RestServlet extends AppServlet {
 				return;
 			}
 
-		} catch (AuthorizationException e) {
+		} catch (GeneralSecurityException e) {
 			sendUnauthorized(context);
 			return;
 		} catch (NoSuchMethodException e) {

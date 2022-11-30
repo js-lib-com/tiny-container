@@ -1,4 +1,6 @@
-package com.jslib.container.spi;
+package com.jslib.container.security;
+
+import java.security.GeneralSecurityException;
 
 /**
  * Attempt to access private resource without proper authorization. Thrown by authorization logic when there is an attempt to
@@ -9,7 +11,7 @@ package com.jslib.container.spi;
  * 
  * @author Iulian Rotaru
  */
-public class AuthorizationException extends Exception {
+public class AuthorizationException extends GeneralSecurityException {
 	private static final long serialVersionUID = 13381077426911761L;
 
 	public AuthorizationException() {

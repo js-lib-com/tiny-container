@@ -2,6 +2,7 @@ package com.jslib.container.rmi;
 
 import java.io.IOException;
 import java.lang.reflect.Type;
+import java.security.GeneralSecurityException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -16,16 +17,14 @@ import com.jslib.container.http.encoder.ValueWriter;
 import com.jslib.container.http.encoder.ValueWriterFactory;
 import com.jslib.container.servlet.AppServlet;
 import com.jslib.container.servlet.RequestContext;
-import com.jslib.container.spi.AuthorizationException;
 import com.jslib.container.spi.IContainer;
 import com.jslib.container.spi.IManagedClass;
 import com.jslib.container.spi.IManagedMethod;
+import com.jslib.util.Classes;
+import com.jslib.util.Types;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-
-import com.jslib.util.Classes;
-import com.jslib.util.Types;
 
 /**
  * Application servlet implementation for HTTP-RMI requests. This servlet invokes remotely accessible methods for services
@@ -160,7 +159,7 @@ public final class HttpRmiServlet extends AppServlet {
 
 			Object instance = managedClass.getInstance();
 			value = managedMethod.invoke(instance, arguments);
-		} catch (AuthorizationException e) {
+		} catch (GeneralSecurityException e) {
 			sendUnauthorized(context);
 			return;
 		} catch (Throwable t) {

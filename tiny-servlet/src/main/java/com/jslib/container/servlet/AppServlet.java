@@ -10,7 +10,6 @@ import com.jslib.api.log.Log;
 import com.jslib.api.log.LogFactory;
 import com.jslib.container.http.ContentType;
 import com.jslib.container.http.HttpHeader;
-import com.jslib.container.spi.AuthorizationException;
 import com.jslib.container.spi.Factory;
 import com.jslib.container.spi.IContainer;
 import com.jslib.container.spi.ITinyContainer;
@@ -32,12 +31,11 @@ import jakarta.servlet.http.HttpSession;
  * Base for all application's servlets. Implements common request processing and provides utility functions. Concrete servlet
  * implementation should focus only on request handling, see {@link #handleRequest(RequestContext)}.
  * <p>
- * This base servlet does not deal directly with {@link AuthorizationException} but provides utility function for sending
- * unauthorized access response. For this reason abstract request handler does not accept authorization exception in its
- * signature. Rationale for this design is that security handling depends on specific protocol employed by concrete servlet. For
- * example, rejecting an access for a resource is handled by redirecting to login page whereas for a service simple send back
- * unauthorized access response. Also a protocol may be designed to send back HTTP OK and serialize authorization exception in
- * its own format.
+ * This base servlet does not deal directly with authorization exceptions but provides utility function for sending unauthorized
+ * access response. For this reason abstract request handler does not accept authorization exception in its signature. Rationale
+ * for this design is that security handling depends on specific protocol employed by concrete servlet. For example, rejecting
+ * an access for a resource is handled by redirecting to login page whereas for a service simple send back unauthorized access
+ * response. Also a protocol may be designed to send back HTTP OK and serialize authorization exception in its own format.
  * <p>
  * Usually XHR requests comes from tight coupled clients that are part of a client-server application. It is expected that a
  * well behaving client to not send XHR requests for private resources outside an authenticated scope. Anyway, if XHR request

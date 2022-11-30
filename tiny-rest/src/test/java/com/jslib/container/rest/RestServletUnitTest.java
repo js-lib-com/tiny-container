@@ -10,6 +10,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.lang.annotation.Annotation;
+import java.security.GeneralSecurityException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Locale;
@@ -26,7 +27,6 @@ import com.jslib.container.http.encoder.ServerEncoders;
 import com.jslib.container.http.encoder.ValueWriter;
 import com.jslib.container.servlet.RequestContext;
 import com.jslib.container.servlet.TinyContainer;
-import com.jslib.container.spi.AuthorizationException;
 import com.jslib.container.spi.IContainerService;
 import com.jslib.container.spi.IManagedClass;
 import com.jslib.container.spi.IManagedMethod;
@@ -180,7 +180,7 @@ public class RestServletUnitTest {
 	public void GivenNotAuthorizedRemoteMethod_WhenInvoke_Then401() throws Exception {
 		// given
 		when(managedMethod.getManagedParameters()).thenReturn(Collections.emptyList());
-		when(managedMethod.invoke(null, new Object[0])).thenThrow(AuthorizationException.class);
+		when(managedMethod.invoke(null, new Object[0])).thenThrow(GeneralSecurityException.class);
 		when(servletContext.getServletContextName()).thenReturn("Test App");
 
 		// when

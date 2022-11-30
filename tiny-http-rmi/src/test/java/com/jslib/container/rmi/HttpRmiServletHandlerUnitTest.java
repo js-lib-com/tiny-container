@@ -7,6 +7,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.lang.reflect.Type;
+import java.security.GeneralSecurityException;
 import java.util.Collections;
 
 import org.junit.Before;
@@ -17,7 +18,6 @@ import org.mockito.junit.MockitoJUnitRunner;
 
 import com.jslib.container.servlet.AppServlet;
 import com.jslib.container.servlet.RequestContext;
-import com.jslib.container.spi.AuthorizationException;
 import com.jslib.container.spi.IManagedClass;
 import com.jslib.container.spi.IManagedMethod;
 import com.jslib.container.spi.ITinyContainer;
@@ -108,7 +108,7 @@ public class HttpRmiServletHandlerUnitTest {
 
 	@Test
 	public void authorizationException() throws Exception {
-		when(managedMethod.invoke(any(), any())).thenThrow(AuthorizationException.class);
+		when(managedMethod.invoke(any(), any())).thenThrow(GeneralSecurityException.class);
 		executeRequestHandler();
 
 		verify(httpResponse, times(1)).setStatus(401);

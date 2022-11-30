@@ -4,7 +4,6 @@ import java.lang.annotation.Annotation;
 
 import com.jslib.api.log.Log;
 import com.jslib.api.log.LogFactory;
-import com.jslib.container.spi.AuthorizationException;
 import com.jslib.container.spi.IContainer;
 import com.jslib.container.spi.IInvocation;
 import com.jslib.container.spi.IInvocationProcessorsChain;

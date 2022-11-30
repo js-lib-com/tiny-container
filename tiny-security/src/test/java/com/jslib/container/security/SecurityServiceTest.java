@@ -19,7 +19,6 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
 import com.jslib.api.injector.IBindingBuilder;
-import com.jslib.container.spi.AuthorizationException;
 import com.jslib.container.spi.IContainer;
 import com.jslib.container.spi.IInvocation;
 import com.jslib.container.spi.IInvocationProcessorsChain;
