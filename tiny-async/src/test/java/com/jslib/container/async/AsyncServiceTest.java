@@ -146,7 +146,7 @@ public class AsyncServiceTest {
 	}
 
 	@Test
-	public void GivenVoidMethod_WhenOnMethodInvocation_ThenThreadsPoolExecute() throws Exception {
+	public void GivenVoidMethod_WhenOnMethodInvocation_ThenThreadsPoolExecute() throws Throwable {
 		// given
 		when(managedMethod.isVoid()).thenReturn(true);
 
@@ -159,7 +159,7 @@ public class AsyncServiceTest {
 	}
 
 	@Test
-	public void GivenFutureMethod_WhenOnMethodInvocation_ThenChainNextProcessor() throws Exception {
+	public void GivenFutureMethod_WhenOnMethodInvocation_ThenChainNextProcessor() throws Throwable {
 		// given
 		when(threadsPool.submit(any(), any())).thenReturn(new AsyncResult<Object>("Tom Joad"));
 

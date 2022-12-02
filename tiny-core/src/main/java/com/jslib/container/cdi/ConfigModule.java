@@ -110,7 +110,14 @@ class ConfigModule extends AbstractModule {
 				throw new IllegalStateException("You brought two too many!");
 			}
 		} catch (InvocationTargetException e) {
-			throw new IllegalStateException(e.getTargetException().getMessage());
+			Throwable t = e.getTargetException();
+			if (t == null) {
+				t = e.getCause();
+			}
+			if (t == null) {
+				t = e;
+			}
+			throw new IllegalStateException(e.getMessage());
 		} catch (IllegalAccessException | IllegalArgumentException e) {
 			throw new IllegalStateException(e.getMessage());
 		}

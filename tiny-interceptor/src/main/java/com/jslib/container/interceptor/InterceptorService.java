@@ -2,6 +2,7 @@ package com.jslib.container.interceptor;
 
 import static java.lang.String.format;
 
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -16,11 +17,14 @@ import com.jslib.container.spi.IInvocationProcessorsChain;
 import com.jslib.container.spi.IManagedMethod;
 import com.jslib.container.spi.IMethodInvocationProcessor;
 import com.jslib.container.spi.IThreadsPool;
+import com.jslib.container.spi.ServiceConfigurationException;
+import com.jslib.lang.BugError;
+import com.jslib.util.Classes;
+import com.jslib.util.Params;
 
 import jakarta.ejb.Asynchronous;
-import com.jslib.lang.BugError;
-import com.jslib.lang.InvocationException;
-import com.jslib.util.Classes;
+import jakarta.interceptor.AroundInvoke;
+import jakarta.interceptor.Interceptors;
 
 /**
  * Container service for managed method invocation intercepting.
@@ -30,8 +34,10 @@ import com.jslib.util.Classes;
 public class InterceptorService implements IMethodInvocationProcessor {
 	private static final Log log = LogFactory.getLog(InterceptorService.class);
 
-	private final Map<IManagedMethod, List<CacheItem<PreInvokeInterceptor>>> preInvokeInterceptorsCache = new HashMap<>();
-	private final Map<IManagedMethod, List<CacheItem<PostInvokeInterceptor>>> postInvokeInterceptorsCache = new HashMap<>();
+	private final Map<IManagedMethod, List<TinyInterceptor<PreInvokeInterceptor>>> preInvokeInterceptorsCache = new HashMap<>();
+	private final Map<IManagedMethod, List<TinyInterceptor<PostInvokeInterceptor>>> postInvokeInterceptorsCache = new HashMap<>();
+
+	private final Map<IManagedMethod, List<JakartaInterceptor>> aroundInvokeInterceptorsCache = new HashMap<>();
 
 	private IThreadsPool threadsPool;
 
@@ -52,20 +58,32 @@ public class InterceptorService implements IMethodInvocationProcessor {
 
 	@Override
 	public boolean bind(IManagedMethod managedMethod) {
+		// non standard interceptors based on container proprietary annotation
 		Intercepted intercepted = managedMethod.scanAnnotation(Intercepted.class);
 		if (intercepted == null) {
 			intercepted = managedMethod.getDeclaringClass().scanAnnotation(Intercepted.class);
 		}
-		if (intercepted == null) {
-			return false;
+		if (intercepted != null) {
+			List<TinyInterceptor<PreInvokeInterceptor>> preInterceptors = new ArrayList<>();
+			preInvokeInterceptorsCache.put(managedMethod, preInterceptors);
+
+			List<TinyInterceptor<PostInvokeInterceptor>> postInterceptors = new ArrayList<>();
+			postInvokeInterceptorsCache.put(managedMethod, postInterceptors);
+			return true;
 		}
 
-		List<CacheItem<PreInvokeInterceptor>> preInterceptors = new ArrayList<>();
-		preInvokeInterceptorsCache.put(managedMethod, preInterceptors);
+		// standard interceptors based on Jakarata annotation
+		Interceptors interceptors = managedMethod.scanAnnotation(Interceptors.class);
+		if (interceptors == null) {
+			interceptors = managedMethod.getDeclaringClass().scanAnnotation(Interceptors.class);
+		}
+		if (interceptors != null) {
+			List<JakartaInterceptor> aroundInterceptors = new ArrayList<>();
+			aroundInvokeInterceptorsCache.put(managedMethod, aroundInterceptors);
+			return true;
+		}
 
-		List<CacheItem<PostInvokeInterceptor>> postInterceptors = new ArrayList<>();
-		postInvokeInterceptorsCache.put(managedMethod, postInterceptors);
-		return true;
+		return false;
 	}
 
 	@Override
@@ -74,8 +92,11 @@ public class InterceptorService implements IMethodInvocationProcessor {
 			Intercepted intercepted = managedMethod.scanAnnotation(Intercepted.class);
 			for (Class<? extends Interceptor> interceptorClass : intercepted.value()) {
 				Interceptor instance = container.getOptionalInstance(interceptorClass);
+				if (instance == null) {
+					throw new ServiceConfigurationException("Missing interceptor class %s", interceptorClass);
+				}
 				if (instance instanceof PreInvokeInterceptor) {
-					preInterceptors.add(new CacheItem<>((PreInvokeInterceptor) instance, isAsynchronous(instance, "preInvoke")));
+					preInterceptors.add(new TinyInterceptor<>((PreInvokeInterceptor) instance, isAsynchronous(instance, "preInvoke")));
 				}
 			}
 		});
@@ -84,26 +105,30 @@ public class InterceptorService implements IMethodInvocationProcessor {
 			Intercepted intercepted = managedMethod.scanAnnotation(Intercepted.class);
 			for (Class<? extends Interceptor> interceptorClass : intercepted.value()) {
 				Interceptor instance = container.getOptionalInstance(interceptorClass);
+				if (instance == null) {
+					throw new ServiceConfigurationException("Missing interceptor class %s", interceptorClass);
+				}
 				if (instance instanceof PostInvokeInterceptor) {
-					postInterceptors.add(new CacheItem<>((PostInvokeInterceptor) instance, isAsynchronous(instance, "postInvoke")));
+					postInterceptors.add(new TinyInterceptor<>((PostInvokeInterceptor) instance, isAsynchronous(instance, "postInvoke")));
 				}
 			}
 		});
-		
-//		for (Class<? extends Interceptor> interceptorClass : intercepted.value()) {
-//			Interceptor instance = container.getOptionalInstance(interceptorClass);
-//			if (instance == null) {
-//				instance = Classes.newInstance(interceptorClass);
-//			}
-//
-//			if (instance instanceof PreInvokeInterceptor) {
-//				preInterceptors.add(new CacheItem<>((PreInvokeInterceptor) instance, isAsynchronous(instance, "preInvoke")));
-//			}
-//
-//			if (instance instanceof PostInvokeInterceptor) {
-//				postInterceptors.add(new CacheItem<>((PostInvokeInterceptor) instance, isAsynchronous(instance, "postInvoke")));
-//			}
-//		}
+
+		aroundInvokeInterceptorsCache.forEach((managedMethod, aroundInterceptors) -> {
+			Interceptors interceptors = managedMethod.scanAnnotation(Interceptors.class);
+			for (Class<?> interceptorClass : interceptors.value()) {
+				Object instance = container.getOptionalInstance(interceptorClass);
+				if (instance == null) {
+					throw new ServiceConfigurationException("Missing interceptor class %s", interceptorClass);
+				}
+				for (Method method : interceptorClass.getDeclaredMethods()) {
+					if (method.isAnnotationPresent(AroundInvoke.class)) {
+						aroundInterceptors.add(new JakartaInterceptor(instance, method));
+						break;
+					}
+				}
+			}
+		});
 	}
 
 	private static boolean isAsynchronous(Object instance, String methodName) {
@@ -116,11 +141,37 @@ public class InterceptorService implements IMethodInvocationProcessor {
 	}
 
 	@Override
-	public Object onMethodInvocation(IInvocationProcessorsChain chain, IInvocation invocation) throws Exception {
+	public Object onMethodInvocation(IInvocationProcessorsChain chain, IInvocation invocation) throws Throwable {
 		final IManagedMethod managedMethod = invocation.method();
 		final Object[] arguments = invocation.arguments();
 
-		for (CacheItem<PreInvokeInterceptor> interceptor : preInvokeInterceptorsCache.get(managedMethod)) {
+		// handle first around interceptors that are implemented with Jakarta annotations
+		// if found Jakarata interceptors, Tiny Container interceptors are not executed
+		List<JakartaInterceptor> aroundInterceptors = aroundInvokeInterceptorsCache.get(managedMethod);
+		if (!aroundInterceptors.isEmpty()) {
+			InvocationContext context = new InvocationContext(chain, invocation.instance(), managedMethod, arguments);
+			for (JakartaInterceptor interceptor : aroundInvokeInterceptorsCache.get(managedMethod)) {
+				log.debug("Execute around-invoke interceptor for method |{}|.", managedMethod);
+				try {
+					return interceptor.method.invoke(interceptor.instance, context);
+				} catch (InvocationTargetException e) {
+					Throwable t = e.getTargetException();
+					if(t == null) {
+						t = e.getCause();
+					}
+					if(t == null) {
+						t = e;
+					}
+					log.error("Exception on around-invoke interceptor |{java_type}|: {exception}", interceptor.type, t);
+					throw t;
+				}
+			}
+		}
+
+		// we step here only if there are no around interceptors declared with Jakarata annotations
+		// next block deals with Tiny Container proprietary interceptors implementation
+
+		for (TinyInterceptor<PreInvokeInterceptor> interceptor : preInvokeInterceptorsCache.get(managedMethod)) {
 			log.debug("Execute pre-invoke interceptor for method |{managed_method}|.", managedMethod);
 			final PreInvokeInterceptor preInvokeInterceptor = interceptor.instance;
 
@@ -132,14 +183,14 @@ public class InterceptorService implements IMethodInvocationProcessor {
 					preInvokeInterceptor.preInvoke(managedMethod, arguments);
 				} catch (Exception e) {
 					log.error("Exception on pre-invoke interceptor |{java_type}|: {exception}", preInvokeInterceptor.getClass().getCanonicalName(), e);
-					throw new InvocationException(e);
+					throw e;
 				}
 			}
 		}
 
 		Object returnValue = chain.invokeNextProcessor(invocation);
 
-		for (CacheItem<PostInvokeInterceptor> interceptor : postInvokeInterceptorsCache.get(managedMethod)) {
+		for (TinyInterceptor<PostInvokeInterceptor> interceptor : postInvokeInterceptorsCache.get(managedMethod)) {
 			log.debug("Execute post-invoke interceptor for method |{managed_method}|.", managedMethod);
 			final PostInvokeInterceptor postInvokeInterceptor = interceptor.instance;
 
@@ -151,7 +202,7 @@ public class InterceptorService implements IMethodInvocationProcessor {
 					postInvokeInterceptor.postInvoke(managedMethod, arguments, returnValue);
 				} catch (Exception e) {
 					log.error("Exception on post-invoke interceptor |{java_type}|: {exception}", postInvokeInterceptor.getClass().getCanonicalName(), e);
-					throw new InvocationException(e);
+					throw e;
 				}
 			}
 		}
@@ -159,13 +210,32 @@ public class InterceptorService implements IMethodInvocationProcessor {
 		return returnValue;
 	}
 
-	private static class CacheItem<T extends Interceptor> {
+	private static class TinyInterceptor<T> {
 		final T instance;
 		final boolean asynchronous;
 
-		public CacheItem(T instance, boolean asynchronous) {
+		public TinyInterceptor(T instance, boolean asynchronous) {
 			this.instance = instance;
 			this.asynchronous = asynchronous;
+		}
+	}
+
+	private static class JakartaInterceptor {
+		final Object instance;
+		final String type;
+		final Method method;
+
+		/**
+		 * Create interceptor data item for interceptors based on Jakarta annotations.
+		 * 
+		 * @param instance interceptor instance,
+		 * @param method interceptor method.
+		 */
+		public JakartaInterceptor(Object instance, Method method) {
+			Params.notNull(instance, "Interceptor instance");
+			this.instance = instance;
+			this.type = instance.getClass().getCanonicalName();
+			this.method = method;
 		}
 	}
 }

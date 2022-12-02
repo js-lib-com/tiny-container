@@ -186,7 +186,7 @@ public class RestServlet extends AppServlet {
 				sendBadRequest(context);
 			}
 			return;
-		} catch (Exception e) {
+		} catch (Throwable e) {
 			sendError(context, e);
 			return;
 		} finally {

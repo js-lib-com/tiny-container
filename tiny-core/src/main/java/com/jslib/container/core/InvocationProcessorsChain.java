@@ -33,7 +33,7 @@ class InvocationProcessorsChain implements IInvocationProcessorsChain {
 	}
 
 	@Override
-	public Object invokeNextProcessor(IInvocation invocation) throws Exception {
+	public Object invokeNextProcessor(IInvocation invocation) throws Throwable {
 		if (!iterator.hasNext()) {
 			throw new BugError("Invocation processors chain was not properly ended. See ManagedMethod#onMethodInvocation().");
 		}

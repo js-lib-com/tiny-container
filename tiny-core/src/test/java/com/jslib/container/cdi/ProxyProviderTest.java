@@ -57,7 +57,7 @@ public class ProxyProviderTest {
 	}
 
 	@Test
-	public void GivenInstance_WhenInvoke_ThenDelegateManagedMethod() throws Exception {
+	public void GivenInstance_WhenInvoke_ThenDelegateManagedMethod() throws Throwable {
 		// given
 		IPerson instance = proxy.get();
 
@@ -80,7 +80,7 @@ public class ProxyProviderTest {
 	}
 
 	@Test(expected = RuntimeException.class)
-	public void GivenExecutionFail_WhenInvoke_ThenException() throws Exception {
+	public void GivenExecutionFail_WhenInvoke_ThenException() throws Throwable {
 		// given
 		when(managedMethod.invoke(any(), eq((Object[]) null))).thenThrow(RuntimeException.class);
 

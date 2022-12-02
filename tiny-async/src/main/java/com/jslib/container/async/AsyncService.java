@@ -69,7 +69,7 @@ public class AsyncService implements IMethodInvocationProcessor {
 	 * 
 	 */
 	@Override
-	public Object onMethodInvocation(final IInvocationProcessorsChain chain, final IInvocation invocation) throws Exception {
+	public Object onMethodInvocation(final IInvocationProcessorsChain chain, final IInvocation invocation) throws Throwable {
 		final String methodName = invocation.method().toString();
 		log.debug("Execute asynchronous |{java_method}|.", methodName);
 
@@ -79,6 +79,13 @@ public class AsyncService implements IMethodInvocationProcessor {
 		}
 
 		// at this point we know that invocation method returns a future
-		return threadsPool.submit(methodName, () -> (Future<?>) chain.invokeNextProcessor(invocation));
+		return threadsPool.submit(methodName, () -> {
+			try {
+				return (Future<?>) chain.invokeNextProcessor(invocation);
+			} catch (Throwable e) {
+				log.error(e);
+				return null;
+			}
+		});
 	}
 }

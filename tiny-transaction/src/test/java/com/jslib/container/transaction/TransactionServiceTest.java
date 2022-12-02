@@ -75,7 +75,7 @@ public class TransactionServiceTest {
 	}
 
 	@Test
-	public void GivenNotTransactionalMethod_WhenInvoke_ThenNextProcessor() throws Exception {
+	public void GivenNotTransactionalMethod_WhenInvoke_ThenNextProcessor() throws Throwable {
 		// given
 
 		// when
@@ -133,7 +133,7 @@ public class TransactionServiceTest {
 	}
 
 	@Test
-	public void GivenExceptionOnImmutableTransaction_WhenInvoke_ThenNoCommitOrRollback() throws Exception {
+	public void GivenExceptionOnImmutableTransaction_WhenInvoke_ThenNoCommitOrRollback() throws Throwable {
 		// given
 		when(managedMethod.scanAnnotation(Transactional.class)).thenReturn(transactionalMeta);
 		when(processorsChain.invokeNextProcessor(methodInvocation)).thenThrow(IOException.class);
@@ -152,7 +152,7 @@ public class TransactionServiceTest {
 	}
 
 	@Test(expected = InvocationException.class)
-	public void GivenExceptionOnImmutableTransaction_WhenInvoke_ThenInvocationException() throws Exception {
+	public void GivenExceptionOnImmutableTransaction_WhenInvoke_ThenInvocationException() throws Throwable {
 		// given
 		when(managedMethod.scanAnnotation(Transactional.class)).thenReturn(transactionalMeta);
 		when(processorsChain.invokeNextProcessor(methodInvocation)).thenThrow(IOException.class);
@@ -213,7 +213,7 @@ public class TransactionServiceTest {
 	}
 
 	@Test
-	public void GivenExceptionOnMutableTransaction_WhenInvoke_ThenRollback() throws Exception {
+	public void GivenExceptionOnMutableTransaction_WhenInvoke_ThenRollback() throws Throwable {
 		// given
 		when(managedMethod.scanAnnotation(Transactional.class)).thenReturn(transactionalMeta);
 		when(managedMethod.scanAnnotation(Mutable.class)).thenReturn(Mockito.mock(Mutable.class));
@@ -233,7 +233,7 @@ public class TransactionServiceTest {
 	}
 
 	@Test(expected = InvocationException.class)
-	public void GivenExceptionOnMutableTransaction_WhenInvoke_ThenInvocationException() throws Exception {
+	public void GivenExceptionOnMutableTransaction_WhenInvoke_ThenInvocationException() throws Throwable {
 		// given
 		when(managedMethod.scanAnnotation(Transactional.class)).thenReturn(transactionalMeta);
 		when(managedMethod.scanAnnotation(Mutable.class)).thenReturn(Mockito.mock(Mutable.class));

@@ -119,7 +119,7 @@ public class RestServletUnitTest {
 	}
 
 	@Test
-	public void GivenStringRemoteMethod_WhenInvoke_Then200() throws Exception {
+	public void GivenStringRemoteMethod_WhenInvoke_Then200() throws Throwable {
 		// given
 		when(managedMethod.getManagedParameters()).thenReturn(Collections.emptyList());
 		when(managedMethod.getReturnType()).thenReturn(String.class);
@@ -177,7 +177,7 @@ public class RestServletUnitTest {
 	}
 
 	@Test
-	public void GivenNotAuthorizedRemoteMethod_WhenInvoke_Then401() throws Exception {
+	public void GivenNotAuthorizedRemoteMethod_WhenInvoke_Then401() throws Throwable {
 		// given
 		when(managedMethod.getManagedParameters()).thenReturn(Collections.emptyList());
 		when(managedMethod.invoke(null, new Object[0])).thenThrow(GeneralSecurityException.class);
@@ -211,7 +211,7 @@ public class RestServletUnitTest {
 
 	/** For now illegal argument exception is considered bad request 400. */
 	@Test
-	public void GivenIllegalArgument_WhenInvoke_Then400() throws Exception {
+	public void GivenIllegalArgument_WhenInvoke_Then400() throws Throwable {
 		// given
 
 		when(managedMethod.getManagedParameters()).thenReturn(Collections.emptyList());
@@ -229,7 +229,7 @@ public class RestServletUnitTest {
 	}
 
 	@Test
-	public void GivenInvocationException_WhenInvoke_Then500() throws Exception {
+	public void GivenInvocationException_WhenInvoke_Then500() throws Throwable {
 		// given
 		String error = "\"error message\"";
 		when(json.stringify(any())).thenReturn(error);
@@ -250,7 +250,7 @@ public class RestServletUnitTest {
 	}
 
 	@Test(expected = RuntimeException.class)
-	public void GivenRuntimeException_WhenInvoke_ThenException() throws Exception {
+	public void GivenRuntimeException_WhenInvoke_ThenException() throws Throwable {
 		// given
 		when(managedMethod.getManagedParameters()).thenReturn(Collections.emptyList());
 		when(managedMethod.invoke(null, new Object[0])).thenThrow(RuntimeException.class);

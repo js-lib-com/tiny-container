@@ -1,6 +1,7 @@
 package com.jslib.container.spi;
 
 import java.lang.annotation.Annotation;
+import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 import java.util.List;
 import java.util.function.Function;
@@ -78,7 +79,7 @@ public interface IManagedMethod {
 	Type[] getParameterTypes();
 
 	List<IManagedParameter> getManagedParameters();
-	
+
 	Type[] getExceptionTypes();
 
 	/**
@@ -90,6 +91,13 @@ public interface IManagedMethod {
 	Type getReturnType();
 
 	/**
+	 * Low level access to wrapped Java method.
+	 * 
+	 * @return Java method wrapped by this managed method.
+	 */
+	Method getMethod();
+
+	/**
 	 * Invoke managed method taking care to execute container services, if any. First execute services then delegate wrapped
 	 * Java method. Any exception from method or container services execution is propagated to caller.
 	 * 
@@ -97,9 +105,9 @@ public interface IManagedMethod {
 	 * @param arguments invocation arguments.
 	 * @param <T> returned value type.
 	 * @return value returned by method or null for void.
-	 * @throws Exception any exception from method or container service execution is bubbled up.
+	 * @throws Throwable any exception from method or container service execution is bubbled up.
 	 */
-	<T> T invoke(Object instance, Object... arguments) throws Exception;
+	<T> T invoke(Object instance, Object... arguments) throws Throwable;
 
 	/**
 	 * Scans this method for requested annotation in both implementation and interface classes, in this order. Interface should

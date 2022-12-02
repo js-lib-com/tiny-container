@@ -28,7 +28,7 @@ public class ContextInjectionProcessor implements IInstancePostConstructProcesso
 			Object value = container.getInstance(injector.type());
 			try {
 				injector.inject(instance, value);
-			} catch (Exception e) {
+			} catch (Throwable e) {
 				String message = String.format("Fail to inject context |%s| on |%s|.", injector.type(), injector);
 				log.dump(message, e);
 				throw new ContextInjectionException(message);

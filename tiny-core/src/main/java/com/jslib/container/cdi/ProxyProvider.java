@@ -1,20 +1,18 @@
 package com.jslib.container.cdi;
 
 import java.lang.reflect.InvocationHandler;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 
+import com.jslib.api.injector.ITypedProvider;
 import com.jslib.api.log.Log;
 import com.jslib.api.log.LogFactory;
 import com.jslib.container.spi.IManagedClass;
 import com.jslib.container.spi.IManagedMethod;
-
-import jakarta.inject.Provider;
-import com.jslib.api.injector.ITypedProvider;
 import com.jslib.lang.BugError;
 import com.jslib.lang.InstanceInvocationHandler;
-import com.jslib.lang.InvocationException;
+
+import jakarta.inject.Provider;
 
 /**
  * Create a Java {@link Proxy} that delegates all method invocations to given managed instance. This proxy allows invoking
@@ -98,9 +96,7 @@ class ProxyProvider<T> implements ITypedProvider<T> {
 		}
 
 		/**
-		 * Prepare given throwable and dump it to logger with formatted message. Return prepared throwable. If throwable is
-		 * {@link InvocationTargetException} or its unchecked related version, {@link InvocationException} replace it with root
-		 * cause.
+		 * Prepare given throwable and dump it to logger with formatted message. Return prepared throwable.
 		 * 
 		 * @param throwable throwable instance,
 		 * @param message formatted error message,
@@ -109,12 +105,6 @@ class ProxyProvider<T> implements ITypedProvider<T> {
 		 */
 		private static Throwable throwable(Throwable throwable, String message, Object... args) {
 			Throwable t = throwable;
-			if (t instanceof InvocationException && t.getCause() != null) {
-				t = t.getCause();
-			}
-			if (t instanceof InvocationTargetException && ((InvocationTargetException) t).getTargetException() != null) {
-				t = ((InvocationTargetException) t).getTargetException();
-			}
 			message = String.format(message, args);
 			log.dump(message, t);
 			return t;

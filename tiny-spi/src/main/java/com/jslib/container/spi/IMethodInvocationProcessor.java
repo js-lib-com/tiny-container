@@ -39,9 +39,9 @@ public interface IMethodInvocationProcessor extends IFlowProcessor {
 	 * @param chain invocation processors chain,
 	 * @param invocation method invocation context.
 	 * @return value returned by next processor from chain or null if next processor is not executed.
-	 * @throws Exception if service processing fails for whatever reason.
+	 * @throws Throwable if service processing fails for whatever reason.
 	 */
-	Object onMethodInvocation(IInvocationProcessorsChain chain, IInvocation invocation) throws Exception;
+	Object onMethodInvocation(IInvocationProcessorsChain chain, IInvocation invocation) throws Throwable;
 
 	/**
 	 * Predefined priorities available to invocation processor implementations.

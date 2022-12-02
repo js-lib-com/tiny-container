@@ -11,6 +11,6 @@ public interface IThreadsPool {
 
 	@FunctionalInterface
 	static interface Command {
-		void call() throws Exception;
+		void call() throws Throwable;
 	}
 }

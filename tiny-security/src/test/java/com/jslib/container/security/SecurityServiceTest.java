@@ -151,7 +151,7 @@ public class SecurityServiceTest {
 	}
 
 	@Test
-	public void GivenPrincipalRoleMatchDeclaredRole_WhenOnMethodInvocation_ThenChainNext() throws Exception {
+	public void GivenPrincipalRoleMatchDeclaredRole_WhenOnMethodInvocation_ThenChainNext() throws Throwable {
 		// given
 		jakarta.annotation.security.RolesAllowed annotation = mock(jakarta.annotation.security.RolesAllowed.class);
 		when(annotation.value()).thenReturn(new String[] { "admin" });
@@ -168,7 +168,7 @@ public class SecurityServiceTest {
 	}
 
 	@Test(expected = AuthorizationException.class)
-	public void GivenNoDeclaredRoles_WhenOnMethodInvocation_ThenException() throws Exception {
+	public void GivenNoDeclaredRoles_WhenOnMethodInvocation_ThenException() throws Throwable {
 		// given
 
 		// when
@@ -178,7 +178,7 @@ public class SecurityServiceTest {
 	}
 
 	@Test(expected = AuthorizationException.class)
-	public void GivenMethodJakartaDenyAll_WhenOnMethodInvocation_ThenException() throws Exception {
+	public void GivenMethodJakartaDenyAll_WhenOnMethodInvocation_ThenException() throws Throwable {
 		// given
 		Class<? extends Annotation> annotation = jakarta.annotation.security.DenyAll.class;
 		doReturn(mock(annotation)).when(managedMethod).scanAnnotation(annotation, IManagedMethod.Flags.INCLUDE_TYPES);
@@ -190,7 +190,7 @@ public class SecurityServiceTest {
 	}
 
 	@Test
-	public void GivenMissingHttpRequest_WhenOnMethodInvocation_ThenChainNext() throws Exception {
+	public void GivenMissingHttpRequest_WhenOnMethodInvocation_ThenChainNext() throws Throwable {
 		// given
 		when(container.getOptionalInstance(HttpServletRequest.class)).thenReturn(null);
 

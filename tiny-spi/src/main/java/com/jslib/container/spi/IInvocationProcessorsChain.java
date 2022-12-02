@@ -13,6 +13,6 @@ package com.jslib.container.spi;
  */
 public interface IInvocationProcessorsChain {
 
-	Object invokeNextProcessor(IInvocation invocation) throws Exception;
+	Object invokeNextProcessor(IInvocation invocation) throws Throwable;
 
 }

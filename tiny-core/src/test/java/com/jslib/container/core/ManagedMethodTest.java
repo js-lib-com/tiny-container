@@ -89,7 +89,7 @@ public class ManagedMethodTest {
 	}
 
 	@Test
-	public void GivenManagedMethod_WhenInvoke_ThenJavaMethodExecuted() throws Exception {
+	public void GivenManagedMethod_WhenInvoke_ThenJavaMethodExecuted() throws Throwable {
 		// given
 		Service instance = new Service();
 
@@ -101,7 +101,7 @@ public class ManagedMethodTest {
 	}
 
 	@Test
-	public void GivenProcessorBind_WhenInvoke_ThenInvokeProcessor() throws Exception {
+	public void GivenProcessorBind_WhenInvoke_ThenInvokeProcessor() throws Throwable {
 		// given
 		when(processor.bind(managedMethod)).thenReturn(true);
 		managedMethod.scanServices(Arrays.asList(processor));
@@ -118,7 +118,7 @@ public class ManagedMethodTest {
 	}
 
 	@Test
-	public void GivenProcessorNotBind_WhenInvoke_ThenDoNotInvokeProcessor() throws Exception {
+	public void GivenProcessorNotBind_WhenInvoke_ThenDoNotInvokeProcessor() throws Throwable {
 		// given
 		when(processor.bind(managedMethod)).thenReturn(false);
 		managedMethod.scanServices(Arrays.asList(processor));

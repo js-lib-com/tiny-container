@@ -65,7 +65,7 @@ public class SecurityService implements IMethodInvocationProcessor {
 	}
 
 	@Override
-	public Object onMethodInvocation(IInvocationProcessorsChain chain, IInvocation invocation) throws Exception {
+	public Object onMethodInvocation(IInvocationProcessorsChain chain, IInvocation invocation) throws Throwable {
 		final IManagedMethod managedMethod = invocation.method();
 
 		final HttpServletRequest httpRequest = container.getOptionalInstance(HttpServletRequest.class);

@@ -12,7 +12,7 @@ interface IMemberInjector {
 
 	Class<?> type();
 
-	void inject(Object instance, Object value) throws Exception;
+	void inject(Object instance, Object value) throws Throwable;
 
 	// --------------------------------------------------------------------------------------------
 	
@@ -76,7 +76,7 @@ interface IMemberInjector {
 		}
 
 		@Override
-		public void inject(Object instance, Object value) throws Exception {
+		public void inject(Object instance, Object value) throws Throwable {
 			method.invoke(instance, value);
 		}
 

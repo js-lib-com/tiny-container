@@ -51,7 +51,7 @@ public class HttpRmiServletHandlerUnitTest {
 	private HttpRmiServlet servlet;
 
 	@Before
-	public void beforeTest() throws Exception {
+	public void beforeTest() throws Throwable {
 		doReturn(managedClass).when(container).getManagedClass(any());
 		when(managedClass.getInstance()).thenReturn(new Object());
 		when(managedClass.getManagedMethod(any())).thenReturn(managedMethod);
@@ -107,7 +107,7 @@ public class HttpRmiServletHandlerUnitTest {
 	}
 
 	@Test
-	public void authorizationException() throws Exception {
+	public void authorizationException() throws Throwable {
 		when(managedMethod.invoke(any(), any())).thenThrow(GeneralSecurityException.class);
 		executeRequestHandler();
 
@@ -117,7 +117,7 @@ public class HttpRmiServletHandlerUnitTest {
 //		assertEquals("", httpResponse.outputStream.buffer.toString());
 	}
 
-	public void executionInvocationException() throws Exception {
+	public void executionInvocationException() throws Throwable {
 		when(managedMethod.invoke(any(), any())).thenThrow(new InvocationException(new Exception("exception")));
 		executeRequestHandler();
 
@@ -129,7 +129,7 @@ public class HttpRmiServletHandlerUnitTest {
 //		assertEquals("{\"cause\":\"java.lang.Exception\",\"message\":\"exception\"}", httpResponse.outputStream.buffer.toString());
 	}
 
-	public void executionRuntimeException() throws Exception {
+	public void executionRuntimeException() throws Throwable {
 		when(managedMethod.invoke(any(), any())).thenThrow(RuntimeException.class);
 		executeRequestHandler();
 	}

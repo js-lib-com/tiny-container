@@ -1,6 +1,7 @@
 package com.jslib.container.core;
 
 import java.lang.annotation.Annotation;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.Parameter;
@@ -184,6 +185,11 @@ class ManagedMethod implements IManagedMethod, IMethodInvocationProcessor {
 		return Types.isVoid(interfaceMethod.getReturnType());
 	}
 
+	@Override
+	public Method getMethod() {
+		return implementationMethod != null ? implementationMethod : interfaceMethod;
+	}
+
 	/**
 	 * Join point where application logic execution cross-cuts container services related to method invocation. When an
 	 * application method should be executed container routes request to this join point. Here invocation processors chain is
@@ -194,11 +200,11 @@ class ManagedMethod implements IManagedMethod, IMethodInvocationProcessor {
 	 * @param arguments optional managed method invocation arguments.
 	 * @param <T> returned value type.
 	 * @return value returned by method or null for void.
-	 * @throws Exception any exception from method or container service execution is bubbled up.
+	 * @throws Throwable any method execution exception is bubbled up.
 	 */
 	@SuppressWarnings("unchecked")
 	@Override
-	public <T> T invoke(Object instance, Object... arguments) throws Exception {
+	public <T> T invoke(Object instance, Object... arguments) throws Throwable {
 		InvocationProcessorsChain processorsChain = new InvocationProcessorsChain(invocationProcessors, this);
 		return (T) processorsChain.invokeNextProcessor(processorsChain.createInvocation(this, instance, arguments));
 	}
@@ -218,13 +224,26 @@ class ManagedMethod implements IManagedMethod, IMethodInvocationProcessor {
 	 * method does not call {@link IInvocationProcessorsChain#invokeNextProcessor(IInvocation)}, and as a consequence processing
 	 * chain is ended.
 	 * 
+	 * This method does the actual method invocation using Java reflection. Invocation target exception is caught and replaced
+	 * with the actual method execution exception, if any.
+	 * 
 	 * @param chain invocation processor chain, unused.
 	 * @param invocation invocation object.
+	 * @return value returned by method or null for void.
+	 * @throws Throwable any method execution exception is bubbled up.
 	 */
 	@Override
-	public Object onMethodInvocation(IInvocationProcessorsChain chain, IInvocation invocation) throws Exception {
+	public Object onMethodInvocation(IInvocationProcessorsChain chain, IInvocation invocation) throws Throwable {
 		Object[] arguments = argumentsValidator.validateArguments(this, invocation.arguments());
-		return interfaceMethod.invoke(invocation.instance(), arguments);
+		try {
+			return interfaceMethod.invoke(invocation.instance(), arguments);
+		} catch (InvocationTargetException e) {
+			Throwable t = e.getTargetException();
+			if (t == null) {
+				t = e.getCause();
+			}
+			throw t != null ? t : e;
+		}
 	}
 
 	@Override

@@ -2,7 +2,6 @@ package com.jslib.container.service;
 
 import static java.lang.String.format;
 
-import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -11,11 +10,11 @@ import com.jslib.api.log.LogFactory;
 import com.jslib.container.spi.IInstancePostConstructProcessor;
 import com.jslib.container.spi.IManagedClass;
 import com.jslib.container.spi.IManagedMethod;
-
-import jakarta.annotation.PostConstruct;
 import com.jslib.lang.ManagedPostConstruct;
 import com.jslib.util.Params;
 import com.jslib.util.Types;
+
+import jakarta.annotation.PostConstruct;
 
 /**
  * Execute {@link ManagedPostConstruct#postConstruct()} on managed instance. Instance post-construction is executed after
@@ -89,9 +88,6 @@ public class InstancePostConstructor implements IInstancePostConstructProcessor 
 		try {
 			managedMethod.invoke(instance);
 		} catch (Throwable t) {
-			if (t instanceof InvocationTargetException) {
-				t = ((InvocationTargetException) t).getTargetException();
-			}
 			log.dump(format("Managed instance |%s| post-construct fail:", implementationClass.getCanonicalName()), t);
 			throw new RuntimeException(format("Managed instance |%s| post-construct fail: %s: %s", implementationClass.getCanonicalName(), t.getClass().getCanonicalName(), t.getMessage()));
 		}

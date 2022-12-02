@@ -34,7 +34,7 @@ public class PerformanceMonitorService implements IMethodInvocationProcessor {
 	}
 
 	@Override
-	public Object onMethodInvocation(IInvocationProcessorsChain chain, IInvocation invocation) throws Exception {
+	public Object onMethodInvocation(IInvocationProcessorsChain chain, IInvocation invocation) throws Throwable {
 		Meter meter = meters.getMeter(invocation.method());
 		meter.incrementInvocationsCount();
 		meter.startProcessing();
