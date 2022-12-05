@@ -31,7 +31,9 @@ class EjbProxyHandler implements InvocationHandler {
 		INode node = loadBalancer.getNode();
 		node.acquire();
 		try {
-			HttpRmiClient client = new HttpRmiClient(node.getImplementationURL(), method.getDeclaringClass().getCanonicalName());
+			String ejbClass = method.getDeclaringClass().getCanonicalName();
+			log.debug("Invoke EJB {java_type} on remote implementation {}.", ejbClass, node.getImplementationURL());
+			HttpRmiClient client = new HttpRmiClient(node.getImplementationURL(), ejbClass);
 			String traceId = LogFactory.getLogContext().get("trace_id");
 			if (traceId != null) {
 				client.setHttpHeader("X-Trace-Id", traceId);

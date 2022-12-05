@@ -18,6 +18,7 @@ import org.mockito.junit.MockitoJUnitRunner;
 import org.mockserver.integration.ClientAndServer;
 import org.mockserver.model.Header;
 
+import com.jslib.lang.NoSuchBeingException;
 import com.jslib.loadbalancer.INode;
 import com.jslib.loadbalancer.LoadBalancer;
 
@@ -46,7 +47,7 @@ public class EjbProxyHandlerTest {
 	}
 
 	@Test
-	public void Given_WhenInvoke_Then() throws Throwable {
+	public void Given200_WhenInvoke_Then() throws Throwable {
 		// given
 		server.when(//
 				request() //
@@ -61,8 +62,6 @@ public class EjbProxyHandlerTest {
 
 		// when
 		Object value = proxy.invoke(null, IService.class.getMethod("getPerson", new Class<?>[] { String.class }), new Object[] { "Iulian Rotaru" });
-		value = proxy.invoke(null, IService.class.getMethod("getPerson", new Class<?>[] { String.class }), new Object[] { "Iulian Rotaru" });
-		value = proxy.invoke(null, IService.class.getMethod("getPerson", new Class<?>[] { String.class }), new Object[] { "Iulian Rotaru" });
 
 		// then
 		assertThat(value, notNullValue());
@@ -70,6 +69,29 @@ public class EjbProxyHandlerTest {
 
 		Person person = (Person) value;
 		assertThat(person.name, equalTo("Iulian Rotaru"));
+	}
+
+	/**
+	 * A condition encountered on production in a not understood context: RMI exception for no arguments constructor.
+	 */
+	@Test(expected = NoSuchBeingException.class)
+	public void GivenRmiExceptionWithoutArguments_WhenInvoke_ThenNoSuchBeingException() throws Throwable {
+		// given
+		server.when(//
+				request() //
+						.withMethod("POST")//
+						.withPath("/com/jslib/container/ejb/EjbProxyHandlerTest/IService/getPerson.rmi")//
+						.withHeader(new Header("Content-Type", "application/json"))//
+						.withBody("[\"Iulian Rotaru\"]")) //
+				.respond(response()//
+						.withStatusCode(500)//
+						.withHeader(new Header("Content-Type", "application/json"))//
+						.withBody("{\"exceptionClass\":\"com.jslib.rmi.RmiException\",\"constructorArguments\":[]}"));
+
+		// when
+		proxy.invoke(null, IService.class.getMethod("getPerson", new Class<?>[] { String.class }), new Object[] { "Iulian Rotaru" });
+
+		// then
 	}
 
 	private static class Person {

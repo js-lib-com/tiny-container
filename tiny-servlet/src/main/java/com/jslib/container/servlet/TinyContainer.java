@@ -223,13 +223,13 @@ public class TinyContainer extends Container implements ServletContextListener, 
 			bootstrap.startContainer(this, descriptorStream);
 
 			servletContext.setAttribute(TinyContainer.ATTR_INSTANCE, this);
-			log.info("Application |{app_name}| container started in {processing_time} msec.", appName, (System.nanoTime() - start) / 1000000D);
+			log.info("Application {app_name} container started in {processing_time} msec.", appName, (System.nanoTime() - start) / 1000000D);
 		} catch (ConfigException e) {
-			log.error("Bad application |{app_name}| configuration: {exception}", appName, e);
+			log.error("Bad application {app_name} configuration: {exception}", appName, e);
 		} catch (FileNotFoundException e) {
 			log.error(e);
 		} catch (Throwable t) {
-			log.fatal("Fatal error on application |{app_name}| start: {exception}", appName, t);
+			log.fatal("Fatal error on application {app_name} start: {exception}", appName, t);
 			log.dump(t);
 			throw t;
 		}

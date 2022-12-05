@@ -63,7 +63,7 @@ abstract class BaseContextParam implements IContainerService {
 
 		if (value == null) {
 			if (contextParam.mandatory()) {
-				throw new NoContextParamException("Missing context parameter |{context_parameter}| requested by field |{java_field}|.", contextParameterName, field);
+				throw new NoContextParamException("Missing context parameter %s requested by field %s.", contextParameterName, field);
 			}
 			log.warn("Field |{java_field}| has no context parameter. Leave it unchanged.", field);
 			return;
