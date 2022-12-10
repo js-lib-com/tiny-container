@@ -170,11 +170,11 @@ public abstract class AppServlet extends HttpServlet {
 		Factory.bind(container);
 
 		if (isEmptyUriRequest(httpRequest)) {
-			log.debug("Empty URI request for |{uri}|. Please check for <img> with empty 'src' or <link>, <script> with empty 'href' in HTML source or script resulting in such condition.", httpRequest.getRequestURI());
+			log.debug("Empty URI request for {http_url}. Please check for <img> with empty 'src' or <link>, <script> with empty 'href' in HTML source or script resulting in such condition.", httpRequest.getRequestURI());
 			return;
 		}
 		final long start = System.nanoTime();
-		log.trace("Processing request |{http_method}:{uri}|.", httpRequest.getMethod(), httpRequest.getRequestURI());
+		log.trace("Processing request {http_method}:{http_url}.", httpRequest.getMethod(), httpRequest.getRequestURI());
 
 		// request context has THREAD scope and this request thread may be reused by servlet container
 		RequestContext requestContext = container.getInstance(RequestContext.class);
@@ -196,7 +196,7 @@ public abstract class AppServlet extends HttpServlet {
 			dumpError(requestContext, t);
 			throw t;
 		} finally {
-			log.info("{http_method} {uri} processed in {processing_time} msec.", httpRequest.getMethod(), requestContext.getRequestURL(), (System.nanoTime() - start) / 1000000.0);
+			log.info("{http_method} {http_url} processed in {processing_time} msec.", httpRequest.getMethod(), requestContext.getRequestURL(), (System.nanoTime() - start) / 1000000.0);
 			// cleanup remote address from logger context and detach request context instance from this request
 			LogFactory.getLogContext().clear();
 		}
@@ -278,10 +278,10 @@ public abstract class AppServlet extends HttpServlet {
 			log.fatal("Abort HTTP transaction. Attempt to send reponse after response already commited.");
 			return;
 		}
-		log.error("Reject unauthorized request for private resource or service: |{uri}|.", context.getRequestURI());
+		log.error("Reject unauthorized request for private resource or service: {http_url}.", context.getRequestURI());
 
 		final String realm = String.format("Basic realm=%s", context.getRequest().getServletContext().getServletContextName());
-		log.trace("Send WWW-Authenticate |{http_realm}| for rejected request: |{uri}|", realm, context.getRequestURI());
+		log.trace("Send WWW-Authenticate |{http_realm}| for rejected request: {http_url}", realm, context.getRequestURI());
 		httpResponse.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
 		httpResponse.setHeader(HttpHeader.WWW_AUTHENTICATE, realm);
 	}
@@ -295,7 +295,7 @@ public abstract class AppServlet extends HttpServlet {
 	 * @throws IOException if writing to HTTP response fails.
 	 */
 	protected static void sendBadRequest(RequestContext context) throws IOException {
-		log.error("Bad request format for resource or service: |{uri}|.", context.getRequestURI());
+		log.error("Bad request format for resource or service: {http_url}.", context.getRequestURI());
 		context.dump();
 		context.getResponse().sendError(HttpServletResponse.SC_BAD_REQUEST, context.getRequestURI());
 	}
@@ -310,7 +310,7 @@ public abstract class AppServlet extends HttpServlet {
 	 * @throws IOException if writing to response stream fails.
 	 */
 	protected static void sendNotFound(RequestContext context, Exception exception) throws IOException {
-		log.error("Request for missing resource or service: |{uri}|.", context.getRequestURI());
+		log.error("Request for missing resource or service: {http_url}.", context.getRequestURI());
 		sendJsonObject(context, new RemoteExceptionContext(exception), HttpServletResponse.SC_NOT_FOUND);
 	}
 
