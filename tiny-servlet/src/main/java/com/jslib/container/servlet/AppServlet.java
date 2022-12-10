@@ -2,6 +2,7 @@ package com.jslib.container.servlet;
 
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
+import java.rmi.RemoteException;
 import java.security.Principal;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -15,7 +16,7 @@ import com.jslib.container.spi.IContainer;
 import com.jslib.container.spi.ITinyContainer;
 import com.jslib.lang.InvocationException;
 import com.jslib.rmi.BusinessException;
-import com.jslib.rmi.RemoteException;
+import com.jslib.rmi.RemoteExceptionContext;
 
 import jakarta.servlet.RequestDispatcher;
 import jakarta.servlet.ServletConfig;
@@ -310,7 +311,7 @@ public abstract class AppServlet extends HttpServlet {
 	 */
 	protected static void sendNotFound(RequestContext context, Exception exception) throws IOException {
 		log.error("Request for missing resource or service: |{uri}|.", context.getRequestURI());
-		sendJsonObject(context, new RemoteException(exception), HttpServletResponse.SC_NOT_FOUND);
+		sendJsonObject(context, new RemoteExceptionContext(exception), HttpServletResponse.SC_NOT_FOUND);
 	}
 
 	/**
@@ -346,7 +347,7 @@ public abstract class AppServlet extends HttpServlet {
 			sendJsonObject(context, throwable, HttpServletResponse.SC_BAD_REQUEST);
 		} else {
 			dumpError(context, throwable);
-			sendJsonObject(context, new RemoteException(throwable), HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+			sendJsonObject(context, new RemoteExceptionContext(throwable), HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
 		}
 	}
 

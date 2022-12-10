@@ -9,6 +9,8 @@ import static org.mockserver.integration.ClientAndServer.startClientAndServer;
 import static org.mockserver.model.HttpRequest.request;
 import static org.mockserver.model.HttpResponse.response;
 
+import java.io.IOException;
+
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -18,9 +20,9 @@ import org.mockito.junit.MockitoJUnitRunner;
 import org.mockserver.integration.ClientAndServer;
 import org.mockserver.model.Header;
 
-import com.jslib.lang.NoSuchBeingException;
 import com.jslib.loadbalancer.INode;
 import com.jslib.loadbalancer.LoadBalancer;
+import com.jslib.rmi.RmiException;
 
 @RunWith(MockitoJUnitRunner.class)
 public class EjbProxyHandlerTest {
@@ -47,7 +49,7 @@ public class EjbProxyHandlerTest {
 	}
 
 	@Test
-	public void Given200_WhenInvoke_Then() throws Throwable {
+	public void GivenAllesGut_WhenInvoke_ThenValue() throws Throwable {
 		// given
 		server.when(//
 				request() //
@@ -72,10 +74,10 @@ public class EjbProxyHandlerTest {
 	}
 
 	/**
-	 * A condition encountered on production in a not understood context: RMI exception for no arguments constructor.
+	 * Remote method throws exception that is declared by signature. Exception is thrown in client Java runtime.
 	 */
-	@Test(expected = NoSuchBeingException.class)
-	public void GivenRmiExceptionWithoutArguments_WhenInvoke_ThenNoSuchBeingException() throws Throwable {
+	@Test(expected = IOException.class)
+	public void GivenExceptionSignature_WhenInvoke_ThenException() throws Throwable {
 		// given
 		server.when(//
 				request() //
@@ -86,7 +88,30 @@ public class EjbProxyHandlerTest {
 				.respond(response()//
 						.withStatusCode(500)//
 						.withHeader(new Header("Content-Type", "application/json"))//
-						.withBody("{\"exceptionClass\":\"com.jslib.rmi.RmiException\",\"constructorArguments\":[]}"));
+						.withBody("{\"exceptionClass\":\"java.io.IOException\",\"exceptionMessage\":\"Disk fail.\"}"));
+
+		// when
+		proxy.invoke(null, IService.class.getMethod("getPerson", new Class<?>[] { String.class }), new Object[] { "Iulian Rotaru" });
+
+		// then
+	}
+
+	/**
+	 * Remote method throws exception that is not declared by signature. RmiException is thrown in client Java runtime.
+	 */
+	@Test(expected = RmiException.class)
+	public void GivenExceptionWithoutSignature_WhenInvoke_ThenRmiException() throws Throwable {
+		// given
+		server.when(//
+				request() //
+						.withMethod("POST")//
+						.withPath("/com/jslib/container/ejb/EjbProxyHandlerTest/IService/getPerson.rmi")//
+						.withHeader(new Header("Content-Type", "application/json"))//
+						.withBody("[\"Iulian Rotaru\"]")) //
+				.respond(response()//
+						.withStatusCode(500)//
+						.withHeader(new Header("Content-Type", "application/json"))//
+						.withBody("{\"exceptionClass\":\"java.io.FileNotException\",\"exceptionMessage\":null}"));
 
 		// when
 		proxy.invoke(null, IService.class.getMethod("getPerson", new Class<?>[] { String.class }), new Object[] { "Iulian Rotaru" });
@@ -99,6 +124,6 @@ public class EjbProxyHandlerTest {
 	}
 
 	private static interface IService {
-		Person getPerson(String name);
+		Person getPerson(String name) throws IOException;
 	}
 }

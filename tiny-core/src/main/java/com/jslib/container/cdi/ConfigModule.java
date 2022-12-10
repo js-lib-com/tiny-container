@@ -117,7 +117,7 @@ class ConfigModule extends AbstractModule {
 			if (t == null) {
 				t = e;
 			}
-			throw new IllegalStateException(e.getMessage());
+			throw new IllegalStateException(t.getMessage());
 		} catch (IllegalAccessException | IllegalArgumentException e) {
 			throw new IllegalStateException(e.getMessage());
 		}
