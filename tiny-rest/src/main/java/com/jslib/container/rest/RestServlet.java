@@ -3,7 +3,6 @@ package com.jslib.container.rest;
 import java.io.IOException;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Type;
-import java.security.GeneralSecurityException;
 import java.util.List;
 import java.util.Map;
 
@@ -119,9 +118,10 @@ public class RestServlet extends AppServlet {
 	 * 
 	 * @param context request context.
 	 * @throws IOException if reading from HTTP request or writing to HTTP response fail.
+	 * @throws NoSuchMethodException throws Throwable
 	 */
 	@Override
-	protected void handleRequest(RequestContext context) throws IOException {
+	protected void handleRequest(RequestContext context) throws IOException, NoSuchMethodException, Throwable {
 		HttpServletRequest httpRequest = context.getRequest();
 		HttpServletResponse httpResponse = context.getResponse();
 
@@ -137,7 +137,7 @@ public class RestServlet extends AppServlet {
 			PathTree.Item<IManagedMethod> requestPath = cache.get(httpRequest.getMethod(), pathInfo);
 			managedMethod = requestPath.getValue();
 			if (managedMethod == null) {
-				throw new NoSuchMethodException();
+				throw new NoSuchMethodException(pathInfo);
 			}
 
 			Object[] arguments = getArguments(httpRequest, requestPath);
@@ -159,20 +159,9 @@ public class RestServlet extends AppServlet {
 				return;
 			}
 
-		} catch (GeneralSecurityException e) {
-			sendUnauthorized(context);
-			return;
-		} catch (NoSuchMethodException e) {
-			sendNotFound(context, e);
-			return;
-		} catch (IllegalArgumentException e) {
-			// there are opinions that 422 UNPROCESSABLE ENTITY is more appropriate response
-			// see https://httpstatuses.com/422
-			sendBadRequest(context);
-			return;
 		} catch (ParameterNotFoundException e) {
-			sendNotFound(context, e);
-			return;
+			// handle missing parameter as method not found since method signature is different
+			throw new NoSuchMethodException(managedMethod.getSignature());
 		} catch (ParameterConversionException e) {
 			// If the JAX-RS provider fails to convert a string into the Java type specified, it is considered a client error.
 			// If this failure happens during the processing of an injection for an @MatrixParam, @QueryParam, or @PathParam, an
@@ -181,14 +170,9 @@ public class RestServlet extends AppServlet {
 
 			// @MatrixParam, @QueryParam and @PathParam are URL annotations
 			if (e.getAnnotationType() == AnnotationType.URL) {
-				sendNotFound(context, e);
-			} else {
-				sendBadRequest(context);
+				throw new NoSuchMethodException(managedMethod.getSignature());
 			}
-			return;
-		} catch (Throwable e) {
-			sendError(context, e);
-			return;
+			throw new IllegalArgumentException(e.getMessage());
 		} finally {
 			if (argumentsReader != null) {
 				argumentsReader.clean();

@@ -14,4 +14,5 @@ class CT {
 	public static final String LOG_REMOTE_HOST = "remote_host";
 	public static final String LOG_SESSION_ID = "session_id";
 	public static final String LOG_TRACE_ID = "trace_id";
+	public static final String LOG_TRACE_TIMESTAMP = "trace_timestamp";
 }

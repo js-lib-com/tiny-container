@@ -3,6 +3,7 @@ package com.jslib.container.servlet;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.rmi.RemoteException;
+import java.security.GeneralSecurityException;
 import java.security.Principal;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -72,10 +73,9 @@ public abstract class AppServlet extends HttpServlet {
 	 * exceptions on IO and servlet container services.
 	 * 
 	 * @param context execution context for current request.
-	 * @throws IOException if reading from request or writing to response fails.
-	 * @throws ServletException for fails on executing servlet container services.
+	 * @throws Throwable all exceptions are bubbled up to this application servlet.
 	 */
-	protected abstract void handleRequest(RequestContext context) throws IOException, ServletException;
+	protected abstract void handleRequest(RequestContext context) throws Throwable;
 
 	/** Application, context and servlet names, merely for logging. */
 	protected String appName;
@@ -166,6 +166,8 @@ public abstract class AppServlet extends HttpServlet {
 			traceId = Integer.toString(requestID.getAndIncrement(), Character.MAX_RADIX);
 		}
 		LogFactory.getLogContext().put(CT.LOG_TRACE_ID, traceId);
+		LogFactory.getLogContext().put(CT.LOG_TRACE_TIMESTAMP, Long.toString(System.nanoTime()));
+		LogFactory.getLogTransaction().beginTransaction();
 
 		Factory.bind(container);
 
@@ -190,14 +192,26 @@ public abstract class AppServlet extends HttpServlet {
 
 		try {
 			handleRequest(requestContext);
+			LogFactory.getLogTransaction().commitTransaction();
+		} catch (GeneralSecurityException e) {
+			sendUnauthorized(requestContext);
+		} catch (ClassNotFoundException | NoSuchMethodException e) {
+			sendNotFound(requestContext, e);
+		} catch (IllegalArgumentException e) {
+			// there are opinions that 422 UNPROCESSABLE ENTITY is more appropriate response
+			// see https://httpstatuses.com/422
+			sendBadRequest(requestContext);
 		} catch (IOException | ServletException | Error | RuntimeException t) {
 			// last line of defense; dump request context and throwable then dispatch exception to servlet container
 			// servlet container will generate response page using internal templates or <error-page>, if configured
 			dumpError(requestContext, t);
+			LogFactory.getLogTransaction().rollbackTransaction();
 			throw t;
+		} catch (Throwable t) {
+			// all exception, including class not found, no such method and illegal argument are send back to client as they are
+			sendError(requestContext, t);
 		} finally {
 			log.info("{http_method} {http_url} processed in {processing_time} msec.", httpRequest.getMethod(), requestContext.getRequestURL(), (System.nanoTime() - start) / 1000000.0);
-			// cleanup remote address from logger context and detach request context instance from this request
 			LogFactory.getLogContext().clear();
 		}
 	}
@@ -271,7 +285,7 @@ public abstract class AppServlet extends HttpServlet {
 	 * 
 	 * @param context current request context.
 	 */
-	protected static void sendUnauthorized(RequestContext context) {
+	static void sendUnauthorized(RequestContext context) {
 		final HttpServletResponse httpResponse = context.getResponse();
 
 		if (httpResponse.isCommitted()) {
@@ -294,7 +308,7 @@ public abstract class AppServlet extends HttpServlet {
 	 * @param context request context.
 	 * @throws IOException if writing to HTTP response fails.
 	 */
-	protected static void sendBadRequest(RequestContext context) throws IOException {
+	private static void sendBadRequest(RequestContext context) throws IOException {
 		log.error("Bad request format for resource or service: {http_url}.", context.getRequestURI());
 		context.dump();
 		context.getResponse().sendError(HttpServletResponse.SC_BAD_REQUEST, context.getRequestURI());
@@ -309,7 +323,7 @@ public abstract class AppServlet extends HttpServlet {
 	 * @param exception exception describing missing entity.
 	 * @throws IOException if writing to response stream fails.
 	 */
-	protected static void sendNotFound(RequestContext context, Exception exception) throws IOException {
+	static void sendNotFound(RequestContext context, Exception exception) throws IOException {
 		log.error("Request for missing resource or service: {http_url}.", context.getRequestURI());
 		sendJsonObject(context, new RemoteExceptionContext(exception), HttpServletResponse.SC_NOT_FOUND);
 	}
@@ -327,7 +341,7 @@ public abstract class AppServlet extends HttpServlet {
 	 * @param throwable exception describing server error.
 	 * @throws IOException if writing to response stream fails.
 	 */
-	protected static void sendError(RequestContext context, Throwable throwable) throws IOException {
+	static void sendError(RequestContext context, Throwable throwable) throws IOException {
 		if (throwable instanceof InvocationException && throwable.getCause() != null) {
 			throwable = throwable.getCause();
 		}
@@ -357,7 +371,7 @@ public abstract class AppServlet extends HttpServlet {
 	 * @param context request context,
 	 * @param throwable throwable to dump stack trace for.
 	 */
-	protected static void dumpError(RequestContext context, Throwable throwable) {
+	private static void dumpError(RequestContext context, Throwable throwable) {
 		log.dump(throwable);
 		context.dump();
 	}
@@ -371,7 +385,7 @@ public abstract class AppServlet extends HttpServlet {
 	 * @param statusCode response status code.
 	 * @throws IOException if serialization process fails.
 	 */
-	protected static void sendJsonObject(RequestContext context, Object object, int statusCode) throws IOException {
+	static void sendJsonObject(RequestContext context, Object object, int statusCode) throws IOException {
 		final HttpServletResponse httpResponse = context.getResponse();
 		if (httpResponse.isCommitted()) {
 			log.fatal("Abort HTTP transaction. Attempt to send JSON object after reponse commited.");

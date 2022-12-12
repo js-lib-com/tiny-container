@@ -1,5 +1,8 @@
 package com.jslib.container.rmi;
 
+import static com.jslib.container.rmi.HttpRmiServlet.className;
+import static com.jslib.container.rmi.HttpRmiServlet.managedClass;
+import static com.jslib.container.rmi.HttpRmiServlet.managedMethod;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -25,18 +28,18 @@ import com.jslib.util.Classes;
 @RunWith(MockitoJUnitRunner.class)
 public class HttpRmiServletUnitTest {
 	@Mock
-	private IContainer container; 
+	private IContainer container;
 	@Mock
 	private IManagedClass<?> managedClass;
 	@Mock
 	private IManagedMethod managedMethod;
-	
+
 	@Before
 	public void beforeTest() {
 		doReturn(managedClass).when(container).getManagedClass(any());
 		when(managedClass.getManagedMethod(any())).thenReturn(managedMethod);
 	}
-	
+
 	@Test
 	public void constructor() {
 		HttpRmiServlet servlet = new HttpRmiServlet();
@@ -45,8 +48,8 @@ public class HttpRmiServletUnitTest {
 	}
 
 	@Test
-	public void requestPathPattern() {
-		Pattern requestPath = Classes.getFieldValue(HttpRmiServlet.class, "REQUEST_PATH_PATTERN");
+	public void GivenValidClassPath_WhenPatternMatch_ThenFind() {
+		Pattern requestPath = HttpRmiServlet.REQUEST_PATH_PATTERN;
 
 		assertTrue(requestPath.matcher("/package/name/Class/method").find());
 		assertTrue(requestPath.matcher("/package/name/Class/InnerClass/method").find());
@@ -68,59 +71,74 @@ public class HttpRmiServletUnitTest {
 	}
 
 	@Test
-	public void className() throws Exception {
+	public void GivenValidClassPath_WhenGetClassName_ThenRetrieve() throws Exception {
 		assertEquals("js.test.net.RmiController", className("/js/test/net/RmiController"));
 		assertEquals("js.test.net.RmiController$Query", className("/js/test/net/RmiController/Query"));
 		assertEquals("js.test.net.RmiController$Query$Item", className("/js/test/net/RmiController/Query/Item"));
 	}
 
 	@Test
-	public void getManagedClass() throws Exception {
-		IManagedClass<?> managedClass = getManagedClass(container, "java.lang.Object", "/java/lang/Object/toString");
+	public void GivenExistingClass_WhenGetManagedClass_ThenRetrieve() throws Exception {
+		// given
+
+		// when
+		IManagedClass<?> managedClass = managedClass(container, "java.lang.Object", "/java/lang/Object/toString");
+
+		// then
 		assertTrue(managedClass instanceof IManagedClass);
 	}
 
 	@Test(expected = ClassNotFoundException.class)
-	public void getManagedClass_NoInterfaceClass() throws Exception {
-		getManagedClass(container, "fake.interface.Class", "/java/lang/Object/toString");
+	public void GivenMispelledClassName_WhenGetManagedClass_ThenException() throws Exception {
+		// given
+
+		// when
+		managedClass(container, "java.lang.FakeObject", "/java/lang/Object/toString");
+
+		// then
 	}
 
 	@Test(expected = ClassNotFoundException.class)
-	public void getManagedClass_NoManagedClass() throws Exception {
+	public void GivenMissingClass_WhenGetManagedClass_ThenException() throws Exception {
+		// given
 		when(container.getManagedClass(any())).thenReturn(null);
-		getManagedClass(container, "java.lang.Object", "/java/lang/Object/toString");
+
+		// when
+		managedClass(container, "java.lang.Object", "/java/lang/Object/toString");
+
+		// then
 	}
 
 	@Test
-	public void getManagedMethod() throws Exception {
-		IManagedMethod managedMethod = getManagedMethod(managedClass, "toString", "/java/lang/Object/toString");
+	public void GivenExistingMethod_WhenGetManagedMethod_ThenRetrieve() throws Exception {
+		// given
+
+		// when
+		IManagedMethod managedMethod = managedMethod(managedClass, "toString", "/java/lang/Object/toString");
+
+		// then
 		assertTrue(managedMethod instanceof IManagedMethod);
 	}
 
 	@Test(expected = NoSuchMethodException.class)
-	public void getManagedMethod_NoManagedMethod() throws Exception {
+	public void GivenMissingMethod_WhenGetManagedMethod_ThenException() throws Exception {
+		// given
 		when(managedClass.getManagedMethod(any())).thenReturn(null);
-		getManagedMethod(managedClass, "toString", "/java/lang/Object/toString");
+
+		// when
+		managedMethod(managedClass, "toString", "/java/lang/Object/toString");
+
+		// then
 	}
 
 	@Test(expected = NoSuchMethodException.class)
-	public void getManagedMethod_IsResource() throws Exception {
+	public void GivenResourceMethod_WhenGetManagedMethod_ThenException() throws Exception {
+		// given
 		when(managedMethod.getReturnType()).thenReturn(Resource.class);
-		getManagedMethod(managedClass, "toString", "/java/lang/Object/toString");
-	}
-	
-	// --------------------------------------------------------------------------------------------
-	// UTILITY METHODS
 
-	private static String className(String classPath) throws Exception {
-		return Classes.invoke(HttpRmiServlet.class, "className", classPath);
-	}
+		// when
+		managedMethod(managedClass, "toString", "/java/lang/Object/toString");
 
-	private static IManagedClass<?> getManagedClass(IContainer container, String interfaceName, String requestURI) throws Exception {
-		return Classes.invoke(HttpRmiServlet.class, "getManagedClass", container, interfaceName, requestURI);
-	}
-
-	private static IManagedMethod getManagedMethod(IManagedClass<?> managedClass, String methodName, String requestURI) throws Exception {
-		return Classes.invoke(HttpRmiServlet.class, "getManagedMethod", managedClass, methodName, requestURI);
+		// then
 	}
 }

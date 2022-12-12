@@ -2,7 +2,6 @@ package com.jslib.container.rmi;
 
 import java.io.IOException;
 import java.lang.reflect.Type;
-import java.security.GeneralSecurityException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -93,7 +92,7 @@ public final class HttpRmiServlet extends AppServlet {
 	private static final Log log = LogFactory.getLog(HttpRmiServlet.class);
 
 	/** Request path pattern for HTTP-RMI. See class description for supported syntax. */
-	private static final Pattern REQUEST_PATH_PATTERN = Pattern.compile("^" + //
+	static final Pattern REQUEST_PATH_PATTERN = Pattern.compile("^" + //
 			"(\\/[a-z][a-z0-9]*(?:\\/[a-z][a-z0-9]*)*(?:\\/[A-Z][a-zA-Z0-9_]*)+)" + // qualified (inner)class name
 			"\\/" + // path separator
 			"([a-z][a-zA-Z0-9_]*)" + // method name
@@ -131,16 +130,19 @@ public final class HttpRmiServlet extends AppServlet {
 	 * 
 	 * @param context HTTP request context.
 	 * @throws IOException if HTTP request reading fails for any reason.
+	 * @throws ClassNotFoundException if request path does not designate an existing remote class. 
+	 * @throws NoSuchMethodException if there is no remote method with requested name.
+	 * @throws IllegalArgumentException if method parameter(s) cannot be retrieved from HTTP request.
+	 * @throws Throwable any method execution exception are bubbled up to application servlet service handler.
 	 */
 	@Override
-	public void handleRequest(RequestContext context) throws IOException {
+	public void handleRequest(RequestContext context) throws IOException, ClassNotFoundException, NoSuchMethodException, IllegalArgumentException, Throwable {
 		HttpServletRequest httpRequest = context.getRequest();
 		HttpServletResponse httpResponse = context.getResponse();
 
 		Matcher matcher = REQUEST_PATH_PATTERN.matcher(context.getRequestPath());
 		if (!matcher.find()) {
-			sendBadRequest(context);
-			return;
+			throw new ClassNotFoundException(context.getRequestPath());
 		}
 		String interfaceName = className(matcher.group(1));
 		String methodName = matcher.group(2);
@@ -150,8 +152,8 @@ public final class HttpRmiServlet extends AppServlet {
 		Object value = null;
 
 		try {
-			IManagedClass<?> managedClass = getManagedClass(getContainer(), interfaceName, httpRequest.getRequestURI());
-			managedMethod = getManagedMethod(managedClass, methodName, httpRequest.getRequestURI());
+			IManagedClass<?> managedClass = managedClass(getContainer(), interfaceName, httpRequest.getRequestURI());
+			managedMethod = managedMethod(managedClass, methodName, httpRequest.getRequestURI());
 
 			final Type[] formalParameters = managedMethod.getParameterTypes();
 			argumentsReader = argumentsReaderFactory.getArgumentsReader(httpRequest, formalParameters);
@@ -159,13 +161,6 @@ public final class HttpRmiServlet extends AppServlet {
 
 			Object instance = managedClass.getInstance();
 			value = managedMethod.invoke(instance, arguments);
-		} catch (GeneralSecurityException e) {
-			sendUnauthorized(context);
-			return;
-		} catch (Throwable t) {
-			// all exception, including class not found, no such method and illegal argument are send back to client as they are
-			sendError(context, t);
-			return;
 		} finally {
 			if (argumentsReader != null) {
 				argumentsReader.clean();
@@ -199,7 +194,7 @@ public final class HttpRmiServlet extends AppServlet {
 	 * @throws ClassNotFoundException if interface class not found on run-time class path, managed class not defined or is not
 	 *             remotely accessible.
 	 */
-	private static IManagedClass<?> getManagedClass(IContainer container, String interfaceName, String requestURI) throws ClassNotFoundException {
+	static IManagedClass<?> managedClass(IContainer container, String interfaceName, String requestURI) throws ClassNotFoundException {
 		Class<?> interfaceClass = Classes.forOptionalName(interfaceName);
 		if (interfaceClass == null) {
 			log.error("HTTP-RMI request for not existing class |{java_type}|.", interfaceName);
@@ -223,7 +218,7 @@ public final class HttpRmiServlet extends AppServlet {
 	 * @throws NoSuchMethodException if managed class has not any method with requested name, managed method was found but is
 	 *             not remotely accessible or it returns a {@link Resource}.
 	 */
-	private static IManagedMethod getManagedMethod(IManagedClass<?> managedClass, String methodName, String requestURI) throws NoSuchMethodException {
+	static IManagedMethod managedMethod(IManagedClass<?> managedClass, String methodName, String requestURI) throws NoSuchMethodException {
 		IManagedMethod managedMethod = managedClass.getManagedMethod(methodName);
 		if (managedMethod == null) {
 			log.error("HTTP-RMI request for not existing managed method |{managed_class}#{managed_method}}|.", managedClass, methodName);
@@ -251,7 +246,7 @@ public final class HttpRmiServlet extends AppServlet {
 	 * @param classPath qualified class name using slash as separator and with leading path separator.
 	 * @return qualified class name using dollar notation for inner classes.
 	 */
-	private static String className(String classPath) {
+	static String className(String classPath) {
 		StringBuilder className = new StringBuilder();
 		char separator = '.';
 		char c = classPath.charAt(1);

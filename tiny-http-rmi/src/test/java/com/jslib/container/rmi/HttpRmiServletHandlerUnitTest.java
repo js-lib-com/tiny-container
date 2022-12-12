@@ -1,6 +1,9 @@
 package com.jslib.container.rmi;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.equalTo;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -8,11 +11,12 @@ import static org.mockito.Mockito.when;
 
 import java.lang.reflect.Type;
 import java.security.GeneralSecurityException;
-import java.util.Collections;
+import java.util.Arrays;
 
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
@@ -37,7 +41,7 @@ public class HttpRmiServletHandlerUnitTest {
 	private IManagedClass<Object> managedClass;
 	@Mock
 	private IManagedMethod managedMethod;
-	
+
 	@Mock
 	private ServletContext servletContext;
 	@Mock
@@ -56,89 +60,110 @@ public class HttpRmiServletHandlerUnitTest {
 		when(managedClass.getInstance()).thenReturn(new Object());
 		when(managedClass.getManagedMethod(any())).thenReturn(managedMethod);
 		when(managedMethod.getParameterTypes()).thenReturn(new Type[0]);
-		when(managedMethod.invoke(any(), any())).thenReturn("string value");
-		
-		when(httpRequest.getServletContext()).thenReturn(servletContext);
+
 		when(httpRequest.getRequestURI()).thenReturn("/test-app/java/lang/Object/toString");
 		when(httpRequest.getContextPath()).thenReturn("/test-app");
-		when(httpRequest.getHeaderNames()).thenReturn(Collections.emptyEnumeration());
-		
+
 		when(httpResponse.getOutputStream()).thenReturn(outputStream);
-		
+
 		context = new RequestContext(container);
 
 		servlet = new HttpRmiServlet();
 		Classes.setFieldValue(servlet, AppServlet.class, "container", container);
 	}
-	
+
 	@Test
-	public void handleRequest() throws Exception {
+	public void GivenNonVoidMethod_WhenHandleRequest_ThenOK() throws Throwable {
+		// given
 		when(managedMethod.getReturnType()).thenReturn(String.class);
-		executeRequestHandler();
 
-		verify(httpResponse, times(1)).setStatus(200);
-		
-//		assertEquals(1, httpResponse.headers.size());
-//		assertEquals("application/json", httpResponse.headers.get("Content-Type"));
-//		assertEquals("\"string value\"", httpResponse.outputStream.buffer.toString());
-	}
-
-	@Test
-	public void handleRequest_Void() throws Exception {
-		when(managedMethod.getReturnType()).thenReturn(Void.class);
-		
-		executeRequestHandler();
-
-		verify(httpResponse, times(1)).setStatus(204);
-
-//		assertTrue(httpResponse.headers.isEmpty());
-//		assertEquals("", httpResponse.outputStream.buffer.toString());
-	}
-
-	@Test
-	public void badRequest() throws Exception {
-		when(httpRequest.getRequestURI()).thenReturn("/test-app/fake.rmi");
-		
-		executeRequestHandler();
-
-		verify(httpResponse, times(1)).sendError(400, "/test-app/fake.rmi");
-//		assertTrue(httpResponse.headers.isEmpty());
-//		assertEquals("/test-app/fake.rmi", httpResponse.outputStream.buffer.toString());
-	}
-
-	@Test
-	public void authorizationException() throws Throwable {
-		when(managedMethod.invoke(any(), any())).thenThrow(GeneralSecurityException.class);
-		executeRequestHandler();
-
-		verify(httpResponse, times(1)).setStatus(401);
-//		assertEquals(1, httpResponse.headers.size());
-//		assertEquals("Basic realm=app-test", httpResponse.headers.get("WWW-Authenticate"));
-//		assertEquals("", httpResponse.outputStream.buffer.toString());
-	}
-
-	public void executionInvocationException() throws Throwable {
-		when(managedMethod.invoke(any(), any())).thenThrow(new InvocationException(new Exception("exception")));
-		executeRequestHandler();
-
-		verify(httpResponse, times(1)).setStatus(500);
-//		assertEquals(3, httpResponse.headers.size());
-//		assertEquals("application/json", httpResponse.headers.get("Content-Type"));
-//		assertEquals("53", httpResponse.headers.get("Content-Length"));
-//		assertEquals("en-US", httpResponse.headers.get("Content-Language"));
-//		assertEquals("{\"cause\":\"java.lang.Exception\",\"message\":\"exception\"}", httpResponse.outputStream.buffer.toString());
-	}
-
-	public void executionRuntimeException() throws Throwable {
-		when(managedMethod.invoke(any(), any())).thenThrow(RuntimeException.class);
-		executeRequestHandler();
-	}
-
-	// --------------------------------------------------------------------------------------------
-	// UTILITY METHODS
-
-	private void executeRequestHandler() throws Exception {
+		// when
 		context.attach(httpRequest, httpResponse);
-		Classes.invoke(servlet, "handleRequest", context);
+		servlet.handleRequest(context);
+
+		// then
+		verify(httpResponse, times(1)).setStatus(200);
+		verify(httpResponse, times(1)).setContentType("application/json");
+	}
+
+	@Test
+	public void GivenStringMethod_WhenHandleRequest_ThenJsonString() throws Throwable {
+		// given
+		String value = "string value";
+		String json = "\"string value\"";
+
+		when(managedMethod.getReturnType()).thenReturn(String.class);
+		when(managedMethod.invoke(any(), any())).thenReturn(value);
+
+		// when
+		context.attach(httpRequest, httpResponse);
+		servlet.handleRequest(context);
+
+		// then
+		ArgumentCaptor<byte[]> bufferArg = ArgumentCaptor.forClass(byte[].class);
+		verify(outputStream).write(bufferArg.capture(), eq(0), eq(json.length()));
+		assertThat(Arrays.copyOfRange(bufferArg.getValue(), 0, json.length()), equalTo(json.getBytes()));
+	}
+
+	@Test
+	public void GivenVoidMethod_WhenHandleRequest_ThenNoContent() throws Throwable {
+		// given
+		when(managedMethod.getReturnType()).thenReturn(Void.class);
+
+		// when
+		context.attach(httpRequest, httpResponse);
+		servlet.handleRequest(context);
+
+		// then
+		verify(httpResponse, times(1)).setStatus(204);
+		verify(httpResponse, times(0)).setContentType(any());
+	}
+
+	@Test(expected = ClassNotFoundException.class)
+	public void GivenMissingClassPath_WhenHandleRequest_ThenException() throws Throwable {
+		// given
+		when(httpRequest.getRequestURI()).thenReturn("/test-app/fake.rmi");
+
+		// when
+		context.attach(httpRequest, httpResponse);
+		servlet.handleRequest(context);
+
+		// then
+	}
+
+	@Test(expected = GeneralSecurityException.class)
+	public void GivenMethodAccessNotGranted_WhenHandleRequest_ThenException() throws Throwable {
+		// given
+		when(managedMethod.invoke(any(), any())).thenThrow(GeneralSecurityException.class);
+
+		// when
+		context.attach(httpRequest, httpResponse);
+		servlet.handleRequest(context);
+
+		// then
+	}
+
+	@Test(expected = InvocationException.class)
+	public void GivenMethodInvocationException_WhenHandleRequest_ThenException() throws Throwable {
+		// given
+		when(managedMethod.invoke(any(), any())).thenThrow(new InvocationException(new Exception("exception")));
+
+		// when
+		context.attach(httpRequest, httpResponse);
+		servlet.handleRequest(context);
+
+		// then
+	}
+
+	@Test(expected = RuntimeException.class)
+	public void GivenMethodRuntimeException_WhenHandleRequest_ThenException() throws Throwable {
+		// given
+		when(managedMethod.invoke(any(), any())).thenThrow(RuntimeException.class);
+
+		// when
+		context.attach(httpRequest, httpResponse);
+		servlet.handleRequest(context);
+
+		// then
 	}
 }

@@ -88,7 +88,7 @@ public class EjbProxyHandlerTest {
 				.respond(response()//
 						.withStatusCode(500)//
 						.withHeader(new Header("Content-Type", "application/json"))//
-						.withBody("{\"exceptionClass\":\"java.io.IOException\",\"exceptionMessage\":\"Disk fail.\"}"));
+						.withBody("{\"exceptionClassName\":\"java.io.IOException\",\"exceptionMessage\":\"Disk fail.\"}"));
 
 		// when
 		proxy.invoke(null, IService.class.getMethod("getPerson", new Class<?>[] { String.class }), new Object[] { "Iulian Rotaru" });
@@ -111,7 +111,7 @@ public class EjbProxyHandlerTest {
 				.respond(response()//
 						.withStatusCode(500)//
 						.withHeader(new Header("Content-Type", "application/json"))//
-						.withBody("{\"exceptionClass\":\"java.io.FileNotException\",\"exceptionMessage\":null}"));
+						.withBody("{\"exceptionClassName\":\"java.io.FileNotException\",\"exceptionMessage\":null}"));
 
 		// when
 		proxy.invoke(null, IService.class.getMethod("getPerson", new Class<?>[] { String.class }), new Object[] { "Iulian Rotaru" });

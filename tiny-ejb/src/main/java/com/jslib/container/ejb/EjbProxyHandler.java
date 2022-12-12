@@ -30,8 +30,9 @@ class EjbProxyHandler implements InvocationHandler {
 	public Object invoke(Object proxy, Method method, Object[] arguments) throws Throwable {
 		INode node = loadBalancer.getNode();
 		node.acquire();
+
+		String ejbClass = method.getDeclaringClass().getCanonicalName();
 		try {
-			String ejbClass = method.getDeclaringClass().getCanonicalName();
 			log.debug("Invoke EJB {java_type} on remote implementation {}.", ejbClass, node.getImplementationURL());
 			HttpRmiClient client = new HttpRmiClient(node.getImplementationURL(), ejbClass);
 			String traceId = LogFactory.getLogContext().get("trace_id");
@@ -54,7 +55,7 @@ class EjbProxyHandler implements InvocationHandler {
 			throw t;
 		} finally {
 			long processingTime = node.release();
-			log.info("EJB invocation complete. Processing time {processing_time} msec.", processingTime);
+			log.info("EJB {java_type} invocation complete. Processing time {processing_time} msec.", ejbClass, processingTime);
 		}
 	}
 }
