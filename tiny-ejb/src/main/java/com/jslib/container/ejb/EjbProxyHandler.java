@@ -28,6 +28,9 @@ class EjbProxyHandler implements InvocationHandler {
 
 	@Override
 	public Object invoke(Object proxy, Method method, Object[] arguments) throws Throwable {
+		if(arguments == null) {
+			arguments = new Object[0];
+		}
 		INode node = loadBalancer.getNode();
 		node.acquire();
 
