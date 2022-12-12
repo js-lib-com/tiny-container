@@ -1,0 +1,3 @@
+com.jslib.container.service.ManagedInstanceStartupProcessor
+com.jslib.container.service.InstancePostConstructor
+com.jslib.container.service.InstancePreDestructor
