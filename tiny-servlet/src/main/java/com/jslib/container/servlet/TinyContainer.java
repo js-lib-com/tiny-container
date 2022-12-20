@@ -15,6 +15,7 @@ import com.jslib.container.cdi.CDI;
 import com.jslib.container.cdi.IClassBinding;
 import com.jslib.container.core.Bootstrap;
 import com.jslib.container.core.Container;
+import com.jslib.container.spi.CT;
 import com.jslib.container.spi.ISecurityContext;
 import com.jslib.container.spi.ITinyContainer;
 import com.jslib.lang.BugError;
