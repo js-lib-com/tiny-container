@@ -12,6 +12,7 @@ import com.jslib.api.log.Log;
 import com.jslib.api.log.LogFactory;
 import com.jslib.container.http.ContentType;
 import com.jslib.container.http.HttpHeader;
+import com.jslib.container.spi.CT;
 import com.jslib.container.spi.Factory;
 import com.jslib.container.spi.IContainer;
 import com.jslib.container.spi.ITinyContainer;
@@ -219,7 +220,7 @@ public abstract class AppServlet extends HttpServlet {
 	private void updateLogContext() {
 		LogFactory.getLogContext().put(CT.LOG_APP_NAME, appName);
 		LogFactory.getLogContext().put(CT.LOG_CONTEXT_NAME, contextName);
-		LogFactory.getLogContext().put(CT.LOG_SERVLET_NAME, servletName);
+		LogFactory.getLogContext().put(CT.LOG_SERVICE_NAME, servletName);
 	}
 
 	/**

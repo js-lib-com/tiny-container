@@ -96,8 +96,14 @@ public class RestServlet extends AppServlet {
 	public RestServlet() {
 		log.trace("RestServlet()");
 		// both factories are implemented by the same server encoders instance
-		this.argumentsReaderFactory = ServerEncoders.getInstance();
-		this.valueWriterFactory = ServerEncoders.getInstance();
+		try {
+			this.argumentsReaderFactory = ServerEncoders.getInstance();
+			this.valueWriterFactory = ServerEncoders.getInstance();
+		} catch (Throwable t) {
+			log.dump("Fail to create REST servlet.", t);
+			throw t;
+		}
+
 	}
 
 	public RestServlet(ServerEncoders encoders) {
