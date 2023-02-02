@@ -19,6 +19,7 @@ import com.jslib.api.log.Log;
 import com.jslib.api.log.LogFactory;
 import com.jslib.container.spi.IInstanceLifecycleListener;
 import com.jslib.lang.Config;
+import com.jslib.lang.NoProviderException;
 import com.jslib.util.Params;
 
 import jakarta.inject.Provider;
@@ -59,7 +60,12 @@ public class CDI implements IProvisionListener {
 		log.trace("CDI()");
 		this.staticModule = new StaticModule();
 		this.parametersModule = new BindingParametersModule();
-		this.injector = IInjector.create();
+		try {
+			this.injector = IInjector.create();
+		} catch (NoProviderException e) {
+			log.fatal("No implementation for Injector API found on runtime. Container abort. Root cause: {}: {}", e.getClass(), e.getMessage());
+			throw e;
+		}
 	}
 
 	public void setManagedLoader(IManagedLoader managedLoader) {

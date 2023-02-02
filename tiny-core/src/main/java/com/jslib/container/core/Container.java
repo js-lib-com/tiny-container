@@ -163,7 +163,11 @@ public class Container implements IContainer, EmbeddedContainer, IManagedLoader 
 	@Override
 	public void close() {
 		log.debug("Destroy container.");
-
+		if(this.managedClasses == null) {
+			log.debug("Destroy container before initialization.");
+			return;
+		}
+		
 		try {
 			SortedMap<Integer, IManagedClass<?>> managedClasses = new TreeMap<>(Collections.reverseOrder());
 			for (IManagedClass<?> managedClass : this.managedClasses) {

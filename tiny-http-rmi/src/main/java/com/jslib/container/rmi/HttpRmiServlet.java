@@ -112,8 +112,13 @@ public final class HttpRmiServlet extends AppServlet {
 	/** Initialize invocation arguments reader and return value writer factories. */
 	public HttpRmiServlet() {
 		// both factories are implemented by the same server encoders
-		argumentsReaderFactory = ServerEncoders.getInstance();
-		valueWriterFactory = ServerEncoders.getInstance();
+		try {
+			this.argumentsReaderFactory = ServerEncoders.getInstance();
+			this.valueWriterFactory = ServerEncoders.getInstance();
+		} catch (Throwable t) {
+			log.dump("Fail to create HTTP-RMI servlet.", t);
+			throw t;
+		}
 	}
 
 	/**
@@ -130,7 +135,7 @@ public final class HttpRmiServlet extends AppServlet {
 	 * 
 	 * @param context HTTP request context.
 	 * @throws IOException if HTTP request reading fails for any reason.
-	 * @throws ClassNotFoundException if request path does not designate an existing remote class. 
+	 * @throws ClassNotFoundException if request path does not designate an existing remote class.
 	 * @throws NoSuchMethodException if there is no remote method with requested name.
 	 * @throws IllegalArgumentException if method parameter(s) cannot be retrieved from HTTP request.
 	 * @throws Throwable any method execution exception are bubbled up to application servlet service handler.

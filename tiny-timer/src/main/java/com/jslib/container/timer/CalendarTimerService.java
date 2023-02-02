@@ -44,7 +44,7 @@ public class CalendarTimerService implements IInstancePostConstructProcessor {
 	private final Map<Method, Schedule> methodSchedules = new HashMap<>();
 
 	public CalendarTimerService() {
-		scheduler = Executors.newScheduledThreadPool(SCHEDULERS_THREAD_POLL);
+		scheduler = Executors.newScheduledThreadPool(SCHEDULERS_THREAD_POLL, new TimerTaskFactory());
 	}
 
 	/** Test constructor. */

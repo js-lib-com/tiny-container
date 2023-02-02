@@ -73,15 +73,15 @@ public class RestConnector implements IConnector, IClassPostLoadedProcessor {
 		if (managedClass.scanAnnotation(Remote.class) == null) {
 			return false;
 		}
-
-		log.debug("Scan REST controller |{managed_class}|.", managedClass);
+		
+		log.debug("Scan REST controller {managed_class} for context injection points.", managedClass);
 		Class<? extends T> implementationClass = managedClass.getImplementationClass();
 
 		for (Field field : implementationClass.getDeclaredFields()) {
 			if (field.getAnnotation(Context.class) != null) {
 				IMemberInjector injector = new IMemberInjector.FieldInjector(field);
 				injector.assertValid();
-				log.debug("Register context injector for field |{java_field}|.", field);
+				log.debug("Register context injector for field {java_field}.", field);
 				contextInjectors.add(implementationClass, injector);
 			}
 		}
@@ -90,12 +90,12 @@ public class RestConnector implements IConnector, IClassPostLoadedProcessor {
 			if (managedMethod.scanAnnotation(Context.class) != null) {
 				IMemberInjector injector = new IMemberInjector.MethodInjector(managedMethod);
 				injector.assertValid();
-				log.debug("Register context injector for method |{managed_method}|.", managedMethod);
+				log.debug("Register context injector for method {managed_method}.", managedMethod);
 				contextInjectors.add(implementationClass, injector);
 			}
 			if (managedMethod.isPublic() && !Types.isKindOf(managedMethod.getReturnType(), Resource.class)) {
 				List<String> paths = pathMethods.add(managedMethod);
-				log.debug("Register REST method |{managed_method}| to path |{rest_path}|.", managedMethod, Strings.join(paths, ','));
+				log.debug("Register REST method {managed_method} to path {rest_path}.", managedMethod, Strings.join(paths, ','));
 			}
 		}
 
