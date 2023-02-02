@@ -70,6 +70,10 @@ public class RestConnector implements IConnector, IClassPostLoadedProcessor {
 
 	@Override
 	public <T> boolean onClassPostLoaded(IManagedClass<T> managedClass) {
+		if (managedClass.scanAnnotation(Remote.class) == null) {
+			return false;
+		}
+		
 		log.debug("Scan REST controller {managed_class} for context injection points.", managedClass);
 		Class<? extends T> implementationClass = managedClass.getImplementationClass();
 
